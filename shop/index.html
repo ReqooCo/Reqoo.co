@@ -3,176 +3,138 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>REQOO.CO — Custom Gifts</title>
+<title>REQOO.CO Shop</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#080808;color:#fff;font-family:Arial,Helvetica,sans-serif}
-header{position:sticky;top:0;z-index:100;background:#0d0d0d;border-bottom:1px solid #292929;padding:16px 5%}
-.nav{max-width:1400px;margin:auto;display:flex;align-items:center;gap:18px}.logo{font-size:22px;font-weight:900;letter-spacing:5px;white-space:nowrap}.logo span{color:#d8a93d}
-.search{flex:1;background:#151515;border:1px solid #333;border-radius:30px;padding:13px 18px;color:#fff;outline:0}
-.cart-btn,.btn{border:0;border-radius:9px;background:#d8a93d;color:#000;font-weight:700;cursor:pointer;padding:13px 18px}
-.cart-btn{border-radius:25px}.hero{max-width:1400px;margin:auto;padding:65px 5% 40px}.small{color:#d8a93d;letter-spacing:6px;font-size:12px;font-weight:bold}.hero h1{font-size:clamp(48px,7vw,90px);line-height:.95;margin:20px 0}.hero h1 span{color:#d8a93d}.hero p{color:#aaa;font-size:18px;line-height:1.6;max-width:750px}
-.categories{max-width:1400px;margin:auto;padding:10px 5% 30px;display:flex;gap:10px;overflow:auto}.cat{background:#111;color:#aaa;border:1px solid #333;border-radius:30px;padding:11px 20px;white-space:nowrap}.cat.active{background:#d8a93d;color:#000}
-.products{max-width:1400px;margin:auto;padding:20px 5% 90px;display:grid;grid-template-columns:repeat(4,1fr);gap:20px}.card{background:#111;border:1px solid #292929;border-radius:18px;overflow:hidden}.card img{width:100%;aspect-ratio:1;object-fit:cover;display:block}.info{padding:17px}.tag{color:#d8a93d;font-size:10px;letter-spacing:3px;font-weight:bold}.info h2{font-size:19px;margin:8px 0}.info p{color:#999;font-size:13px;line-height:1.5;min-height:40px}.price{font-size:19px;font-weight:bold;margin:14px 0}
-.overlay{position:fixed;inset:0;background:#000c;z-index:500;display:none;align-items:center;justify-content:center;padding:16px}.overlay.show{display:flex}.modal{width:min(650px,100%);max-height:94vh;overflow:auto;background:#111;border:1px solid #3b3b3b;border-radius:20px}.head{padding:18px 20px;border-bottom:1px solid #292929;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#111;z-index:2}.head h2{margin:0}.x{background:#222;color:#fff;border:0;border-radius:50%;width:36px;height:36px;font-size:22px}.body{padding:20px}.field{margin-bottom:16px}.field label{display:block;font-size:13px;font-weight:bold;margin-bottom:7px}.field input,.field textarea,.field select{width:100%;background:#181818;border:1px solid #3a3a3a;border-radius:9px;color:#fff;padding:12px;font-size:15px;outline:0}.field textarea{min-height:80px}.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}.product-picked{display:flex;gap:12px;background:#181818;padding:12px;border-radius:12px;margin-bottom:20px}.product-picked img{width:75px;height:75px;object-fit:cover;border-radius:9px}.gold{color:#d8a93d}.footer-actions{padding:16px 20px;border-top:1px solid #292929;display:flex;gap:10px}.cancel{flex:1;background:#222;color:#fff;border:0;border-radius:9px;padding:14px}.add{flex:2;background:#d8a93d;border:0;border-radius:9px;padding:14px;font-weight:bold}
-.cart{position:fixed;right:-430px;top:0;width:420px;max-width:92%;height:100vh;background:#111;z-index:400;border-left:1px solid #333;padding:22px;transition:.3s;overflow:auto}.cart.open{right:0}.cart-head{display:flex;justify-content:space-between;align-items:center}.cart-item{display:flex;gap:10px;padding:14px 0;border-bottom:1px solid #292929}.cart-item img{width:65px;height:65px;object-fit:cover;border-radius:8px}.cart-item small{color:#999;line-height:1.6}.remove{background:none;border:0;color:#777;padding:0}.checkout{width:100%;margin-top:18px}.empty{text-align:center;color:#777;padding:45px 0}
-footer{border-top:1px solid #222;color:#777;text-align:center;padding:35px 5%}
-@media(max-width:950px){.products{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.nav{flex-wrap:wrap}.search{order:3;flex-basis:100%}.products{grid-template-columns:1fr 1fr;gap:10px;padding-left:4%;padding-right:4%}.info{padding:12px}.info h2{font-size:16px}.info p{font-size:11px}.btn{font-size:12px;padding:11px 6px}.two{grid-template-columns:1fr}.hero{padding-top:45px}.hero h1{font-size:48px}}
+*{box-sizing:border-box}body{margin:0;background:#080808;color:#fff;font-family:Arial,sans-serif}
+header{position:sticky;top:0;z-index:5;background:#0d0d0d;border-bottom:1px solid #292929;padding:14px 20px;display:flex;gap:18px;align-items:center}
+.logo{font-weight:900;letter-spacing:5px;color:#e4b94f;white-space:nowrap}.search{flex:1;background:#171717;border:1px solid #444;border-radius:28px;padding:12px 18px;color:#ddd}
+.cartbtn{border:1px solid #555;background:#151515;color:#fff;border-radius:25px;padding:11px 16px}
+.wrap{max-width:1200px;margin:auto;padding:25px 18px}.cats{display:flex;gap:10px;overflow:auto;margin-bottom:25px}
+.cat{background:#121212;color:#fff;border:1px solid #444;border-radius:22px;padding:10px 20px}.cat.active{background:#e8bb4e;color:#111;border-color:#e8bb4e}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+.card{background:#111;border:1px solid #333;border-radius:18px;overflow:hidden}.card img{width:100%;aspect-ratio:1/1;object-fit:cover;background:#222}.info{padding:15px}.tag{font-size:11px;letter-spacing:3px;color:#e8bb4e;font-weight:bold}.name{font-size:20px;font-weight:bold;margin:8px 0}.desc{color:#aaa;font-size:14px;min-height:38px}.price{font-size:19px;font-weight:bold;margin:14px 0}.btn{width:100%;border:0;border-radius:25px;background:#f0bf49;color:#111;padding:13px;font-weight:bold;cursor:pointer}
+.overlay{display:none;position:fixed;inset:0;background:#000b;z-index:10;align-items:center;justify-content:center;padding:18px}.modal{background:#111;border:1px solid #444;border-radius:20px;width:min(620px,100%);max-height:90vh;overflow:auto;padding:22px}.close{float:right;background:none;color:#fff;border:0;font-size:28px}.modal h2{margin-top:0}.field{width:100%;padding:12px;margin:7px 0 12px;background:#181818;border:1px solid #444;color:#fff;border-radius:10px}.summary{background:#181818;border-radius:12px;padding:15px;margin:12px 0}.qr{display:block;width:min(330px,90%);margin:15px auto;border-radius:12px;background:#fff}.muted{color:#aaa;font-size:13px}.total{font-size:22px;font-weight:bold;color:#f0bf49}
 </style>
 </head>
 <body>
+<header>
+<div class="logo">REQOO.CO</div>
+<input id="search" class="search" placeholder="Cari plaque, trophy, medal...">
+<button class="cartbtn" onclick="openCart()">🛒 <span id="cartCount">0</span></button>
+</header>
 
-<header><div class="nav">
-<div class="logo">REQOO<span>.CO</span></div>
-<input id="search" class="search" placeholder="Cari plaque, trophy, medal..." oninput="searchProducts()">
-<button class="cart-btn" onclick="openCart()">🛒 <span id="count">0</span></button>
-</div></header>
-
-<section class="hero">
-<div class="small">REQOO.CO SHOP</div>
-<h1>Custom made.<br><span>Just for you.</span></h1>
-<p>Pilih produk, customize tempahan dan checkout. Untuk versi percuma ini, bayaran dibuat melalui bank transfer dan butiran order dihantar terus ke WhatsApp.</p>
-</section>
-
-<div class="categories">
+<main class="wrap">
+<div class="cats">
 <button class="cat active" onclick="filterCat('Semua',this)">Semua</button>
 <button class="cat" onclick="filterCat('Plaque',this)">Plaque</button>
 <button class="cat" onclick="filterCat('Trophy',this)">Trophy</button>
 <button class="cat" onclick="filterCat('Medal',this)">Medal</button>
 <button class="cat" onclick="filterCat('Brooch',this)">Brooch</button>
 </div>
+<div id="grid" class="grid"></div>
+</main>
 
-<section id="products" class="products"></section>
-
-<!-- CUSTOMIZE -->
-<div id="customOverlay" class="overlay" onclick="outsideClose(event)">
+<div id="customOverlay" class="overlay">
 <div class="modal">
-<div class="head"><h2>Customize Produk</h2><button class="x" onclick="closeCustom()">×</button></div>
-<div class="body">
-<div class="product-picked"><img id="pickedImg"><div><div id="pickedCat" class="gold"></div><h3 id="pickedName"></h3><b class="gold">Dari RM<span id="pickedPrice"></span></b></div></div>
-<div class="field"><label>Nama / Tajuk *</label><input id="custName" placeholder="Contoh: Ahmad bin Ali"></div>
-<div class="field"><label>Teks / Tulisan</label><textarea id="custText" placeholder="Masukkan teks yang ingin diukir..."></textarea></div>
-<div class="field"><label>Logo / Gambar</label><input id="custLogo" type="file" accept="image/*"></div>
-<div class="two">
-<div class="field"><label>Kuantiti</label><input id="qty" type="number" min="1" value="1" oninput="updateCustomTotal()"></div>
-<div class="field"><label>Kemasan</label><select id="finish"><option>Standard</option><option>Premium</option><option>Urgent</option></select></div>
+<button class="close" onclick="closeCustom()">×</button>
+<h2 id="customTitle">Customize Produk</h2>
+<p class="muted">Masukkan maklumat tempahan.</p>
+<input id="customName" class="field" placeholder="Nama / teks custom">
+<input id="customQty" class="field" type="number" min="1" value="1" placeholder="Kuantiti">
+<textarea id="customNote" class="field" rows="4" placeholder="Nota / ukuran / design / permintaan khas"></textarea>
+<button class="btn" onclick="addCustomToCart()">Tambah ke Cart</button>
 </div>
-<div class="field"><label>Nota tambahan</label><textarea id="custNote" placeholder="Saiz, warna, tarikh event, kemasan..."></textarea></div>
-<div style="display:flex;justify-content:space-between;background:#181818;padding:14px;border-radius:10px;font-weight:bold">Anggaran jumlah <span class="gold">RM<span id="customTotal">0</span></span></div>
 </div>
-<div class="footer-actions"><button class="cancel" onclick="closeCustom()">Batal</button><button class="add" onclick="addToCart()">Tambah ke Cart</button></div>
-</div></div>
 
-<!-- CART -->
-<div id="cart" class="cart">
-<div class="cart-head"><h2>Cart</h2><button class="x" onclick="closeCart()">×</button></div>
+<div id="cartOverlay" class="overlay">
+<div class="modal">
+<button class="close" onclick="closeCart()">×</button>
+<h2>Cart</h2>
 <div id="cartItems"></div>
-<div style="font-size:21px;font-weight:bold;margin-top:20px">Jumlah: RM<span id="cartTotal">0</span></div>
-<button class="btn checkout" onclick="openCheckout()">Checkout</button>
+<div class="summary"><div class="total">Jumlah: RM<span id="cartTotal">0.00</span></div></div>
+<button class="btn" onclick="checkout()">Checkout</button>
+</div>
 </div>
 
-<!-- CHECKOUT -->
 <div id="checkoutOverlay" class="overlay">
 <div class="modal">
-<div class="head"><h2>Checkout</h2><button class="x" onclick="closeCheckout()">×</button></div>
-<div class="body">
-<div class="field"><label>Nama penuh *</label><input id="buyerName" placeholder="Nama pelanggan"></div>
-<div class="two">
-<div class="field"><label>No. telefon *</label><input id="buyerPhone" type="tel" placeholder="01xxxxxxxx"></div>
-<div class="field"><label>Emel</label><input id="buyerEmail" type="email" placeholder="nama@email.com"></div>
-</div>
-<div class="field"><label>Alamat penghantaran *</label><textarea id="buyerAddress" placeholder="Alamat penuh"></textarea></div>
-<div class="two">
-<div class="field"><label>Poskod *</label><input id="postcode" placeholder="43000"></div>
-<div class="field"><label>Negeri *</label><select id="state"><option>Selangor</option><option>Kuala Lumpur</option><option>Putrajaya</option><option>Johor</option><option>Perak</option><option>Penang</option><option>Kedah</option><option>Kelantan</option><option>Terengganu</option><option>Pahang</option><option>Negeri Sembilan</option><option>Melaka</option><option>Perlis</option><option>Sabah</option><option>Sarawak</option></select></div>
-</div>
-<div class="field"><label>Kaedah penghantaran</label><select id="shipping" onchange="updateCheckoutTotal()"><option value="10">Courier — RM10</option><option value="0">Pickup — RM0</option></select></div>
-<div class="field"><label>Kaedah bayaran</label><select id="payment"><option>Bank Transfer</option><option>DuitNow selepas order disahkan</option></select></div>
-<div style="background:#181818;padding:15px;border-radius:10px;line-height:1.8">
-<div>Subtotal: RM<span id="checkoutSubtotal">0</span></div>
-<div>Shipping: RM<span id="shippingTotal">10</span></div>
-<b style="font-size:20px">Jumlah: RM<span id="checkoutTotal">10</span></b>
+<button class="close" onclick="closeCheckout()">×</button>
+<h2>Checkout</h2>
+<input id="custName" class="field" placeholder="Nama">
+<input id="custPhone" class="field" placeholder="No. WhatsApp">
+<textarea id="custAddress" class="field" rows="3" placeholder="Alamat penghantaran"></textarea>
+<div class="summary"><b>No. Order</b><div id="orderNo" style="font-size:20px;font-weight:bold;color:#f0bf49;margin:6px 0 12px"></div><b>Jumlah perlu dibayar</b><div class="total">RM<span id="payTotal">0.00</span></div></div>
+<h3>Bayar melalui Maybank QR</h3>
+<p class="muted">Scan QR di bawah menggunakan aplikasi bank anda. Selepas pembayaran, tekan butang “Saya Dah Bayar”.</p>
+<img class="qr" src="assets/qr-maybank.png" alt="Maybank QR">
+<button class="btn" onclick="paidWhatsApp()">Saya Dah Bayar — Hantar Order WhatsApp</button>
 </div>
 </div>
-<div class="footer-actions"><button class="cancel" onclick="closeCheckout()">Kembali</button><button class="add" onclick="placeOrder()">Hantar Order WhatsApp</button></div>
-</div></div>
-
-<footer>© REQOO.CO — Plaque • Trophy • Medal • Brooch • Hadiah Custom</footer>
 
 <script>
 const products=[
-{name:"Plaque Custom",cat:"Plaque",price:35,img:"product-1.jpg"},
-{name:"Plaque Penghargaan",cat:"Plaque",price:45,img:"product-2.jpg"},
-{name:"Plaque Nama",cat:"Plaque",price:35,img:"product-3.jpg"},
-{name:"Trophy Custom",cat:"Trophy",price:45,img:"product-4.jpg"},
-{name:"Medal Custom",cat:"Medal",price:8,img:"product-5.jpg"},
-{name:"Brooch Custom",cat:"Brooch",price:5,img:"product-6.jpg"},
-{name:"Plaque Kayu",cat:"Plaque",price:40,img:"product-7.jpg"},
-{name:"Award Custom",cat:"Trophy",price:50,img:"product-8.jpg"}
+{id:1,cat:"Plaque",name:"Plaque Penghargaan",price:45,img:"product-1.jpg",desc:"Sesuai untuk anugerah, penghargaan dan majlis."},
+{id:2,cat:"Plaque",name:"Plaque Nama",price:35,img:"product-2.jpg",desc:"Personalised plaque dengan nama pilihan anda."},
+{id:3,cat:"Plaque",name:"Plaque Custom",price:35,img:"product-3.jpg",desc:"Custom nama, logo, teks dan design."},
+{id:4,cat:"Trophy",name:"Trophy Custom",price:45,img:"product-4.jpg",desc:"Custom nama, logo, teks dan design."},
+{id:5,cat:"Trophy",name:"Trophy Event",price:50,img:"product-5.jpg",desc:"Untuk kejohanan, acara dan pertandingan."},
+{id:6,cat:"Medal",name:"Medal Custom",price:8,img:"product-6.jpg",desc:"Medal custom untuk acara dan pertandingan."},
+{id:7,cat:"Brooch",name:"Brooch Custom",price:6,img:"product-7.jpg",desc:"Custom logo dan design pilihan pelanggan."},
+{id:8,cat:"Brooch",name:"Brooch Premium",price:12,img:"product-8.jpg",desc:"Brooch premium untuk corporate dan event."}
 ];
+let cart=JSON.parse(localStorage.getItem("reqooCart")||"[]"), current=null, activeCat="Semua";
 
-let cart=[];
-let selected=null;
-
-function render(list=products){
-document.getElementById("products").innerHTML=list.map((p,i)=>`
-<article class="card" data-name="${p.name}" data-cat="${p.cat}">
-<img src="${p.img}" alt="${p.name}">
-<div class="info"><div class="tag">${p.cat.toUpperCase()}</div><h2>${p.name}</h2><p>Custom nama, logo, teks dan design pilihan pelanggan.</p><div class="price">Dari RM${p.price}</div>
-<button class="btn" onclick="openCustom(${products.indexOf(p)})">Customize</button></div>
-</article>`).join("");
+function render(){
+ const q=document.getElementById("search").value.toLowerCase();
+ const list=products.filter(p=>(activeCat==="Semua"||p.cat===activeCat)&&
+ (p.name.toLowerCase().includes(q)||p.cat.toLowerCase().includes(q)));
+ document.getElementById("grid").innerHTML=list.map(p=>`
+ <div class="card">
+ <img src="${p.img}" onerror="this.style.display='none'" alt="">
+ <div class="info"><div class="tag">${p.cat.toUpperCase()}</div><div class="name">${p.name}</div>
+ <div class="desc">${p.desc}</div><div class="price">Dari RM${p.price}</div>
+ <button class="btn" onclick="customize(${p.id})">Customize</button></div></div>`).join("");
+ updateCount();
 }
-function openCustom(i){
-selected=products[i];
-pickedImg.src=selected.img;pickedCat.textContent=selected.cat.toUpperCase();pickedName.textContent=selected.name;pickedPrice.textContent=selected.price;
-custName.value="";custText.value="";custNote.value="";custLogo.value="";qty.value=1;finish.value="Standard";updateCustomTotal();
-customOverlay.classList.add("show");
+function filterCat(c,b){activeCat=c;document.querySelectorAll(".cat").forEach(x=>x.classList.remove("active"));b.classList.add("active");render()}
+document.getElementById("search").addEventListener("input",render);
+function customize(id){current=products.find(p=>p.id===id);document.getElementById("customTitle").textContent="Customize — "+current.name;document.getElementById("customOverlay").style.display="flex"}
+function closeCustom(){document.getElementById("customOverlay").style.display="none"}
+function addCustomToCart(){
+ const qty=Math.max(1,parseInt(document.getElementById("customQty").value)||1);
+ cart.push({id:Date.now(),product:current.name,cat:current.cat,price:current.price,qty,
+ custom:document.getElementById("customName").value||"-",note:document.getElementById("customNote").value||"-"});
+ localStorage.setItem("reqooCart",JSON.stringify(cart));closeCustom();openCart();
 }
-function closeCustom(){customOverlay.classList.remove("show")}
-function outsideClose(e){if(e.target===customOverlay)closeCustom()}
-function updateCustomTotal(){customTotal.textContent=(selected?selected.price*(parseInt(qty.value)||1):0)}
-function addToCart(){
-if(!custName.value.trim()){alert("Sila masukkan nama / tajuk dahulu.");return}
-const q=Math.max(1,parseInt(qty.value)||1);
-cart.push({product:selected,name:custName.value.trim(),text:custText.value.trim(),note:custNote.value.trim(),finish:finish.value,qty:q,logo:custLogo.files.length>0,total:selected.price*q});
-updateCart();closeCustom();openCart();
+function updateCount(){document.getElementById("cartCount").textContent=cart.reduce((a,x)=>a+x.qty,0)}
+function total(){return cart.reduce((a,x)=>a+x.price*x.qty,0)}
+function openCart(){renderCart();document.getElementById("cartOverlay").style.display="flex"}
+function closeCart(){document.getElementById("cartOverlay").style.display="none"}
+function renderCart(){
+ document.getElementById("cartItems").innerHTML=cart.length?cart.map((x,i)=>`
+ <div class="summary"><b>${x.product}</b> × ${x.qty}<br>Custom: ${x.custom}<br>Nota: ${x.note}
+ <br><b>RM${(x.price*x.qty).toFixed(2)}</b><br><button onclick="removeItem(${i})">Buang</button></div>`).join(""):"Cart kosong.";
+ document.getElementById("cartTotal").textContent=total().toFixed(2);updateCount()
 }
-function updateCart(){
-let total=0;
-if(!cart.length){cartItems.innerHTML='<div class="empty">Cart masih kosong.</div>'}
-else{
-cartItems.innerHTML=cart.map((x,i)=>{total+=x.total;return `<div class="cart-item"><img src="${x.product.img}"><div><b>${x.product.name}</b><br><small>Nama: ${x.name}<br>Kuantiti: ${x.qty}<br>Kemasan: ${x.finish}${x.logo?"<br>✓ Logo dipilih":""}${x.note?"<br>Nota: "+x.note:""}</small><br><button class="remove" onclick="removeItem(${i})">Buang</button></div></div>`}).join("");
+function removeItem(i){cart.splice(i,1);localStorage.setItem("reqooCart",JSON.stringify(cart));renderCart()}
+function checkout(){
+ if(!cart.length)return alert("Cart kosong.");
+ const orderNo="RQ"+new Date().toISOString().replace(/\\D/g,"").slice(2,14)+Math.floor(Math.random()*90+10);
+ sessionStorage.setItem("reqooOrderNo",orderNo);
+ document.getElementById("orderNo").textContent=orderNo;
+ document.getElementById("payTotal").textContent=total().toFixed(2);
+ closeCart();document.getElementById("checkoutOverlay").style.display="flex";
 }
-cartTotal.textContent=total;count.textContent=cart.length;
+function closeCheckout(){document.getElementById("checkoutOverlay").style.display="none"}
+function paidWhatsApp(){
+ const n=document.getElementById("custName").value.trim(), ph=document.getElementById("custPhone").value.trim(), ad=document.getElementById("custAddress").value.trim();
+ if(!n||!ph){alert("Sila isi nama dan no. WhatsApp.");return}
+ let orderNo=sessionStorage.getItem("reqooOrderNo")||("RQ"+Date.now());\n let msg="*ORDER REQOO.CO*%0A*No. Order: "+orderNo+"*%0A%0A";
+ cart.forEach((x,i)=>msg+=(i+1)+". "+x.product+" x"+x.qty+" — RM"+(x.price*x.qty).toFixed(2)+"%0ACustom: "+encodeURIComponent(x.custom)+"%0ANota: "+encodeURIComponent(x.note)+"%0A%0A");
+ msg+="*Jumlah: RM"+total().toFixed(2)+"*%0A%0ANama: "+encodeURIComponent(n)+"%0AWhatsApp: "+encodeURIComponent(ph)+"%0AAlamat: "+encodeURIComponent(ad)+"%0A%0APembayaran: Maybank QR — sila hantar bukti pembayaran bersama order ini.";
+ window.open("https://wa.me/60165192803?text="+msg,"_blank");
 }
-function removeItem(i){cart.splice(i,1);updateCart()}
-function openCart(){updateCart();cartEl=document.getElementById("cart");cartEl.classList.add("open")}
-function closeCart(){document.getElementById("cart").classList.remove("open")}
-function openCheckout(){if(!cart.length){alert("Cart masih kosong.");return}closeCart();updateCheckoutTotal();checkoutOverlay.classList.add("show")}
-function closeCheckout(){checkoutOverlay.classList.remove("show")}
-function updateCheckoutTotal(){
-let sub=cart.reduce((s,x)=>s+x.total,0),ship=parseFloat(shipping.value)||0;
-checkoutSubtotal.textContent=sub;shippingTotal.textContent=ship;checkoutTotal.textContent=sub+ship;
-}
-function placeOrder(){
-if(!buyerName.value.trim()||!buyerPhone.value.trim()||!buyerAddress.value.trim()||!postcode.value.trim()){alert("Sila lengkapkan nama, telefon dan alamat penghantaran.");return}
-let sub=cart.reduce((s,x)=>s+x.total,0),ship=parseFloat(shipping.value)||0,total=sub+ship;
-let msg=`Assalamualaikum REQOO.CO%0A%0AORDER BARU%0A%0A`;
-msg+=`Nama: ${buyerName.value}%0ATelefon: ${buyerPhone.value}%0A`;
-msg+=`Alamat: ${buyerAddress.value}, ${postcode.value}, ${state.value}%0A`;
-msg+=`Penghantaran: ${shipping.options[shipping.selectedIndex].text}%0ABayaran: ${payment.value}%0A%0A`;
-cart.forEach((x,i)=>{msg+=`${i+1}. ${x.product.name}%0ANama/Tajuk: ${x.name}%0ATeks: ${x.text||"-"}%0AKuantiti: ${x.qty}%0AKemasan: ${x.finish}%0A${x.logo?"Logo: akan dihantar dalam WhatsApp%0A":""}${x.note?"Nota: "+x.note+"%0A":""}Jumlah item: RM${x.total}%0A%0A`});
-msg+=`Subtotal: RM${sub}%0APenghantaran: RM${ship}%0AJUMLAH: RM${total}%0A%0AMohon sahkan order dan beri butiran pembayaran. Terima kasih.`;
-window.open("https://wa.me/60165192803?text="+msg,"_blank");
-}
-function filterCat(cat,btn){
-document.querySelectorAll(".cat").forEach(x=>x.classList.remove("active"));btn.classList.add("active");
-document.querySelectorAll(".card").forEach(c=>c.style.display=(cat==="Semua"||c.dataset.cat===cat)?"":"none");
-}
-function searchProducts(){
-const q=search.value.toLowerCase();
-document.querySelectorAll(".card").forEach(c=>c.style.display=c.dataset.name.toLowerCase().includes(q)?"":"none");
-}
-render();updateCart();
+render();
 </script>
 </body>
 </html>
