@@ -1,0 +1,639 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Shop REQOO.CO — Produk Custom</title>
+<meta name="description" content="Plaque, trophy, medal, brooch dan hadiah custom REQOO.CO.">
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#070707;color:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.wrap{width:min(1180px,calc(100% - 30px));margin:auto}
+
+header{position:sticky;top:0;z-index:5;background:#080808ed;border-bottom:1px solid #252525;backdrop-filter:blur(14px)}
+nav{height:68px;display:flex;align-items:center;gap:16px}
+.logo{font-weight:900;letter-spacing:4px}
+.gold{color:#d9b45e}
+.search{flex:1}
+.search input{width:100%;padding:12px 16px;border-radius:999px;border:1px solid #333;background:#111;color:#fff}
+.cart{background:#111;color:#fff;border:1px solid #333;border-radius:999px;padding:10px 15px}
+
+.hero{padding:55px 0 25px;background:radial-gradient(circle at 85% 15%,#d9b45e22,transparent 33%)}
+.eyebrow{font-size:10px;letter-spacing:3px;color:#d9b45e;font-weight:800}
+h1{font-size:clamp(42px,7vw,72px);line-height:.95;letter-spacing:-4px;margin:14px 0}
+.hero p{color:#aaa;line-height:1.7;max-width:620px}
+
+.cats{display:flex;gap:9px;overflow:auto;padding:10px 0 25px}
+.cat{white-space:nowrap;background:#111;color:#ddd;border:1px solid #333;border-radius:999px;padding:10px 17px}
+.active{background:#d9b45e!important;color:#080808!important}
+
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;padding-bottom:80px}
+.card{background:#101010;border:1px solid #242424;border-radius:20px;overflow:hidden;transition:.2s}
+.card:hover{transform:translateY(-4px);border-color:#705d32}
+.pic{aspect-ratio:1}
+.pic img{width:100%;height:100%;object-fit:cover}
+.body{padding:16px}
+.tag{font-size:9px;letter-spacing:2px;color:#d9b45e;font-weight:800}
+.body h3{font-size:17px;margin:8px 0}
+.desc{font-size:12px;color:#999;min-height:36px}
+.price{font-weight:900;margin:12px 0}
+.btn{width:100%;border:0;border-radius:999px;padding:11px;background:#d9b45e;color:#080808;font-weight:900}
+
+.drawer{position:fixed;z-index:20;right:-430px;top:0;width:min(420px,100%);height:100%;background:#0b0b0b;border-left:1px solid #333;padding:24px;transition:.3s;overflow:auto}
+.drawer.open{right:0}
+.close{float:right;border:0;background:#222;color:#fff;border-radius:50%;width:32px;height:32px}
+.item{display:flex;gap:10px;padding:14px 0;border-bottom:1px solid #222}
+.item img{width:64px;height:64px;object-fit:cover;border-radius:10px}
+.item small{color:#999;line-height:1.6}
+.wa{width:100%;border:0;border-radius:999px;background:#d9b45e;color:#070707;padding:14px;font-weight:900;margin-top:18px}
+
+.modal{position:fixed;inset:0;background:#000b;z-index:30;display:none;align-items:center;justify-content:center;padding:16px}
+.modal.open{display:flex}
+.box{width:min(720px,100%);max-height:92vh;overflow:auto;background:#111;border:1px solid #333;border-radius:24px;padding:20px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.two img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:16px}
+label{display:block;color:#aaa;font-size:11px;margin:12px 0 6px}
+input,textarea{width:100%;background:#080808;border:1px solid #333;color:#fff;border-radius:10px;padding:11px}
+
+.uploadbox{border:1px dashed #5b4b2a;border-radius:14px;padding:13px;background:#0a0a0a;margin-top:10px}
+.uploadbox input{border:0;padding:8px 0;background:transparent}
+.preview{margin-top:14px;border:1px solid #333;border-radius:14px;overflow:hidden;background:#171717;min-height:180px;display:flex;align-items:center;justify-content:center;position:relative}
+.preview img{max-width:100%;max-height:300px;display:block;object-fit:contain}
+.mockup{position:relative;width:100%;max-width:420px;aspect-ratio:1.45/1;background:linear-gradient(135deg,#6c4c2d,#cda76b 48%,#5c3f27);border-radius:7px;box-shadow:0 16px 35px #0008;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.mockup:before{content:"";position:absolute;inset:10px;border:2px solid #ead8a0;border-radius:4px;opacity:.65}
+.mocktext{position:relative;z-index:2;color:#21180e;text-align:center;font-weight:900;font-size:clamp(18px,4vw,30px);padding:20px;word-break:break-word}
+.mocklogo{position:absolute;z-index:3;left:50%;top:18%;transform:translateX(-50%);max-width:80px;max-height:55px;object-fit:contain;display:none}
+.filehint{font-size:10px;color:#888;margin-top:5px}
+
+footer{border-top:1px solid #222;color:#888;padding:35px 0}
+
+@media(max-width:900px){
+.grid{grid-template-columns:repeat(2,1fr)}
+}
+
+@media(max-width:600px){
+nav{height:62px;gap:8px}
+.logo{font-size:13px;letter-spacing:3px}
+.search input{padding:9px 11px}
+.cart{padding:9px 11px}
+.hero{padding:42px 0 25px}
+h1{font-size:48px}
+.grid{gap:10px}
+.body{padding:12px}
+.body h3{font-size:14px}
+.desc{font-size:11px}
+.price{font-size:14px}
+.btn{font-size:12px}
+.two{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="wrap">
+<nav>
+<a class="logo" href="/">REQOO<span class="gold">.CO</span></a>
+
+<div class="search">
+<input id="q" placeholder="Cari plaque, trophy, medal...">
+</div>
+
+<button class="cart" type="button">🛒 <b id="cc">0</b></button>
+</nav>
+</div>
+</header>
+
+<section class="hero">
+<div class="wrap">
+<div class="eyebrow">REQOO.CO SHOP</div>
+
+<h1>
+Custom made.<br>
+<span class="gold">Just for you.</span>
+</h1>
+
+<p>
+Pilih produk, customize tempahan dan kumpulkan dalam cart.
+Untuk V1, checkout terus melalui WhatsApp.
+</p>
+
+</div>
+</section>
+
+<main class="wrap">
+<div id="cats" class="cats"></div>
+<div id="grid" class="grid"></div>
+</main>
+
+<footer>
+<div class="wrap">
+© REQOO.CO — Plaque • Trophy • Medal • Brooch • Hadiah Custom
+</div>
+</footer>
+
+<div id="drawer" class="drawer">
+<button class="close" type="button">×</button>
+<h2>Cart</h2>
+<div id="items"></div>
+<button class="wa" type="button">Order melalui WhatsApp</button>
+</div>
+
+<div id="modal" class="modal">
+<div class="box">
+<button class="close" type="button">×</button>
+<div id="form"></div>
+</div>
+</div>
+
+<script>
+
+const PRODUCTS = [
+{
+id:1,
+name:"Plaque Custom",
+category:"Plaque",
+price:"Dari RM35",
+desc:"Custom nama, logo, teks dan design pilihan pelanggan",
+image:"assets/product-1.jpg"
+},
+{
+id:2,
+name:"Trophy Custom",
+category:"Trophy",
+price:"Dari RM45",
+desc:"Custom nama, logo, teks dan design pilihan pelanggan",
+image:"assets/product-2.jpg"
+},
+{
+id:3,
+name:"Medal Custom",
+category:"Medal",
+price:"Dari RM8",
+desc:"Custom nama, logo, teks dan design pilihan pelanggan",
+image:"assets/product-3.jpg"
+},
+{
+id:4,
+name:"Brooch Custom",
+category:"Brooch",
+price:"Dari RM6",
+desc:"Custom nama, logo, teks dan design pilihan pelanggan",
+image:"assets/product-4.jpg"
+},
+{
+id:5,
+name:"Plaque Penghargaan",
+category:"Plaque",
+price:"Dari RM45",
+desc:"Custom nama, logo, teks dan design pilihan pelanggan",
+image:"assets/product-5.jpg"
+},
+{
+id:6,
+name:"Trophy Event",
+category:"Trophy",
+price:"Dari RM50",
+desc:"Custom nama, logo, teks dan design pilihan pelanggan",
+image:"assets/product-6.jpg"
+},
+{
+id:7,
+name:"Plaque Nama",
+category:"Plaque",
+price:"Dari RM35",
+desc:"Custom nama, logo, teks dan design pilihan pelanggan",
+image:"assets/product-7.jpg"
+},
+{
+id:8,
+name:"Brooch Premium",
+category:"Brooch",
+price:"Dari RM8",
+desc:"Custom nama, logo, teks dan design pilihan pelanggan",
+image:"assets/product-8.jpg"
+}
+];
+
+let currentCategory="Semua";
+let cart=[];
+
+const $=id=>document.getElementById(id);
+
+function renderCategories(){
+
+const categories=[
+"Semua",
+...new Set(PRODUCTS.map(p=>p.category))
+];
+
+$("cats").innerHTML="";
+
+categories.forEach(category=>{
+
+const b=document.createElement("button");
+
+b.className=
+"cat"+
+(category===currentCategory?" active":"");
+
+b.textContent=category;
+
+b.addEventListener("click",()=>{
+
+currentCategory=category;
+render();
+
+});
+
+$("cats").appendChild(b);
+
+});
+
+}
+
+function render(){
+
+renderCategories();
+
+const q=$("q").value.trim().toLowerCase();
+
+const list=PRODUCTS.filter(p=>
+(currentCategory==="Semua"||
+p.category===currentCategory)&&
+(!q||
+(p.name+" "+p.category+" "+p.desc)
+.toLowerCase()
+.includes(q))
+);
+
+$("grid").innerHTML="";
+
+list.forEach(p=>{
+
+const card=document.createElement("article");
+
+card.className="card";
+
+card.innerHTML=
+'<div class="pic">'+
+'<img src="'+p.image+'" alt="'+p.name+'">'+
+'</div>'+
+'<div class="body">'+
+'<div class="tag">'+
+p.category.toUpperCase()+
+'</div>'+
+'<h3>'+p.name+'</h3>'+
+'<div class="desc">'+
+p.desc+
+'</div>'+
+'<div class="price">'+
+p.price+
+'</div>'+
+'<button class="btn customizeBtn" type="button">'+
+'Customize'+
+'</button>'+
+'</div>';
+
+card
+.querySelector(".customizeBtn")
+.addEventListener("click",()=>{
+openCustomize(p);
+});
+
+$("grid").appendChild(card);
+
+});
+
+}
+
+function openCustomize(product){
+
+$("form").innerHTML=
+
+'<div class="two">'+
+
+'<div>'+
+
+'<img src="'+product.image+'" '+
+'style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:16px">'+
+
+'<div class="preview">'+
+
+'<div class="mockup">'+
+
+'<img id="logoPreview" class="mocklogo" alt="Logo preview">'+
+
+'<div id="textPreview" class="mocktext">'+
+'Nama Anda'+
+'</div>'+
+
+'</div>'+
+'</div>'+
+
+'</div>'+
+
+'<div>'+
+
+'<div class="tag">'+
+product.category.toUpperCase()+
+'</div>'+
+
+'<h2>'+product.name+'</h2>'+
+
+'<p style="color:#aaa">'+
+product.desc+
+'</p>'+
+
+'<label>Nama / teks</label>'+
+
+'<input id="nm" '+
+'placeholder="Contoh: Anugerah Kecemerlangan">'+
+
+'<label>Kuantiti</label>'+
+
+'<input id="qt" type="number" min="1" value="1">'+
+
+'<label>Upload logo / gambar</label>'+
+
+'<div class="uploadbox">'+
+
+'<input id="logo" type="file" '+
+'accept="image/png,image/jpeg,image/webp">'+
+
+'<div class="filehint">'+
+'PNG / JPG / WEBP'+
+'</div>'+
+
+'</div>'+
+
+'<label>Nota / idea custom</label>'+
+
+'<textarea id="nt" rows="4" '+
+'placeholder="Saiz, warna, tarikh event, kemasan...">'+
+'</textarea>'+
+
+'<br><br>'+
+
+'<button id="addBtn" class="btn" type="button">'+
+'Tambah ke Cart'+
+'</button>'+
+
+'</div>'+
+'</div>';
+
+$("nm").addEventListener("input",()=>{
+
+$("textPreview").textContent=
+$("nm").value.trim()||
+"Nama Anda";
+
+});
+
+$("logo").addEventListener("change",e=>{
+
+const file=
+e.target.files&&e.target.files[0];
+
+if(!file)return;
+
+const img=$("logoPreview");
+
+img.src=URL.createObjectURL(file);
+
+img.style.display="block";
+
+});
+
+$("addBtn").addEventListener(
+"click",
+()=>addToCart(product)
+);
+
+$("modal").classList.add("open");
+
+}
+
+function addToCart(product){
+
+const file=
+$("logo").files&&$("logo").files[0];
+
+const item={
+
+product:product,
+
+qty:Math.max(
+1,
+parseInt($("qt").value||"1",10)
+),
+
+name:$("nm").value.trim(),
+
+note:$("nt").value.trim(),
+
+logo:!!file
+
+};
+
+cart.push(item);
+
+closeModal();
+
+updateCart();
+
+openCart();
+
+}
+
+function updateCart(){
+
+$("cc").textContent=
+cart.reduce(
+(sum,item)=>sum+item.qty,
+0
+);
+
+$("items").innerHTML="";
+
+if(!cart.length){
+
+$("items").innerHTML=
+'<p style="color:#999">'+
+'Cart masih kosong.'+
+'</p>';
+
+return;
+
+}
+
+cart.forEach((item,index)=>{
+
+const div=document.createElement("div");
+
+div.className="item";
+
+div.innerHTML=
+
+'<img src="'+
+item.product.image+
+'">'+
+
+'<div><b>'+
+item.product.name+
+'</b>'+
+
+'<small><br>Kuantiti: '+
+item.qty+
+
+(item.name?
+'<br>Nama: '+item.name:
+'')+
+
+(item.logo?
+'<br>✓ Logo/gambar dipilih':
+'')+
+
+(item.note?
+'<br>Nota: '+item.note:
+'')+
+
+'</small><br>'+
+
+'<button type="button" '+
+'class="removeItem">'+
+'Buang'+
+'</button>'+
+
+'</div>';
+
+div
+.querySelector(".removeItem")
+.addEventListener("click",()=>{
+
+cart.splice(index,1);
+
+updateCart();
+
+});
+
+$("items").appendChild(div);
+
+});
+
+}
+
+function openCart(){
+
+updateCart();
+
+$("drawer")
+.classList
+.add("open");
+
+}
+
+function closeCart(){
+
+$("drawer")
+.classList
+.remove("open");
+
+}
+
+function closeModal(){
+
+$("modal")
+.classList
+.remove("open");
+
+}
+
+$("q").addEventListener(
+"input",
+render
+);
+
+document
+.querySelector("#drawer .close")
+.addEventListener(
+"click",
+closeCart
+);
+
+document
+.querySelector("#modal .close")
+.addEventListener(
+"click",
+closeModal
+);
+
+document
+.querySelector(".cart")
+.addEventListener(
+"click",
+openCart
+);
+
+document
+.querySelector(".wa")
+.addEventListener(
+"click",
+()=>{
+
+if(!cart.length)return;
+
+let text=
+"Assalamualaikum, saya nak buat tempahan REQOO.CO\n\n";
+
+cart.forEach((item,i)=>{
+
+text+=
+(i+1)+
+". "+
+item.product.name+
+" — "+
+item.qty+
+" unit\n";
+
+if(item.name)
+text+=
+"Nama/teks: "+
+item.name+
+"\n";
+
+if(item.logo)
+text+=
+"Logo/gambar: saya akan lampirkan dalam WhatsApp\n";
+
+if(item.note)
+text+=
+"Nota: "+
+item.note+
+"\n";
+
+text+="\n";
+
+});
+
+text+=
+"Mohon semak harga dan design. Terima kasih.";
+
+window.open(
+"https://wa.me/60165192803?text="+
+encodeURIComponent(text),
+"_blank"
+);
+
+}
+);
+
+render();
+
+</script>
+
+</body>
+</html>
