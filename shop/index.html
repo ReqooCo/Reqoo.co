@@ -24,8 +24,8 @@ header{
   top:0;
   z-index:100;
   background:#0d0d0d;
-  border-bottom:1px solid #252525;
-  padding:18px 5%;
+  border-bottom:1px solid #292929;
+  padding:16px 5%;
 }
 
 .nav{
@@ -33,14 +33,13 @@ header{
   margin:auto;
   display:flex;
   align-items:center;
-  gap:20px;
+  gap:18px;
 }
 
 .logo{
   font-size:24px;
   font-weight:900;
   letter-spacing:5px;
-  color:#fff;
   white-space:nowrap;
 }
 
@@ -54,7 +53,7 @@ header{
   border:1px solid #333;
   border-radius:30px;
   padding:14px 20px;
-  color:white;
+  color:#fff;
   outline:none;
   font-size:15px;
 }
@@ -68,10 +67,12 @@ header{
   cursor:pointer;
 }
 
+/* HERO */
+
 .hero{
   max-width:1400px;
   margin:auto;
-  padding:70px 5% 45px;
+  padding:65px 5% 40px;
 }
 
 .small-title{
@@ -83,9 +84,8 @@ header{
 }
 
 .hero h1{
-  font-size:clamp(45px,7vw,90px);
+  font-size:clamp(48px,7vw,90px);
   line-height:.95;
-  max-width:900px;
 }
 
 .hero h1 span{
@@ -96,9 +96,11 @@ header{
   color:#aaa;
   font-size:18px;
   line-height:1.6;
-  max-width:700px;
+  max-width:750px;
   margin-top:25px;
 }
+
+/* CATEGORY */
 
 .categories{
   max-width:1400px;
@@ -125,6 +127,8 @@ header{
   color:#000;
   border-color:#d8a93d;
 }
+
+/* PRODUCTS */
 
 .products{
   max-width:1400px;
@@ -196,21 +200,17 @@ header{
   cursor:pointer;
 }
 
-.btn:hover{
-  background:#f0c65d;
-}
-
 /* CART */
 
 .cart{
   position:fixed;
-  right:-420px;
+  right:-430px;
   top:0;
-  width:400px;
-  max-width:90%;
+  width:420px;
+  max-width:92%;
   height:100vh;
   background:#111;
-  z-index:200;
+  z-index:300;
   border-left:1px solid #333;
   padding:25px;
   transition:.3s;
@@ -225,14 +225,14 @@ header{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin-bottom:25px;
+  margin-bottom:20px;
 }
 
 .close{
   background:none;
   border:0;
   color:#fff;
-  font-size:28px;
+  font-size:30px;
   cursor:pointer;
 }
 
@@ -244,8 +244,8 @@ header{
 }
 
 .cart-item img{
-  width:65px;
-  height:65px;
+  width:70px;
+  height:70px;
   object-fit:cover;
   border-radius:8px;
 }
@@ -255,8 +255,15 @@ header{
 }
 
 .cart-item p{
-  color:#d8a93d;
+  color:#aaa;
+  font-size:13px;
   margin-top:5px;
+}
+
+.cart-price{
+  color:#d8a93d !important;
+  font-size:16px !important;
+  font-weight:bold;
 }
 
 .total{
@@ -283,6 +290,193 @@ header{
   padding:50px 10px;
 }
 
+/* =========================
+   CUSTOMIZE WINDOW
+========================= */
+
+.modal-bg{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.78);
+  backdrop-filter:blur(5px);
+  z-index:500;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+
+.modal-bg.show{
+  display:flex;
+}
+
+.modal{
+  width:100%;
+  max-width:620px;
+  max-height:92vh;
+  overflow-y:auto;
+  background:#111;
+  border:1px solid #3a3a3a;
+  border-radius:20px;
+  box-shadow:0 20px 70px rgba(0,0,0,.7);
+}
+
+.modal-head{
+  position:sticky;
+  top:0;
+  z-index:2;
+  background:#111;
+  border-bottom:1px solid #292929;
+  padding:20px 22px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.modal-head h2{
+  font-size:22px;
+}
+
+.modal-close{
+  border:0;
+  background:#222;
+  color:#fff;
+  width:38px;
+  height:38px;
+  border-radius:50%;
+  font-size:24px;
+  cursor:pointer;
+}
+
+.modal-body{
+  padding:22px;
+}
+
+.selected-product{
+  display:flex;
+  gap:15px;
+  padding:12px;
+  background:#181818;
+  border-radius:12px;
+  margin-bottom:22px;
+}
+
+.selected-product img{
+  width:85px;
+  height:85px;
+  object-fit:cover;
+  border-radius:10px;
+}
+
+.selected-product small{
+  color:#d8a93d;
+  letter-spacing:2px;
+}
+
+.selected-product h3{
+  margin-top:6px;
+}
+
+.field{
+  margin-bottom:18px;
+}
+
+.field label{
+  display:block;
+  font-size:14px;
+  font-weight:bold;
+  margin-bottom:8px;
+}
+
+.field input,
+.field textarea,
+.field select{
+  width:100%;
+  background:#181818;
+  border:1px solid #3a3a3a;
+  border-radius:9px;
+  padding:13px;
+  color:#fff;
+  outline:none;
+  font-size:15px;
+}
+
+.field textarea{
+  min-height:90px;
+  resize:vertical;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus{
+  border-color:#d8a93d;
+}
+
+.two{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+}
+
+.upload-box{
+  border:1px dashed #555;
+  border-radius:10px;
+  padding:18px;
+  text-align:center;
+  color:#999;
+  cursor:pointer;
+}
+
+.upload-box:hover{
+  border-color:#d8a93d;
+}
+
+.upload-box input{
+  display:none;
+}
+
+.preview{
+  display:none;
+  margin-top:12px;
+  text-align:center;
+}
+
+.preview img{
+  max-width:180px;
+  max-height:140px;
+  border-radius:8px;
+}
+
+.modal-footer{
+  padding:18px 22px;
+  border-top:1px solid #292929;
+  display:flex;
+  gap:10px;
+}
+
+.cancel-btn{
+  flex:1;
+  background:#222;
+  color:#fff;
+  border:0;
+  border-radius:9px;
+  padding:14px;
+  cursor:pointer;
+}
+
+.add-btn{
+  flex:2;
+  background:#d8a93d;
+  color:#000;
+  border:0;
+  border-radius:9px;
+  padding:14px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+/* FOOTER */
+
 footer{
   border-top:1px solid #252525;
   padding:35px 5%;
@@ -293,12 +487,15 @@ footer{
 /* MOBILE */
 
 @media(max-width:1000px){
+
   .products{
     grid-template-columns:repeat(2,1fr);
   }
+
 }
 
 @media(max-width:600px){
+
   header{
     padding:12px 4%;
   }
@@ -354,417 +551,949 @@ footer{
 
   .btn{
     font-size:12px;
-    padding:11px 5px;
   }
+
+  .two{
+    grid-template-columns:1fr;
+    gap:0;
+  }
+
+  .modal{
+    max-height:95vh;
+  }
+
 }
+
 </style>
 </head>
 
 <body>
 
 <header>
-  <div class="nav">
 
-    <div class="logo">
-      REQOO<span>.CO</span>
-    </div>
+<div class="nav">
 
-    <input
-      id="search"
-      class="search"
-      type="text"
-      placeholder="Cari plaque, trophy, medal..."
-      onkeyup="searchProduct()"
-    >
-
-    <button class="cart-btn" onclick="toggleCart()">
-      🛒 <span id="cartCount">0</span>
-    </button>
-
+  <div class="logo">
+    REQOO<span>.CO</span>
   </div>
+
+  <input
+    id="search"
+    class="search"
+    type="text"
+    placeholder="Cari plaque, trophy, medal..."
+    onkeyup="searchProduct()"
+  >
+
+  <button class="cart-btn" onclick="toggleCart()">
+    🛒 <span id="cartCount">0</span>
+  </button>
+
+</div>
+
 </header>
 
 
 <section class="hero">
 
-  <div class="small-title">REQOO.CO SHOP</div>
+<div class="small-title">
+REQOO.CO SHOP
+</div>
 
-  <h1>
-    Custom made.<br>
-    <span>Just for you.</span>
-  </h1>
+<h1>
+Custom made.<br>
+<span>Just for you.</span>
+</h1>
 
-  <p>
-    Pilih produk, customize tempahan dan kumpulkan dalam cart.
-    Buat tempahan hadiah custom untuk individu, sekolah,
-    majlis, syarikat dan organisasi.
-  </p>
+<p>
+Pilih produk, customize tempahan dan kumpulkan dalam cart.
+Buat tempahan hadiah custom untuk individu, sekolah,
+majlis, syarikat dan organisasi.
+</p>
 
 </section>
 
 
 <div class="categories">
 
-  <button class="cat active" onclick="filterProduct('Semua',this)">
-    Semua
-  </button>
+<button class="cat active"
+onclick="filterProduct('Semua',this)">
+Semua
+</button>
 
-  <button class="cat" onclick="filterProduct('Plaque',this)">
-    Plaque
-  </button>
+<button class="cat"
+onclick="filterProduct('Plaque',this)">
+Plaque
+</button>
 
-  <button class="cat" onclick="filterProduct('Trophy',this)">
-    Trophy
-  </button>
+<button class="cat"
+onclick="filterProduct('Trophy',this)">
+Trophy
+</button>
 
-  <button class="cat" onclick="filterProduct('Medal',this)">
-    Medal
-  </button>
+<button class="cat"
+onclick="filterProduct('Medal',this)">
+Medal
+</button>
 
-  <button class="cat" onclick="filterProduct('Brooch',this)">
-    Brooch
-  </button>
+<button class="cat"
+onclick="filterProduct('Brooch',this)">
+Brooch
+</button>
 
 </div>
 
 
-<section class="products" id="products">
+<section class="products">
 
 
-<!-- PRODUCT 1 -->
+<!-- 1 -->
 
-<div class="card" data-category="Plaque" data-name="Plaque Custom">
+<div class="card"
+data-category="Plaque"
+data-name="Plaque Custom">
 
-  <img
-    class="product-img"
-    src="product-1.jpg"
-    alt="Plaque Custom"
-  >
+<img
+class="product-img"
+src="product-1.jpg"
+alt="Plaque Custom"
+>
 
-  <div class="info">
+<div class="info">
 
-    <div class="tag">PLAQUE</div>
+<div class="tag">PLAQUE</div>
 
-    <h2>Plaque Custom</h2>
+<h2>Plaque Custom</h2>
 
-    <p>
-      Custom nama, logo, teks dan design pilihan anda.
-    </p>
+<p>
+Custom nama, logo, teks dan design pilihan pelanggan.
+</p>
 
-    <div class="price">Dari RM35</div>
+<div class="price">
+Dari RM35
+</div>
 
-    <button class="btn"
-      onclick="addCart('Plaque Custom',35,'product-1.jpg')">
-      Customize
-    </button>
+<button class="btn"
+onclick="openCustomize(
+'Plaque Custom',
+35,
+'product-1.jpg',
+'Plaque'
+)">
+Customize
+</button>
 
-  </div>
+</div>
 </div>
 
 
-<!-- PRODUCT 2 -->
+<!-- 2 -->
 
-<div class="card" data-category="Plaque" data-name="Plaque Penghargaan">
+<div class="card"
+data-category="Plaque"
+data-name="Plaque Penghargaan">
 
-  <img
-    class="product-img"
-    src="product-2.jpg"
-    alt="Plaque Penghargaan"
-  >
+<img
+class="product-img"
+src="product-2.jpg"
+alt="Plaque Penghargaan"
+>
 
-  <div class="info">
+<div class="info">
 
-    <div class="tag">PLAQUE</div>
+<div class="tag">PLAQUE</div>
 
-    <h2>Plaque Penghargaan</h2>
+<h2>Plaque Penghargaan</h2>
 
-    <p>
-      Sesuai untuk anugerah, penghargaan dan majlis.
-    </p>
+<p>
+Sesuai untuk anugerah, penghargaan dan majlis.
+</p>
 
-    <div class="price">Dari RM45</div>
+<div class="price">
+Dari RM45
+</div>
 
-    <button class="btn"
-      onclick="addCart('Plaque Penghargaan',45,'product-2.jpg')">
-      Customize
-    </button>
+<button class="btn"
+onclick="openCustomize(
+'Plaque Penghargaan',
+45,
+'product-2.jpg',
+'Plaque'
+)">
+Customize
+</button>
 
-  </div>
+</div>
 </div>
 
 
-<!-- PRODUCT 3 -->
+<!-- 3 -->
 
-<div class="card" data-category="Plaque" data-name="Plaque Nama">
+<div class="card"
+data-category="Plaque"
+data-name="Plaque Nama">
 
-  <img
-    class="product-img"
-    src="product-3.jpg"
-    alt="Plaque Nama"
-  >
+<img
+class="product-img"
+src="product-3.jpg"
+alt="Plaque Nama"
+>
 
-  <div class="info">
+<div class="info">
 
-    <div class="tag">PLAQUE</div>
+<div class="tag">PLAQUE</div>
 
-    <h2>Plaque Nama</h2>
+<h2>Plaque Nama</h2>
 
-    <p>
-      Personalised plaque dengan nama pilihan anda.
-    </p>
+<p>
+Personalised plaque dengan nama pilihan anda.
+</p>
 
-    <div class="price">Dari RM35</div>
+<div class="price">
+Dari RM35
+</div>
 
-    <button class="btn"
-      onclick="addCart('Plaque Nama',35,'product-3.jpg')">
-      Customize
-    </button>
+<button class="btn"
+onclick="openCustomize(
+'Plaque Nama',
+35,
+'product-3.jpg',
+'Plaque'
+)">
+Customize
+</button>
 
-  </div>
+</div>
 </div>
 
 
-<!-- PRODUCT 4 -->
+<!-- 4 -->
 
-<div class="card" data-category="Trophy" data-name="Trophy Custom">
+<div class="card"
+data-category="Trophy"
+data-name="Trophy Custom">
 
-  <img
-    class="product-img"
-    src="product-4.jpg"
-    alt="Trophy Custom"
-  >
+<img
+class="product-img"
+src="product-4.jpg"
+alt="Trophy Custom"
+>
 
-  <div class="info">
+<div class="info">
 
-    <div class="tag">TROPHY</div>
+<div class="tag">TROPHY</div>
 
-    <h2>Trophy Custom</h2>
+<h2>Trophy Custom</h2>
 
-    <p>
-      Trophy custom untuk sekolah, pertandingan dan event.
-    </p>
+<p>
+Trophy custom untuk sekolah, pertandingan dan event.
+</p>
 
-    <div class="price">Dari RM45</div>
+<div class="price">
+Dari RM45
+</div>
 
-    <button class="btn"
-      onclick="addCart('Trophy Custom',45,'product-4.jpg')">
-      Customize
-    </button>
+<button class="btn"
+onclick="openCustomize(
+'Trophy Custom',
+45,
+'product-4.jpg',
+'Trophy'
+)">
+Customize
+</button>
 
-  </div>
+</div>
 </div>
 
 
-<!-- PRODUCT 5 -->
+<!-- 5 -->
 
-<div class="card" data-category="Medal" data-name="Medal Custom">
+<div class="card"
+data-category="Medal"
+data-name="Medal Custom">
 
-  <img
-    class="product-img"
-    src="product-5.jpg"
-    alt="Medal Custom"
-  >
+<img
+class="product-img"
+src="product-5.jpg"
+alt="Medal Custom"
+>
 
-  <div class="info">
+<div class="info">
 
-    <div class="tag">MEDAL</div>
+<div class="tag">MEDAL</div>
 
-    <h2>Medal Custom</h2>
+<h2>Medal Custom</h2>
 
-    <p>
-      Medal custom dengan logo dan nama acara.
-    </p>
+<p>
+Medal custom dengan logo dan nama acara.
+</p>
 
-    <div class="price">Dari RM8</div>
+<div class="price">
+Dari RM8
+</div>
 
-    <button class="btn"
-      onclick="addCart('Medal Custom',8,'product-5.jpg')">
-      Customize
-    </button>
+<button class="btn"
+onclick="openCustomize(
+'Medal Custom',
+8,
+'product-5.jpg',
+'Medal'
+)">
+Customize
+</button>
 
-  </div>
+</div>
 </div>
 
 
-<!-- PRODUCT 6 -->
+<!-- 6 -->
 
-<div class="card" data-category="Brooch" data-name="Brooch Custom">
+<div class="card"
+data-category="Brooch"
+data-name="Brooch Custom">
 
-  <img
-    class="product-img"
-    src="product-6.jpg"
-    alt="Brooch Custom"
-  >
+<img
+class="product-img"
+src="product-6.jpg"
+alt="Brooch Custom"
+>
 
-  <div class="info">
+<div class="info">
 
-    <div class="tag">BROOCH</div>
+<div class="tag">BROOCH</div>
 
-    <h2>Brooch Custom</h2>
+<h2>Brooch Custom</h2>
 
-    <p>
-      Brooch custom untuk corporate, sekolah dan organisasi.
-    </p>
+<p>
+Brooch custom untuk corporate, sekolah dan organisasi.
+</p>
 
-    <div class="price">Dari RM5</div>
+<div class="price">
+Dari RM5
+</div>
 
-    <button class="btn"
-      onclick="addCart('Brooch Custom',5,'product-6.jpg')">
-      Customize
-    </button>
+<button class="btn"
+onclick="openCustomize(
+'Brooch Custom',
+5,
+'product-6.jpg',
+'Brooch'
+)">
+Customize
+</button>
 
-  </div>
+</div>
 </div>
 
 
-<!-- PRODUCT 7 -->
+<!-- 7 -->
 
-<div class="card" data-category="Plaque" data-name="Plaque Kayu">
+<div class="card"
+data-category="Plaque"
+data-name="Plaque Kayu">
 
-  <img
-    class="product-img"
-    src="product-7.jpg"
-    alt="Plaque Kayu"
-  >
+<img
+class="product-img"
+src="product-7.jpg"
+alt="Plaque Kayu"
+>
 
-  <div class="info">
+<div class="info">
 
-    <div class="tag">PLAQUE</div>
+<div class="tag">PLAQUE</div>
 
-    <h2>Plaque Kayu</h2>
+<h2>Plaque Kayu</h2>
 
-    <p>
-      Ukiran kayu premium dengan nama dan logo.
-    </p>
+<p>
+Ukiran kayu premium dengan nama dan logo.
+</p>
 
-    <div class="price">Dari RM40</div>
+<div class="price">
+Dari RM40
+</div>
 
-    <button class="btn"
-      onclick="addCart('Plaque Kayu',40,'product-7.jpg')">
-      Customize
-    </button>
+<button class="btn"
+onclick="openCustomize(
+'Plaque Kayu',
+40,
+'product-7.jpg',
+'Plaque'
+)">
+Customize
+</button>
 
-  </div>
+</div>
 </div>
 
 
-<!-- PRODUCT 8 -->
+<!-- 8 -->
 
-<div class="card" data-category="Trophy" data-name="Award Custom">
+<div class="card"
+data-category="Trophy"
+data-name="Award Custom">
 
-  <img
-    class="product-img"
-    src="product-8.jpg"
-    alt="Award Custom"
-  >
+<img
+class="product-img"
+src="product-8.jpg"
+alt="Award Custom"
+>
 
-  <div class="info">
+<div class="info">
 
-    <div class="tag">AWARD</div>
+<div class="tag">AWARD</div>
 
-    <h2>Award Custom</h2>
+<h2>Award Custom</h2>
 
-    <p>
-      Design khas untuk majlis dan acara istimewa.
-    </p>
+<p>
+Design khas untuk majlis dan acara istimewa.
+</p>
 
-    <div class="price">Dari RM50</div>
+<div class="price">
+Dari RM50
+</div>
 
-    <button class="btn"
-      onclick="addCart('Award Custom',50,'product-8.jpg')">
-      Customize
-    </button>
+<button class="btn"
+onclick="openCustomize(
+'Award Custom',
+50,
+'product-8.jpg',
+'Award'
+)">
+Customize
+</button>
 
-  </div>
+</div>
 </div>
 
 
 </section>
 
 
-<!-- CART -->
+<!-- =========================
+     CUSTOMIZE WINDOW
+========================= -->
 
-<div class="cart" id="cart">
+<div
+class="modal-bg"
+id="customModal"
+onclick="backgroundClose(event)"
+>
 
-  <div class="cart-head">
+<div class="modal">
 
-    <h2>Cart</h2>
+<div class="modal-head">
 
-    <button class="close" onclick="toggleCart()">
-      ×
-    </button>
+<h2>Customize Produk</h2>
 
-  </div>
+<button
+class="modal-close"
+onclick="closeCustomize()">
+×
+</button>
 
-  <div id="cartItems"></div>
+</div>
 
-  <div class="total">
-    Jumlah: RM<span id="cartTotal">0</span>
-  </div>
 
-  <a
-    id="whatsapp"
-    class="whatsapp"
-    href="#"
-    target="_blank"
-  >
-    Order melalui WhatsApp
-  </a>
+<div class="modal-body">
+
+
+<div class="selected-product">
+
+<img id="modalImage">
+
+<div>
+
+<small id="modalCategory">
+PLAQUE
+</small>
+
+<h3 id="modalProduct">
+Produk
+</h3>
+
+<div
+style="color:#d8a93d;margin-top:7px;font-weight:bold"
+>
+Dari RM<span id="modalPrice">0</span>
+</div>
+
+</div>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Nama / Tajuk *
+</label>
+
+<input
+id="customerName"
+type="text"
+placeholder="Contoh: Ahmad bin Ali"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Teks / Tulisan
+</label>
+
+<textarea
+id="customerText"
+placeholder="Masukkan teks yang ingin diukir..."
+></textarea>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Logo / Gambar
+</label>
+
+<label class="upload-box">
+
+📷 Pilih gambar
+
+<input
+id="logoUpload"
+type="file"
+accept="image/*"
+onchange="previewImage(event)"
+>
+
+</label>
+
+<div
+class="preview"
+id="imagePreview"
+>
+<img id="previewImg">
+</div>
+
+</div>
+
+
+<div class="two">
+
+<div class="field">
+
+<label>
+Kuantiti
+</label>
+
+<input
+id="quantity"
+type="number"
+value="1"
+min="1"
+oninput="updateModalTotal()"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Pilihan
+</label>
+
+<select id="finish">
+
+<option value="Standard">
+Standard
+</option>
+
+<option value="Premium">
+Premium
+</option>
+
+<option value="Urgent">
+Urgent
+</option>
+
+</select>
+
+</div>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Nota tambahan
+</label>
+
+<textarea
+id="customerNote"
+placeholder="Contoh: Nak warna hitam/gold..."
+></textarea>
+
+</div>
+
+
+<div
+style="
+background:#181818;
+padding:15px;
+border-radius:10px;
+display:flex;
+justify-content:space-between;
+font-weight:bold;
+"
+>
+
+<span>
+Anggaran jumlah
+</span>
+
+<span style="color:#d8a93d">
+RM<span id="modalTotal">0</span>
+</span>
+
+</div>
+
+
+</div>
+
+
+<div class="modal-footer">
+
+<button
+class="cancel-btn"
+onclick="closeCustomize()"
+>
+Batal
+</button>
+
+<button
+class="add-btn"
+onclick="addCustomizedToCart()"
+>
+Tambah ke Cart
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- =========================
+     CART
+========================= -->
+
+<div
+class="cart"
+id="cart"
+>
+
+<div class="cart-head">
+
+<h2>Cart</h2>
+
+<button
+class="close"
+onclick="toggleCart()"
+>
+×
+</button>
+
+</div>
+
+<div id="cartItems"></div>
+
+<div class="total">
+Jumlah: RM<span id="cartTotal">0</span>
+</div>
+
+<a
+id="whatsapp"
+class="whatsapp"
+href="#"
+target="_blank"
+>
+Order melalui WhatsApp
+</a>
 
 </div>
 
 
 <footer>
-  © REQOO.CO — Plaque • Trophy • Medal • Brooch • Hadiah Custom
+
+© REQOO.CO — Plaque • Trophy • Medal • Brooch • Hadiah Custom
+
 </footer>
 
 
 <script>
 
+/* =========================
+   CART
+========================= */
+
 let cart = [];
 
+let selectedProduct = {
+  name:"",
+  price:0,
+  image:"",
+  category:""
+};
 
-/* ADD CART */
 
-function addCart(name,price,image){
+/* =========================
+   OPEN CUSTOMIZE
+========================= */
 
-  cart.push({
+function openCustomize(
+  name,
+  price,
+  image,
+  category
+){
+
+  selectedProduct = {
     name:name,
     price:price,
-    image:image
-  });
+    image:image,
+    category:category
+  };
 
-  updateCart();
+  document.getElementById("modalProduct").innerText =
+    name;
 
-  document.getElementById("cart").classList.add("open");
+  document.getElementById("modalCategory").innerText =
+    category.toUpperCase();
+
+  document.getElementById("modalPrice").innerText =
+    price;
+
+  document.getElementById("modalImage").src =
+    image;
+
+  document.getElementById("customerName").value = "";
+
+  document.getElementById("customerText").value = "";
+
+  document.getElementById("customerNote").value = "";
+
+  document.getElementById("quantity").value = 1;
+
+  document.getElementById("finish").value =
+    "Standard";
+
+  document.getElementById("logoUpload").value = "";
+
+  document.getElementById("imagePreview").style.display =
+    "none";
+
+  updateModalTotal();
+
+  document.getElementById("customModal")
+    .classList.add("show");
+
 }
 
 
-/* UPDATE CART */
+/* =========================
+   CLOSE
+========================= */
+
+function closeCustomize(){
+
+  document.getElementById("customModal")
+    .classList.remove("show");
+
+}
+
+
+function backgroundClose(event){
+
+  if(event.target.id === "customModal"){
+
+    closeCustomize();
+
+  }
+
+}
+
+
+/* =========================
+   TOTAL
+========================= */
+
+function updateModalTotal(){
+
+  let qty =
+    parseInt(
+      document.getElementById("quantity").value
+    ) || 1;
+
+  let total =
+    selectedProduct.price * qty;
+
+  document.getElementById("modalTotal").innerText =
+    total;
+
+}
+
+
+/* =========================
+   IMAGE PREVIEW
+========================= */
+
+function previewImage(event){
+
+  const file =
+    event.target.files[0];
+
+  if(!file) return;
+
+  const reader =
+    new FileReader();
+
+  reader.onload = function(e){
+
+    document.getElementById("previewImg").src =
+      e.target.result;
+
+    document.getElementById("imagePreview")
+      .style.display = "block";
+
+  };
+
+  reader.readAsDataURL(file);
+
+}
+
+
+/* =========================
+   ADD CUSTOMIZED
+========================= */
+
+function addCustomizedToCart(){
+
+  let name =
+    document.getElementById("customerName").value.trim();
+
+  if(name === ""){
+
+    alert("Sila masukkan nama / tajuk dahulu.");
+
+    return;
+
+  }
+
+
+  let text =
+    document.getElementById("customerText").value.trim();
+
+  let note =
+    document.getElementById("customerNote").value.trim();
+
+  let finish =
+    document.getElementById("finish").value;
+
+  let qty =
+    parseInt(
+      document.getElementById("quantity").value
+    ) || 1;
+
+
+  let total =
+    selectedProduct.price * qty;
+
+
+  cart.push({
+
+    name:selectedProduct.name,
+
+    price:selectedProduct.price,
+
+    image:selectedProduct.image,
+
+    customerName:name,
+
+    customerText:text,
+
+    note:note,
+
+    finish:finish,
+
+    quantity:qty,
+
+    total:total
+
+  });
+
+
+  updateCart();
+
+  closeCustomize();
+
+  document.getElementById("cart")
+    .classList.add("open");
+
+}
+
+
+/* =========================
+   UPDATE CART
+========================= */
 
 function updateCart(){
 
   let html = "";
+
   let total = 0;
+
 
   cart.forEach(function(item,index){
 
-    total += item.price;
+    total += item.total;
+
 
     html += `
+
       <div class="cart-item">
 
         <img src="${item.image}">
 
-        <div>
+        <div style="flex:1">
+
           <h3>${item.name}</h3>
 
-          <p>RM${item.price}</p>
+          <p>
+          Nama: ${item.customerName}
+          </p>
+
+          <p>
+          Kuantiti: ${item.quantity}
+          </p>
+
+          <p>
+          Kemasan: ${item.finish}
+          </p>
+
+          <p class="cart-price">
+          RM${item.total}
+          </p>
 
           <button
             onclick="removeCart(${index})"
             style="
-              margin-top:6px;
+              margin-top:7px;
               background:none;
               border:0;
               color:#777;
@@ -777,6 +1506,7 @@ function updateCart(){
         </div>
 
       </div>
+
     `;
 
   });
@@ -793,30 +1523,81 @@ function updateCart(){
   }
 
 
-  document.getElementById("cartItems").innerHTML = html;
+  document.getElementById("cartItems").innerHTML =
+    html;
 
-  document.getElementById("cartCount").innerText = cart.length;
+  document.getElementById("cartCount").innerText =
+    cart.length;
 
-  document.getElementById("cartTotal").innerText = total;
+  document.getElementById("cartTotal").innerText =
+    total;
 
 
-  let message = "Assalamualaikum REQOO.CO%0A%0ASaya berminat untuk membuat tempahan:%0A%0A";
+  /* WHATSAPP */
 
-  cart.forEach(function(item){
+  let message =
+    "Assalamualaikum REQOO.CO\n\n";
 
-    message += "• " + item.name + " - RM" + item.price + "%0A";
+  message +=
+    "Saya ingin membuat tempahan:\n\n";
+
+
+  cart.forEach(function(item,index){
+
+    message +=
+      (index + 1) + ". " +
+      item.name + "\n";
+
+    message +=
+      "Nama: " +
+      item.customerName + "\n";
+
+    if(item.customerText){
+
+      message +=
+        "Teks: " +
+        item.customerText + "\n";
+
+    }
+
+    message +=
+      "Kuantiti: " +
+      item.quantity + "\n";
+
+    message +=
+      "Kemasan: " +
+      item.finish + "\n";
+
+    if(item.note){
+
+      message +=
+        "Nota: " +
+        item.note + "\n";
+
+    }
+
+    message +=
+      "Jumlah item: RM" +
+      item.total + "\n\n";
 
   });
 
-  message += "%0AJumlah: RM" + total;
+
+  message +=
+    "JUMLAH: RM" +
+    total;
+
 
   document.getElementById("whatsapp").href =
-    "https://wa.me/60165192803?text=" + message;
+    "https://wa.me/60165192803?text=" +
+    encodeURIComponent(message);
 
 }
 
 
-/* REMOVE */
+/* =========================
+   REMOVE
+========================= */
 
 function removeCart(index){
 
@@ -827,21 +1608,26 @@ function removeCart(index){
 }
 
 
-/* CART OPEN */
+/* =========================
+   CART OPEN
+========================= */
 
 function toggleCart(){
 
-  document
-    .getElementById("cart")
-    .classList
-    .toggle("open");
+  document.getElementById("cart")
+    .classList.toggle("open");
 
 }
 
 
-/* CATEGORY */
+/* =========================
+   CATEGORY
+========================= */
 
-function filterProduct(category,button){
+function filterProduct(
+  category,
+  button
+){
 
   document
     .querySelectorAll(".cat")
@@ -850,6 +1636,7 @@ function filterProduct(category,button){
       btn.classList.remove("active");
 
     });
+
 
   button.classList.add("active");
 
@@ -876,15 +1663,16 @@ function filterProduct(category,button){
 }
 
 
-/* SEARCH */
+/* =========================
+   SEARCH
+========================= */
 
 function searchProduct(){
 
   let search =
-    document
-      .getElementById("search")
-      .value
-      .toLowerCase();
+    document.getElementById("search")
+    .value
+    .toLowerCase();
 
 
   document
