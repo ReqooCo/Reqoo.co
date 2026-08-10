@@ -129,7 +129,8 @@ function closeCheckout(){document.getElementById("checkoutOverlay").style.displa
 function paidWhatsApp(){
  const n=document.getElementById("custName").value.trim(), ph=document.getElementById("custPhone").value.trim(), ad=document.getElementById("custAddress").value.trim();
  if(!n||!ph){alert("Sila isi nama dan no. WhatsApp.");return}
- let orderNo=sessionStorage.getItem("reqooOrderNo")||("RQ"+Date.now());\n let msg="*ORDER REQOO.CO*%0A*No. Order: "+orderNo+"*%0A%0A";
+ let orderNo=sessionStorage.getItem("reqooOrderNo")||("RQ"+Date.now());
+ let msg="*ORDER REQOO.CO*%0A*No. Order: "+orderNo+"*%0A%0A";
  cart.forEach((x,i)=>msg+=(i+1)+". "+x.product+" x"+x.qty+" — RM"+(x.price*x.qty).toFixed(2)+"%0ACustom: "+encodeURIComponent(x.custom)+"%0ANota: "+encodeURIComponent(x.note)+"%0A%0A");
  msg+="*Jumlah: RM"+total().toFixed(2)+"*%0A%0ANama: "+encodeURIComponent(n)+"%0AWhatsApp: "+encodeURIComponent(ph)+"%0AAlamat: "+encodeURIComponent(ad)+"%0A%0APembayaran: Maybank QR — sila hantar bukti pembayaran bersama order ini.";
  window.open("https://wa.me/60165192803?text="+msg,"_blank");
