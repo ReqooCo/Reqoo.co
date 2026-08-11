@@ -92,6 +92,12 @@ function promoForVariant(v){
   }:null;
 }
 
+function variantPrice(v){
+  return Number(v&&v[3] ? v[1] : (v&&v[1]||0));
+}
+function originalVariantPrice(v){
+  return Number(v&&v[3] ? v[2] : (v&&v[1]||0));
+}
 function money(n){return 'RM'+Number(n||0).toFixed(2)}
 function render(){
   const q=document.getElementById('q').value.toLowerCase();
@@ -239,7 +245,5 @@ async function loadPromotion(){
     }
   }
 }
-// Render catalogue immediately. Promo data is enhancement, not a blocker for the shop.
-try{render();update()}catch(e){console.error('Initial render error:',e)}
 loadPromotion();
 </script></body></html>
