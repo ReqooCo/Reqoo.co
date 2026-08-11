@@ -15,7 +15,13 @@ header{position:sticky;top:0;z-index:50;background:#080808eF;border-bottom:1px s
 .modal{position:fixed;inset:0;background:#000e;z-index:80;display:none;align-items:center;justify-content:center;padding:16px}.modal.open{display:flex}.box{width:min(820px,100%);max-height:92vh;overflow:auto;background:linear-gradient(180deg,#151515,#0d0d0d);border:1px solid #3a3a3a;border-radius:24px;padding:22px;box-shadow:0 30px 100px #000}.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}.two>div:first-child>img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:16px}label{display:block;color:#aaa;font-size:11px;margin:12px 0 6px}input,textarea,select{width:100%;background:#080808;border:1px solid #333;color:#fff;border-radius:10px;padding:11px;outline:none}select{appearance:auto}input:focus,textarea:focus,select:focus{border-color:#8d7440}.uploadbox{border:1px dashed #5b4b2a;border-radius:14px;padding:13px;background:#0a0a0a;margin-top:10px}.uploadbox input{border:0;padding:8px 0;background:transparent}.choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}.choice .field{background:#0b0b0b;border:1px solid #2b2b2b;border-radius:12px;padding:10px}.summary{background:#111;border:1px solid #2b2b2b;border-radius:14px;padding:14px;margin-top:14px}.summary b{color:var(--gold);font-size:20px}.paybox{background:#0d0d0d;border:1px solid #3b3222;border-radius:16px;padding:18px;text-align:center}.paybox img{width:min(260px,80%);background:#fff;border-radius:12px;padding:8px}.receiptPreview{display:none;margin-top:10px;padding:8px;border:1px solid #333;border-radius:12px;justify-content:center}.receiptPreview img{max-width:100%;max-height:260px;border-radius:10px}.muted{color:#888;font-size:12px;line-height:1.6}.success{padding:20px;border:1px solid #3b3222;background:#111;border-radius:16px}.success h3{color:var(--gold)}
 footer{border-top:1px solid #222;padding:28px 0;color:#777;font-size:12px}.modalHead{display:flex;align-items:center;gap:12px}.modalHead h2{margin:0}.xbtn{margin-left:auto;border:0;background:#222;color:#fff;border-radius:50%;width:34px;height:34px;cursor:pointer}
 @media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:620px){.nav{flex-wrap:wrap;padding:10px 0}.search{order:3;flex-basis:100%}.hero{padding-top:42px}.grid{grid-template-columns:1fr 1fr;gap:12px}.two{grid-template-columns:1fr}.choice{grid-template-columns:1fr}.body{padding:13px}.body h3{font-size:15px}}
-</style></head><body>
+</style>
+<style>
+.reqooChat{position:fixed;right:18px;bottom:18px;z-index:65;display:flex;align-items:center;gap:9px;padding:12px 16px;border-radius:999px;background:linear-gradient(135deg,#d9b45e,#f2d68d);color:#090909;text-decoration:none;font-weight:950;font-size:12px;box-shadow:0 12px 35px #0009,0 0 0 1px #d9b45e55}
+.reqooChat .chatIcon{width:27px;height:27px;display:grid;place-items:center;border-radius:50%;background:#090909;color:#f2d68d;font-size:14px}
+@media(max-width:620px){.reqooChat{right:14px;bottom:14px;padding:10px 13px;font-size:11px}.reqooChat .chatIcon{width:25px;height:25px}}
+</style>
+</head><body>
 <header><div class="wrap"><nav class="nav"><a class="logo" href="/shop/"><span class="logoMark">R</span>REQOO<span class="gold">.CO</span></a><div class="search"><input id="q" placeholder="Cari plaque, trophy, medal, brooch..." oninput="render()"></div><button class="cart" onclick="openCart()">🛒 <b id="cc">0</b></button></nav></div></header>
 <section class="hero"><div class="wrap"><div class="eyebrow">REQOO.CO SHOP</div><h1>Custom made.<br><span class="gold">Just for you.</span></h1><p>Pilih produk, pilih variant daripada catalogue, customize tempahan dan kumpulkan dalam cart. Checkout terus dengan Maybank QR.</p><div class="heroBadge">✦ <span>Laser Cut</span> • Engraving • Acrylic • 3D Print • Custom</div></div></section>
 <main class="wrap"><div class="shopHead"><div><h2>Catalogue</h2><p>Harga Plaque & Brooch mengikut catalogue REQOO.CO.</p></div></div><div class="cats" id="cats"></div><div class="grid" id="grid"></div></main>
@@ -194,6 +200,15 @@ async function submitOrder(){
     '</div>';
 }
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+
+function logCustomerChat(e){
+  try{
+    const phone='';
+    const url=ORDER_API_URL+'?action=chatNotification&name='+encodeURIComponent('Customer')+'&phone='+encodeURIComponent(phone);
+    fetch(url,{method:'GET',keepalive:true}).catch(()=>{});
+  }catch(err){}
+}
+
 async function loadPromotion(){
   let slug=new URLSearchParams(location.search).get('promo')||new URLSearchParams(location.search).get('promotion');
   if(!slug){
@@ -239,4 +254,8 @@ function sendWhatsAppOrder(){
   }
 }
 
-</script></body></html>
+</script>
+<a id="reqooChat" class="reqooChat" href="https://wa.me/60165192803?text=Hi%20REQOO.CO%2C%20saya%20nak%20tanya%20tentang%20produk." target="_blank" rel="noopener" onclick="logCustomerChat(event)">
+  <span class="chatIcon">💬</span><span>Chat dengan REQOO</span>
+</a>
+</body></html>

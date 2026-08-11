@@ -58,10 +58,18 @@ select.statussel{margin:0;padding:7px 8px;width:140px;font-size:10px}
 .assetRow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.assetRow input[type=file]{display:none}
 .fileBtn{display:inline-flex;align-items:center;gap:7px}.previewImg{display:none;width:100%;max-height:210px;object-fit:contain;border-radius:10px;background:#151515;margin-top:10px}.uploadHint{font-size:10px;color:#777;margin-top:6px}
 .configStatus{font-size:10px;color:#888;margin-top:7px}.configStatus.ok{color:var(--green)}
+
+<style>
+.notifWrap{position:relative}
+.notifBtn{border:1px solid #383838;background:#111;color:#fff;border-radius:10px;padding:9px 12px;cursor:pointer;font-size:15px}
+.notifBadge{position:absolute;top:-7px;right:-7px;min-width:19px;height:19px;padding:0 5px;border-radius:99px;background:#ff5b5b;color:#fff;font-size:10px;font-weight:950;display:none;align-items:center;justify-content:center;border:2px solid #080808}
+.notifPanel{position:absolute;right:0;top:45px;width:min(390px,calc(100vw - 24px));max-height:480px;overflow:auto;background:#101010;border:1px solid #333;border-radius:16px;box-shadow:0 20px 70px #000b;display:none;z-index:90}
+.notifPanel.open{display:block}.notifHead{padding:13px 14px;border-bottom:1px solid #252525;display:flex;align-items:center}.notifHead b{margin-right:auto}.notifItem{padding:12px 14px;border-bottom:1px solid #222;cursor:pointer}.notifItem:hover{background:#171717}.notifItem.unread{background:#15130f}.notifItem .nt{font-weight:900;color:#f2d68d;font-size:11px}.notifItem .nm{color:#bbb;font-size:11px;margin-top:4px;line-height:1.45}.notifItem .nd{color:#666;font-size:9px;margin-top:5px}.notifEmpty{padding:25px;text-align:center;color:#777;font-size:11px}
+</style>
 </style>
 </head>
 <body>
-<header><div class="wrap nav"><div class="brand">REQOO<span class="gold">.CO</span> <span style="font-size:10px;color:#777;letter-spacing:2px">ADMIN</span></div><div class="spacer"></div><button class="btn" onclick="load()">↻ Refresh</button></div></header>
+<header><div class="wrap nav"><div class="brand">REQOO<span class="gold">.CO</span> <span style="font-size:10px;color:#777;letter-spacing:2px">ADMIN</span></div><div class="spacer"></div><div class="notifWrap"><button id="notifBtn" class="notifBtn" onclick="toggleNotifications()">🔔<span id="notifBadge" class="notifBadge">0</span></button><div id="notifPanel" class="notifPanel"><div class="notifHead"><b>Notifications</b><button class="btn" style="padding:6px 8px;font-size:9px" onclick="markAllNotificationsRead()">Tanda semua dibaca</button></div><div id="notifList"></div></div></div><button class="btn" onclick="load()">↻ Refresh</button></div></header>
 
 <main class="wrap">
 <section id="login" class="login">
@@ -192,8 +200,71 @@ async function load(){
   document.getElementById('login').style.display='none';
   document.getElementById('app').style.display='block';
   renderAll();
+  startNotificationPolling();
  }catch(e){document.getElementById('err').textContent=e.message}
 }
+
+let NOTIFICATIONS=[];
+let NOTIF_TIMER=null;
+
+async function loadNotifications(){
+  if(!TOKEN)return;
+  try{
+    const r=await fetch(API+'?action=listNotifications&token='+encodeURIComponent(TOKEN));
+    const j=await r.json();
+    if(!j.ok)return;
+    NOTIFICATIONS=j.notifications||[];
+    const unread=Number(j.unread||0);
+    const badge=document.getElementById('notifBadge');
+    if(badge){
+      badge.textContent=unread>99?'99+':String(unread);
+      badge.style.display=unread?'flex':'none';
+    }
+    renderNotifications();
+  }catch(e){}
+}
+function notifTime(s){
+  const d=new Date(s); if(isNaN(d))return '';
+  return d.toLocaleString('ms-MY',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+}
+function renderNotifications(){
+  const box=document.getElementById('notifList'); if(!box)return;
+  if(!NOTIFICATIONS.length){box.innerHTML='<div class="notifEmpty">Tiada notification.</div>';return}
+  box.innerHTML=NOTIFICATIONS.map(n=>`<div class="notifItem ${n.read?'':'unread'}" onclick="openNotification('${esc(n.id)}')">
+    <div class="nt">${esc(n.title)}</div>
+    <div class="nm">${esc(n.message)}${n.orderNo?'<br><b>'+esc(compactNo(n.orderNo))+'</b>':''}</div>
+    <div class="nd">${esc(notifTime(n.created))}</div>
+  </div>`).join('');
+}
+function toggleNotifications(){document.getElementById('notifPanel').classList.toggle('open')}
+async function openNotification(id){
+  const n=NOTIFICATIONS.find(x=>String(x.id)===String(id)); if(!n)return;
+  if(!n.read){
+    fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'markNotificationRead',token:TOKEN,id:n.id})}).catch(()=>{});
+    n.read=true;
+  }
+  renderNotifications();
+  if(n.type==='order'&&n.orderNo){
+    const idx=ORDERS.findIndex(o=>String(o.orderNo)===String(n.orderNo));
+    if(idx>=0)detail(idx); else load();
+  }else if(n.type==='chat'&&n.phone){
+    window.open('https://wa.me/'+phoneClean(n.phone),'_blank');
+  }
+}
+async function markAllNotificationsRead(){
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'markAllNotificationsRead',token:TOKEN})});
+    const j=await r.json(); if(!j.ok)throw Error(j.error||'Gagal');
+    NOTIFICATIONS.forEach(n=>n.read=true); renderNotifications();
+    const badge=document.getElementById('notifBadge'); if(badge)badge.style.display='none';
+  }catch(e){alert(e.message)}
+}
+function startNotificationPolling(){
+  if(NOTIF_TIMER)clearInterval(NOTIF_TIMER);
+  loadNotifications();
+  NOTIF_TIMER=setInterval(loadNotifications,20000);
+}
+
 function normalize(o){
  // Supports both the clean API object and the older array-style response.
  const val=k=>Array.isArray(o[k])?o[k][0]:o[k];
@@ -295,6 +366,7 @@ function detail(i){
  <div style="margin-top:12px"><label>Status</label><select id="dStatus" onchange="changeStatus(${i},this.value)"><option ${o.status==='Pending'?'selected':''}>Pending</option><option ${o.status==='Processing'?'selected':''}>Processing</option><option ${o.status==='Completed'?'selected':''}>Completed</option><option ${o.status==='Cancelled'?'selected':''}>Cancelled</option></select></div>
  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
    <button class="btn goldbtn" onclick="waStatus(ORDERS[CURRENT_DETAIL])">💬 WhatsApp Status</button>
+   <button class="btn" onclick="waChat(ORDERS[CURRENT_DETAIL])">💬 Chat Customer</button>
    <button class="btn" onclick="waReceipt(ORDERS[CURRENT_DETAIL])">🧾 Hantar Resit</button>
    <button class="btn" onclick="waCustomer(ORDERS[CURRENT_DETAIL])">📣 Promo Customer</button>
  </div>
@@ -313,6 +385,12 @@ function showDashboard(){document.getElementById('customersSection').style.displ
 function phoneClean(p){let x=String(p||'').replace(/\D/g,''); if(x.startsWith('0')) x='6'+x; return x}
 function waOpen(phone,msg){const p=phoneClean(phone); if(!p)return alert('No. WhatsApp customer tiada.'); window.open('https://wa.me/'+p+'?text='+encodeURIComponent(msg),'_blank')}
 function orderItemsText(o){try{return JSON.parse(o.items||'[]').map(x=>`${x.name} — ${x.variant||''} × ${x.qty} = ${money(Number(x.unitPrice||0)*Number(x.qty||1))}`).join('\n')}catch(e){return ''}}
+function waChat(o){
+  const p=phoneClean(o.phone);
+  if(!p)return alert('No. WhatsApp customer tiada.');
+  window.open('https://wa.me/'+p+'?text='+encodeURIComponent('Hi '+(o.name||'')+', terima kasih kerana menghubungi REQOO.CO. 😊'),'_blank');
+}
+
 function waStatus(o){
  const msg=`REQOO.CO — UPDATE ORDER\n\nNo. Order: ${compactNo(o.orderNo)}\nCustomer: ${o.name}\n\nStatus: ${o.status}\nJumlah: ${money(o.total)}\n\nTerima kasih kerana memilih REQOO.CO.`;
  waOpen(o.phone,msg)
@@ -543,6 +621,11 @@ async function toggleProduct(id){
   }catch(e){alert(e.message)}
 }
 
+
+document.addEventListener('click',function(e){
+  const wrap=document.querySelector('.notifWrap');
+  if(wrap && !wrap.contains(e.target))document.getElementById('notifPanel')?.classList.remove('open');
+});
 </script>
 </body>
 </html>
