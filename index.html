@@ -1,137 +1,42 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ms">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>REQOO.CO Shop</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>REQOO.CO — Custom Made. Just for You.</title>
+<meta name="description" content="REQOO.CO — plaque, trophy, medal, brooch, ukiran laser dan 3D print custom di Malaysia.">
+<meta property="og:title" content="REQOO.CO — Custom Made. Just for You.">
+<meta property="og:description" content="Hadiah, plaque, trophy, medal, brooch dan produk custom direka khas untuk anda.">
+<meta property="og:image" content="https://reqoo.co/og-image.jpg">
 <style>
-*{box-sizing:border-box}body{margin:0;background:#080808;color:#fff;font-family:Arial,sans-serif}
-header{position:sticky;top:0;z-index:5;background:#0d0d0d;border-bottom:1px solid #292929;padding:14px 20px;display:flex;gap:18px;align-items:center}
-.logo{font-weight:900;letter-spacing:5px;color:#e4b94f;white-space:nowrap}.search{flex:1;background:#171717;border:1px solid #444;border-radius:28px;padding:12px 18px;color:#ddd}
-.cartbtn{border:1px solid #555;background:#151515;color:#fff;border-radius:25px;padding:11px 16px}
-.wrap{max-width:1200px;margin:auto;padding:25px 18px}.cats{display:flex;gap:10px;overflow:auto;margin-bottom:25px}
-.cat{background:#121212;color:#fff;border:1px solid #444;border-radius:22px;padding:10px 20px}.cat.active{background:#e8bb4e;color:#111;border-color:#e8bb4e}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
-.card{background:#111;border:1px solid #333;border-radius:18px;overflow:hidden}.card img{width:100%;aspect-ratio:1/1;object-fit:cover;background:#222}.info{padding:15px}.tag{font-size:11px;letter-spacing:3px;color:#e8bb4e;font-weight:bold}.name{font-size:20px;font-weight:bold;margin:8px 0}.desc{color:#aaa;font-size:14px;min-height:38px}.price{font-size:19px;font-weight:bold;margin:14px 0}.btn{width:100%;border:0;border-radius:25px;background:#f0bf49;color:#111;padding:13px;font-weight:bold;cursor:pointer}
-.overlay{display:none;position:fixed;inset:0;background:#000b;z-index:10;align-items:center;justify-content:center;padding:18px}.modal{background:#111;border:1px solid #444;border-radius:20px;width:min(620px,100%);max-height:90vh;overflow:auto;padding:22px}.close{float:right;background:none;color:#fff;border:0;font-size:28px}.modal h2{margin-top:0}.field{width:100%;padding:12px;margin:7px 0 12px;background:#181818;border:1px solid #444;color:#fff;border-radius:10px}.summary{background:#181818;border-radius:12px;padding:15px;margin:12px 0}.qr{display:block;width:min(330px,90%);margin:15px auto;border-radius:12px;background:#fff}.muted{color:#aaa;font-size:13px}.total{font-size:22px;font-weight:bold;color:#f0bf49}
+*{box-sizing:border-box} :root{--bg:#070707;--panel:#101010;--panel2:#0c0c0c;--gold:#d9b45e;--gold2:#f3d98f;--line:#292929;--muted:#9b9b9b;--white:#f7f7f7}
+html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--white);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;z-index:-2;background:radial-gradient(circle at 15% 0%,#d9b45e18,transparent 28%),radial-gradient(circle at 90% 30%,#d9b45e0d,transparent 30%),#070707}
+body:after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.10;background-image:linear-gradient(#d9b45e12 1px,transparent 1px),linear-gradient(90deg,#d9b45e12 1px,transparent 1px);background-size:42px 42px}
+a{color:inherit}.wrap{width:min(1180px,calc(100% - 32px));margin:auto}
+header{position:sticky;top:0;z-index:50;background:#080808eF;border-bottom:1px solid var(--line);backdrop-filter:blur(18px)}.nav{height:72px;display:flex;align-items:center;gap:18px}.logo{font-weight:950;letter-spacing:4px;text-decoration:none;white-space:nowrap}.mark{display:inline-grid;place-items:center;width:34px;height:34px;border:1px solid var(--gold);border-radius:10px;color:var(--gold);margin-right:8px}.gold{color:var(--gold)}.navlinks{display:flex;gap:22px;margin-left:auto;font-size:13px;color:#bbb}.navlinks a{text-decoration:none}.navlinks a:hover{color:#fff}.navcta{background:linear-gradient(135deg,var(--gold),#ebca74);color:#080808;padding:11px 16px;border-radius:999px;font-weight:900;text-decoration:none;font-size:12px}
+.hero{padding:105px 0 95px;position:relative}.eyebrow{font-size:10px;letter-spacing:5px;color:var(--gold);font-weight:900}.hero h1{font-size:clamp(54px,8vw,100px);line-height:.88;letter-spacing:-7px;max-width:900px;margin:18px 0}.hero h1 span{background:linear-gradient(90deg,var(--gold),var(--gold2));-webkit-background-clip:text;background-clip:text;color:transparent}.hero p{max-width:690px;color:#aaa;font-size:16px;line-height:1.8}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px}.btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border:1px solid #383838;border-radius:999px;padding:13px 20px;font-weight:900;font-size:13px}.btn.goldbtn{background:linear-gradient(135deg,var(--gold),#ebca74);border-color:transparent;color:#080808}.btn.dark{background:#111;color:#eee}.badge{display:inline-flex;align-items:center;gap:8px;margin-top:25px;padding:10px 13px;border:1px solid #3a3326;border-radius:999px;color:#c9c9c9;font-size:11px;background:#0d0d0d}.badge b{color:var(--gold)}
+.section{padding:72px 0}.sectionHead{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:24px}.sectionHead h2{font-size:32px;margin:0;letter-spacing:-1px}.sectionHead p{margin:6px 0 0;color:#777;font-size:13px}.miniLink{color:var(--gold);font-size:12px;font-weight:800;text-decoration:none}
+.showcase{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.show{background:linear-gradient(180deg,#131313,#0c0c0c);border:1px solid var(--line);border-radius:20px;overflow:hidden}.show img{width:100%;aspect-ratio:1;object-fit:cover;display:block}.show .inside{padding:16px}.tag{font-size:9px;letter-spacing:2px;color:var(--gold);font-weight:900}.show h3{margin:8px 0 5px;font-size:17px}.show p{margin:0;color:#888;font-size:12px;line-height:1.5}.price{margin-top:13px;font-weight:950}
+.about{display:grid;grid-template-columns:1.15fr .85fr;gap:18px}.panel{background:linear-gradient(180deg,#121212,#0c0c0c);border:1px solid var(--line);border-radius:22px;padding:28px}.panel h3{margin-top:0;font-size:22px}.panel p{color:#aaa;line-height:1.8}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.step{padding:20px;border:1px solid #292929;border-radius:18px;background:#0d0d0d}.num{color:var(--gold);font-weight:950;font-size:12px}.step h4{margin:8px 0}.step p{margin:0;color:#888;font-size:12px;line-height:1.6}
+.cta{padding:65px 0}.ctaBox{border:1px solid #3b3222;background:radial-gradient(circle at 80% 20%,#d9b45e16,transparent 35%),linear-gradient(135deg,#121212,#0a0a0a);border-radius:26px;padding:42px}.cta h2{font-size:42px;letter-spacing:-2px;margin:0 0 10px}.cta p{color:#999;max-width:620px;line-height:1.7}
+footer{border-top:1px solid #222;padding:32px 0 50px;color:#777;font-size:12px}.foot{display:flex;justify-content:space-between;gap:20px}.foot a{color:#999;text-decoration:none}
+@media(max-width:900px){.showcase{grid-template-columns:repeat(2,1fr)}.about{grid-template-columns:1fr}.steps{grid-template-columns:1fr 1fr}.navlinks{display:none}}
+@media(max-width:600px){.wrap{width:min(100% - 22px,1180px)}.nav{height:62px}.hero{padding:70px 0 65px}.hero h1{font-size:54px;letter-spacing:-4px}.hero p{font-size:14px}.showcase{grid-template-columns:1fr 1fr;gap:10px}.show .inside{padding:12px}.show h3{font-size:14px}.steps{grid-template-columns:1fr}.ctaBox{padding:28px}.cta h2{font-size:34px}.foot{display:block}.foot div+div{margin-top:10px}}
 </style>
 </head>
 <body>
-<header>
-<div class="logo">REQOO.CO</div>
-<input id="search" class="search" placeholder="Cari plaque, trophy, medal...">
-<button class="cartbtn" onclick="openCart()">🛒 <span id="cartCount">0</span></button>
-</header>
-
-<main class="wrap">
-<div class="cats">
-<button class="cat active" onclick="filterCat('Semua',this)">Semua</button>
-<button class="cat" onclick="filterCat('Plaque',this)">Plaque</button>
-<button class="cat" onclick="filterCat('Trophy',this)">Trophy</button>
-<button class="cat" onclick="filterCat('Medal',this)">Medal</button>
-<button class="cat" onclick="filterCat('Brooch',this)">Brooch</button>
-</div>
-<div id="grid" class="grid"></div>
+<header><div class="wrap"><nav class="nav"><a class="logo" href="/"><span class="mark">R</span>REQOO<span class="gold">.CO</span></a><div class="navlinks"><a href="#produk">Produk</a><a href="#cara">Cara Order</a><a href="#tentang">Tentang</a></div><a class="navcta" href="/shop/">Buka Shop →</a></nav></div></header>
+<main>
+<section class="hero"><div class="wrap"><div class="eyebrow">REQOO.CO • CUSTOM WORKS</div><h1>Made to be<br><span>remembered.</span></h1><p>Kami hasilkan plaque, trophy, medal, brooch, ukiran laser dan 3D print yang dibuat khas mengikut nama, logo, event dan idea anda.</p><div class="actions"><a class="btn goldbtn" href="/shop/">Lihat Catalogue</a><a class="btn dark" href="/shop/promotion.html">🔥 Special Offers</a></div><div class="badge">✦ <b>Made in Malaysia</b> • Custom • Premium • Personalised</div></div></section>
+<section class="section" id="produk"><div class="wrap"><div class="sectionHead"><div><h2>Produk Pilihan</h2><p>Antara produk yang boleh anda custom di REQOO.CO.</p></div><a class="miniLink" href="/shop/">Lihat semua →</a></div><div class="showcase">
+<article class="show"><img src="/shop/assets/plaque-basic.jpg" alt="Basic Collection"><div class="inside"><div class="tag">PLAQUE</div><h3>Basic Collection</h3><p>Recognition gift — 3 saiz.</p><div class="price">Dari RM50</div></div></article>
+<article class="show"><img src="/shop/assets/plaque-classic.jpg" alt="Classic Collection"><div class="inside"><div class="tag">PLAQUE</div><h3>Classic Collection</h3><p>Timeless elegance — 3 saiz.</p><div class="price">Dari RM99</div></div></article>
+<article class="show"><img src="/shop/assets/brooch-01-04.jpg" alt="Brooch Collection"><div class="inside"><div class="tag">BROOCH</div><h3>Custom Brooch</h3><p>Laser engraving & acrylic.</p><div class="price">Dari RM1.30</div></div></article>
+<article class="show"><img src="/shop/assets/3d-print.jpg" alt="3D Print Service"><div class="inside"><div class="tag">3D PRINT</div><h3>3D Print Service</h3><p>Hantar STL/OBJ untuk quotation.</p><div class="price">Quotation</div></div></article>
+</div></div></section>
+<section class="section" id="cara"><div class="wrap"><div class="sectionHead"><div><h2>Senang nak order.</h2><p>Tak perlu pening. Pilih, custom, hantar.</p></div></div><div class="steps"><div class="step"><div class="num">01</div><h4>Pilih produk</h4><p>Pilih catalogue, saiz dan variant yang anda perlukan.</p></div><div class="step"><div class="num">02</div><h4>Customize</h4><p>Masukkan nama, logo, artwork dan nota untuk design anda.</p></div><div class="step"><div class="num">03</div><h4>Checkout</h4><p>Semak order, buat bayaran dan teruskan pengesahan melalui WhatsApp.</p></div></div></div></section>
+<section class="section" id="tentang"><div class="wrap"><div class="about"><div class="panel"><div class="tag">WHY REQOO</div><h3>Custom bukan sekadar letak nama.</h3><p>Kami fokus pada hasil yang nampak kemas, sesuai untuk hadiah, corporate, sekolah, event, penghargaan dan kegunaan peribadi. Anda beri idea — kami bantu jadikan ia produk sebenar.</p></div><div class="panel"><div class="tag">WHAT WE DO</div><h3>Laser • Acrylic • Wood • 3D Print</h3><p>Plaque, trophy, medal, brooch, ukiran laser, acrylic, produk kayu dan 3D print dalam satu tempat.</p></div></div></div></section>
+<section class="cta"><div class="wrap"><div class="ctaBox"><div class="tag">READY?</div><h2>Ada idea? Jom buat.</h2><p>Masuk catalogue REQOO.CO dan mula dengan produk yang anda suka. Untuk design yang lebih custom, masukkan nota dan artwork anda semasa customize.</p><div class="actions"><a class="btn goldbtn" href="/shop/">Mulakan Tempahan →</a><a class="btn dark" href="/shop/promotion.html">Lihat Promo</a></div></div></div></section>
 </main>
-
-<div id="customOverlay" class="overlay">
-<div class="modal">
-<button class="close" onclick="closeCustom()">×</button>
-<h2 id="customTitle">Customize Produk</h2>
-<p class="muted">Masukkan maklumat tempahan.</p>
-<input id="customName" class="field" placeholder="Nama / teks custom">
-<input id="customQty" class="field" type="number" min="1" value="1" placeholder="Kuantiti">
-<textarea id="customNote" class="field" rows="4" placeholder="Nota / ukuran / design / permintaan khas"></textarea>
-<button class="btn" onclick="addCustomToCart()">Tambah ke Cart</button>
-</div>
-</div>
-
-<div id="cartOverlay" class="overlay">
-<div class="modal">
-<button class="close" onclick="closeCart()">×</button>
-<h2>Cart</h2>
-<div id="cartItems"></div>
-<div class="summary"><div class="total">Jumlah: RM<span id="cartTotal">0.00</span></div></div>
-<button class="btn" onclick="checkout()">Checkout</button>
-</div>
-</div>
-
-<div id="checkoutOverlay" class="overlay">
-<div class="modal">
-<button class="close" onclick="closeCheckout()">×</button>
-<h2>Checkout</h2>
-<input id="custName" class="field" placeholder="Nama">
-<input id="custPhone" class="field" placeholder="No. WhatsApp">
-<textarea id="custAddress" class="field" rows="3" placeholder="Alamat penghantaran"></textarea>
-<div class="summary"><b>Jumlah perlu dibayar</b><div class="total">RM<span id="payTotal">0.00</span></div></div>
-<h3>Bayar melalui Maybank QR</h3>
-<p class="muted">Scan QR di bawah menggunakan aplikasi bank anda. Selepas pembayaran, tekan butang “Saya Dah Bayar”.</p>
-<img class="qr" src="assets/qr-maybank.png" alt="Maybank QR">
-<button class="btn" onclick="paidWhatsApp()">Saya Dah Bayar — Hantar Order WhatsApp</button>
-</div>
-</div>
-
-<script>
-const products=[
-{id:1,cat:"Plaque",name:"Plaque Penghargaan",price:45,img:"product-1.jpg",desc:"Sesuai untuk anugerah, penghargaan dan majlis."},
-{id:2,cat:"Plaque",name:"Plaque Nama",price:35,img:"product-2.jpg",desc:"Personalised plaque dengan nama pilihan anda."},
-{id:3,cat:"Plaque",name:"Plaque Custom",price:35,img:"product-3.jpg",desc:"Custom nama, logo, teks dan design."},
-{id:4,cat:"Trophy",name:"Trophy Custom",price:45,img:"product-4.jpg",desc:"Custom nama, logo, teks dan design."},
-{id:5,cat:"Trophy",name:"Trophy Event",price:50,img:"product-5.jpg",desc:"Untuk kejohanan, acara dan pertandingan."},
-{id:6,cat:"Medal",name:"Medal Custom",price:8,img:"product-6.jpg",desc:"Medal custom untuk acara dan pertandingan."},
-{id:7,cat:"Brooch",name:"Brooch Custom",price:6,img:"product-7.jpg",desc:"Custom logo dan design pilihan pelanggan."},
-{id:8,cat:"Brooch",name:"Brooch Premium",price:12,img:"product-8.jpg",desc:"Brooch premium untuk corporate dan event."}
-];
-let cart=JSON.parse(localStorage.getItem("reqooCart")||"[]"), current=null, activeCat="Semua";
-
-function render(){
- const q=document.getElementById("search").value.toLowerCase();
- const list=products.filter(p=>(activeCat==="Semua"||p.cat===activeCat)&&
- (p.name.toLowerCase().includes(q)||p.cat.toLowerCase().includes(q)));
- document.getElementById("grid").innerHTML=list.map(p=>`
- <div class="card">
- <img src="${p.img}" onerror="this.style.display='none'" alt="">
- <div class="info"><div class="tag">${p.cat.toUpperCase()}</div><div class="name">${p.name}</div>
- <div class="desc">${p.desc}</div><div class="price">Dari RM${p.price}</div>
- <button class="btn" onclick="customize(${p.id})">Customize</button></div></div>`).join("");
- updateCount();
-}
-function filterCat(c,b){activeCat=c;document.querySelectorAll(".cat").forEach(x=>x.classList.remove("active"));b.classList.add("active");render()}
-document.getElementById("search").addEventListener("input",render);
-function customize(id){current=products.find(p=>p.id===id);document.getElementById("customTitle").textContent="Customize — "+current.name;document.getElementById("customOverlay").style.display="flex"}
-function closeCustom(){document.getElementById("customOverlay").style.display="none"}
-function addCustomToCart(){
- const qty=Math.max(1,parseInt(document.getElementById("customQty").value)||1);
- cart.push({id:Date.now(),product:current.name,cat:current.cat,price:current.price,qty,
- custom:document.getElementById("customName").value||"-",note:document.getElementById("customNote").value||"-"});
- localStorage.setItem("reqooCart",JSON.stringify(cart));closeCustom();openCart();
-}
-function updateCount(){document.getElementById("cartCount").textContent=cart.reduce((a,x)=>a+x.qty,0)}
-function total(){return cart.reduce((a,x)=>a+x.price*x.qty,0)}
-function openCart(){renderCart();document.getElementById("cartOverlay").style.display="flex"}
-function closeCart(){document.getElementById("cartOverlay").style.display="none"}
-function renderCart(){
- document.getElementById("cartItems").innerHTML=cart.length?cart.map((x,i)=>`
- <div class="summary"><b>${x.product}</b> × ${x.qty}<br>Custom: ${x.custom}<br>Nota: ${x.note}
- <br><b>RM${(x.price*x.qty).toFixed(2)}</b><br><button onclick="removeItem(${i})">Buang</button></div>`).join(""):"Cart kosong.";
- document.getElementById("cartTotal").textContent=total().toFixed(2);updateCount()
-}
-function removeItem(i){cart.splice(i,1);localStorage.setItem("reqooCart",JSON.stringify(cart));renderCart()}
-function checkout(){
- if(!cart.length)return alert("Cart kosong.");
- document.getElementById("payTotal").textContent=total().toFixed(2);
- closeCart();document.getElementById("checkoutOverlay").style.display="flex";
-}
-function closeCheckout(){document.getElementById("checkoutOverlay").style.display="none"}
-function paidWhatsApp(){
- const n=document.getElementById("custName").value.trim(), ph=document.getElementById("custPhone").value.trim(), ad=document.getElementById("custAddress").value.trim();
- if(!n||!ph){alert("Sila isi nama dan no. WhatsApp.");return}
- let msg="*ORDER REQOO.CO*%0A%0A";
- cart.forEach((x,i)=>msg+=(i+1)+". "+x.product+" x"+x.qty+" — RM"+(x.price*x.qty).toFixed(2)+"%0ACustom: "+encodeURIComponent(x.custom)+"%0ANota: "+encodeURIComponent(x.note)+"%0A%0A");
- msg+="*Jumlah: RM"+total().toFixed(2)+"*%0A%0ANama: "+encodeURIComponent(n)+"%0AWhatsApp: "+encodeURIComponent(ph)+"%0AAlamat: "+encodeURIComponent(ad)+"%0A%0APembayaran: Maybank QR — pelanggan akan hantar bukti pembayaran.";
- window.open("https://wa.me/60165192803?text="+msg,"_blank");
-}
-render();
-</script>
-</body>
-</html>
+<footer><div class="wrap foot"><div><b style="color:#ddd">REQOO<span class="gold">.CO</span></b> — Custom made. Just for you.</div><div><a href="/shop/">Shop</a> &nbsp;•&nbsp; <a href="/shop/promotion.html">Promotion</a></div></div></footer>
+</body></html>
