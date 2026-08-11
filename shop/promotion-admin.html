@@ -6,7 +6,7 @@
 <main class="wrap">
 <section id="login" class="login"><h2>Promotion Manager</h2><p class="muted">Masukkan Admin Token yang sama seperti Google Apps Script.</p><input id="token" type="password" placeholder="Admin token"><button class="btn goldbtn" onclick="login()">Masuk</button><p id="err" style="color:#f66"></p></section>
 <section id="app" style="display:none">
-<div class="toolbar"><h1>Promotions</h1><button class="btn goldbtn" onclick="newPromo()">+ Promo Baru</button><a class="btn" style="background:#222;color:#fff;text-decoration:none" href="/shop/promotion.html">Lihat Public Page</a></div>
+<div class="toolbar"><h1>Promotions</h1><button class="btn goldbtn" onclick="newPromo()">+ Promo Baru</button><button class="btn" style="background:#222;color:#fff" onclick="logout()">Keluar</button><a class="btn" style="background:#222;color:#fff;text-decoration:none" href="/shop/promotion.html">Lihat Public Page</a></div>
 <div id="form" class="card" style="display:none;margin-bottom:15px"><h2 id="formTitle">Promo Baru</h2><input id="id" type="hidden">
 <div class="formgrid">
 <div><label>Tajuk promo</label><input id="title" placeholder="Contoh: Merdeka Special"></div>
@@ -40,17 +40,193 @@ const PRODUCTS=[
 {id:207,name:'Big Brooch',image:'assets/brooch-05-07.jpg',v:[['Petak 50×20mm',2],['Bulat 50×50mm',2]]}
 ];
 let TOKEN='',PROMOS=[];
-function money(n){return 'RM'+Number(n||0).toFixed(2)}function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-function login(){TOKEN=document.getElementById('token').value.trim();if(TOKEN)load()}
-async function load(){try{const r=await fetch(API+'?action=listPromotions&token='+encodeURIComponent(TOKEN));const j=await r.json();if(!j.ok)throw Error(j.error||'Token salah');PROMOS=j.promotions||[];document.getElementById('login').style.display='none';document.getElementById('app').style.display='block';render()}catch(e){document.getElementById('err').textContent=e.message}}
+function money(n){return 'RM'+Number(n||0).toFixed(2)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+
+function setBusy(b){
+  const btn=document.querySelector('#login button');
+  if(btn){btn.disabled=b;btn.textContent=b?'Semak...':'Masuk'}
+}
+
+async function login(){
+  const input=document.getElementById('token');
+  TOKEN=input.value.trim();
+  document.getElementById('err').textContent='';
+
+  if(!TOKEN){
+    document.getElementById('err').textContent='Masukkan Admin Token.';
+    return;
+  }
+
+  setBusy(true);
+
+  try{
+    const r=await fetch(API+'?action=adminCheck&token='+encodeURIComponent(TOKEN),{
+      cache:'no-store'
+    });
+    const j=await r.json();
+
+    if(!j.ok || !j.admin){
+      throw new Error(j.error||'Token salah');
+    }
+
+    sessionStorage.setItem('REQOO_ADMIN_TOKEN',TOKEN);
+    await load();
+  }catch(e){
+    TOKEN='';
+    sessionStorage.removeItem('REQOO_ADMIN_TOKEN');
+    document.getElementById('err').textContent=e.message||'Unauthorized';
+  }finally{
+    setBusy(false);
+  }
+}
+
+async function load(){
+  try{
+    if(!TOKEN) throw new Error('Sila login semula.');
+
+    const r=await fetch(
+      API+'?action=listPromotions&token='+encodeURIComponent(TOKEN),
+      {cache:'no-store'}
+    );
+
+    const j=await r.json();
+
+    if(!j.ok || !j.admin){
+      throw new Error(j.error||'Unauthorized');
+    }
+
+    PROMOS=j.promotions||[];
+    document.getElementById('login').style.display='none';
+    document.getElementById('app').style.display='block';
+    render();
+  }catch(e){
+    document.getElementById('err').textContent=e.message||'Unauthorized';
+    document.getElementById('login').style.display='block';
+    document.getElementById('app').style.display='none';
+  }
+}
+
+function logout(){
+  TOKEN='';
+  PROMOS=[];
+  sessionStorage.removeItem('REQOO_ADMIN_TOKEN');
+  document.getElementById('app').style.display='none';
+  document.getElementById('login').style.display='block';
+  document.getElementById('token').value='';
+  document.getElementById('err').textContent='';
+}
 function productById(id){return PRODUCTS.find(p=>String(p.id)===String(id))}
 function fillProducts(){document.getElementById('product').innerHTML=PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');syncProduct()}
 function syncProduct(){const p=productById(document.getElementById('product').value);document.getElementById('variant').innerHTML=p.v.map((x,i)=>`<option value="${i}">${x[0]} — ${money(x[1])}</option>`).join('');const v=p.v[+document.getElementById('variant').value||0];document.getElementById('image').value=p.image;document.getElementById('promoPrice').placeholder='Contoh '+v[1]}
 document.getElementById('variant').onchange=()=>{};
 function newPromo(){fillProducts();document.getElementById('formTitle').textContent='Promo Baru';document.getElementById('id').value='';['title','slug','subtitle','promoPrice','start','end','description'].forEach(x=>document.getElementById(x).value='');document.getElementById('active').value='true';document.getElementById('form').style.display='block';window.scrollTo({top:0,behavior:'smooth'})}
 function edit(id){const p=PROMOS.find(x=>x.id===id);if(!p)return;fillProducts();document.getElementById('formTitle').textContent='Edit Promo';document.getElementById('id').value=p.id;document.getElementById('title').value=p.title;document.getElementById('slug').value=p.slug;document.getElementById('subtitle').value=p.subtitle;document.getElementById('start').value=p.start;document.getElementById('end').value=p.end;document.getElementById('image').value=p.image;document.getElementById('description').value=p.description;document.getElementById('active').value=String(p.active);document.getElementById('product').value=p.productId;syncProduct();const pr=productById(p.productId);const vi=Math.max(0,pr.v.findIndex(x=>x[0]===p.variant));document.getElementById('variant').value=vi;document.getElementById('promoPrice').value=p.promoPrice;document.getElementById('form').style.display='block';window.scrollTo({top:0,behavior:'smooth'})}
-async function save(){const p=productById(document.getElementById('product').value),v=p.v[+document.getElementById('variant').value||0],data={action:'savePromotion',token:TOKEN,id:document.getElementById('id').value||undefined,title:document.getElementById('title').value.trim(),slug:document.getElementById('slug').value.trim(),subtitle:document.getElementById('subtitle').value.trim(),productId:p.id,productName:p.name,variant:v[0],originalPrice:v[1],promoPrice:Number(document.getElementById('promoPrice').value||0),start:document.getElementById('start').value,end:document.getElementById('end').value,image:document.getElementById('image').value.trim()||p.image,description:document.getElementById('description').value.trim(),active:document.getElementById('active').value==='true'};if(!data.title||!data.slug||!data.promoPrice){alert('Isi tajuk, slug dan harga promo.');return}const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(data)}),j=await r.json();if(!j.ok){alert(j.error||'Gagal simpan');return}cancelEdit();load()}
+async function save(){
+  if(!TOKEN){
+    alert('Sesi admin tamat. Sila login semula.');
+    return;
+  }
+
+  const p=productById(document.getElementById('product').value);
+  const v=p.v[+document.getElementById('variant').value||0];
+
+  const data={
+    action:'savePromotion',
+    token:TOKEN,
+    id:document.getElementById('id').value||undefined,
+    title:document.getElementById('title').value.trim(),
+    slug:document.getElementById('slug').value.trim(),
+    subtitle:document.getElementById('subtitle').value.trim(),
+    productId:p.id,
+    productName:p.name,
+    variant:v[0],
+    originalPrice:v[1],
+    promoPrice:Number(document.getElementById('promoPrice').value||0),
+    start:document.getElementById('start').value,
+    end:document.getElementById('end').value,
+    image:document.getElementById('image').value.trim()||p.image,
+    description:document.getElementById('description').value.trim(),
+    active:document.getElementById('active').value==='true'
+  };
+
+  if(!data.title||!data.slug||!data.promoPrice){
+    alert('Isi tajuk, slug dan harga promo.');
+    return;
+  }
+
+  try{
+    const r=await fetch(API,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify(data)
+    });
+
+    const j=await r.json();
+
+    if(!j.ok){
+      if(j.error==='Unauthorized'){
+        logout();
+        alert('Sesi admin tidak sah. Login semula.');
+      }else{
+        alert(j.error||'Gagal simpan');
+      }
+      return;
+    }
+
+    cancelEdit();
+    await load();
+  }catch(e){
+    alert('Tidak dapat sambung ke server. Cuba lagi.');
+  }
+}
+
+async function del(id){
+  if(!TOKEN){
+    alert('Sesi admin tamat. Sila login semula.');
+    return;
+  }
+
+  if(!confirm('Padam promo ini?')) return;
+
+  try{
+    const r=await fetch(API,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({
+        action:'deletePromotion',
+        token:TOKEN,
+        id:id
+      })
+    });
+
+    const j=await r.json();
+
+    if(!j.ok){
+      if(j.error==='Unauthorized'){
+        logout();
+        alert('Sesi admin tidak sah. Login semula.');
+      }else{
+        alert(j.error||'Gagal');
+      }
+      return;
+    }
+
+    await load();
+  }catch(e){
+    alert('Tidak dapat sambung ke server. Cuba lagi.');
+  }
+}
+
 async function del(id){if(!confirm('Padam promo ini?'))return;const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'deletePromotion',token:TOKEN,id})}),j=await r.json();if(!j.ok)alert(j.error||'Gagal');else load()}
 function cancelEdit(){document.getElementById('form').style.display='none'}
 function render(){document.getElementById('list').innerHTML=PROMOS.length?PROMOS.map(p=>`<article class="card"><div class="promo"><img src="${esc(p.image)}"><div><div class="muted">${p.active?'ACTIVE':'INACTIVE'} • ${esc(p.slug)}</div><h3>${esc(p.title)}</h3><div>${esc(p.productName)} — ${esc(p.variant)}</div><div class="price">${money(p.originalPrice)} → ${money(p.promoPrice)}</div><div class="muted">${esc(p.start||'')} hingga ${esc(p.end||'')}</div><div class="actions" style="margin-top:10px"><button class="btn goldbtn" onclick="edit('${esc(p.id)}')">Edit</button><button class="btn danger" onclick="del('${esc(p.id)}')">Padam</button><a class="btn" style="background:#222;color:#fff;text-decoration:none" href="/shop/?promo=${encodeURIComponent(p.slug)}">Test</a></div></div></div></article>`).join(''):'<div class="card muted">Belum ada promotion.</div>'}
+window.addEventListener('DOMContentLoaded',()=>{
+  const saved=sessionStorage.getItem('REQOO_ADMIN_TOKEN');
+  if(saved){
+    TOKEN=saved;
+    document.getElementById('token').value=saved;
+    load().catch(()=>{});
+  }
+});
 </script></body></html>
