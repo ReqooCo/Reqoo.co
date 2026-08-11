@@ -15,14 +15,10 @@ header{position:sticky;top:0;z-index:50;background:#080808eF;border-bottom:1px s
 .modal{position:fixed;inset:0;background:#000e;z-index:80;display:none;align-items:center;justify-content:center;padding:16px}.modal.open{display:flex}.box{width:min(820px,100%);max-height:92vh;overflow:auto;background:linear-gradient(180deg,#151515,#0d0d0d);border:1px solid #3a3a3a;border-radius:24px;padding:22px;box-shadow:0 30px 100px #000}.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}.two>div:first-child>img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:16px}label{display:block;color:#aaa;font-size:11px;margin:12px 0 6px}input,textarea,select{width:100%;background:#080808;border:1px solid #333;color:#fff;border-radius:10px;padding:11px;outline:none}select{appearance:auto}input:focus,textarea:focus,select:focus{border-color:#8d7440}.uploadbox{border:1px dashed #5b4b2a;border-radius:14px;padding:13px;background:#0a0a0a;margin-top:10px}.uploadbox input{border:0;padding:8px 0;background:transparent}.choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}.choice .field{background:#0b0b0b;border:1px solid #2b2b2b;border-radius:12px;padding:10px}.summary{background:#111;border:1px solid #2b2b2b;border-radius:14px;padding:14px;margin-top:14px}.summary b{color:var(--gold);font-size:20px}.paybox{background:#0d0d0d;border:1px solid #3b3222;border-radius:16px;padding:18px;text-align:center}.paybox img{width:min(260px,80%);background:#fff;border-radius:12px;padding:8px}.receiptPreview{display:none;margin-top:10px;padding:8px;border:1px solid #333;border-radius:12px;justify-content:center}.receiptPreview img{max-width:100%;max-height:260px;border-radius:10px}.muted{color:#888;font-size:12px;line-height:1.6}.success{padding:20px;border:1px solid #3b3222;background:#111;border-radius:16px}.success h3{color:var(--gold)}
 footer{border-top:1px solid #222;padding:28px 0;color:#777;font-size:12px}.modalHead{display:flex;align-items:center;gap:12px}.modalHead h2{margin:0}.xbtn{margin-left:auto;border:0;background:#222;color:#fff;border-radius:50%;width:34px;height:34px;cursor:pointer}
 @media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:620px){.nav{flex-wrap:wrap;padding:10px 0}.search{order:3;flex-basis:100%}.hero{padding-top:42px}.grid{grid-template-columns:1fr 1fr;gap:12px}.two{grid-template-columns:1fr}.choice{grid-template-columns:1fr}.body{padding:13px}.body h3{font-size:15px}}
-</style>
-<style>
-.reqooChat{position:fixed;right:18px;bottom:18px;z-index:65;display:flex;align-items:center;gap:9px;padding:12px 16px;border-radius:999px;background:linear-gradient(135deg,#d9b45e,#f2d68d);color:#090909;text-decoration:none;font-weight:950;font-size:12px;box-shadow:0 12px 35px #0009,0 0 0 1px #d9b45e55}
-.reqooChat .chatIcon{width:27px;height:27px;display:grid;place-items:center;border-radius:50%;background:#090909;color:#f2d68d;font-size:14px}
-@media(max-width:620px){.reqooChat{right:14px;bottom:14px;padding:10px 13px;font-size:11px}.reqooChat .chatIcon{width:25px;height:25px}}
-</style>
-</head><body>
+.chatFab{position:fixed;right:18px;bottom:20px;z-index:65;border:1px solid #6b572d;background:linear-gradient(135deg,#d9b45e,#f2d68d);color:#080808;border-radius:999px;padding:13px 18px;font-weight:950;box-shadow:0 12px 30px #0008;cursor:pointer}.chatFab:hover{transform:translateY(-2px)}.chatFab span{margin-left:4px}.sendState{display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;border:1px solid #4b3c20;background:#0e0e0e;border-radius:14px;color:#ddd;margin-top:14px}.spinner{width:18px;height:18px;border:2px solid #444;border-top-color:var(--gold2);border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.receiptActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.receiptActions button{width:100%}@media(max-width:620px){.chatFab{right:12px;bottom:14px;padding:12px 15px}.receiptActions{grid-template-columns:1fr}}
+</style></head><body>
 <header><div class="wrap"><nav class="nav"><a class="logo" href="/shop/"><span class="logoMark">R</span>REQOO<span class="gold">.CO</span></a><div class="search"><input id="q" placeholder="Cari plaque, trophy, medal, brooch..." oninput="render()"></div><button class="cart" onclick="openCart()">🛒 <b id="cc">0</b></button></nav></div></header>
+<button class="chatFab" onclick="openReqooChat()">💬 <span>Chat REQOO</span></button>
 <section class="hero"><div class="wrap"><div class="eyebrow">REQOO.CO SHOP</div><h1>Custom made.<br><span class="gold">Just for you.</span></h1><p>Pilih produk, pilih variant daripada catalogue, customize tempahan dan kumpulkan dalam cart. Checkout terus dengan Maybank QR.</p><div class="heroBadge">✦ <span>Laser Cut</span> • Engraving • Acrylic • 3D Print • Custom</div></div></section>
 <main class="wrap"><div class="shopHead"><div><h2>Catalogue</h2><p>Harga Plaque & Brooch mengikut catalogue REQOO.CO.</p></div></div><div class="cats" id="cats"></div><div class="grid" id="grid"></div></main>
 <footer><div class="wrap"><b style="color:#ddd">REQOO<span class="gold">.CO</span></b> — Custom made. Just for you.</div></footer>
@@ -51,164 +47,75 @@ const P=[
 let cat='Semua',cart=[],current=null;
 const PROMO_API=ORDER_API_URL;
 let ACTIVE_PROMO=null;
-function applyPromotion(p){
-  if(!p)return false;
-  ACTIVE_PROMO=p;
-  try{sessionStorage.setItem('REQOO_PROMO',JSON.stringify({promotion:p,savedAt:Date.now()}))}catch(e){}
-  const prod=P.find(x=>String(x.id)===String(p.productId));
-  if(!prod)return false;
-  prod.variants=prod.variants.map(v=>v[0]===p.variant?[v[0],Number(p.promoPrice),Number(v[1]),true]:v);
-  return true;
-}
-function variantPrice(v){return Number(v[3]?v[1]:v[1]||0)}
-function originalVariantPrice(v){return Number(v[3]?v[2]:v[1]||0)}
-function promoForItem(x){return x&&x.promo&&x.promo===String(ACTIVE_PROMO?.slug||'')?ACTIVE_PROMO:null}
+function applyPromotion(promoOrList){
+  const list=Array.isArray(promoOrList)?promoOrList:
+    (promoOrList&&Array.isArray(promoOrList.promotions)?promoOrList.promotions:
+      (promoOrList?[promoOrList]:[]));
 
-function money(n){return 'RM'+Number(n||0).toFixed(2)}
-function render(){
-  const q=document.getElementById('q').value.toLowerCase();
-  const cs=['Semua',...new Set(P.map(x=>x.category))];
-  document.getElementById('cats').innerHTML=cs.map(c=>`<button class="cat ${c===cat?'active':''}" onclick="cat=${JSON.stringify(c)};render()">${c}</button>`).join('');
-  const a=P.filter(x=>(cat==='Semua'||x.category===cat)&&(!q||JSON.stringify(x).toLowerCase().includes(q)));
-  document.getElementById('grid').innerHTML=a.map(x=>`<article class="card"><div class="pic"><img src="${x.image}" alt="${x.name}"></div><div class="body"><div class="tag">${x.category.toUpperCase()}</div><h3>${x.name}</h3><div class="desc">${x.desc}</div><div class="price">${x.variants[0][1] ? 'Dari '+money(x.variants.reduce((m,v)=>Math.min(m,variantPrice(v)),Infinity)) : 'Quotation'}</div>${ACTIVE_PROMO&&String(ACTIVE_PROMO.productId)===String(x.id)?'<div style="color:#f2d68d;font-size:11px;font-weight:900;margin-bottom:10px">🔥 PROMO — '+esc(ACTIVE_PROMO.title)+'</div>':''}<button class="btn" onclick="custom(${x.id})">Customize</button></div></article>`).join('');
-}
-function custom(id){
-  current=P.find(x=>x.id===id);
-  document.getElementById('mTag').textContent=current.category.toUpperCase();
-  document.getElementById('mTitle').textContent=current.name;
-  let opts=current.variants.map((v,i)=>`<option value="${i}">${v[0]} — ${variantPrice(v)?money(variantPrice(v)):'Quotation'}</option>`).join('');
-  document.getElementById('form').innerHTML=`<div class="two"><div><img src="${current.image}" alt="${current.name}"></div><div><label>Pilihan / saiz</label><select id="variant" onchange="syncVariant()">${opts}</select><div class="choice"><div class="field"><label style="margin-top:0">Harga seunit</label><b id="unitPrice">${variantPrice(current.variants[0])?money(variantPrice(current.variants[0])):'Quotation'}</b></div><div class="field"><label style="margin-top:0">Kuantiti</label><input id="qt" type="number" min="1" value="1" oninput="syncVariant()"></div></div><label>Nama / teks</label><input id="nm" placeholder="Contoh: Anugerah Kecemerlangan"><label>Upload logo / artwork</label><div class="uploadbox"><input id="logo" type="file" accept="image/png,image/jpeg,image/webp"><div class="muted">PNG / JPG / WEBP</div></div><label>Nota / idea custom</label><textarea id="nt" rows="4" placeholder="Saiz, warna, tarikh event, kemasan, dll."></textarea><div class="summary"><div>Anggaran</div><b id="lineTotal">${variantPrice(current.variants[0])?money(variantPrice(current.variants[0])):'Quotation'}</b></div><br><button class="btn" onclick="addToCart()">Tambah ke Cart</button></div></div>`;
-  document.getElementById('modal').classList.add('open');syncVariant();
-}
-function syncVariant(){
-  if(!current)return;
-  let v=current.variants[+document.getElementById('variant').value],q=Math.max(1,+document.getElementById('qt').value||1);
-  document.getElementById('unitPrice').textContent=variantPrice(v)?money(variantPrice(v)):'Quotation';
-  document.getElementById('lineTotal').textContent=variantPrice(v)?money(variantPrice(v)*q):'Quotation';
-}
-function addToCart(){
-  const v=current.variants[+document.getElementById('variant').value],q=Math.max(1,+document.getElementById('qt').value||1);
-  const file=document.getElementById('logo').files[0];
-  const promoApplies=!!(ACTIVE_PROMO&&String(ACTIVE_PROMO.productId)===String(current.id)&&String(ACTIVE_PROMO.variant)===String(v[0]));
-  const save=logo=>{
-    cart.push({product:current,variant:v[0],unitPrice:variantPrice(v),originalUnitPrice:originalVariantPrice(v),q,name:document.getElementById('nm').value.trim(),note:document.getElementById('nt').value.trim(),logo:logo||'',promo:promoApplies?ACTIVE_PROMO.slug:'',promoTitle:promoApplies?ACTIVE_PROMO.title:'',promoId:promoApplies?ACTIVE_PROMO.id:''});
-    closeModal();update();openCart();
-  };
-  if(file){const r=new FileReader();r.onload=()=>save(r.result);r.readAsDataURL(file)}else save('');
-}
-function update(){
-  document.getElementById('cc').textContent=cart.reduce((a,x)=>a+x.q,0);
-  document.getElementById('cartCount').textContent=cart.reduce((a,x)=>a+x.q,0);
-  const total=cartTotal();document.getElementById('cartTotal').textContent=money(total);
-  document.getElementById('items').innerHTML=cart.length?cart.map((x,i)=>{
-    const promo=x.promo&&x.originalUnitPrice!==x.unitPrice;
-    return `<div class="item"><img src="${x.product.image}"><div style="flex:1"><b>${x.product.name}</b><small><br>${x.variant}<br>Kuantiti: ${x.q}${x.name?'<br>Nama/teks: '+esc(x.name):''}${x.logo?'<br>✓ Artwork dilampirkan':''}${x.note?'<br>Nota: '+esc(x.note):''}<br>${promo?'<span style=\"text-decoration:line-through;color:#777\">'+money(x.originalUnitPrice*x.q)+'</span> → <b style=\"color:#f2d68d\">'+money(x.unitPrice*x.q)+'</b> 🔥':''}${!promo?(x.unitPrice?money(x.unitPrice*x.q):'Quotation'):''}</small><br><button onclick="cart.splice(${i},1);update()">Buang</button></div></div>`
-  }).join(''):'<p style="color:#999">Cart masih kosong.</p>'
-}
-function cartTotal(){return cart.reduce((a,x)=>a+x.unitPrice*x.q,0)}
-function openCart(){update();document.getElementById('drawer').classList.add('open')}function closeCart(){document.getElementById('drawer').classList.remove('open')}function closeModal(){document.getElementById('modal').classList.remove('open')}function closePay(){document.getElementById('payModal').classList.remove('open')}
-function openCheckout(){
-  if(!cart.length){alert('Cart masih kosong.');return}
-  closeCart();
-  const no='RQ'+new Date().toISOString().replace(/[-:TZ.]/g,'').slice(0,14);window.currentOrderNo=no;
-  const total=cartTotal();
-  const lines=cart.map(x=>{
-    const promo=x.promo&&x.originalUnitPrice!==x.unitPrice;
-    return `<div style="padding:9px 0;border-bottom:1px solid #222"><b>${esc(x.product.name)}</b> — ${esc(x.variant)} × ${x.q}<br>${promo?'<span style=\"text-decoration:line-through;color:#777\">Harga asal: '+money(x.originalUnitPrice*x.q)+'</span><br><span style=\"color:#f2d68d;font-weight:900\">🔥 Harga promo: '+money(x.unitPrice*x.q)+'</span>':'Harga: '+(x.unitPrice?money(x.unitPrice*x.q):'Quotation')}</div>`
-  }).join('');
-  document.getElementById('checkoutBody').innerHTML=`<div class="summary"><b>No. Order: ${no}</b><div style="margin-top:8px">${cart.reduce((a,x)=>a+x.q,0)} unit</div>${lines}<div style="font-size:24px;margin-top:12px;color:var(--gold)">Jumlah: ${total?money(total):'Quotation'}</div></div><label>Nama</label><input id="buyerName" placeholder="Nama penuh"><label>No. WhatsApp</label><input id="buyerPhone" placeholder="01xxxxxxxx"><label>Alamat penghantaran</label><textarea id="buyerAddress" rows="3" placeholder="Alamat penuh"></textarea>${total?`<div class="paybox"><h3>Bayar melalui Maybank QR</h3><img src="assets/qr-maybank.png" alt="Maybank QR"><p class="muted">Scan QR menggunakan aplikasi bank anda. Selepas bayar, upload bukti pembayaran di bawah.</p></div>`:'<div class="paybox"><h3>Quotation</h3><p class="muted">Produk ini memerlukan semakan harga. Hantar order untuk quotation.</p></div>'}<label>Bukti pembayaran / resit${total?'':' (jika ada)'}</label><input id="receiptFile" type="file" accept="image/*,.pdf" onchange="previewReceipt(event)"><div class="receiptPreview" id="receiptPreview"></div><p id="receiptName" class="muted"></p><button class="wa" onclick="submitOrder()">${total?'Saya Dah Bayar — Hantar Order WhatsApp':'Hantar Order untuk Quotation'}</button>`;
-  document.getElementById('payModal').classList.add('open')
-}
-function previewReceipt(e){const f=e.target.files[0],box=document.getElementById('receiptPreview');document.getElementById('receiptName').textContent=f?'✓ '+f.name:'';if(!f){box.style.display='none';return}if(f.type.startsWith('image/')){const r=new FileReader();r.onload=()=>{box.innerHTML='<img src="'+r.result+'">';box.style.display='flex'};r.readAsDataURL(f)}else{box.innerHTML='<span class="muted">PDF resit dipilih: '+esc(f.name)+'</span>';box.style.display='flex'}}
-async function fileData(file){return await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})}
-async function submitOrder(){
-  const name=document.getElementById('buyerName').value.trim(),phone=document.getElementById('buyerPhone').value.trim(),addr=document.getElementById('buyerAddress').value.trim(),receipt=document.getElementById('receiptFile').files[0];
-  if(!name||!phone){alert('Sila isi nama dan No. WhatsApp.');return}
-  const total=cartTotal();
-  if(total&&!receipt){alert('Sila upload bukti pembayaran dahulu.');return}
+  if(!list.length)return;
 
-  // Beritahu customer bahawa sistem sedang menyimpan order.
-  // Ini mengelakkan rasa seperti butang tidak berfungsi ketika upload resit.
-  const submitBtn=document.querySelector('#checkoutBody .wa');
-  if(submitBtn){
-    submitBtn.disabled=true;
-    submitBtn.textContent='⏳ Menyimpan order...';
-    submitBtn.style.opacity='.65';
-  }
+  // Keep the campaign slug/title available globally for cart/checkout.
+  window.REQOO_PROMOTIONS=list;
 
-  const items=cart.map(x=>({name:x.product.name,productId:x.product.id,category:x.product.category,variant:x.variant,qty:x.q,unitPrice:x.unitPrice,originalUnitPrice:x.originalUnitPrice,promo:x.promo||'',promoId:x.promoId||'',promoTitle:x.promoTitle||'',customText:x.name||'',note:x.note||''}));
-  let db={ok:false};
-  try{
-    const payload={action:'createOrder',orderNo:window.currentOrderNo,name,phone,address:addr,itemCount:cart.reduce((a,x)=>a+x.q,0),subtotal:total,shipping:0,total,payment:total?'Maybank QR':'Quotation',items,receipt:receipt?{name:receipt.name,type:receipt.type,data:await fileData(receipt)}:null};
-    const r=await fetch(ORDER_API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});
-    db=await r.json();
-    if(!db.ok){
-      alert(db.error||'Order gagal disimpan.');
-      if(submitBtn){
-        submitBtn.disabled=false;
-        submitBtn.textContent=total?'Saya Dah Bayar — Hantar Order WhatsApp':'Hantar Order untuk Quotation';
-        submitBtn.style.opacity='1';
+  // Build lookup using Product ID + Variant. This is what allows one
+  // campaign slug to contain A5, A4, A3, Classic A5, etc.
+  const byKey={};
+  list.forEach(p=>{
+    const key=String(p.productId||'')+'||'+String(p.variant||'');
+    byKey[key]=p;
+  });
+
+  products.forEach(p=>{
+    const pid=String(p.id||p.productId||'');
+    if(!Array.isArray(p.variants))return;
+
+    p.variants=p.variants.map(v=>{
+      const variantName=String(Array.isArray(v)?v[0]:(v&&v.name)||'');
+      const basePrice=Number(Array.isArray(v)?v[1]:(v&&v.price)||0);
+      const promo=byKey[pid+'||'+variantName];
+
+      if(promo){
+        return {
+          name:variantName,
+          price:Number(promo.promoPrice||0),
+          originalPrice:Number(promo.originalPrice||basePrice),
+          promo:promo.slug,
+          promoTitle:promo.title,
+          promoSubtitle:promo.subtitle,
+          promoImage:promo.image||'',
+          promoDescription:promo.description||''
+        };
       }
-      return
+
+      return {
+        name:variantName,
+        price:basePrice,
+        originalPrice:basePrice,
+        promo:'',
+        promoTitle:'',
+        promoSubtitle:'',
+        promoImage:'',
+        promoDescription:''
+      };
+    });
+  });
+
+  // Also support products that store a single price rather than variants.
+  products.forEach(p=>{
+    const pid=String(p.id||p.productId||'');
+    const single=list.find(x=>
+      String(x.productId)===pid &&
+      (!x.variant || x.variant==='Default')
+    );
+    if(single && !Array.isArray(p.variants)){
+      p.price=Number(single.promoPrice||p.price||0);
+      p.originalPrice=Number(single.originalPrice||p.originalPrice||p.price||0);
+      p.promo=single.slug;
+      p.promoTitle=single.title;
     }
-  }catch(e){
-    console.error(e);
-    alert('Tidak dapat sambung ke sistem order. Sila cuba lagi.');
-    if(submitBtn){
-      submitBtn.disabled=false;
-      submitBtn.textContent=total?'Saya Dah Bayar — Hantar Order WhatsApp':'Hantar Order untuk Quotation';
-      submitBtn.style.opacity='1';
-    }
-    return
-  }
-  const savedItems=Array.isArray(db.items)?db.items:items;
-  const savedTotal=Number(db.total||0);
-  let msg='*ORDER REQOO.CO*%0A%0ANo. Order: '+window.currentOrderNo+'%0A';
-  savedItems.forEach((x,i)=>msg+=(i+1)+'. '+encodeURIComponent(x.name)+' — '+encodeURIComponent(x.variant)+' — '+x.qty+' unit — '+(x.unitPrice?money(x.unitPrice*x.qty):'Quotation')+'%0A'+(x.promo?('🔥 PROMO: '+encodeURIComponent(x.promoTitle||x.promo)+'%0A'):'')+(x.originalUnitPrice&&x.originalUnitPrice!==x.unitPrice?'Harga asal: '+money(x.originalUnitPrice)+' / unit%0A':'')+(x.customText?'Nama/teks: '+encodeURIComponent(x.customText)+'%0A':'')+(x.note?'Nota: '+encodeURIComponent(x.note)+'%0A':''));
-  msg+=' %0A'+(savedTotal?'*Jumlah: '+money(savedTotal)+'*':'*Mohon quotation*')+'%0A%0ANama: '+encodeURIComponent(name)+'%0AWhatsApp: '+encodeURIComponent(phone)+'%0AAlamat: '+encodeURIComponent(addr)+'%0APembayaran: '+(savedTotal?'Maybank QR':'Quotation')+'%0A';
-  if(receipt)msg+='Bukti pembayaran: '+encodeURIComponent(receipt.name)+'%0A';
-  msg+='%0ARekod sistem: ✓ Disimpan';
-  // IMPORTANT:
-  // Jangan terus buka WhatsApp selepas await/fetch.
-  // Sesetengah browser/mobile akan block popup dan customer tak pasti
-  // sama ada order sudah berjaya atau belum.
-  // Kita tunjuk status "Order diterima" dahulu, kemudian customer
-  // tekan butang WhatsApp secara manual.
-  const waUrl='https://wa.me/'+WA_NUMBER+'?text='+msg;
-  LAST_WA_URL=waUrl;
-  try{sessionStorage.removeItem('REQOO_PROMO')}catch(e){}
-
-  document.getElementById('checkoutBody').innerHTML=
-    '<div class="success" style="text-align:center;padding:28px 20px">'+
-      '<div style="font-size:42px;margin-bottom:10px">✓</div>'+
-      '<h3 style="font-size:24px;margin:0 0 8px">Order Berjaya Diterima</h3>'+
-      '<p style="font-size:14px;color:#ddd;margin:0 0 6px">No. Order: <b>'+window.currentOrderNo+'</b></p>'+
-      '<p class="muted" style="max-width:520px;margin:10px auto 18px">'+
-        'Order telah berjaya disimpan dalam sistem REQOO.CO. '+
-        'Bukti pembayaran juga telah diterima. Sekarang hantar maklumat order ke WhatsApp untuk tindakan kami.'+
-      '</p>'+
-      '<div style="background:#0b0b0b;border:1px solid #3b3222;border-radius:14px;padding:14px;margin:15px 0;text-align:left">'+
-        '<div style="color:#8fd18f;font-weight:900">✓ STATUS: ORDER DITERIMA</div>'+
-        '<div class="muted" style="margin-top:5px">Anda tidak perlu bayar semula walaupun WhatsApp lambat dibuka.</div>'+
-      '</div>'+
-      '<button id="waSendBtn" class="btn" onclick="sendWhatsAppOrder();">'+
-        '📱 Hantar Order ke WhatsApp'+
-      '</button>'+
-      '<button class="btn" style="margin-top:10px;background:#222;color:#fff" onclick="closePay();cart=[];update()">'+
-        'Selesai'+
-      '</button>'+
-    '</div>';
+  });
 }
-function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-
-function logCustomerChat(e){
-  try{
-    const phone='';
-    const url=ORDER_API_URL+'?action=chatNotification&name='+encodeURIComponent('Customer')+'&phone='+encodeURIComponent(phone);
-    fetch(url,{method:'GET',keepalive:true}).catch(()=>{});
-  }catch(err){}
-}
-
+function esc(function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 async function loadPromotion(){
   let slug=new URLSearchParams(location.search).get('promo')||new URLSearchParams(location.search).get('promotion');
   if(!slug){
@@ -221,41 +128,20 @@ async function loadPromotion(){
   try{
     const r=await fetch(PROMO_API+'?action=getPromotion&slug='+encodeURIComponent(slug));
     const j=await r.json();
-    if(j.ok&&j.promotion){applyPromotion(j.promotion)}else{try{sessionStorage.removeItem('REQOO_PROMO')}catch(e){}}
+
+    // Code.gs now returns ALL promo rows in j.promotions.
+    // Keep backward compatibility with the old single-promotion response.
+    if(j.ok){
+      const promoList=Array.isArray(j.promotions)&&j.promotions.length
+        ? j.promotions
+        : (j.promotion?[j.promotion]:[]);
+      if(promoList.length) applyPromotion(promoList);
+      else try{sessionStorage.removeItem('REQOO_PROMO')}catch(e){}
+    }else{
+      try{sessionStorage.removeItem('REQOO_PROMO')}catch(e){}
+    }
   }catch(e){console.error(e)}
   render();update();
 }
 loadPromotion();
-
-let LAST_WA_URL='';
-
-function sendWhatsAppOrder(){
-  const btn=document.getElementById('waSendBtn');
-
-  if(!LAST_WA_URL){
-    alert('Pautan WhatsApp belum tersedia. Sila cuba semula.');
-    return;
-  }
-
-  const w=window.open(LAST_WA_URL,'_blank');
-
-  if(w){
-    if(btn){
-      btn.disabled=true;
-      btn.textContent='✓ WhatsApp Dibuka';
-      btn.style.opacity='.65';
-    }
-  }else{
-    if(btn){
-      btn.disabled=false;
-      btn.textContent='📱 Cuba Buka WhatsApp Lagi';
-    }
-    alert('WhatsApp tidak dapat dibuka secara automatik. Tekan butang ini sekali lagi.');
-  }
-}
-
-</script>
-<a id="reqooChat" class="reqooChat" href="https://wa.me/60165192803?text=Hi%20REQOO.CO%2C%20saya%20nak%20tanya%20tentang%20produk." target="_blank" rel="noopener" onclick="logCustomerChat(event)">
-  <span class="chatIcon">💬</span><span>Chat dengan REQOO</span>
-</a>
-</body></html>
+</script></body></html>
