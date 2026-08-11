@@ -46,14 +46,17 @@ let cat='Semua',cart=[],current=null;
 const PROMO_API=ORDER_API_URL;
 let ACTIVE_PROMO=null;
 function applyPromotion(p){
-  if(!p)return;
+  if(!p)return false;
   ACTIVE_PROMO=p;
+  try{sessionStorage.setItem('REQOO_PROMO',JSON.stringify({promotion:p,savedAt:Date.now()}))}catch(e){}
   const prod=P.find(x=>String(x.id)===String(p.productId));
-  if(!prod)return;
+  if(!prod)return false;
   prod.variants=prod.variants.map(v=>v[0]===p.variant?[v[0],Number(p.promoPrice),Number(v[1]),true]:v);
+  return true;
 }
 function variantPrice(v){return Number(v[3]?v[1]:v[1]||0)}
 function originalVariantPrice(v){return Number(v[3]?v[2]:v[1]||0)}
+function promoForItem(x){return x&&x.promo&&x.promo===String(ACTIVE_PROMO?.slug||'')?ACTIVE_PROMO:null}
 
 function money(n){return 'RM'+Number(n||0).toFixed(2)}
 function render(){
@@ -82,15 +85,34 @@ function addToCart(){
   const file=document.getElementById('logo').files[0];
   const promoApplies=!!(ACTIVE_PROMO&&String(ACTIVE_PROMO.productId)===String(current.id)&&String(ACTIVE_PROMO.variant)===String(v[0]));
   const save=logo=>{
-    cart.push({product:current,variant:v[0],unitPrice:variantPrice(v),originalUnitPrice:originalVariantPrice(v),q,name:document.getElementById('nm').value.trim(),note:document.getElementById('nt').value.trim(),logo:logo||'',promo:promoApplies?ACTIVE_PROMO.slug:''});
+    cart.push({product:current,variant:v[0],unitPrice:variantPrice(v),originalUnitPrice:originalVariantPrice(v),q,name:document.getElementById('nm').value.trim(),note:document.getElementById('nt').value.trim(),logo:logo||'',promo:promoApplies?ACTIVE_PROMO.slug:'',promoTitle:promoApplies?ACTIVE_PROMO.title:'',promoId:promoApplies?ACTIVE_PROMO.id:''});
     closeModal();update();openCart();
   };
   if(file){const r=new FileReader();r.onload=()=>save(r.result);r.readAsDataURL(file)}else save('');
 }
-function update(){document.getElementById('cc').textContent=cart.reduce((a,x)=>a+x.q,0);document.getElementById('cartCount').textContent=cart.reduce((a,x)=>a+x.q,0);const total=cartTotal();document.getElementById('cartTotal').textContent=money(total);document.getElementById('items').innerHTML=cart.length?cart.map((x,i)=>`<div class="item"><img src="${x.product.image}"><div style="flex:1"><b>${x.product.name}</b><small><br>${x.variant}<br>Kuantiti: ${x.q}${x.name?'<br>Nama/teks: '+esc(x.name):''}${x.logo?'<br>✓ Artwork dilampirkan':''}${x.note?'<br>Nota: '+esc(x.note):''}<br>${x.unitPrice?money(x.unitPrice*x.q):'Quotation'}</small><br><button onclick="cart.splice(${i},1);update()">Buang</button></div></div>`).join(''):'<p style="color:#999">Cart masih kosong.</p>'}
+function update(){
+  document.getElementById('cc').textContent=cart.reduce((a,x)=>a+x.q,0);
+  document.getElementById('cartCount').textContent=cart.reduce((a,x)=>a+x.q,0);
+  const total=cartTotal();document.getElementById('cartTotal').textContent=money(total);
+  document.getElementById('items').innerHTML=cart.length?cart.map((x,i)=>{
+    const promo=x.promo&&x.originalUnitPrice!==x.unitPrice;
+    return `<div class="item"><img src="${x.product.image}"><div style="flex:1"><b>${x.product.name}</b><small><br>${x.variant}<br>Kuantiti: ${x.q}${x.name?'<br>Nama/teks: '+esc(x.name):''}${x.logo?'<br>✓ Artwork dilampirkan':''}${x.note?'<br>Nota: '+esc(x.note):''}<br>${promo?'<span style=\"text-decoration:line-through;color:#777\">'+money(x.originalUnitPrice*x.q)+'</span> → <b style=\"color:#f2d68d\">'+money(x.unitPrice*x.q)+'</b> 🔥':''}${!promo?(x.unitPrice?money(x.unitPrice*x.q):'Quotation'):''}</small><br><button onclick="cart.splice(${i},1);update()">Buang</button></div></div>`
+  }).join(''):'<p style="color:#999">Cart masih kosong.</p>'
+}
 function cartTotal(){return cart.reduce((a,x)=>a+x.unitPrice*x.q,0)}
 function openCart(){update();document.getElementById('drawer').classList.add('open')}function closeCart(){document.getElementById('drawer').classList.remove('open')}function closeModal(){document.getElementById('modal').classList.remove('open')}function closePay(){document.getElementById('payModal').classList.remove('open')}
-function openCheckout(){if(!cart.length){alert('Cart masih kosong.');return}closeCart();const no='RQ'+new Date().toISOString().replace(/[-:TZ.]/g,'').slice(0,14);window.currentOrderNo=no;const total=cartTotal();document.getElementById('checkoutBody').innerHTML=`<div class="summary"><b>No. Order: ${no}</b><div style="margin-top:8px">${cart.reduce((a,x)=>a+x.q,0)} unit</div><div style="font-size:22px;margin-top:6px;color:var(--gold)">${total?money(total):'Quotation'}</div></div><label>Nama</label><input id="buyerName" placeholder="Nama penuh"><label>No. WhatsApp</label><input id="buyerPhone" placeholder="01xxxxxxxx"><label>Alamat penghantaran</label><textarea id="buyerAddress" rows="3" placeholder="Alamat penuh"></textarea>${total?`<div class="paybox"><h3>Bayar melalui Maybank QR</h3><img src="assets/qr-maybank.png" alt="Maybank QR"><p class="muted">Scan QR menggunakan aplikasi bank anda. Selepas bayar, upload bukti pembayaran di bawah.</p></div>`:'<div class="paybox"><h3>Quotation</h3><p class="muted">Produk ini memerlukan semakan harga. Hantar order untuk quotation.</p></div>'}<label>Bukti pembayaran / resit${total?'':' (jika ada)'}</label><input id="receiptFile" type="file" accept="image/*,.pdf" onchange="previewReceipt(event)"><div class="receiptPreview" id="receiptPreview"></div><p id="receiptName" class="muted"></p><button class="wa" onclick="submitOrder()">${total?'Saya Dah Bayar — Hantar Order WhatsApp':'Hantar Order untuk Quotation'}</button>`;document.getElementById('payModal').classList.add('open')}
+function openCheckout(){
+  if(!cart.length){alert('Cart masih kosong.');return}
+  closeCart();
+  const no='RQ'+new Date().toISOString().replace(/[-:TZ.]/g,'').slice(0,14);window.currentOrderNo=no;
+  const total=cartTotal();
+  const lines=cart.map(x=>{
+    const promo=x.promo&&x.originalUnitPrice!==x.unitPrice;
+    return `<div style="padding:9px 0;border-bottom:1px solid #222"><b>${esc(x.product.name)}</b> — ${esc(x.variant)} × ${x.q}<br>${promo?'<span style=\"text-decoration:line-through;color:#777\">Harga asal: '+money(x.originalUnitPrice*x.q)+'</span><br><span style=\"color:#f2d68d;font-weight:900\">🔥 Harga promo: '+money(x.unitPrice*x.q)+'</span>':'Harga: '+(x.unitPrice?money(x.unitPrice*x.q):'Quotation')}</div>`
+  }).join('');
+  document.getElementById('checkoutBody').innerHTML=`<div class="summary"><b>No. Order: ${no}</b><div style="margin-top:8px">${cart.reduce((a,x)=>a+x.q,0)} unit</div>${lines}<div style="font-size:24px;margin-top:12px;color:var(--gold)">Jumlah: ${total?money(total):'Quotation'}</div></div><label>Nama</label><input id="buyerName" placeholder="Nama penuh"><label>No. WhatsApp</label><input id="buyerPhone" placeholder="01xxxxxxxx"><label>Alamat penghantaran</label><textarea id="buyerAddress" rows="3" placeholder="Alamat penuh"></textarea>${total?`<div class="paybox"><h3>Bayar melalui Maybank QR</h3><img src="assets/qr-maybank.png" alt="Maybank QR"><p class="muted">Scan QR menggunakan aplikasi bank anda. Selepas bayar, upload bukti pembayaran di bawah.</p></div>`:'<div class="paybox"><h3>Quotation</h3><p class="muted">Produk ini memerlukan semakan harga. Hantar order untuk quotation.</p></div>'}<label>Bukti pembayaran / resit${total?'':' (jika ada)'}</label><input id="receiptFile" type="file" accept="image/*,.pdf" onchange="previewReceipt(event)"><div class="receiptPreview" id="receiptPreview"></div><p id="receiptName" class="muted"></p><button class="wa" onclick="submitOrder()">${total?'Saya Dah Bayar — Hantar Order WhatsApp':'Hantar Order untuk Quotation'}</button>`;
+  document.getElementById('payModal').classList.add('open')
+}
 function previewReceipt(e){const f=e.target.files[0],box=document.getElementById('receiptPreview');document.getElementById('receiptName').textContent=f?'✓ '+f.name:'';if(!f){box.style.display='none';return}if(f.type.startsWith('image/')){const r=new FileReader();r.onload=()=>{box.innerHTML='<img src="'+r.result+'">';box.style.display='flex'};r.readAsDataURL(f)}else{box.innerHTML='<span class="muted">PDF resit dipilih: '+esc(f.name)+'</span>';box.style.display='flex'}}
 async function fileData(file){return await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})}
 async function submitOrder(){
@@ -98,7 +120,7 @@ async function submitOrder(){
   if(!name||!phone){alert('Sila isi nama dan No. WhatsApp.');return}
   const total=cartTotal();
   if(total&&!receipt){alert('Sila upload bukti pembayaran dahulu.');return}
-  const items=cart.map(x=>({name:x.product.name,productId:x.product.id,category:x.product.category,variant:x.variant,qty:x.q,unitPrice:x.unitPrice,originalUnitPrice:x.originalUnitPrice,promo:x.promo||'',customText:x.name||'',note:x.note||''}));
+  const items=cart.map(x=>({name:x.product.name,productId:x.product.id,category:x.product.category,variant:x.variant,qty:x.q,unitPrice:x.unitPrice,originalUnitPrice:x.originalUnitPrice,promo:x.promo||'',promoId:x.promoId||'',promoTitle:x.promoTitle||'',customText:x.name||'',note:x.note||''}));
   let db={ok:false};
   try{
     const payload={action:'createOrder',orderNo:window.currentOrderNo,name,phone,address:addr,itemCount:cart.reduce((a,x)=>a+x.q,0),subtotal:total,shipping:0,total,payment:total?'Maybank QR':'Quotation',items,receipt:receipt?{name:receipt.name,type:receipt.type,data:await fileData(receipt)}:null};
@@ -114,16 +136,23 @@ async function submitOrder(){
   if(receipt)msg+='Bukti pembayaran: '+encodeURIComponent(receipt.name)+'%0A';
   msg+='%0ARekod sistem: ✓ Disimpan';
   window.open('https://wa.me/'+WA_NUMBER+'?text='+msg,'_blank');
+  try{sessionStorage.removeItem('REQOO_PROMO')}catch(e){}
   document.getElementById('checkoutBody').innerHTML='<div class="success"><h3>Order dihantar</h3><p>Order <b>'+window.currentOrderNo+'</b> telah dihantar ke WhatsApp.</p><p class="muted">Order disimpan dalam Google Sheet dan bukti pembayaran disimpan ke Google Drive.</p><button class="btn" onclick="closePay();cart=[];update()">Selesai</button></div>'
 }
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 async function loadPromotion(){
-  const slug=new URLSearchParams(location.search).get('promo');
+  let slug=new URLSearchParams(location.search).get('promo')||new URLSearchParams(location.search).get('promotion');
+  if(!slug){
+    try{
+      const cached=JSON.parse(sessionStorage.getItem('REQOO_PROMO')||'null');
+      if(cached&&cached.promotion&&Date.now()-Number(cached.savedAt||0)<30*60*1000) slug=cached.promotion.slug;
+    }catch(e){}
+  }
   if(!slug){render();update();return}
   try{
     const r=await fetch(PROMO_API+'?action=getPromotion&slug='+encodeURIComponent(slug));
     const j=await r.json();
-    if(j.ok&&j.promotion)applyPromotion(j.promotion);
+    if(j.ok&&j.promotion){applyPromotion(j.promotion)}else{try{sessionStorage.removeItem('REQOO_PROMO')}catch(e){}}
   }catch(e){console.error(e)}
   render();update();
 }
