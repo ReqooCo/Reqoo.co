@@ -49,26 +49,13 @@ function applyPromotion(p){
   if(!p)return false;
   ACTIVE_PROMO=p;
   try{sessionStorage.setItem('REQOO_PROMO',JSON.stringify({promotion:p,savedAt:Date.now()}))}catch(e){}
-  return !!P.find(x=>String(x.id)===String(p.productId));
+  const prod=P.find(x=>String(x.id)===String(p.productId));
+  if(!prod)return false;
+  prod.variants=prod.variants.map(v=>v[0]===p.variant?[v[0],Number(p.promoPrice),Number(v[1]),true]:v);
+  return true;
 }
-function promoVariantPrice(product,v){
-  if(ACTIVE_PROMO &&
-     String(ACTIVE_PROMO.productId)===String(product.id) &&
-     String(ACTIVE_PROMO.variant).trim().toLowerCase()===String(v[0]).trim().toLowerCase()){
-    const pp=Number(ACTIVE_PROMO.promoPrice);
-    if(Number.isFinite(pp))return pp;
-  }
-  return Number(v[1]||0);
-}
-function variantPrice(v,product){return product?promoVariantPrice(product,v):Number(v[3]?v[1]:v[1]||0)}
-function originalVariantPrice(v,product){
-  if(product && ACTIVE_PROMO &&
-     String(ACTIVE_PROMO.productId)===String(product.id) &&
-     String(ACTIVE_PROMO.variant).trim().toLowerCase()===String(v[0]).trim().toLowerCase()){
-    return Number(v[1]||0);
-  }
-  return Number(v[3]?v[2]:v[1]||0);
-}
+function variantPrice(v){return Number(v[3]?v[1]:v[1]||0)}
+function originalVariantPrice(v){return Number(v[3]?v[2]:v[1]||0)}
 function promoForItem(x){return x&&x.promo&&x.promo===String(ACTIVE_PROMO?.slug||'')?ACTIVE_PROMO:null}
 
 function money(n){return 'RM'+Number(n||0).toFixed(2)}
@@ -77,31 +64,79 @@ function render(){
   const cs=['Semua',...new Set(P.map(x=>x.category))];
   document.getElementById('cats').innerHTML=cs.map(c=>`<button class="cat ${c===cat?'active':''}" onclick="cat=${JSON.stringify(c)};render()">${c}</button>`).join('');
   const a=P.filter(x=>(cat==='Semua'||x.category===cat)&&(!q||JSON.stringify(x).toLowerCase().includes(q)));
-  document.getElementById('grid').innerHTML=a.map(x=>`<article class="card"><div class="pic"><img src="${x.image}" alt="${x.name}"></div><div class="body"><div class="tag">${x.category.toUpperCase()}</div><h3>${x.name}</h3><div class="desc">${x.desc}</div><div class="price">${x.variants[0][1] ? 'Dari '+money(x.variants.reduce((m,v)=>Math.min(m,variantPrice(v,x)),Infinity)) : 'Quotation'}</div>${ACTIVE_PROMO&&String(ACTIVE_PROMO.productId)===String(x.id)?'<div style="color:#f2d68d;font-size:11px;font-weight:900;margin-bottom:10px">🔥 PROMO — '+esc(ACTIVE_PROMO.title)+'</div>':''}<button class="btn" onclick="custom(${x.id})">Customize</button></div></article>`).join('');
+  document.getElementById('grid').innerHTML=a.map(x=>`<article class="card"><div class="pic"><img src="${x.image}" alt="${x.name}"></div><div class="body"><div class="tag">${x.category.toUpperCase()}</div><h3>${x.name}</h3><div class="desc">${x.desc}</div><div class="price">${x.variants[0][1] ? 'Dari '+money(x.variants.reduce((m,v)=>Math.min(m,variantPrice(v)),Infinity)) : 'Quotation'}</div>${ACTIVE_PROMO&&String(ACTIVE_PROMO.productId)===String(x.id)?'<div style="color:#f2d68d;font-size:11px;font-weight:900;margin-bottom:10px">🔥 PROMO — '+esc(ACTIVE_PROMO.title)+'</div>':''}<button class="btn" onclick="custom(${x.id})">Customize</button></div></article>`).join('');
 }
 function custom(id){
   current=P.find(x=>x.id===id);
   document.getElementById('mTag').textContent=current.category.toUpperCase();
   document.getElementById('mTitle').textContent=current.name;
-  let opts=current.variants.map((v,i)=>`<option value="${i}">${v[0]} — ${variantPrice(v,current)?money(variantPrice(v,current)):'Quotation'}</option>`).join('');
-  document.getElementById('form').innerHTML=`<div class="two"><div><img src="${current.image}" alt="${current.name}"></div><div><label>Pilihan / saiz</label><select id="variant" onchange="syncVariant()">${opts}</select><div class="choice"><div class="field"><label style="margin-top:0">Harga seunit</label><b id="unitPrice">${variantPrice(current.variants[0],current)?money(variantPrice(current.variants[0],current)):'Quotation'}</b></div><div class="field"><label style="margin-top:0">Kuantiti</label><input id="qt" type="number" min="1" value="1" oninput="syncVariant()"></div></div><label>Nama / teks</label><input id="nm" placeholder="Contoh: Anugerah Kecemerlangan"><label>Upload logo / artwork</label><div class="uploadbox"><input id="logo" type="file" accept="image/png,image/jpeg,image/webp"><div class="muted">PNG / JPG / WEBP</div></div><label>Nota / idea custom</label><textarea id="nt" rows="4" placeholder="Saiz, warna, tarikh event, kemasan, dll."></textarea><div class="summary"><div>Anggaran</div><b id="lineTotal">${variantPrice(current.variants[0],current)?money(variantPrice(current.variants[0],current)):'Quotation'}</b></div><br><button class="btn" onclick="addToCart()">Tambah ke Cart</button></div></div>`;
+  let opts=current.variants.map((v,i)=>`<option value="${i}">${v[0]} — ${variantPrice(v)?money(variantPrice(v)):'Quotation'}</option>`).join('');
+  document.getElementById('form').innerHTML=`<div class="two"><div><img src="${current.image}" alt="${current.name}"></div><div><label>Pilihan / saiz</label><select id="variant" onchange="syncVariant()">${opts}</select><div class="choice"><div class="field"><label style="margin-top:0">Harga seunit</label><b id="unitPrice">${variantPrice(current.variants[0])?money(variantPrice(current.variants[0])):'Quotation'}</b></div><div class="field"><label style="margin-top:0">Kuantiti</label><input id="qt" type="number" min="1" value="1" oninput="syncVariant()"></div></div><label>Nama / teks</label><input id="nm" placeholder="Contoh: Anugerah Kecemerlangan"><label>Upload logo / artwork</label><div class="uploadbox"><input id="logo" type="file" accept="image/png,image/jpeg,image/webp"><div class="muted">PNG / JPG / WEBP</div></div><label>Nota / idea custom</label><textarea id="nt" rows="4" placeholder="Saiz, warna, tarikh event, kemasan, dll."></textarea><div class="summary"><div>Anggaran</div><b id="lineTotal">${variantPrice(current.variants[0])?money(variantPrice(current.variants[0])):'Quotation'}</b></div><br><button class="btn" onclick="addToCart()">Tambah ke Cart</button></div></div>`;
   document.getElementById('modal').classList.add('open');syncVariant();
 }
 function syncVariant(){
   if(!current)return;
   let v=current.variants[+document.getElementById('variant').value],q=Math.max(1,+document.getElementById('qt').value||1);
-  document.getElementById('unitPrice').textContent=variantPrice(v,current)?money(variantPrice(v,current)):'Quotation';
-  document.getElementById('lineTotal').textContent=variantPrice(v)?money(variantPrice(v,current)*q):'Quotation';
+  document.getElementById('unitPrice').textContent=variantPrice(v)?money(variantPrice(v)):'Quotation';
+  document.getElementById('lineTotal').textContent=variantPrice(v)?money(variantPrice(v)*q):'Quotation';
 }
 function addToCart(){
-  const v=current.variants[+document.getElementById('variant').value],q=Math.max(1,+document.getElementById('qt').value||1);
+  const v=current.variants[+document.getElementById('variant').value];
+  const q=Math.max(1,+document.getElementById('qt').value||1);
   const file=document.getElementById('logo').files[0];
-  const promoApplies=!!(ACTIVE_PROMO&&String(ACTIVE_PROMO.productId)===String(current.id)&&String(ACTIVE_PROMO.variant).trim().toLowerCase()===String(v[0]).trim().toLowerCase());
+
+  // Promo is resolved from the URL/session data and matched by product + variant.
+  const urlPromo=new URLSearchParams(location.search).get('promo')||'';
+  let promo=ACTIVE_PROMO;
+
+  try{
+    const cached=JSON.parse(sessionStorage.getItem('REQOO_PROMO')||'null');
+    if(cached && cached.promotion){
+      if(!promo || String(cached.promotion.slug)===String(urlPromo||cached.promotion.slug)){
+        promo=cached.promotion;
+      }
+    }
+  }catch(e){}
+
+  const sameProduct=promo &&
+    String(promo.productId)===String(current.id);
+
+  const sameVariant=promo &&
+    String(promo.variant||'').trim().toLowerCase()===String(v[0]||'').trim().toLowerCase();
+
+  const promoPrice=promo ? Number(promo.promoPrice) : NaN;
+  const promoApplies=!!(sameProduct && sameVariant && Number.isFinite(promoPrice) && promoPrice>=0);
+
+  // IMPORTANT: promo price wins only for this matching cart item.
+  const unitPrice=promoApplies ? promoPrice : Number(v[1]||0);
+  const originalUnitPrice=Number(v[1]||0);
+
   const save=logo=>{
-    cart.push({product:current,variant:v[0],unitPrice:variantPrice(v,current),originalUnitPrice:originalVariantPrice(v,current),q,name:document.getElementById('nm').value.trim(),note:document.getElementById('nt').value.trim(),logo:logo||'',promo:promoApplies?ACTIVE_PROMO.slug:'',promoTitle:promoApplies?ACTIVE_PROMO.title:'',promoId:promoApplies?ACTIVE_PROMO.id:''});
-    closeModal();update();openCart();
+    cart.push({
+      product:current,
+      variant:v[0],
+      unitPrice:unitPrice,
+      originalUnitPrice:originalUnitPrice,
+      q:q,
+      name:document.getElementById('nm').value.trim(),
+      note:document.getElementById('nt').value.trim(),
+      logo:logo||'',
+      promo:promoApplies ? String(promo.slug||urlPromo||'') : '',
+      promoTitle:promoApplies ? String(promo.title||'') : '',
+      promoId:promoApplies ? String(promo.id||'') : ''
+    });
+    closeModal();
+    update();
+    openCart();
   };
-  if(file){const r=new FileReader();r.onload=()=>save(r.result);r.readAsDataURL(file)}else save('');
+
+  if(file){
+    const r=new FileReader();
+    r.onload=()=>save(r.result);
+    r.readAsDataURL(file);
+  }else{
+    save('');
+  }
 }
 function update(){
   document.getElementById('cc').textContent=cart.reduce((a,x)=>a+x.q,0);
@@ -155,29 +190,18 @@ async function submitOrder(){
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 async function loadPromotion(){
   let slug=new URLSearchParams(location.search).get('promo')||new URLSearchParams(location.search).get('promotion');
-  let cached=null;
-  try{
-    cached=JSON.parse(sessionStorage.getItem('REQOO_PROMO')||'null');
-    if(cached&&cached.promotion&&Date.now()-Number(cached.savedAt||0)<30*60*1000){
-      if(!slug || String(cached.promotion.slug)===String(slug))applyPromotion(cached.promotion);
-    }else{
-      sessionStorage.removeItem('REQOO_PROMO');
-      cached=null;
-    }
-  }catch(e){}
-
-  if(!slug && cached&&cached.promotion)slug=cached.promotion.slug;
+  if(!slug){
+    try{
+      const cached=JSON.parse(sessionStorage.getItem('REQOO_PROMO')||'null');
+      if(cached&&cached.promotion&&Date.now()-Number(cached.savedAt||0)<30*60*1000) slug=cached.promotion.slug;
+    }catch(e){}
+  }
   if(!slug){render();update();return}
-
   try{
     const r=await fetch(PROMO_API+'?action=getPromotion&slug='+encodeURIComponent(slug));
     const j=await r.json();
-    if(j.ok&&j.promotion)applyPromotion(j.promotion);
-    else if(!(ACTIVE_PROMO&&String(ACTIVE_PROMO.slug)===String(slug)))ACTIVE_PROMO=null;
-  }catch(e){
-    console.warn('getPromotion gagal, guna promo cache jika ada',e);
-    if(!(ACTIVE_PROMO&&String(ACTIVE_PROMO.slug)===String(slug)))ACTIVE_PROMO=null;
-  }
+    if(j.ok&&j.promotion){applyPromotion(j.promotion)}else{try{sessionStorage.removeItem('REQOO_PROMO')}catch(e){}}
+  }catch(e){console.error(e)}
   render();update();
 }
 loadPromotion();
