@@ -1,19 +1,175 @@
-<!doctype html><html lang="ms"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>REQOO.CO — Admin Pro</title><style>
-*{box-sizing:border-box}:root{--bg:#070707;--panel:#111;--line:#292929;--gold:#d9b45e;--muted:#929292}body{margin:0;background:var(--bg);color:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}.wrap{max-width:1250px;margin:auto;padding:20px}header{position:sticky;top:0;z-index:5;background:#080808ee;border-bottom:1px solid #292929;padding:16px 20px}.brand{font-weight:950;letter-spacing:4px}.gold{color:var(--gold)}.login,.card{background:#101010;border:1px solid #292929;border-radius:18px;padding:20px}.login{max-width:430px;margin:70px auto}input,select{width:100%;padding:12px;border:1px solid #333;background:#171717;color:#fff;border-radius:10px;margin:8px 0 14px}button{border:0;border-radius:10px;padding:11px 15px;font-weight:800;cursor:pointer}.goldbtn{background:linear-gradient(135deg,var(--gold),#ebcc7b);color:#111}.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.toolbar select,.toolbar input{width:auto;margin:0}.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:18px 0}.stat{background:#111;border:1px solid #292929;border-radius:14px;padding:16px}.stat small{color:#888}.stat b{display:block;font-size:25px;margin-top:7px;color:#eee}.dash{display:grid;grid-template-columns:1.2fr .8fr;gap:14px;margin-bottom:14px}.chart{height:260px;display:flex;align-items:end;gap:10px;padding:15px;border-top:1px solid #222}.bar{flex:1;min-width:12px;background:linear-gradient(180deg,var(--gold),#6b5527);border-radius:8px 8px 0 0;position:relative}.bar span{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-size:9px;color:#bbb;white-space:nowrap}.bar em{position:absolute;top:100%;left:50%;transform:translateX(-50%);font-size:9px;color:#777;font-style:normal;margin-top:6px}.donut{display:flex;flex-direction:column;gap:9px;padding-top:10px}.legend{display:flex;justify-content:space-between;border-bottom:1px solid #222;padding:9px 0}.table{overflow:auto;background:#111;border:1px solid #292929;border-radius:16px}.row{display:grid;grid-template-columns:150px 155px 1fr 100px 150px 120px;gap:10px;padding:13px;border-bottom:1px solid #222;min-width:900px}.head{font-weight:800;color:var(--gold)}.muted{color:#999}.link{color:var(--gold)}.receipt{max-width:90px;max-height:70px;object-fit:contain;border-radius:8px}.pill{padding:5px 8px;border-radius:999px;background:#292929;font-size:12px}.detail{position:fixed;inset:0;background:#000d;display:none;align-items:center;justify-content:center;padding:16px;z-index:20}.detail.open{display:flex}.detailbox{max-width:850px;width:100%;max-height:90vh;overflow:auto;background:#101010;border:1px solid #333;border-radius:20px;padding:24px}.close{float:right;background:#222;color:#fff;border-radius:50%;width:34px;height:34px}.invoice{background:#fff;color:#111;border-radius:12px;padding:30px;max-width:760px}.invoice h1{color:#b68a25}.invoice table{width:100%;border-collapse:collapse}.invoice td{padding:9px;border-bottom:1px solid #ddd}.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}@media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}.dash{grid-template-columns:1fr}}@media(max-width:650px){.stats{grid-template-columns:1fr 1fr}.toolbar input,.toolbar select{width:100%}}
-</style></head><body><header><div class="brand">REQOO<span class="gold">.CO</span> — ADMIN PRO <a href="/shop/promotion-admin.html" style="float:right;color:#d9b45e;text-decoration:none;font-size:12px;letter-spacing:1px">PROMOTION</a></div></header><main class="wrap"><section id="login" class="login"><h2>Order Dashboard</h2><p class="muted">Masukkan Admin Token yang sama seperti dalam Google Apps Script.</p><input id="token" type="password" placeholder="Admin token"><button class="goldbtn" onclick="login()">Masuk</button><p id="err" style="color:#f66"></p></section><section id="app" style="display:none"><div class="toolbar"><h1 style="margin-right:auto">Dashboard</h1><input id="search" placeholder="Cari order / nama / WhatsApp" oninput="render()"><select id="statusFilter" onchange="render()"><option value="ALL">Semua status</option><option>Paid - Pending Verify</option><option>Confirmed</option><option>Processing</option><option>Completed</option><option>Cancelled</option></select><button class="goldbtn" onclick="load()">Refresh</button></div><div class="stats"><div class="stat"><small>Jumlah Order</small><b id="sOrders">0</b></div><div class="stat"><small>Jualan</small><b id="sSales">RM0</b></div><div class="stat"><small>Kos</small><b id="sCost">RM0</b></div><div class="stat"><small>Untung</small><b id="sProfit">RM0</b></div><div class="stat"><small>Paid Pending</small><b id="sPending">0</b></div></div><div class="dash"><div class="card"><h3>Jualan 6 bulan terakhir</h3><div class="chart" id="chart"></div></div><div class="card"><h3>Order mengikut kategori</h3><div class="donut" id="categoryChart"></div></div></div><div class="table"><div class="row head"><div>Tarikh</div><div>No. Order</div><div>Pelanggan</div><div>Total</div><div>Status</div><div>Resit</div></div><div id="rows"></div></div></section></main>
-<div class="detail" id="detail"><div class="detailbox"><button class="close" onclick="closeDetail()">×</button><h2>Order Detail</h2><div id="detailContent"></div></div></div>
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>REQOO.CO — Admin Dashboard</title>
+<style>
+*{box-sizing:border-box}
+:root{--bg:#070707;--panel:#111;--panel2:#0c0c0c;--gold:#d9b45e;--gold2:#f2d68d;--line:#292929;--muted:#929292;--green:#68d391;--blue:#70a7ff;--orange:#f4b65e;--red:#ff7777}
+body{margin:0;background:var(--bg);color:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+body:before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(circle at 10% 0%,#d9b45e10,transparent 28%),#070707}
+.wrap{width:min(1250px,calc(100% - 28px));margin:auto}
+header{position:sticky;top:0;z-index:20;background:#080808ee;border-bottom:1px solid var(--line);backdrop-filter:blur(15px)}
+.nav{min-height:68px;display:flex;align-items:center;gap:12px}.brand{font-weight:950;letter-spacing:4px}.gold{color:var(--gold)}
+.spacer{margin-left:auto}.btn{border:0;border-radius:10px;padding:10px 14px;font-weight:900;cursor:pointer;background:#222;color:#fff}.goldbtn{background:linear-gradient(135deg,var(--gold),#ebcc7b);color:#111}
+.login{max-width:420px;margin:70px auto;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:24px}
+input,select{width:100%;padding:11px;background:#090909;color:#fff;border:1px solid #333;border-radius:10px;margin:8px 0 12px;outline:none}
+h1{font-size:28px;margin:26px 0 4px}.sub{color:var(--muted);font-size:12px}
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:18px}.toolbar h1{margin-right:auto}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0 12px}
+.kpi{background:linear-gradient(180deg,#141414,#0e0e0e);border:1px solid var(--line);border-radius:16px;padding:16px}
+.kpi .label{font-size:11px;color:#999}.kpi .num{font-size:25px;font-weight:950;margin-top:6px}.kpi .tiny{font-size:10px;color:#777;margin-top:4px}
+.statuses{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.status{border:1px solid var(--line);border-radius:13px;padding:12px;background:#101010}.status b{font-size:20px}.status span{display:block;font-size:10px;color:#888;margin-top:3px}
+.grid2{display:grid;grid-template-columns:1.35fr .65fr;gap:14px}.panel{background:#101010;border:1px solid var(--line);border-radius:18px;padding:17px}
+.panel h2{font-size:16px;margin:0 0 14px}.chart{height:220px;display:flex;align-items:end;gap:8px;border-bottom:1px solid #2a2a2a;padding:10px 4px 0}
+.bar{flex:1;min-width:10px;background:linear-gradient(180deg,var(--gold2),var(--gold));border-radius:7px 7px 0 0;position:relative}.bar span{position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);font-size:9px;color:#777}
+.legend{display:flex;gap:15px;font-size:10px;color:#888;margin-top:26px}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--gold);margin-right:5px}.dot.p{background:var(--green)}
+.catrow{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #222}.catrow:last-child{border:0}.catname{flex:1}.track{width:110px;height:7px;background:#242424;border-radius:99px;overflow:hidden}.fill{height:100%;background:var(--gold);border-radius:99px}.catval{font-size:11px;color:#bbb;width:85px;text-align:right}
+.orders{margin-top:14px}.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.filters input{max-width:260px;margin:0}.filters select{width:auto;min-width:150px;margin:0}
+.table{overflow:auto;border:1px solid #252525;border-radius:14px}.row{display:grid;grid-template-columns:145px 1fr 110px 100px 150px 115px;min-width:760px;align-items:center;border-bottom:1px solid #222}.row:last-child{border:0}.row>div{padding:11px 10px;font-size:11px}.head{background:#151515;color:#888;font-size:9px!important;letter-spacing:1px;font-weight:900}.order{font-weight:900;color:var(--gold2);font-size:11px!important}.customer{font-weight:700}.amount{font-weight:900}.badge{display:inline-block;padding:5px 8px;border-radius:999px;font-size:9px;font-weight:900;background:#242424}.badge.green{background:#12311f;color:var(--green)}.badge.blue{background:#10243d;color:var(--blue)}.badge.orange{background:#39270f;color:var(--orange)}.badge.red{background:#3a1616;color:var(--red)}
+select.statussel{margin:0;padding:7px 8px;width:140px;font-size:10px}
+.empty{padding:35px;text-align:center;color:#777}.error{color:#ff7777;margin-top:10px;font-size:12px}
+.modal{position:fixed;inset:0;background:#000c;display:none;align-items:center;justify-content:center;padding:15px;z-index:50}.modal.open{display:flex}.box{width:min(700px,100%);max-height:90vh;overflow:auto;background:#111;border:1px solid #333;border-radius:20px;padding:20px}.modalhead{display:flex;align-items:center;gap:10px}.modalhead h2{margin:0}.close{margin-left:auto;border:0;background:#222;color:#fff;border-radius:50%;width:34px;height:34px;cursor:pointer}
+.detailgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.detail{background:#0b0b0b;border:1px solid #222;border-radius:12px;padding:12px}.detail small{color:#777;display:block;font-size:9px;text-transform:uppercase;letter-spacing:1px}.detail b{display:block;margin-top:5px}.items{margin-top:12px;border:1px solid #222;border-radius:12px;overflow:hidden}.item{padding:10px;border-bottom:1px solid #222;font-size:11px}.item:last-child{border:0}.profit{color:var(--green)}
+@media(max-width:900px){.kpis{grid-template-columns:1fr 1fr}.statuses{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
+@media(max-width:560px){.wrap{width:min(100% - 18px,1250px)}.kpis{grid-template-columns:1fr 1fr}.kpi .num{font-size:20px}.toolbar{align-items:flex-start}.toolbar h1{font-size:23px}.detailgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="wrap nav"><div class="brand">REQOO<span class="gold">.CO</span> <span style="font-size:10px;color:#777;letter-spacing:2px">ADMIN</span></div><div class="spacer"></div><button class="btn" onclick="load()">↻ Refresh</button></div></header>
+
+<main class="wrap">
+<section id="login" class="login">
+<h2>REQOO.CO Admin</h2><div class="sub">Masukkan Admin Token.</div>
+<input id="token" type="password" placeholder="Admin token">
+<button class="btn goldbtn" style="width:100%" onclick="login()">Masuk</button>
+<div id="err" class="error"></div>
+</section>
+
+<section id="app" style="display:none">
+<div class="toolbar"><div><h1>Dashboard</h1><div class="sub">Ringkasan order & jualan</div></div><a class="btn goldbtn" href="/shop/promotion-admin.html">Promotions</a></div>
+
+<div class="kpis">
+<div class="kpi"><div class="label">TOTAL ORDER</div><div class="num" id="kOrders">0</div><div class="tiny">Semua order</div></div>
+<div class="kpi"><div class="label">SALES</div><div class="num" id="kSales">RM0.00</div><div class="tiny">Jumlah jualan</div></div>
+<div class="kpi"><div class="label">MODAL</div><div class="num" id="kCost">RM0.00</div><div class="tiny">Kos produk</div></div>
+<div class="kpi"><div class="label">UNTUNG</div><div class="num" id="kProfit">RM0.00</div><div class="tiny">Sales − modal</div></div>
+</div>
+
+<div class="statuses">
+<div class="status"><b id="sPending">0</b><span>Pending</span></div>
+<div class="status"><b id="sProcess">0</b><span>Processing</span></div>
+<div class="status"><b id="sDone">0</b><span>Completed</span></div>
+<div class="status"><b id="sCancel">0</b><span>Cancelled</span></div>
+</div>
+
+<div class="grid2">
+<section class="panel"><h2>Sales — 7 Hari</h2><div id="chart" class="chart"></div><div class="legend"><span><i class="dot"></i>Sales</span><span><i class="dot p"></i>Trend</span></div></section>
+<section class="panel"><h2>Jualan Ikut Kategori</h2><div id="catsales"></div></section>
+</div>
+
+<section class="panel orders">
+<div class="toolbar"><h2 style="margin:0">Recent Orders</h2><div class="sub" id="countLabel"></div></div>
+<div class="filters"><input id="search" placeholder="Cari order / customer" oninput="renderOrders()"><select id="filter" onchange="renderOrders()"><option>Semua</option><option>Pending</option><option>Processing</option><option>Completed</option><option>Cancelled</option></select></div>
+<div class="table"><div class="row head"><div>ORDER</div><div>CUSTOMER</div><div>DATE</div><div>TOTAL</div><div>STATUS</div><div>PAYMENT</div></div><div id="orderRows"></div></div>
+</section>
+</section>
+</main>
+
+<div class="modal" id="modal"><div class="box"><div class="modalhead"><h2 id="dTitle">Order</h2><button class="close" onclick="closeDetail()">×</button></div><div id="detail" style="margin-top:15px"></div></div></div>
+
 <script>
-const API_URL='https://script.google.com/macros/s/AKfycbyFy2y76srL3i-wIp1kesaXw5KZl6fpTTCbLJk_5lQBUwl0QKkdRsxo6ynF7XCjnKb1MA/exec';let TOKEN='',ORDERS=[];
-function money(n){return 'RM'+Number(n||0).toFixed(2)}function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-function login(){TOKEN=document.getElementById('token').value.trim();if(TOKEN)load()}async function load(){try{const r=await fetch(API_URL+'?action=list&token='+encodeURIComponent(TOKEN));const j=await r.json();if(!j.ok)throw Error(j.error||'Token salah');ORDERS=j.orders||[];document.getElementById('login').style.display='none';document.getElementById('app').style.display='block';render()}catch(e){document.getElementById('err').textContent=e.message}}
-function filtered(){const f=document.getElementById('statusFilter').value,q=document.getElementById('search').value.toLowerCase();return ORDERS.filter(x=>(f==='ALL'||x.status===f)&&(!q||[x.orderNo,x.name,x.phone,x.address].join(' ').toLowerCase().includes(q)))}
-function render(){const a=filtered();const sales=a.reduce((s,x)=>s+Number(x.total||0),0),cost=a.reduce((s,x)=>s+Number(x.cost||0),0),profit=a.reduce((s,x)=>s+Number(x.profit||0),0);document.getElementById('sOrders').textContent=a.length;document.getElementById('sSales').textContent=money(sales);document.getElementById('sCost').textContent=money(cost);document.getElementById('sProfit').textContent=money(profit);document.getElementById('sPending').textContent=a.filter(x=>x.status==='Paid - Pending Verify').length;drawChart(a);drawCategories(a);document.getElementById('rows').innerHTML=a.map(x=>`<div class="row"><div>${new Date(x.timestamp).toLocaleString('ms-MY')}</div><div><b>${esc(x.orderNo)}</b></div><div><b>${esc(x.name)}</b><br><span class="muted">${esc(x.phone)}</span></div><div><b>${money(x.total)}</b><br><span class="muted">Untung ${money(x.profit)}</span></div><div><select onchange="setStatus('${esc(x.orderNo)}',this.value)">${['Paid - Pending Verify','Confirmed','Processing','Completed','Cancelled'].map(s=>`<option ${s===x.status?'selected':''}>${s}</option>`).join('')}</select></div><div>${x.receiptUrl?`<a class="link" href="${x.receiptUrl}" target="_blank">Buka resit</a>`:'-'}</div></div>`).join('')||'<div style="padding:25px;color:#888">Tiada order.</div>'}
-function drawChart(a){const months=[];const now=new Date();for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push({key:d.getFullYear()+'-'+d.getMonth(),label:d.toLocaleString('ms-MY',{month:'short'})})}const vals=months.map(m=>a.filter(x=>{const d=new Date(x.timestamp);return d.getFullYear()+'-'+d.getMonth()===m.key}).reduce((s,x)=>s+Number(x.total||0),0));const max=Math.max(...vals,1);document.getElementById('chart').innerHTML=vals.map((v,i)=>`<div class="bar" style="height:${Math.max(4,v/max*190)}px"><span>${money(v)}</span><em>${months[i].label}</em></div>`).join('')}
-function drawCategories(a){const m={};a.forEach(x=>{let items=[];try{items=JSON.parse(x.items||'[]')}catch(e){}items.forEach(it=>m[it.category]=(m[it.category]||0)+Number(it.qty||1))});const arr=Object.entries(m).sort((a,b)=>b[1]-a[1]);document.getElementById('categoryChart').innerHTML=arr.length?arr.map(([k,v])=>`<div class="legend"><span>${esc(k)}</span><b>${v} unit</b></div>`).join(''):'<span class="muted">Belum ada data kategori.</span>'}
-async function setStatus(no,status){const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'status',token:TOKEN,orderNo:no,status})});const j=await r.json();if(!j.ok)alert(j.error||'Gagal');else{const x=ORDERS.find(o=>o.orderNo===no);if(x)x.status=status;render()}}
-function closeDetail(){document.getElementById('detail').classList.remove('open')}
-function openDetail(no){const x=ORDERS.find(o=>o.orderNo===no);if(!x)return;let items=[];try{items=JSON.parse(x.items||'[]')}catch(e){}document.getElementById('detailContent').innerHTML=`<div class="invoice"><h1>REQOO.CO</h1><h2>Order ${esc(x.orderNo)}</h2><p><b>Pelanggan:</b> ${esc(x.name)}<br><b>WhatsApp:</b> ${esc(x.phone)}<br><b>Alamat:</b> ${esc(x.address)}</p><table>${items.map(it=>`<tr><td>${esc(it.name)}<br><small>${esc(it.variant||'')} ${it.customText?'• '+esc(it.customText):''}</small></td><td>${it.qty} × ${money(it.unitPrice)}</td><td>${it.unitPrice?money(it.qty*it.unitPrice):'Quotation'}</td></tr>`).join('')}<tr><td colspan="2"><b>Jumlah</b></td><td><b>${money(x.total)}</b></td></tr><tr><td colspan="2">Status</td><td>${esc(x.status)}</td></tr></table><p>Terima kasih kerana memilih REQOO.CO.</p></div><div class="btnrow"><button class="goldbtn" onclick="printInvoice('${esc(x.orderNo)}')">Print / PDF</button>${x.receiptUrl?`<a class="goldbtn" style="padding:11px 15px;border-radius:10px;text-decoration:none;color:#111" href="${x.receiptUrl}" target="_blank">Buka Bukti Bayaran</a>`:''}</div>`;document.getElementById('detail').classList.add('open')}
-function printInvoice(no){const x=ORDERS.find(o=>o.orderNo===no);let items=[];try{items=JSON.parse(x.items||'[]')}catch(e){}const w=window.open('','_blank');w.document.write(`<html><head><title>${esc(x.orderNo)}</title><style>body{font-family:Arial;padding:35px;max-width:760px;margin:auto;color:#111}.actions{position:fixed;top:18px;right:18px;display:flex;gap:8px;z-index:10}.actions button{border:0;border-radius:999px;padding:10px 16px;font-weight:800;cursor:pointer;background:#111;color:#fff}.actions .print{background:#b68a25;color:#111}h1{color:#b68a25;letter-spacing:3px}table{width:100%;border-collapse:collapse;margin-top:20px}td{padding:10px;border-bottom:1px solid #ddd}small{color:#666}@media print{.actions{display:none}body{padding:0;max-width:none}}</style></head><body><div class="actions"><button onclick="window.close()">Tutup</button><button class="print" onclick="window.print()">Print / PDF</button></div><h1>REQOO.CO</h1><p>CUSTOM MADE. JUST FOR YOU.</p><h2>Invoice / Receipt ${esc(x.orderNo)}</h2><p><b>${esc(x.name)}</b><br>${esc(x.phone)}<br>${esc(x.address)}</p><table>${items.map(it=>`<tr><td>${esc(it.name)}<br><small>${esc(it.variant||'')}</small></td><td>${it.qty}</td><td>${it.unitPrice?money(it.qty*it.unitPrice):'Quotation'}</td></tr>`).join('')}<tr><td colspan="2"><b>TOTAL</b></td><td><b>${money(x.total)}</b></td></tr></table><p>Payment: ${esc(x.payment)}<br>Status: ${esc(x.status)}</p><p style="margin-top:60px">Terima kasih kerana memilih REQOO.CO.</p></body></html>`);w.document.close()}
-// Make rows clickable without changing the compact table layout.
-document.addEventListener('click',e=>{const row=e.target.closest('.row:not(.head)');if(row&&e.target.tagName!=='SELECT'&&!e.target.closest('a')){const b=row.querySelector('b');if(b)openDetail(b.textContent)}});
-</script></body></html>
+const API='https://script.google.com/macros/s/AKfycbyFy2y76srL3i-wIp1kesaXw5KZl6fpTTCbLJk_5lQBUwl0QKkdRsxo6ynF7XCjnKb1MA/exec';
+let TOKEN='',ORDERS=[];
+const money=n=>'RM'+Number(n||0).toFixed(2);
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+function login(){TOKEN=document.getElementById('token').value.trim();if(TOKEN)load()}
+async function load(){
+ if(!TOKEN){document.getElementById('err').textContent='Masukkan token.';return}
+ try{
+  const r=await fetch(API+'?action=list&token='+encodeURIComponent(TOKEN));
+  const j=await r.json();
+  if(!j.ok)throw Error(j.error||'Unauthorized');
+  ORDERS=(j.orders||[]).map(normalize);
+  document.getElementById('login').style.display='none';
+  document.getElementById('app').style.display='block';
+  renderAll();
+ }catch(e){document.getElementById('err').textContent=e.message}
+}
+function normalize(o){
+ // Supports both the clean API object and the older array-style response.
+ const val=k=>Array.isArray(o[k])?o[k][0]:o[k];
+ return {...o,
+  timestamp:val('timestamp'),orderNo:val('orderNo'),name:val('name'),phone:val('phone'),address:val('address'),
+  items:val('items'),itemCount:Number(val('itemCount')||0),subtotal:Number(val('subtotal')||0),
+  shipping:Number(val('shipping')||0),total:Number(val('total')||0),cost:Number(val('cost')||0),
+  profit:Number(val('profit')||0),payment:val('payment'),status:val('status'),receiptUrl:val('receiptUrl')
+ };
+}
+function renderAll(){kpis();renderChart();renderCats();renderOrders()}
+function kpis(){
+ const sales=ORDERS.reduce((a,o)=>a+o.total,0),cost=ORDERS.reduce((a,o)=>a+o.cost,0),profit=ORDERS.reduce((a,o)=>a+o.profit,0);
+ document.getElementById('kOrders').textContent=ORDERS.length;
+ document.getElementById('kSales').textContent=money(sales);
+ document.getElementById('kCost').textContent=money(cost);
+ document.getElementById('kProfit').textContent=money(profit);
+ const count=s=>ORDERS.filter(o=>String(o.status||'').toLowerCase().includes(s)).length;
+ document.getElementById('sPending').textContent=count('pending');
+ document.getElementById('sProcess').textContent=count('process');
+ document.getElementById('sDone').textContent=count('complete');
+ document.getElementById('sCancel').textContent=count('cancel');
+}
+function dateObj(o){const d=new Date(o.timestamp);return isNaN(d)?null:d}
+function renderChart(){
+ const days=[];
+ for(let i=6;i>=0;i--){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-i);days.push(d)}
+ const vals=days.map(d=>ORDERS.filter(o=>{const x=dateObj(o);return x&&x.toDateString()===d.toDateString()}).reduce((a,o)=>a+o.total,0));
+ const max=Math.max(1,...vals);
+ document.getElementById('chart').innerHTML=vals.map((v,i)=>`<div class="bar" style="height:${Math.max(4,v/max*180)}px" title="${money(v)}"><span>${['Ahd','Isn','Sel','Rab','Kha','Jum','Sab'][days[i].getDay()]}</span></div>`).join('');
+}
+function categoryName(o){
+ try{const a=JSON.parse(o.items||'[]');return a[0]?.category||a[0]?.name||'Lain-lain'}catch(e){return 'Lain-lain'}
+}
+function renderCats(){
+ const map={};ORDERS.forEach(o=>{const c=categoryName(o);map[c]=(map[c]||0)+o.total});
+ const rows=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,6),max=rows[0]?.[1]||1;
+ document.getElementById('catsales').innerHTML=rows.length?rows.map(([n,v])=>`<div class="catrow"><div class="catname">${esc(n)}</div><div class="track"><div class="fill" style="width:${v/max*100}%"></div></div><div class="catval">${money(v)}</div></div>`).join(''):'<div class="empty">Belum ada data.</div>';
+}
+function compactNo(n){n=String(n||'');return n.length>12?'#'+n.slice(0,2)+'-'+n.slice(8,12):n}
+function fmtDate(s){const d=new Date(s);return isNaN(d)?String(s||''):d.toLocaleDateString('ms-MY',{day:'2-digit',month:'2-digit',year:'2-digit'})}
+function badge(s){const x=String(s||'Pending'),l=x.toLowerCase();return `<span class="badge ${l.includes('complete')?'green':l.includes('process')?'blue':l.includes('cancel')?'red':'orange'}">${esc(x)}</span>`}
+function renderOrders(){
+ const q=document.getElementById('search').value.toLowerCase(),f=document.getElementById('filter').value;
+ const a=ORDERS.filter(o=>(f==='Semua'||String(o.status)===f)&&(!q||String(o.orderNo).toLowerCase().includes(q)||String(o.name).toLowerCase().includes(q))).slice().reverse();
+ document.getElementById('countLabel').textContent=a.length+' order';
+ document.getElementById('orderRows').innerHTML=a.length?a.map((o,i)=>`<div class="row" onclick="detail(${ORDERS.indexOf(o)})"><div class="order">${compactNo(o.orderNo)}</div><div class="customer">${esc(o.name)}</div><div>${fmtDate(o.timestamp)}</div><div class="amount">${money(o.total)}</div><div>${badge(o.status)}</div><div>${esc(o.payment||'-')}</div></div>`).join(''):'<div class="empty">Tiada order.</div>';
+}
+async function changeStatus(index,status){
+ const o=ORDERS[index];if(!o)return;
+ try{
+  const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'status',token:TOKEN,orderNo:o.orderNo,status})});
+  const j=await r.json();if(!j.ok)throw Error(j.error||'Gagal');
+  o.status=status;renderAll();
+ }catch(e){alert(e.message)}
+}
+function detail(i){
+ const o=ORDERS[i];if(!o)return;
+ document.getElementById('dTitle').textContent=compactNo(o.orderNo);
+ let items='';try{items=JSON.parse(o.items||'[]').map(x=>`<div class="item"><b>${esc(x.name)}</b> — ${esc(x.variant)} × ${x.qty}<br><span style="color:#999">${x.promo?'🔥 '+esc(x.promoTitle||'Promo')+' · ':''}${money(Number(x.unitPrice||0)*Number(x.qty||1))}</span></div>`).join('')}catch(e){items='<div class="item">Tiada item detail.</div>'}
+ document.getElementById('detail').innerHTML=`<div class="detailgrid">
+ <div class="detail"><small>Customer</small><b>${esc(o.name)}</b></div><div class="detail"><small>WhatsApp</small><b>${esc(o.phone)}</b></div>
+ <div class="detail"><small>Total</small><b class="gold">${money(o.total)}</b></div><div class="detail"><small>Profit</small><b class="profit">${money(o.profit)}</b></div>
+ <div class="detail" style="grid-column:1/-1"><small>Alamat</small><b>${esc(o.address)}</b></div>
+ </div>
+ <div style="margin-top:12px"><label>Status</label><select id="dStatus" onchange="changeStatus(${i},this.value)"><option ${o.status==='Pending'?'selected':''}>Pending</option><option ${o.status==='Processing'?'selected':''}>Processing</option><option ${o.status==='Completed'?'selected':''}>Completed</option><option ${o.status==='Cancelled'?'selected':''}>Cancelled</option></select></div>
+ <div class="items">${items}</div>
+ <div style="margin-top:12px;text-align:right;font-size:12px">Modal: <b>${money(o.cost)}</b> · Untung: <b class="profit">${money(o.profit)}</b></div>
+ ${o.receiptUrl?`<p style="margin-top:14px"><a class="btn" target="_blank" href="${esc(o.receiptUrl)}">Lihat Bukti Bayaran</a></p>`:''}`;
+ document.getElementById('modal').classList.add('open')
+}
+function closeDetail(){document.getElementById('modal').classList.remove('open')}
+</script>
+</body>
+</html>

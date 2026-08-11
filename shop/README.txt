@@ -1,24 +1,11 @@
-REQOO PROMO + QR FINAL FIX
+REQOO ADMIN UPDATE
 
-Replace in GitHub /shop/:
-- index.html
-- promotion.html
-- assets/qr-maybank.png
+1. Replace /shop/admin.html with the included admin.html.
+2. Replace /shop/index.html with the included index.html.
+3. Do NOT replace Code.gs for this update.
+4. Dashboard uses the existing list/status API.
+5. Order numbers are kept full in the database, but shown shorter in the UI/WhatsApp:
+   #RQ-260811-1234
+6. Full order number is still used internally for status updates.
 
-Google Apps Script:
-- Replace Code.gs completely.
-- Deploy -> Manage deployments -> Edit -> New version -> Deploy.
-- Keep the same Web App URL.
-
-What this fixes:
-1. One campaign slug can contain multiple promotion rows/products.
-2. Public promotion page groups products by campaign slug.
-3. Shop loads ALL active promo items for ?promo=campaign-slug.
-4. Promo price applies only to the matching product + variant.
-5. Changing variant removes the old promo unless the new variant has its own promo in the same campaign.
-6. Cart can contain multiple promo items.
-7. Server verifies promo by promoId first, then by campaign slug + productId + variant.
-8. Server recalculates promo price instead of trusting browser price.
-9. Checkout uses assets/qr-maybank.png with the new Ab Art Trading QR.
-
-Do not change the ADMIN_TOKEN unless you intentionally want to change authentication.
+This package intentionally does not change promotions, payment gateway, QR, or Code.gs.
