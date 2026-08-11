@@ -1,17 +1,24 @@
-REQOO CAMPAIGN PROMOTION FINAL
+REQOO PROMO + QR FINAL FIX
 
-Replace these files:
-1. shop/index.html
-2. shop/promotion.html
-3. shop/promotion-admin.html
-4. Google Apps Script Code.gs
+Replace in GitHub /shop/:
+- index.html
+- promotion.html
+- assets/qr-maybank.png
 
-Campaign model:
-- One campaign = one slug (example merdeka-special)
-- Multiple rows with the same slug are products/items inside that campaign.
-- Public page groups rows by slug.
-- Shop ?promo=slug applies only that campaign.
-- Admin can create a campaign then add multiple products to the same campaign.
+Google Apps Script:
+- Replace Code.gs completely.
+- Deploy -> Manage deployments -> Edit -> New version -> Deploy.
+- Keep the same Web App URL.
 
-After replacing Code.gs: Deploy > Manage deployments > Edit > New version > Deploy.
-Keep the same /exec URL.
+What this fixes:
+1. One campaign slug can contain multiple promotion rows/products.
+2. Public promotion page groups products by campaign slug.
+3. Shop loads ALL active promo items for ?promo=campaign-slug.
+4. Promo price applies only to the matching product + variant.
+5. Changing variant removes the old promo unless the new variant has its own promo in the same campaign.
+6. Cart can contain multiple promo items.
+7. Server verifies promo by promoId first, then by campaign slug + productId + variant.
+8. Server recalculates promo price instead of trusting browser price.
+9. Checkout uses assets/qr-maybank.png with the new Ab Art Trading QR.
+
+Do not change the ADMIN_TOKEN unless you intentionally want to change authentication.
