@@ -185,7 +185,7 @@ async function submitOrder(){
         '<div style="color:#8fd18f;font-weight:900">✓ STATUS: ORDER DITERIMA</div>'+
         '<div class="muted" style="margin-top:5px">Anda tidak perlu bayar semula walaupun WhatsApp lambat dibuka.</div>'+
       '</div>'+
-      '<button class="btn" onclick="window.open('+JSON.stringify(waUrl)+',\'_blank\');">'+
+      '<button id="waSendBtn" class="btn" onclick="sendWhatsAppOrder();">'+
         '📱 Hantar Order ke WhatsApp'+
       '</button>'+
       '<button class="btn" style="margin-top:10px;background:#222;color:#fff" onclick="closePay();cart=[];update()">'+
