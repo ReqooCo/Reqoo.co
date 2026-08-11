@@ -141,7 +141,7 @@ select.statussel{margin:0;padding:7px 8px;width:140px;font-size:10px}
         <div><label>Susunan</label><input id="pSort" type="number" min="0" value="99"></div>
         <div class="full"><label>Description</label><input id="pDesc" placeholder="Penerangan ringkas"></div>
         <div class="full"><label>Gambar Produk</label><div class="assetBox">
-  <div class="assetRow"><label class="btn" for="pFile">🖼️ Pilih Gambar</label><input id="pFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewProductImage(this)"><span id="pFileName" class="sub">Tiada gambar baru dipilih</span></div>
+  <div class="assetRow"><label class="btn" for="pFile">🖼️ Pilih Gambar</label><input id="pFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewProductImage(this)"><span id="pFileName" class="sub">Tiada gambar baru dipilih</span></div><img id="productPreview" class="previewImg" alt="Preview gambar produk">
   <img id="pPreview" class="previewImg" alt="Preview">
   <div class="uploadHint">Gambar akan dikecilkan automatik dan dimuat naik terus ke GitHub <b>shop/assets/products</b>. Tak perlu isi path manual.</div>
 </div><input id="pImage" type="hidden"></div>
@@ -430,6 +430,9 @@ function editProduct(id){
   document.getElementById('pCategory').value=p.category;
   document.getElementById('pDesc').value=p.desc||'';
   document.getElementById('pImage').value=p.image||'';
+  document.getElementById('pFile').value='';
+  document.getElementById('pFileName').textContent='Tiada gambar baru dipilih';
+  const editPrev=document.getElementById('productPreview'); if(editPrev){editPrev.src=p.image||'';editPrev.style.display=p.image?'block':'none';}
   document.getElementById('pSort').value=p.sortOrder||0;
   document.getElementById('pActive').checked=!!p.active;
   resetProductFile();
@@ -516,7 +519,13 @@ async function saveProduct(){
   const btn=document.querySelector('#productModal .goldbtn'); if(btn)btn.disabled=true;
   document.getElementById('productErr').textContent='';
   try{
-    if(file){document.getElementById('productErr').textContent='Uploading gambar ke GitHub…'; image=await uploadProductImage(file); document.getElementById('pImage').value=image;}
+    if(file){
+      document.getElementById('productErr').textContent='Uploading gambar ke GitHub…';
+      image=await uploadProductImage(file);
+      document.getElementById('pImage').value=image;
+      const preview=document.getElementById('productPreview');
+      if(preview){preview.src=image;preview.style.display='block';}
+    }
     const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveProduct',token:TOKEN,id,name,category,desc,image,active,sortOrder,variants})});
     const j=await r.json(); if(!j.ok)throw Error(j.error||'Gagal simpan produk');
     closeProductModal(); await loadProducts();
