@@ -49,7 +49,7 @@ select.statussel{margin:0;padding:7px 8px;width:140px;font-size:10px}
 </section>
 
 <section id="app" style="display:none">
-<div class="toolbar"><div><h1>Dashboard</h1><div class="sub">Ringkasan order & jualan</div></div><a class="btn goldbtn" href="/shop/promotion-admin.html">Promotions</a></div>
+<div class="toolbar"><div><h1>Dashboard</h1><div class="sub">Ringkasan order & jualan</div></div><button class="btn" onclick="showCustomers()">Customers</button><a class="btn goldbtn" href="/shop/promotion-admin.html">Promotions</a></div>
 
 <div class="kpis">
 <div class="kpi"><div class="label">TOTAL ORDER</div><div class="num" id="kOrders">0</div><div class="tiny">Semua order</div></div>
@@ -78,6 +78,22 @@ select.statussel{margin:0;padding:7px 8px;width:140px;font-size:10px}
 </section>
 </main>
 
+
+<section class="panel orders" id="customersSection" style="display:none">
+  <div class="toolbar">
+    <div><h2 style="margin:0">Customer Database</h2><div class="sub">Customer dikumpulkan automatik daripada order.</div></div>
+    <button class="btn" onclick="showDashboard()">← Dashboard</button>
+  </div>
+  <div class="filters">
+    <input id="customerSearch" placeholder="Cari nama / WhatsApp" oninput="renderCustomers()">
+    <button class="btn goldbtn" onclick="promoteVisible()">📣 WhatsApp Promo</button>
+  </div>
+  <div class="table">
+    <div class="row head" style="grid-template-columns:1.2fr 1fr 100px 120px 140px"><div>CUSTOMER</div><div>WHATSAPP</div><div>ORDER</div><div>SPEND</div><div>ACTION</div></div>
+    <div id="customerRows"></div>
+  </div>
+</section>
+
 <div class="modal" id="modal"><div class="box"><div class="modalhead"><h2 id="dTitle">Order</h2><button class="close" onclick="closeDetail()">×</button></div><div id="detail" style="margin-top:15px"></div></div></div>
 
 <script>
@@ -105,7 +121,7 @@ function normalize(o){
   timestamp:val('timestamp'),orderNo:val('orderNo'),name:val('name'),phone:val('phone'),address:val('address'),
   items:val('items'),itemCount:Number(val('itemCount')||0),subtotal:Number(val('subtotal')||0),
   shipping:Number(val('shipping')||0),total:Number(val('total')||0),cost:Number(val('cost')||0),
-  profit:Number(val('profit')||0),payment:val('payment'),status:val('status'),receiptUrl:val('receiptUrl')
+  profit:Number(val('profit')||0),payment:val('payment'),status:val('status'),receiptUrl:val('receiptUrl'),customerReceiptUrl:val('customerReceiptUrl')
  };
 }
 function renderAll(){kpis();renderChart();renderCats();renderOrders()}
@@ -155,6 +171,7 @@ async function changeStatus(index,status){
  }catch(e){alert(e.message)}
 }
 function detail(i){
+ CURRENT_DETAIL=i;
  const o=ORDERS[i];if(!o)return;
  document.getElementById('dTitle').textContent=compactNo(o.orderNo);
  let items='';try{items=JSON.parse(o.items||'[]').map(x=>`<div class="item"><b>${esc(x.name)}</b> — ${esc(x.variant)} × ${x.qty}<br><span style="color:#999">${x.promo?'🔥 '+esc(x.promoTitle||'Promo')+' · ':''}${money(Number(x.unitPrice||0)*Number(x.qty||1))}</span></div>`).join('')}catch(e){items='<div class="item">Tiada item detail.</div>'}
@@ -164,12 +181,65 @@ function detail(i){
  <div class="detail" style="grid-column:1/-1"><small>Alamat</small><b>${esc(o.address)}</b></div>
  </div>
  <div style="margin-top:12px"><label>Status</label><select id="dStatus" onchange="changeStatus(${i},this.value)"><option ${o.status==='Pending'?'selected':''}>Pending</option><option ${o.status==='Processing'?'selected':''}>Processing</option><option ${o.status==='Completed'?'selected':''}>Completed</option><option ${o.status==='Cancelled'?'selected':''}>Cancelled</option></select></div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+   <button class="btn goldbtn" onclick="waStatus(ORDERS[CURRENT_DETAIL])">💬 WhatsApp Status</button>
+   <button class="btn" onclick="waReceipt(ORDERS[CURRENT_DETAIL])">🧾 Hantar Resit</button>
+   <button class="btn" onclick="waCustomer(ORDERS[CURRENT_DETAIL])">📣 Promo Customer</button>
+ </div>
  <div class="items">${items}</div>
  <div style="margin-top:12px;text-align:right;font-size:12px">Modal: <b>${money(o.cost)}</b> · Untung: <b class="profit">${money(o.profit)}</b></div>
  ${o.receiptUrl?`<p style="margin-top:14px"><a class="btn" target="_blank" href="${esc(o.receiptUrl)}">Lihat Bukti Bayaran</a></p>`:''}`;
  document.getElementById('modal').classList.add('open')
 }
 function closeDetail(){document.getElementById('modal').classList.remove('open')}
+
+let CURRENT_DETAIL=0;
+const CUSTOMERS=[];
+function showCustomers(){document.getElementById('app').style.display='none';document.getElementById('customersSection').style.display='block';loadCustomers()}
+function showDashboard(){document.getElementById('customersSection').style.display='none';document.getElementById('app').style.display='block'}
+function phoneClean(p){let x=String(p||'').replace(/\D/g,''); if(x.startsWith('0')) x='6'+x; return x}
+function waOpen(phone,msg){const p=phoneClean(phone); if(!p)return alert('No. WhatsApp customer tiada.'); window.open('https://wa.me/'+p+'?text='+encodeURIComponent(msg),'_blank')}
+function orderItemsText(o){try{return JSON.parse(o.items||'[]').map(x=>`${x.name} — ${x.variant||''} × ${x.qty} = ${money(Number(x.unitPrice||0)*Number(x.qty||1))}`).join('\n')}catch(e){return ''}}
+function waStatus(o){
+ const msg=`REQOO.CO — UPDATE ORDER\n\nNo. Order: ${compactNo(o.orderNo)}\nCustomer: ${o.name}\n\nStatus: ${o.status}\nJumlah: ${money(o.total)}\n\nTerima kasih kerana memilih REQOO.CO.`;
+ waOpen(o.phone,msg)
+}
+function waReceipt(o){
+ const link=o.customerReceiptUrl||o.receiptUrl||'';
+ const msg=`REQOO.CO — RESIT ORDER\n\nNo. Order: ${compactNo(o.orderNo)}\nJumlah: ${money(o.total)}\nStatus: ${o.status}\n\nResit: ${link||'Resit akan dihantar secara berasingan.'}`;
+ waOpen(o.phone,msg)
+}
+function waCustomer(o){
+ const msg=`Hi ${o.name||''},\n\nAda promo terbaru daripada REQOO.CO 🎉\n\nKami ada tawaran istimewa untuk produk custom made.\n\nLihat promo: https://reqoo.co/shop/promotion.html\n\n— REQOO.CO`;
+ waOpen(o.phone,msg)
+}
+function promoteCustomer(phone,name){
+ const msg=`Hi ${name||''},\n\nAda promo terbaru daripada REQOO.CO 🎉\n\nLihat promo: https://reqoo.co/shop/promotion.html\n\n— REQOO.CO`;
+ waOpen(phone,msg)
+}
+async function loadCustomers(){
+ try{
+  const r=await fetch(API+'?action=listCustomers&token='+encodeURIComponent(TOKEN));
+  const j=await r.json(); if(!j.ok) throw Error(j.error||'Gagal load customer');
+  CUSTOMERS.splice(0,CUSTOMERS.length,...(j.customers||[])); renderCustomers();
+ }catch(e){document.getElementById('customerRows').innerHTML='<div class="empty">'+esc(e.message)+'</div>'}
+}
+function renderCustomers(){
+ const q=(document.getElementById('customerSearch').value||'').toLowerCase();
+ const a=CUSTOMERS.filter(c=>!q||String(c.name).toLowerCase().includes(q)||String(c.phone).toLowerCase().includes(q));
+ document.getElementById('customerRows').innerHTML=a.length?a.map(c=>`<div class="row" style="grid-template-columns:1.2fr 1fr 100px 120px 140px">
+ <div class="customer">${esc(c.name)}</div><div>${esc(c.phone)}</div><div>${c.orderCount||0}</div><div class="amount">${money(c.totalSpend)}</div>
+ <div><button class="btn" onclick='promoteCustomer(${JSON.stringify(String(c.phone))},${JSON.stringify(String(c.name))})'>📣 Promo</button></div>
+ </div>`).join(''):'<div class="empty">Tiada customer.</div>';
+}
+function promoteVisible(){
+ const q=(document.getElementById('customerSearch').value||'').toLowerCase();
+ const a=CUSTOMERS.filter(c=>!q||String(c.name).toLowerCase().includes(q)||String(c.phone).toLowerCase().includes(q));
+ if(!a.length)return alert('Tiada customer.');
+ if(!confirm(`Buka WhatsApp untuk ${a.length} customer? Browser akan buka satu-satu dan anda tekan Send secara manual.`))return;
+ a.slice(0,20).forEach((c,i)=>setTimeout(()=>promoteCustomer(c.phone,c.name),i*700));
+}
+
 </script>
 </body>
 </html>
