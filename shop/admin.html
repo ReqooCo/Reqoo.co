@@ -35,6 +35,24 @@ select.statussel{margin:0;padding:7px 8px;width:140px;font-size:10px}
 .detailgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.detail{background:#0b0b0b;border:1px solid #222;border-radius:12px;padding:12px}.detail small{color:#777;display:block;font-size:9px;text-transform:uppercase;letter-spacing:1px}.detail b{display:block;margin-top:5px}.items{margin-top:12px;border:1px solid #222;border-radius:12px;overflow:hidden}.item{padding:10px;border-bottom:1px solid #222;font-size:11px}.item:last-child{border:0}.profit{color:var(--green)}
 @media(max-width:900px){.kpis{grid-template-columns:1fr 1fr}.statuses{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.row{grid-template-columns:100px minmax(130px,1fr) 70px 85px 115px 95px}}
 @media(max-width:560px){.wrap{width:min(100% - 18px,1250px)}.kpis{grid-template-columns:1fr 1fr}.kpi .num{font-size:20px}.toolbar{align-items:flex-start}.toolbar h1{font-size:23px}.detailgrid{grid-template-columns:1fr}.orders .table{overflow-x:auto}.orders .row{min-width:610px}}.kpis{grid-template-columns:1fr 1fr}.kpi .num{font-size:20px}.toolbar{align-items:flex-start}.toolbar h1{font-size:23px}.detailgrid{grid-template-columns:1fr}}
+
+.prodToolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.productsGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.prodCard{background:#0b0b0b;border:1px solid #242424;border-radius:14px;padding:13px}
+.prodCard img{width:100%;aspect-ratio:1.5/1;object-fit:cover;border-radius:10px;background:#151515}
+.prodTop{display:flex;align-items:center;gap:8px;margin-top:10px}
+.prodTop b{flex:1}
+.activeDot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block}
+.inactiveDot{width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block}
+.variantRow{display:grid;grid-template-columns:1fr 110px 36px;gap:7px;margin-bottom:7px}
+.variantRow input{margin:0}
+.prodMeta{color:#888;font-size:10px;line-height:1.5;margin-top:7px}
+.formGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.formGrid>div.full{grid-column:1/-1}
+.switchLine{display:flex;align-items:center;gap:8px;margin:8px 0 14px;font-size:11px;color:#aaa}
+.switchLine input{width:auto;margin:0}
+@media(max-width:900px){.productsGrid{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.productsGrid{grid-template-columns:1fr}.formGrid{grid-template-columns:1fr}.formGrid>div.full{grid-column:auto}}
 </style>
 </head>
 <body>
@@ -49,7 +67,7 @@ select.statussel{margin:0;padding:7px 8px;width:140px;font-size:10px}
 </section>
 
 <section id="app" style="display:none">
-<div class="toolbar"><div><h1>Dashboard</h1><div class="sub">Ringkasan order & jualan</div></div><button class="btn" onclick="showCustomers()">Customers</button><a class="btn goldbtn" href="/shop/promotion-admin.html">Promotions</a></div>
+<div class="toolbar"><div><h1>Dashboard</h1><div class="sub">Ringkasan order & jualan</div></div><button class="btn" onclick="showProducts()">Products</button><button class="btn" onclick="showCustomers()">Customers</button><a class="btn goldbtn" href="/shop/promotion-admin.html">Promotions</a></div>
 
 <div class="kpis">
 <div class="kpi"><div class="label">TOTAL ORDER</div><div class="num" id="kOrders">0</div><div class="tiny">Semua order</div></div>
@@ -78,6 +96,45 @@ select.statussel{margin:0;padding:7px 8px;width:140px;font-size:10px}
 </section>
 </main>
 
+
+
+<section class="panel orders" id="productsSection" style="display:none">
+  <div class="toolbar">
+    <div><h2 style="margin:0">Product Management</h2><div class="sub">Tambah, edit harga & variant terus dari Admin.</div></div>
+    <button class="btn" onclick="showDashboard()">← Dashboard</button>
+  </div>
+  <div class="prodToolbar">
+    <button class="btn goldbtn" onclick="newProduct()">➕ Tambah Produk</button>
+    <button class="btn" onclick="loadProducts()">↻ Refresh</button>
+    <input id="productSearch" style="max-width:260px;margin:0" placeholder="Cari produk..." oninput="renderProducts()">
+  </div>
+  <div id="productRows" class="productsGrid"></div>
+</section>
+
+<div class="modal" id="productModal">
+  <div class="box">
+    <div class="modalhead"><h2 id="productModalTitle">Tambah Produk</h2><button class="close" onclick="closeProductModal()">×</button></div>
+    <div style="margin-top:15px">
+      <div class="formGrid">
+        <div><label>Product ID</label><input id="pId" placeholder="Contoh: 601"></div>
+        <div><label>Nama Produk</label><input id="pName" placeholder="Nama produk"></div>
+        <div><label>Kategori</label><input id="pCategory" placeholder="Plaque / Brooch / Trophy"></div>
+        <div><label>Susunan</label><input id="pSort" type="number" min="0" value="99"></div>
+        <div class="full"><label>Description</label><input id="pDesc" placeholder="Penerangan ringkas"></div>
+        <div class="full"><label>Image path / URL</label><input id="pImage" placeholder="assets/produk.jpg"></div>
+      </div>
+      <div class="switchLine"><input id="pActive" type="checkbox" checked> Produk aktif dan dipaparkan di shop</div>
+      <label>Variants & Harga</label>
+      <div id="variantEditor"></div>
+      <button class="btn" onclick="addVariantRow()">＋ Variant</button>
+      <div style="display:flex;gap:8px;margin-top:18px">
+        <button class="btn goldbtn" style="flex:1" onclick="saveProduct()">Simpan Produk</button>
+        <button class="btn" onclick="closeProductModal()">Batal</button>
+      </div>
+      <div id="productErr" class="error"></div>
+    </div>
+  </div>
+</div>
 
 <section class="panel orders" id="customersSection" style="display:none">
   <div class="toolbar">
@@ -290,6 +347,110 @@ function promoteVisible(){
  if(!a.length)return alert('Tiada customer.');
  if(!confirm(`Buka WhatsApp untuk ${a.length} customer? Browser akan buka satu-satu dan anda tekan Send secara manual.`))return;
  a.slice(0,20).forEach((c,i)=>setTimeout(()=>promoteCustomer(c.phone,c.name),i*700));
+}
+
+
+let PRODUCTS=[];
+function showProducts(){
+  document.getElementById('app').style.display='none';
+  document.getElementById('customersSection').style.display='none';
+  document.getElementById('productsSection').style.display='block';
+  loadProducts();
+}
+function showDashboard(){
+  document.getElementById('productsSection').style.display='none';
+  document.getElementById('customersSection').style.display='none';
+  document.getElementById('app').style.display='block';
+}
+async function loadProducts(){
+  try{
+    const r=await fetch(API+'?action=listProducts&token='+encodeURIComponent(TOKEN));
+    const j=await r.json();
+    if(!j.ok)throw Error(j.error||'Gagal load produk');
+    PRODUCTS=j.products||[];
+    renderProducts();
+  }catch(e){
+    document.getElementById('productRows').innerHTML='<div class="empty">'+esc(e.message)+'</div>';
+  }
+}
+function renderProducts(){
+  const q=(document.getElementById('productSearch').value||'').toLowerCase();
+  const a=PRODUCTS.filter(p=>!q||JSON.stringify(p).toLowerCase().includes(q));
+  document.getElementById('productRows').innerHTML=a.length?a.map(p=>`
+    <div class="prodCard">
+      <img src="${esc(p.image)}" onerror="this.style.opacity='.25'">
+      <div class="prodTop"><b>${esc(p.name)}</b><span class="${p.active?'activeDot':'inactiveDot'}"></span></div>
+      <div class="prodMeta">${esc(p.category)} · ID ${esc(p.id)}<br>${esc(p.desc||'')}</div>
+      <div class="prodMeta">${(p.variants||[]).map(v=>esc(v[0])+' — '+money(v[1])).join(' · ')||'Tiada variant'}</div>
+      <div style="display:flex;gap:7px;margin-top:11px">
+        <button class="btn goldbtn" style="flex:1" onclick="editProduct('${esc(p.id)}')">✏️ Edit</button>
+        <button class="btn" onclick="toggleProduct('${esc(p.id)}')">${p.active?'🔴 Hide':'🟢 Active'}</button>
+      </div>
+    </div>`).join(''):'<div class="empty" style="grid-column:1/-1">Tiada produk.</div>';
+}
+function newProduct(){
+  document.getElementById('productModalTitle').textContent='Tambah Produk';
+  ['pId','pName','pCategory','pDesc','pImage'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('pSort').value=99;
+  document.getElementById('pActive').checked=true;
+  document.getElementById('productErr').textContent='';
+  document.getElementById('variantEditor').innerHTML='';
+  addVariantRow('A5',0);
+  document.getElementById('productModal').classList.add('open');
+}
+function editProduct(id){
+  const p=PRODUCTS.find(x=>String(x.id)===String(id)); if(!p)return;
+  document.getElementById('productModalTitle').textContent='Edit Produk';
+  document.getElementById('pId').value=p.id;
+  document.getElementById('pName').value=p.name;
+  document.getElementById('pCategory').value=p.category;
+  document.getElementById('pDesc').value=p.desc||'';
+  document.getElementById('pImage').value=p.image||'';
+  document.getElementById('pSort').value=p.sortOrder||0;
+  document.getElementById('pActive').checked=!!p.active;
+  document.getElementById('productErr').textContent='';
+  document.getElementById('variantEditor').innerHTML='';
+  (p.variants||[]).forEach(v=>addVariantRow(v[0],v[1]));
+  if(!(p.variants||[]).length)addVariantRow('',0);
+  document.getElementById('productModal').classList.add('open');
+}
+function addVariantRow(name='',price=0){
+  const box=document.getElementById('variantEditor');
+  const row=document.createElement('div');
+  row.className='variantRow';
+  row.innerHTML=`<input class="vName" placeholder="A5 / A4 / Custom" value="${esc(name)}"><input class="vPrice" type="number" min="0" step="0.01" placeholder="Harga" value="${Number(price||0)}"><button class="btn" type="button" onclick="this.parentElement.remove()">×</button>`;
+  box.appendChild(row);
+}
+function closeProductModal(){document.getElementById('productModal').classList.remove('open')}
+async function saveProduct(){
+  const id=document.getElementById('pId').value.trim();
+  const name=document.getElementById('pName').value.trim();
+  const category=document.getElementById('pCategory').value.trim();
+  const desc=document.getElementById('pDesc').value.trim();
+  const image=document.getElementById('pImage').value.trim();
+  const sortOrder=Number(document.getElementById('pSort').value||0);
+  const active=document.getElementById('pActive').checked;
+  const variants=[...document.querySelectorAll('#variantEditor .variantRow')].map(r=>[
+    r.querySelector('.vName').value.trim(),
+    Number(r.querySelector('.vPrice').value||0)
+  ]).filter(v=>v[0]);
+  if(!id||!name||!category){document.getElementById('productErr').textContent='Product ID, Nama dan Kategori diperlukan.';return}
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:'saveProduct',token:TOKEN,id,name,category,desc,image,active,sortOrder,variants})});
+    const j=await r.json(); if(!j.ok)throw Error(j.error||'Gagal simpan produk');
+    closeProductModal(); await loadProducts();
+  }catch(e){document.getElementById('productErr').textContent=e.message}
+}
+async function toggleProduct(id){
+  const p=PRODUCTS.find(x=>String(x.id)===String(id)); if(!p)return;
+  if(!confirm((p.active?'Sembunyikan':'Aktifkan')+' produk '+p.name+'?'))return;
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:'saveProduct',token:TOKEN,id:p.id,name:p.name,category:p.category,desc:p.desc,image:p.image,active:!p.active,sortOrder:p.sortOrder,variants:p.variants})});
+    const j=await r.json(); if(!j.ok)throw Error(j.error||'Gagal');
+    await loadProducts();
+  }catch(e){alert(e.message)}
 }
 
 </script>

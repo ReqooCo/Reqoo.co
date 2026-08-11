@@ -26,7 +26,8 @@ footer{border-top:1px solid #222;padding:28px 0;color:#777;font-size:12px}.modal
 <script>
 const ORDER_API_URL='https://script.google.com/macros/s/AKfycbyFy2y76srL3i-wIp1kesaXw5KZl6fpTTCbLJk_5lQBUwl0QKkdRsxo6ynF7XCjnKb1MA/exec';
 const WA_NUMBER='60165192803';
-const P=[
+const P=[];
+const FALLBACK_PRODUCTS=[
 {id:101,name:'Basic Collection',category:'Plaque',desc:'Recognition Gift — 3 saiz.',image:'assets/plaque-basic.jpg',variants:[['A5',50],['A4',100],['A3',150]]},
 {id:102,name:'Classic Collection',category:'Plaque',desc:'Timeless elegance — 3 saiz.',image:'assets/plaque-classic.jpg',variants:[['A5',99],['A4',199],['A3',299]]},
 {id:103,name:'Prestige Collection',category:'Plaque',desc:'Timeless recognition — 3 saiz.',image:'assets/plaque-prestige.jpg',variants:[['A5',130],['A4',230],['A3',330]]},
@@ -41,7 +42,7 @@ const P=[
 {id:301,name:'Trophy — Quotation',category:'Trophy',desc:'Custom trophy. Harga mengikut design & kuantiti.',image:'assets/trophy.jpg',variants:[['Custom quotation',0]]},
 {id:401,name:'Medal — Quotation',category:'Medal',desc:'Custom medal. Harga mengikut design & kuantiti.',image:'assets/medal.jpg',variants:[['Custom quotation',0]]},
 {id:501,name:'3D Print Service',category:'3D Print Service',desc:'Hantar STL/OBJ, pilih material dan quantity. Kami beri quotation.',image:'assets/3d-print.jpg',variants:[['Quotation',0]]}
-];
+];;
 let cat='Semua',cart=[],current=null;
 const PROMO_API=ORDER_API_URL;
 let ACTIVE_PROMO=null;
@@ -142,6 +143,27 @@ async function submitOrder(){
   document.getElementById('checkoutBody').innerHTML='<div class="success"><h3>Order dihantar</h3><p>Order <b>#'+window.displayOrderNo+'</b> telah dihantar ke WhatsApp.</p><p class="muted">Order disimpan dalam Google Sheet dan bukti pembayaran disimpan ke Google Drive.</p><button class="btn" onclick="closePay();cart=[];update()">Selesai</button></div>'
 }
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+
+async function loadProductsFromAPI(){
+  try{
+    const r=await fetch(ORDER_API_URL+'?action=listProducts');
+    const j=await r.json();
+    if(j.ok&&Array.isArray(j.products)&&j.products.length){
+      P.splice(0,P.length,...j.products.map(x=>({
+        id:isNaN(Number(x.id))?x.id:Number(x.id),
+        name:x.name,
+        category:x.category,
+        desc:x.desc||'',
+        image:x.image||'',
+        variants:Array.isArray(x.variants)?x.variants:[],
+      })));
+      return true;
+    }
+  }catch(e){console.error('Product API:',e)}
+  P.splice(0,P.length,...FALLBACK_PRODUCTS);
+  return false;
+}
+
 async function loadPromotion(){
   let slug=new URLSearchParams(location.search).get('promo')||new URLSearchParams(location.search).get('promotion');
   if(!slug){
@@ -158,5 +180,5 @@ async function loadPromotion(){
   }catch(e){console.error(e)}
   render();update();
 }
-loadPromotion();
+loadProductsFromAPI().finally(()=>loadPromotion());
 </script></body></html>
