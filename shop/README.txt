@@ -1,11 +1,26 @@
-REQOO ADMIN UPDATE
+REQOO FINAL FIX 3 — CUSTOMER RECEIPT
 
-1. Replace /shop/admin.html with the included admin.html.
-2. Replace /shop/index.html with the included index.html.
-3. Do NOT replace Code.gs for this update.
-4. Dashboard uses the existing list/status API.
-5. Order numbers are kept full in the database, but shown shorter in the UI/WhatsApp:
-   #RQ-260811-1234
-6. Full order number is still used internally for status updates.
+Replace ONLY:
+1. /shop/admin.html
+2. Google Apps Script Code.gs
 
-This package intentionally does not change promotions, payment gateway, QR, or Code.gs.
+Then Apps Script:
+Save -> Deploy -> Manage deployments -> Edit -> New version -> Deploy
+
+KEEP YOUR EXISTING ADMIN_TOKEN.
+
+Receipt separation:
+- Receipt URL = customer-uploaded payment proof.
+- Customer Receipt URL = REQOO-generated PDF.
+- Lihat Bukti Bayaran uses payment proof only.
+- Hantar Resit uses REQOO customer receipt only.
+- If Customer Receipt URL is empty, Hantar Resit generates a fresh REQOO PDF,
+  stores it in Drive, writes the URL to column 16, then opens WhatsApp with it.
+- No fallback to payment proof.
+
+Order number:
+- Backend/Google Sheet keeps the original full order number.
+- Admin/customer display: #RQ-YYMMDD-XXXX.
+- Generated REQOO PDF uses the same short display number.
+
+Does not replace shop/index.html and does not modify promo/cart/QR.

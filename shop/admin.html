@@ -153,14 +153,14 @@ function renderCats(){
  const rows=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,6),max=rows[0]?.[1]||1;
  document.getElementById('catsales').innerHTML=rows.length?rows.map(([n,v])=>`<div class="catrow"><div class="catname">${esc(n)}</div><div class="track"><div class="fill" style="width:${v/max*100}%"></div></div><div class="catval">${money(v)}</div></div>`).join(''):'<div class="empty">Belum ada data.</div>';
 }
-function compactNo(n){n=String(n||'');return n.length>12?'#'+n.slice(0,2)+'-'+n.slice(8,12):n}
-function fmtDate(s){const d=new Date(s);return isNaN(d)?String(s||''):d.toLocaleDateString('ms-MY',{day:'2-digit',month:'2-digit',year:'2-digit'})}
-function badge(s){const x=String(s||'Pending'),l=x.toLowerCase();return `<span class="badge ${l.includes('complete')?'green':l.includes('process')?'blue':l.includes('cancel')?'red':'orange'}">${esc(x)}</span>`}
-function renderOrders(){
- const q=document.getElementById('search').value.toLowerCase(),f=document.getElementById('filter').value;
- const a=ORDERS.filter(o=>(f==='Semua'||String(o.status)===f)&&(!q||String(o.orderNo).toLowerCase().includes(q)||String(o.name).toLowerCase().includes(q))).slice().reverse();
- document.getElementById('countLabel').textContent=a.length+' order';
- document.getElementById('orderRows').innerHTML=a.length?a.map((o,i)=>`<div class="row" onclick="detail(${ORDERS.indexOf(o)})"><div class="order">${compactNo(o.orderNo)}</div><div class="customer">${esc(o.name)}</div><div>${fmtDate(o.timestamp)}</div><div class="amount">${money(o.total)}</div><div>${badge(o.status)}</div><div>${esc(o.payment||'-')}</div></div>`).join(''):'<div class="empty">Tiada order.</div>';
+function compactNo(n){
+ n=String(n||'').trim();
+ const m=n.match(/^RQ(\d{6,14})$/);
+ if(m){
+   const d=m[1];
+   if(d.length>=10) return '#RQ-'+d.slice(2,8)+'-'+d.slice(-4);
+ }
+ return n ? '#'+n.replace(/^#/,'') : '-';
 }
 async function changeStatus(index,status){
  const o=ORDERS[index];if(!o)return;
@@ -188,7 +188,8 @@ function detail(i){
  </div>
  <div class="items">${items}</div>
  <div style="margin-top:12px;text-align:right;font-size:12px">Modal: <b>${money(o.cost)}</b> · Untung: <b class="profit">${money(o.profit)}</b></div>
- ${o.receiptUrl?`<p style="margin-top:14px"><a class="btn" target="_blank" href="${esc(o.receiptUrl)}">Lihat Bukti Bayaran</a></p>`:''}`;
+ ${o.receiptUrl?`<p style="margin-top:14px"><a class="btn" target="_blank" href="${esc(o.receiptUrl)}">Lihat Bukti Bayaran</a></p>`:''}
+<p style="margin-top:8px;font-size:10px;color:#777">🧾 Hantar Resit = resit REQOO PDF. Tidak menggunakan bukti pembayaran.</p>`;
  document.getElementById('modal').classList.add('open')
 }
 function closeDetail(){document.getElementById('modal').classList.remove('open')}
@@ -204,10 +205,29 @@ function waStatus(o){
  const msg=`REQOO.CO — UPDATE ORDER\n\nNo. Order: ${compactNo(o.orderNo)}\nCustomer: ${o.name}\n\nStatus: ${o.status}\nJumlah: ${money(o.total)}\n\nTerima kasih kerana memilih REQOO.CO.`;
  waOpen(o.phone,msg)
 }
-function waReceipt(o){
- const link=o.customerReceiptUrl||o.receiptUrl||'';
- const msg=`REQOO.CO — RESIT ORDER\n\nNo. Order: ${compactNo(o.orderNo)}\nJumlah: ${money(o.total)}\nStatus: ${o.status}\n\nResit: ${link||'Resit akan dihantar secara berasingan.'}`;
- waOpen(o.phone,msg)
+async function waReceipt(o){
+ // STRICT: only the REQOO customer receipt URL is accepted here.
+ let link=String(o.customerReceiptUrl||'').trim();
+ if(!link){
+   try{
+     const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+       body:JSON.stringify({action:'generateCustomerReceipt',token:TOKEN,orderNo:o.orderNo})});
+     const j=await r.json();
+     if(!j.ok) throw Error(j.error||'Gagal jana resit REQOO');
+     link=String(j.customerReceiptUrl||'').trim();
+     if(!link) throw Error('Resit REQOO tidak berjaya dijana.');
+     o.customerReceiptUrl=link;
+   }catch(e){ alert(e.message); return; }
+ }
+ const msg=`REQOO.CO — RESIT ORDER
+
+No. Order: ${compactNo(o.orderNo)}
+Jumlah: ${money(o.total)}
+Status: ${o.status}
+
+🧾 Resit REQOO:
+${link}`;
+ waOpen(o.phone,msg);
 }
 function waCustomer(o){
  const msg=`Hi ${o.name||''},\n\nAda promo terbaru daripada REQOO.CO 🎉\n\nKami ada tawaran istimewa untuk produk custom made.\n\nLihat promo: https://reqoo.co/shop/promotion.html\n\n— REQOO.CO`;
