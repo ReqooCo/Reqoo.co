@@ -53,6 +53,11 @@ select.statussel{margin:0;padding:7px 8px;width:140px;font-size:10px}
 .switchLine input{width:auto;margin:0}
 @media(max-width:900px){.productsGrid{grid-template-columns:1fr 1fr}}
 @media(max-width:560px){.productsGrid{grid-template-columns:1fr}.formGrid{grid-template-columns:1fr}.formGrid>div.full{grid-column:auto}}
+
+.assetBox{background:#0b0b0b;border:1px solid #292929;border-radius:13px;padding:12px;margin:10px 0 14px}
+.assetRow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.assetRow input[type=file]{display:none}
+.fileBtn{display:inline-flex;align-items:center;gap:7px}.previewImg{display:none;width:100%;max-height:210px;object-fit:contain;border-radius:10px;background:#151515;margin-top:10px}.uploadHint{font-size:10px;color:#777;margin-top:6px}
+.configStatus{font-size:10px;color:#888;margin-top:7px}.configStatus.ok{color:var(--green)}
 </style>
 </head>
 <body>
@@ -105,11 +110,25 @@ select.statussel{margin:0;padding:7px 8px;width:140px;font-size:10px}
   </div>
   <div class="prodToolbar">
     <button class="btn goldbtn" onclick="newProduct()">➕ Tambah Produk</button>
-    <button class="btn" onclick="loadProducts()">↻ Refresh</button>
+    <button class="btn" onclick="loadProducts()">↻ Refresh</button><button class="btn" onclick="openGithubSettings()">⚙ GitHub Assets</button>
     <input id="productSearch" style="max-width:260px;margin:0" placeholder="Cari produk..." oninput="renderProducts()">
   </div>
   <div id="productRows" class="productsGrid"></div>
 </section>
+
+
+<div class="modal" id="githubModal"><div class="box">
+  <div class="modalhead"><h2>GitHub Assets</h2><button class="close" onclick="closeGithubSettings()">×</button></div>
+  <div class="sub" style="margin:12px 0">Setup sekali sahaja. Token disimpan dalam Google Apps Script Properties, bukan Google Sheet.</div>
+  <label>GitHub Owner / Username</label><input id="ghOwner" placeholder="contoh: reqoo-co">
+  <label>Repository</label><input id="ghRepo" placeholder="contoh: reqoo-shop">
+  <label>Branch</label><input id="ghBranch" value="main">
+  <label>Folder Asset GitHub</label><input id="ghDir" value="shop/assets/products">
+  <label>GitHub Token</label><input id="ghToken" type="password" placeholder="Fine-grained PAT — Contents: Read and write">
+  <div id="ghStatus" class="configStatus"></div>
+  <div style="display:flex;gap:8px;margin-top:16px"><button class="btn goldbtn" style="flex:1" onclick="saveGithubSettings()">Simpan & Test Connection</button><button class="btn" onclick="closeGithubSettings()">Batal</button></div>
+  <div class="uploadHint" style="margin-top:12px">Token hanya digunakan oleh Apps Script untuk upload fail ke repository yang kau tetapkan.</div>
+</div></div>
 
 <div class="modal" id="productModal">
   <div class="box">
@@ -121,7 +140,11 @@ select.statussel{margin:0;padding:7px 8px;width:140px;font-size:10px}
         <div><label>Kategori</label><input id="pCategory" placeholder="Plaque / Brooch / Trophy"></div>
         <div><label>Susunan</label><input id="pSort" type="number" min="0" value="99"></div>
         <div class="full"><label>Description</label><input id="pDesc" placeholder="Penerangan ringkas"></div>
-        <div class="full"><label>Image path / URL</label><input id="pImage" placeholder="assets/produk.jpg"></div>
+        <div class="full"><label>Gambar Produk</label><div class="assetBox">
+  <div class="assetRow"><label class="btn" for="pFile">🖼️ Pilih Gambar</label><input id="pFile" type="file" accept="image/jpeg,image/png,image/webp" onchange="previewProductImage(this)"><span id="pFileName" class="sub">Tiada gambar baru dipilih</span></div>
+  <img id="pPreview" class="previewImg" alt="Preview">
+  <div class="uploadHint">Gambar akan dikecilkan automatik dan dimuat naik terus ke GitHub <b>shop/assets/products</b>. Tak perlu isi path manual.</div>
+</div><input id="pImage" type="hidden"></div>
       </div>
       <div class="switchLine"><input id="pActive" type="checkbox" checked> Produk aktif dan dipaparkan di shop</div>
       <label>Variants & Harga</label>
@@ -393,6 +416,7 @@ function newProduct(){
   ['pId','pName','pCategory','pDesc','pImage'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('pSort').value=99;
   document.getElementById('pActive').checked=true;
+  resetProductFile();
   document.getElementById('productErr').textContent='';
   document.getElementById('variantEditor').innerHTML='';
   addVariantRow('A5',0);
@@ -408,6 +432,7 @@ function editProduct(id){
   document.getElementById('pImage').value=p.image||'';
   document.getElementById('pSort').value=p.sortOrder||0;
   document.getElementById('pActive').checked=!!p.active;
+  resetProductFile();
   document.getElementById('productErr').textContent='';
   document.getElementById('variantEditor').innerHTML='';
   (p.variants||[]).forEach(v=>addVariantRow(v[0],v[1]));
@@ -422,25 +447,81 @@ function addVariantRow(name='',price=0){
   box.appendChild(row);
 }
 function closeProductModal(){document.getElementById('productModal').classList.remove('open')}
+function resetProductFile(){
+  const f=document.getElementById('pFile'); if(f)f.value='';
+  const n=document.getElementById('pFileName'); if(n)n.textContent='Tiada gambar baru dipilih';
+  const img=document.getElementById('pPreview'); if(img){img.src='';img.style.display='none';}
+}
+function previewProductImage(input){
+  const file=input.files&&input.files[0];
+  if(!file)return resetProductFile();
+  document.getElementById('pFileName').textContent=file.name;
+  const img=document.getElementById('pPreview');
+  img.src=URL.createObjectURL(file); img.style.display='block';
+}
+function openGithubSettings(){
+  document.getElementById('ghStatus').textContent='';
+  fetch(API+'?action=githubConfig&token='+encodeURIComponent(TOKEN)).then(r=>r.json()).then(j=>{
+    if(j.ok&&j.github){
+      document.getElementById('ghOwner').value=j.github.owner||'';
+      document.getElementById('ghRepo').value=j.github.repo||'';
+      document.getElementById('ghBranch').value=j.github.branch||'main';
+      document.getElementById('ghDir').value=j.github.dir||'shop/assets/products';
+      document.getElementById('ghStatus').textContent=j.github.configured?'✓ GitHub sudah disetup':'Belum disetup';
+      document.getElementById('ghStatus').className='configStatus '+(j.github.configured?'ok':'');
+    }
+  }).catch(()=>{});
+  document.getElementById('githubModal').classList.add('open');
+}
+function closeGithubSettings(){document.getElementById('githubModal').classList.remove('open')}
+async function saveGithubSettings(){
+  const btn=event&&event.target; if(btn)btn.disabled=true;
+  try{
+    const payload={action:'githubConfig',token:TOKEN,owner:document.getElementById('ghOwner').value.trim(),repo:document.getElementById('ghRepo').value.trim(),branch:document.getElementById('ghBranch').value.trim(),dir:document.getElementById('ghDir').value.trim(),githubToken:document.getElementById('ghToken').value.trim()};
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)}); const j=await r.json();
+    if(!j.ok)throw Error(j.error||'GitHub connection gagal');
+    document.getElementById('ghStatus').textContent='✓ Connected — GitHub Assets boleh digunakan'; document.getElementById('ghStatus').className='configStatus ok';
+    document.getElementById('ghToken').value='';
+  }catch(e){document.getElementById('ghStatus').textContent=e.message;document.getElementById('ghStatus').className='configStatus'}finally{if(btn)btn.disabled=false}
+}
+function fileToCompressedBase64(file){
+  return new Promise((resolve,reject)=>{
+    const fr=new FileReader(); fr.onerror=reject; fr.onload=()=>{
+      const im=new Image(); im.onload=()=>{
+        const max=1600; const scale=Math.min(1,max/Math.max(im.width,im.height));
+        const w=Math.max(1,Math.round(im.width*scale)),h=Math.max(1,Math.round(im.height*scale));
+        const c=document.createElement('canvas'); c.width=w;c.height=h;const ctx=c.getContext('2d');ctx.drawImage(im,0,0,w,h);
+        const data=c.toDataURL('image/jpeg',0.84); resolve({data,filename:(file.name.replace(/\.[^.]+$/,'')||'product')+'.jpg',mimeType:'image/jpeg'});
+      }; im.onerror=reject; im.src=fr.result;
+    }; fr.readAsDataURL(file);
+  });
+}
+async function uploadProductImage(file){
+  const compressed=await fileToCompressedBase64(file);
+  compressed.filename=(document.getElementById('pId').value.trim()+'-'+document.getElementById('pName').value.trim()).toLowerCase().replace(/[^a-z0-9]+/g,'-')+'.jpg';
+  const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'uploadProductImage',token:TOKEN,filename:compressed.filename,mimeType:compressed.mimeType,data:compressed.data})});
+  const j=await r.json(); if(!j.ok)throw Error(j.error||'Gagal upload gambar'); return j.path;
+}
 async function saveProduct(){
   const id=document.getElementById('pId').value.trim();
   const name=document.getElementById('pName').value.trim();
   const category=document.getElementById('pCategory').value.trim();
   const desc=document.getElementById('pDesc').value.trim();
-  const image=document.getElementById('pImage').value.trim();
+  let image=document.getElementById('pImage').value.trim();
   const sortOrder=Number(document.getElementById('pSort').value||0);
   const active=document.getElementById('pActive').checked;
-  const variants=[...document.querySelectorAll('#variantEditor .variantRow')].map(r=>[
-    r.querySelector('.vName').value.trim(),
-    Number(r.querySelector('.vPrice').value||0)
-  ]).filter(v=>v[0]);
+  const variants=[...document.querySelectorAll('#variantEditor .variantRow')].map(r=>[r.querySelector('.vName').value.trim(),Number(r.querySelector('.vPrice').value||0)]).filter(v=>v[0]);
+  const file=document.getElementById('pFile').files&&document.getElementById('pFile').files[0];
   if(!id||!name||!category){document.getElementById('productErr').textContent='Product ID, Nama dan Kategori diperlukan.';return}
+  const btn=document.querySelector('#productModal .goldbtn'); if(btn)btn.disabled=true;
+  document.getElementById('productErr').textContent='';
   try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify({action:'saveProduct',token:TOKEN,id,name,category,desc,image,active,sortOrder,variants})});
+    if(file){document.getElementById('productErr').textContent='Uploading gambar ke GitHub…'; image=await uploadProductImage(file); document.getElementById('pImage').value=image;}
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveProduct',token:TOKEN,id,name,category,desc,image,active,sortOrder,variants})});
     const j=await r.json(); if(!j.ok)throw Error(j.error||'Gagal simpan produk');
     closeProductModal(); await loadProducts();
   }catch(e){document.getElementById('productErr').textContent=e.message}
+  finally{if(btn)btn.disabled=false}
 }
 async function toggleProduct(id){
   const p=PRODUCTS.find(x=>String(x.id)===String(id)); if(!p)return;
