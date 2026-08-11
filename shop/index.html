@@ -239,5 +239,7 @@ async function loadPromotion(){
     }
   }
 }
+// Render catalogue immediately. Promo data is enhancement, not a blocker for the shop.
+try{render();update()}catch(e){console.error('Initial render error:',e)}
 loadPromotion();
 </script></body></html>
