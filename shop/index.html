@@ -92,13 +92,13 @@ function promoForVariant(v){
   }:null;
 }
 
+function money(n){return 'RM'+Number(n||0).toFixed(2)}
 function variantPrice(v){
-  return Number(v&&v[3] ? v[1] : (v&&v[1]||0));
+  return Number(v && v[3] ? v[1] : (v && v[1] || 0));
 }
 function originalVariantPrice(v){
-  return Number(v&&v[3] ? v[2] : (v&&v[1]||0));
+  return Number(v && v[3] ? v[2] : (v && v[1] || 0));
 }
-function money(n){return 'RM'+Number(n||0).toFixed(2)}
 function render(){
   const q=document.getElementById('q').value.toLowerCase();
   const cs=['Semua',...new Set(P.map(x=>x.category))];
@@ -221,12 +221,7 @@ async function loadPromotion(){
       if(cached&&Array.isArray(cached.promotions)&&Date.now()-Number(cached.savedAt||0)<30*60*1000)promos=cached.promotions;
     }catch(_){}
   }
-  // If a campaign slug is supplied, only that campaign is applied.
-  // Without a slug, all live promotions remain available in the catalogue.
-  const activeForShop=SELECTED_PROMO_SLUG
-    ? promos.filter(p=>String(p.slug||'').trim().toLowerCase()===SELECTED_PROMO_SLUG)
-    : promos;
-  applyPromotions(activeForShop);
+  applyPromotions(promos);
   render();update();
 
   if(SELECTED_PROMO_SLUG){
