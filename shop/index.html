@@ -43,11 +43,49 @@ const P=[
 {id:501,name:'3D Print Service',category:'3D Print Service',desc:'Hantar STL/OBJ, pilih material dan quantity. Kami beri quotation.',image:'assets/3d-print.jpg',variants:[['Quotation',0]]}
 ];
 let cat='Semua',cart=[],current=null;
+const PROMO_API=ORDER_API_URL;
+let ACTIVE_PROMO=null;
+function applyPromotion(p){
+  if(!p)return;
+  ACTIVE_PROMO=p;
+  const prod=P.find(x=>String(x.id)===String(p.productId));
+  if(!prod)return;
+  prod.variants=prod.variants.map(v=>v[0]===p.variant?[v[0],Number(p.promoPrice),Number(v[1]),true]:v);
+}
+function variantPrice(v){return Number(v[3]?v[1]:v[1]||0)}
+function originalVariantPrice(v){return Number(v[3]?v[2]:v[1]||0)}
+
 function money(n){return 'RM'+Number(n||0).toFixed(2)}
-function render(){const q=document.getElementById('q').value.toLowerCase();const cs=['Semua',...new Set(P.map(x=>x.category))];document.getElementById('cats').innerHTML=cs.map(c=>`<button class="cat ${c===cat?'active':''}" onclick="cat=${JSON.stringify(c)};render()">${c}</button>`).join('');const a=P.filter(x=>(cat==='Semua'||x.category===cat)&&(!q||JSON.stringify(x).toLowerCase().includes(q)));document.getElementById('grid').innerHTML=a.map(x=>`<article class="card"><div class="pic"><img src="${x.image}" alt="${x.name}"></div><div class="body"><div class="tag">${x.category.toUpperCase()}</div><h3>${x.name}</h3><div class="desc">${x.desc}</div><div class="price">${x.variants[0][1] ? 'Dari '+money(x.variants.reduce((m,v)=>Math.min(m,v[1]),Infinity)) : 'Quotation'}</div><button class="btn" onclick="custom(${x.id})">Customize</button></div></article>`).join('')}
-function custom(id){current=P.find(x=>x.id===id);document.getElementById('mTag').textContent=current.category.toUpperCase();document.getElementById('mTitle').textContent=current.name;let opts=current.variants.map((v,i)=>`<option value="${i}">${v[0]} — ${v[1]?money(v[1]):'Quotation'}</option>`).join('');document.getElementById('form').innerHTML=`<div class="two"><div><img src="${current.image}" alt="${current.name}"></div><div><label>Pilihan / saiz</label><select id="variant" onchange="syncVariant()">${opts}</select><div class="choice"><div class="field"><label style="margin-top:0">Harga seunit</label><b id="unitPrice">${current.variants[0][1]?money(current.variants[0][1]):'Quotation'}</b></div><div class="field"><label style="margin-top:0">Kuantiti</label><input id="qt" type="number" min="1" value="1" oninput="syncVariant()"></div></div><label>Nama / teks</label><input id="nm" placeholder="Contoh: Anugerah Kecemerlangan"><label>Upload logo / artwork</label><div class="uploadbox"><input id="logo" type="file" accept="image/png,image/jpeg,image/webp"><div class="muted">PNG / JPG / WEBP</div></div><label>Nota / idea custom</label><textarea id="nt" rows="4" placeholder="Saiz, warna, tarikh event, kemasan, dll."></textarea><div class="summary"><div>Anggaran</div><b id="lineTotal">${current.variants[0][1]?money(current.variants[0][1]):'Quotation'}</b></div><br><button class="btn" onclick="addToCart()">Tambah ke Cart</button></div></div>`;document.getElementById('modal').classList.add('open');syncVariant()}
-function syncVariant(){if(!current)return;let v=current.variants[+document.getElementById('variant').value],q=Math.max(1,+document.getElementById('qt').value||1);document.getElementById('unitPrice').textContent=v[1]?money(v[1]):'Quotation';document.getElementById('lineTotal').textContent=v[1]?money(v[1]*q):'Quotation'}
-function addToCart(){const v=current.variants[+document.getElementById('variant').value],q=Math.max(1,+document.getElementById('qt').value||1);const file=document.getElementById('logo').files[0];const save=logo=>{cart.push({product:current,variant:v[0],unitPrice:Number(v[1]||0),q,name:document.getElementById('nm').value.trim(),note:document.getElementById('nt').value.trim(),logo:logo||''});closeModal();update();openCart()};if(file){const r=new FileReader();r.onload=()=>save(r.result);r.readAsDataURL(file)}else save('')}
+function render(){
+  const q=document.getElementById('q').value.toLowerCase();
+  const cs=['Semua',...new Set(P.map(x=>x.category))];
+  document.getElementById('cats').innerHTML=cs.map(c=>`<button class="cat ${c===cat?'active':''}" onclick="cat=${JSON.stringify(c)};render()">${c}</button>`).join('');
+  const a=P.filter(x=>(cat==='Semua'||x.category===cat)&&(!q||JSON.stringify(x).toLowerCase().includes(q)));
+  document.getElementById('grid').innerHTML=a.map(x=>`<article class="card"><div class="pic"><img src="${x.image}" alt="${x.name}"></div><div class="body"><div class="tag">${x.category.toUpperCase()}</div><h3>${x.name}</h3><div class="desc">${x.desc}</div><div class="price">${x.variants[0][1] ? 'Dari '+money(x.variants.reduce((m,v)=>Math.min(m,variantPrice(v)),Infinity)) : 'Quotation'}</div>${ACTIVE_PROMO&&String(ACTIVE_PROMO.productId)===String(x.id)?'<div style="color:#f2d68d;font-size:11px;font-weight:900;margin-bottom:10px">🔥 PROMO — '+esc(ACTIVE_PROMO.title)+'</div>':''}<button class="btn" onclick="custom(${x.id})">Customize</button></div></article>`).join('');
+}
+function custom(id){
+  current=P.find(x=>x.id===id);
+  document.getElementById('mTag').textContent=current.category.toUpperCase();
+  document.getElementById('mTitle').textContent=current.name;
+  let opts=current.variants.map((v,i)=>`<option value="${i}">${v[0]} — ${variantPrice(v)?money(variantPrice(v)):'Quotation'}</option>`).join('');
+  document.getElementById('form').innerHTML=`<div class="two"><div><img src="${current.image}" alt="${current.name}"></div><div><label>Pilihan / saiz</label><select id="variant" onchange="syncVariant()">${opts}</select><div class="choice"><div class="field"><label style="margin-top:0">Harga seunit</label><b id="unitPrice">${variantPrice(current.variants[0])?money(variantPrice(current.variants[0])):'Quotation'}</b></div><div class="field"><label style="margin-top:0">Kuantiti</label><input id="qt" type="number" min="1" value="1" oninput="syncVariant()"></div></div><label>Nama / teks</label><input id="nm" placeholder="Contoh: Anugerah Kecemerlangan"><label>Upload logo / artwork</label><div class="uploadbox"><input id="logo" type="file" accept="image/png,image/jpeg,image/webp"><div class="muted">PNG / JPG / WEBP</div></div><label>Nota / idea custom</label><textarea id="nt" rows="4" placeholder="Saiz, warna, tarikh event, kemasan, dll."></textarea><div class="summary"><div>Anggaran</div><b id="lineTotal">${variantPrice(current.variants[0])?money(variantPrice(current.variants[0])):'Quotation'}</b></div><br><button class="btn" onclick="addToCart()">Tambah ke Cart</button></div></div>`;
+  document.getElementById('modal').classList.add('open');syncVariant();
+}
+function syncVariant(){
+  if(!current)return;
+  let v=current.variants[+document.getElementById('variant').value],q=Math.max(1,+document.getElementById('qt').value||1);
+  document.getElementById('unitPrice').textContent=variantPrice(v)?money(variantPrice(v)):'Quotation';
+  document.getElementById('lineTotal').textContent=variantPrice(v)?money(variantPrice(v)*q):'Quotation';
+}
+function addToCart(){
+  const v=current.variants[+document.getElementById('variant').value],q=Math.max(1,+document.getElementById('qt').value||1);
+  const file=document.getElementById('logo').files[0];
+  const save=logo=>{
+    cart.push({product:current,variant:v[0],unitPrice:variantPrice(v),originalUnitPrice:originalVariantPrice(v),q,name:document.getElementById('nm').value.trim(),note:document.getElementById('nt').value.trim(),logo:logo||'',promo:ACTIVE_PROMO?ACTIVE_PROMO.slug:''});
+    closeModal();update();openCart();
+  };
+  if(file){const r=new FileReader();r.onload=()=>save(r.result);r.readAsDataURL(file)}else save('');
+}
 function update(){document.getElementById('cc').textContent=cart.reduce((a,x)=>a+x.q,0);document.getElementById('cartCount').textContent=cart.reduce((a,x)=>a+x.q,0);const total=cartTotal();document.getElementById('cartTotal').textContent=money(total);document.getElementById('items').innerHTML=cart.length?cart.map((x,i)=>`<div class="item"><img src="${x.product.image}"><div style="flex:1"><b>${x.product.name}</b><small><br>${x.variant}<br>Kuantiti: ${x.q}${x.name?'<br>Nama/teks: '+esc(x.name):''}${x.logo?'<br>✓ Artwork dilampirkan':''}${x.note?'<br>Nota: '+esc(x.note):''}<br>${x.unitPrice?money(x.unitPrice*x.q):'Quotation'}</small><br><button onclick="cart.splice(${i},1);update()">Buang</button></div></div>`).join(''):'<p style="color:#999">Cart masih kosong.</p>'}
 function cartTotal(){return cart.reduce((a,x)=>a+x.unitPrice*x.q,0)}
 function openCart(){update();document.getElementById('drawer').classList.add('open')}function closeCart(){document.getElementById('drawer').classList.remove('open')}function closeModal(){document.getElementById('modal').classList.remove('open')}function closePay(){document.getElementById('payModal').classList.remove('open')}
@@ -56,5 +94,15 @@ function previewReceipt(e){const f=e.target.files[0],box=document.getElementById
 async function fileData(file){return await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})}
 async function submitOrder(){const name=document.getElementById('buyerName').value.trim(),phone=document.getElementById('buyerPhone').value.trim(),addr=document.getElementById('buyerAddress').value.trim(),receipt=document.getElementById('receiptFile').files[0];if(!name||!phone){alert('Sila isi nama dan No. WhatsApp.');return}const total=cartTotal();if(total&&!receipt){alert('Sila upload bukti pembayaran dahulu.');return}const items=cart.map(x=>({name:x.product.name,category:x.product.category,variant:x.variant,qty:x.q,unitPrice:x.unitPrice,customText:x.name||'',note:x.note||''}));let db={ok:false};try{const payload={action:'createOrder',orderNo:window.currentOrderNo,name,phone,address:addr,itemCount:cart.reduce((a,x)=>a+x.q,0),subtotal:total,shipping:0,total,payment:total?'Maybank QR':'Quotation',items,receipt:receipt?{name:receipt.name,type:receipt.type,data:await fileData(receipt)}:null};const r=await fetch(ORDER_API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});db=await r.json()}catch(e){console.error(e)}let msg='*ORDER REQOO.CO*%0A%0ANo. Order: '+window.currentOrderNo+'%0A';items.forEach((x,i)=>msg+=(i+1)+'. '+encodeURIComponent(x.name)+' — '+encodeURIComponent(x.variant)+' — '+x.qty+' unit — '+(x.unitPrice?money(x.unitPrice*x.qty):'Quotation')+'%0A'+(x.customText?'Nama/teks: '+encodeURIComponent(x.customText)+'%0A':'')+(x.note?'Nota: '+encodeURIComponent(x.note)+'%0A':''));msg+=' %0A'+(total?'*Jumlah: '+money(total)+'*':'*Mohon quotation*')+'%0A%0ANama: '+encodeURIComponent(name)+'%0AWhatsApp: '+encodeURIComponent(phone)+'%0AAlamat: '+encodeURIComponent(addr)+'%0APembayaran: '+(total?'Maybank QR':'Quotation')+'%0A';if(receipt)msg+='Bukti pembayaran: '+encodeURIComponent(receipt.name)+'%0A';msg+='%0ARekod sistem: '+(db.ok?'✓ Disimpan':'⚠ WhatsApp dihantar, tetapi rekod database gagal');window.open('https://wa.me/'+WA_NUMBER+'?text='+msg,'_blank');document.getElementById('checkoutBody').innerHTML='<div class="success"><h3>Order dihantar</h3><p>Order <b>'+window.currentOrderNo+'</b> telah dihantar ke WhatsApp.</p><p class="muted">Jika rekod database berjaya, order juga masuk ke Google Sheet dan bukti pembayaran disimpan ke Google Drive.</p><button class="btn" onclick="closePay();cart=[];update()">Selesai</button></div>'}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-render();update();
+async function loadPromotion(){
+  const slug=new URLSearchParams(location.search).get('promo');
+  if(!slug){render();update();return}
+  try{
+    const r=await fetch(PROMO_API+'?action=getPromotion&slug='+encodeURIComponent(slug));
+    const j=await r.json();
+    if(j.ok&&j.promotion)applyPromotion(j.promotion);
+  }catch(e){console.error(e)}
+  render();update();
+}
+loadPromotion();
 </script></body></html>
