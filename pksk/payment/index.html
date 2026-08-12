@@ -24,18 +24,79 @@
 <footer>© Reqoo.co • Simulasi latihan, bukan peperiksaan rasmi KPM.</footer>
 <script>
 const API_URL="https://script.google.com/macros/s/AKfycbwVFg5bxd2EsbLxUe2CsVHqRE-yVNraIJBSx8_pDsrGvrtTUiVdJwVdJwhJbbacxpci/exec";
-const WHATSAPP_NUMBER="60165192803"; // WhatsApp PKSK.
-function makeId(){return "PKSK-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,6).toUpperCase();}
-form.addEventListener("submit",async e=>{
- e.preventDefault();
- const orderNo=makeId(), data={action:"createPKSKOrder",orderNo,name:name.value.trim(),phone:phone.value.trim(),ref:ref.value.trim(),amount:29};
- if(API_URL){
-  try{const r=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(data)});const j=await r.json();if(!j.ok)throw Error(j.error||"Gagal");}
-  catch(err){msg.textContent="Order tidak dapat dihantar. Sila cuba lagi.";return;}
- }
- localStorage.setItem("pksk_pending_order",JSON.stringify({...data,createdAt:new Date().toISOString()}));
- const text=`PKSK SIMULASI — BUKTI BAYARAN\nOrder: ${orderNo}\nNama: ${data.name}\nWhatsApp: ${data.phone}\nJumlah: RM29\nRujukan: ${data.ref||"-"}\n\nSaya sudah membuat bayaran RM29. Saya lampirkan bukti pembayaran dalam WhatsApp ini.`;
- if(WHATSAPP_NUMBER.includes("X")){msg.textContent="Order "+orderNo+" direkodkan. Tetapkan nombor WhatsApp sebelum live.";return;}
- location.href="https://wa.me/"+WHATSAPP_NUMBER+"?text="+encodeURIComponent(text);
+const WHATSAPP_NUMBER="60165192803";
+
+function makeId(){
+  return "PKSK-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,6).toUpperCase();
+}
+
+function sendOrder(data, done){
+  const cb="pkskCb_"+Date.now();
+  window[cb]=function(result){
+    try{ delete window[cb]; }catch(e){}
+    script.remove();
+    done(result);
+  };
+  const script=document.createElement("script");
+  const params=new URLSearchParams({
+    action:"createPKSKOrder",
+    callback:cb,
+    orderNo:data.orderNo,
+    name:data.name,
+    phone:data.phone,
+    ref:data.ref,
+    amount:"29"
+  });
+  script.src=API_URL+"?"+params.toString();
+  script.onerror=function(){
+    try{ delete window[cb]; }catch(e){}
+    msg.textContent="Sambungan ke server gagal. Cuba lagi.";
+    script.remove();
+  };
+  document.body.appendChild(script);
+}
+
+form.addEventListener("submit",function(e){
+  e.preventDefault();
+
+  const orderNo=makeId();
+  const data={
+    action:"createPKSKOrder",
+    orderNo:orderNo,
+    name:name.value.trim(),
+    phone:phone.value.trim(),
+    ref:ref.value.trim()
+  };
+
+  if(!data.name || !data.phone){
+    msg.textContent="Sila isi nama dan nombor WhatsApp.";
+    return;
+  }
+
+  msg.textContent="Menyimpan order...";
+
+  sendOrder(data,function(result){
+    if(!result || !result.ok){
+      msg.textContent=(result && result.error)||"Order gagal direkodkan. Cuba lagi.";
+      return;
+    }
+
+    localStorage.setItem("pksk_pending_order",JSON.stringify({
+      ...data,
+      amount:29,
+      createdAt:new Date().toISOString()
+    }));
+
+    const text=`PKSK SIMULASI — BUKTI BAYARAN
+Order: ${orderNo}
+Nama: ${data.name}
+WhatsApp: ${data.phone}
+Jumlah: RM29
+Rujukan: ${data.ref||"-"}
+
+Saya sudah membuat bayaran RM29. Saya lampirkan bukti pembayaran dalam WhatsApp ini.`;
+
+    window.location.href="https://wa.me/"+WHATSAPP_NUMBER+"?text="+encodeURIComponent(text);
+  });
 });
 </script></body></html>
