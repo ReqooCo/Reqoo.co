@@ -220,12 +220,18 @@ const FALLBACK_PRODUCTS=P.slice();
 function productImageUrl(url){
   let v=String(url||'').trim();
   if(!v)return '';
-  const gh=v.match(/^https?:\/\/github\.com\/([^/]+)\/([^/]+)\/blob\/([^/]+)\/(.+)$/i);
+  // GitHub blob/raw URLs -> raw asset URL
+  let gh=v.match(/^https?:\/\/github\.com\/([^/]+)\/([^/]+)\/blob\/([^/]+)\/(.+)$/i);
   if(gh)v=`https://raw.githubusercontent.com/${gh[1]}/${gh[2]}/${gh[3]}/${gh[4]}`;
-  v=v.replace(/^\.?\/*shop\/assets\//i,'assets/');
+  gh=v.match(/^https?:\/\/github\.com\/([^/]+)\/([^/]+)\/raw\/([^/]+)\/(.+)$/i);
+  if(gh)v=`https://raw.githubusercontent.com/${gh[1]}/${gh[2]}/${gh[3]}/${gh[4]}`;
+  // Normalize paths saved by Admin / Apps Script.
+  v=v.replace(/^https?:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/([^/]+)\/shop\/assets\//i,'https://raw.githubusercontent.com/$1/$2/$3/shop/assets/');
+  v=v.replace(/^\.\/*shop\/assets\//i,'assets/');
+  v=v.replace(/^\/?shop\/assets\//i,'assets/');
+  v=v.replace(/^\/?assets\//i,'assets/');
   if(/^products\//i.test(v))v='assets/'+v;
   if(/^https?:\/\//i.test(v)||v.startsWith('data:')||v.startsWith('//'))return v;
-  if(v.startsWith('/shop/assets/'))return v;
   return new URL(v.replace(/^\.\//,''),location.href).href;
 }
 function imageWithCache(url){
@@ -295,7 +301,7 @@ function render(){
     const prices=vars.map(variantPrice).filter(n=>n>0);
     const from=prices.length?'Dari '+money(Math.min(...prices)):'Quotation';
     const promo=ACTIVE_PROMO&&String(ACTIVE_PROMO.productId)===String(x.id)?'<div style="color:#f2d68d;font-size:11px;font-weight:900;margin-bottom:10px">🔥 PROMO — '+esc(ACTIVE_PROMO.title)+'</div>':'';
-    return `<article class="card"><div class="pic"><img src="${esc(x.image||'assets/product-1.jpg')}" alt="${esc(x.name)}" loading="lazy" onerror="this.onerror=null;this.src='assets/product-1.jpg'"></div><div class="body"><div class="tag">${esc(String(x.category).toUpperCase())}</div><h3>${esc(x.name)}</h3><div class="desc">${esc(x.desc)}</div><div class="price">${from}</div>${promo}<button class="btn" onclick="custom(${JSON.stringify(String(x.id))})">Customize</button></div></article>`;
+    return `<article class="card"><div class="pic"><img src="${esc(imageWithCache(x.image||'assets/product-1.jpg'))}" alt="${esc(x.name)}" loading="lazy" onerror="this.onerror=null;this.src='assets/product-1.jpg'"></div><div class="body"><div class="tag">${esc(String(x.category).toUpperCase())}</div><h3>${esc(x.name)}</h3><div class="desc">${esc(x.desc)}</div><div class="price">${from}</div>${promo}<button class="btn" onclick="custom(${JSON.stringify(String(x.id))})">Customize</button></div></article>`;
   }).join('') || '<div class="empty" style="grid-column:1/-1">Tiada produk ditemui.</div>';
 }
 function custom(id){
@@ -305,7 +311,7 @@ function custom(id){
   document.getElementById('mTag').textContent=String(current.category||'CUSTOM').toUpperCase();
   document.getElementById('mTitle').textContent=current.name||'Customize';
   const opts=current.variants.map((v,i)=>`<option value="${i}">${esc(v[0])} — ${variantPrice(v)?money(variantPrice(v)):'Quotation'}</option>`).join('');
-  document.getElementById('form').innerHTML=`<div class="two"><div><img src="${esc(current.image||'assets/product-1.jpg')}" alt="${esc(current.name)}" onerror="this.onerror=null;this.src='assets/product-1.jpg'"></div><div><label>Pilihan / saiz</label><select id="variant" onchange="syncVariant()">${opts}</select><div class="choice"><div class="field"><label style="margin-top:0">Harga seunit</label><b id="unitPrice">${variantPrice(current.variants[0])?money(variantPrice(current.variants[0])):'Quotation'}</b></div><div class="field"><label style="margin-top:0">Kuantiti</label><input id="qt" type="number" min="1" value="1" oninput="syncVariant()"></div></div><label>Nama / teks</label><input id="nm" placeholder="Contoh: Anugerah Kecemerlangan"><label>Upload logo / artwork</label><div class="uploadbox"><input id="logo" type="file" accept="image/png,image/jpeg,image/webp"><div class="muted">PNG / JPG / WEBP</div></div><label>Nota / idea custom</label><textarea id="nt" rows="4" placeholder="Saiz, warna, tarikh event, kemasan, dll."></textarea><div class="summary"><div>Anggaran</div><b id="lineTotal">${variantPrice(current.variants[0])?money(variantPrice(current.variants[0])):'Quotation'}</b></div><br><button class="btn" onclick="addToCart()">Tambah ke Cart</button></div></div>`;
+  document.getElementById('form').innerHTML=`<div class="two"><div><img src="${esc(imageWithCache(current.image||'assets/product-1.jpg'))}" alt="${esc(current.name)}" onerror="this.onerror=null;this.src='assets/product-1.jpg'"></div><div><label>Pilihan / saiz</label><select id="variant" onchange="syncVariant()">${opts}</select><div class="choice"><div class="field"><label style="margin-top:0">Harga seunit</label><b id="unitPrice">${variantPrice(current.variants[0])?money(variantPrice(current.variants[0])):'Quotation'}</b></div><div class="field"><label style="margin-top:0">Kuantiti</label><input id="qt" type="number" min="1" value="1" oninput="syncVariant()"></div></div><label>Nama / teks</label><input id="nm" placeholder="Contoh: Anugerah Kecemerlangan"><label>Upload logo / artwork</label><div class="uploadbox"><input id="logo" type="file" accept="image/png,image/jpeg,image/webp"><div class="muted">PNG / JPG / WEBP</div></div><label>Nota / idea custom</label><textarea id="nt" rows="4" placeholder="Saiz, warna, tarikh event, kemasan, dll."></textarea><div class="summary"><div>Anggaran</div><b id="lineTotal">${variantPrice(current.variants[0])?money(variantPrice(current.variants[0])):'Quotation'}</b></div><br><button class="btn" onclick="addToCart()">Tambah ke Cart</button></div></div>`;
   document.getElementById('modal').classList.add('open');
   syncVariant();
 }
