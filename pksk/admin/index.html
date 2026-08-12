@@ -13,7 +13,7 @@
 </main>
 <div id="modal" class="modal" hidden><div class="modalbox"><button class="close" id="close">×</button><div id="detail"></div></div></div>
 <script>
-const API_URL=""; // URL Web App PKSK Apps Script.
+const API_URL="https://script.google.com/macros/s/AKfycbwVFg5bxd2EsbLxUe2CsVHqRE-yVNraIJBSx8_pDsrGvrtTUiVdJwVdJwhJbbacxpci/exec";
 let TOKEN="", ORDERS=[];
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
 async function api(body){const r=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({...body,token:TOKEN})});return r.json();}
