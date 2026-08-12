@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ms"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1830"><title>PKSK Admin — Reqoo</title><link rel="stylesheet" href="./style.css"></head>
+<body>
+<header><a href="../" class="brand"><b>R</b> REQOO <span>/ PKSK ADMIN</span></a><button id="refresh">Muat Semula</button></header>
+<main>
+<section id="login" class="card login"><div class="eyebrow">PKSK ADMIN</div><h1>Semakan pembayaran</h1><p>Masukkan token admin PKSK.</p><input id="token" type="password" placeholder="Token"><button id="loginBtn">MASUK</button><div id="loginMsg"></div></section>
+<section id="app" hidden>
+<div class="stats"><div><span>Jumlah Order</span><b id="total">0</b></div><div><span>Menunggu</span><b id="pending">0</b></div><div><span>Disahkan</span><b id="paid">0</b></div><div><span>License Aktif</span><b id="active">0</b></div></div>
+<div class="toolbar"><input id="search" placeholder="Cari order / nama / WhatsApp"><select id="filter"><option>Semua</option><option>PENDING</option><option>PAID</option><option>REJECTED</option></select></div>
+<div id="rows" class="list"></div>
+</section>
+</main>
+<div id="modal" class="modal" hidden><div class="modalbox"><button class="close" id="close">×</button><div id="detail"></div></div></div>
+<script>
+const API_URL=""; // URL Web App PKSK Apps Script.
+let TOKEN="", ORDERS=[];
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+async function api(body){const r=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({...body,token:TOKEN})});return r.json();}
+function render(){
+ const q=search.value.trim().toLowerCase(), f=filter.value;
+ const a=ORDERS.filter(o=>(f==="Semua"||o.status===f)&&(!q||[o.orderNo,o.name,o.phone].join(" ").toLowerCase().includes(q)));
+ total.textContent=ORDERS.length;pending.textContent=ORDERS.filter(x=>x.status==="PENDING").length;paid.textContent=ORDERS.filter(x=>x.status==="PAID").length;active.textContent=ORDERS.filter(x=>x.licenseStatus==="ACTIVE").length;
+ rows.innerHTML=a.length?a.map((o,i)=>`<button class="row" data-i="${ORDERS.indexOf(o)}"><b>${esc(o.orderNo)}</b><span>${esc(o.name)}</span><span>${esc(o.phone)}</span><strong>RM${Number(o.amount||29).toFixed(2)}</strong><em class="${o.status}">${esc(o.status)}</em></button>`).join(""):'<div class="empty">Tiada order.</div>';
+}
+async function load(){if(!API_URL){loginMsg.textContent="Masukkan URL Web App PKSK dahulu dalam kod admin.";return}const j=await api({action:"listPKSKOrders"});if(!j.ok)throw Error(j.error||"Gagal");ORDERS=j.orders||[];render();}
+loginBtn.onclick=async()=>{TOKEN=token.value.trim();if(!TOKEN)return loginMsg.textContent="Token diperlukan.";try{await load();login.hidden=true;app.hidden=false}catch(e){loginMsg.textContent=e.message}};
+refresh.onclick=()=>load().catch(e=>alert(e.message));search.oninput=render;filter.onchange=render;close.onclick=()=>modal.hidden=true;
+rows.onclick=e=>{const b=e.target.closest(".row");if(!b)return;const o=ORDERS[Number(b.dataset.i)];detail.innerHTML=`<div class="eyebrow">ORDER PKSK</div><h2>${esc(o.orderNo)}</h2><p><b>Nama:</b> ${esc(o.name)}</p><p><b>WhatsApp:</b> ${esc(o.phone)}</p><p><b>Jumlah:</b> RM${Number(o.amount||29).toFixed(2)}</p><p><b>Rujukan:</b> ${esc(o.ref||"-")}</p><p><b>Status:</b> ${esc(o.status)}</p><div class="actions"><button onclick="verify('${esc(o.orderNo)}')">✓ SAHKAN BAYARAN</button><button class="reject" onclick="rejectOrder('${esc(o.orderNo)}')">TOLAK</button></div><div id="license"></div>`;modal.hidden=false};
+async function verify(orderNo){const j=await api({action:"verifyPKSKOrder",orderNo});if(!j.ok)return alert(j.error||"Gagal");license.innerHTML=`<div class="license"><b>ACCESS CODE</b><strong>${esc(j.accessCode)}</strong><small>Simpan kod ini dan hantar kepada customer.</small></div>`;await load()}
+async function rejectOrder(orderNo){if(!confirm("Tolak pembayaran ini?"))return;const j=await api({action:"rejectPKSKOrder",orderNo});if(!j.ok)return alert(j.error||"Gagal");modal.hidden=true;await load()}
+</script></body></html>
