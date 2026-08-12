@@ -1,83 +1,144 @@
 <!doctype html>
-<html lang="ms"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0b1830"><title>Bayaran PKSK — Reqoo</title>
-<link rel="stylesheet" href="./style.css"></head>
+<html lang="ms"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1830"><title>PKSK Admin — Reqoo</title><link rel="stylesheet" href="./style.css"></head>
 <body>
-<header><a href="../" class="brand"><b>R</b> REQOO</a><span>PKSK SIMULASI</span></header>
+<header><a href="../" class="brand"><b>R</b> REQOO <span>/ PKSK ADMIN</span></a><button id="refresh">Muat Semula</button></header>
 <main>
-<div class="steps"><strong>1 Bayar</strong><i></i><span>2 Sahkan</span><i></i><span>3 Akses</span></div>
-<section class="card">
-<div class="eyebrow">PKSK SIMULASI • 100 SET</div><h1>Bayaran RM29</h1>
-<p class="muted">Imbas QR di bawah untuk membuat bayaran.</p>
-<div class="amount"><span>Jumlah perlu dibayar</span><b>RM29.00</b></div>
-<div class="qr"><img src="./assets/maybank-qr.jpeg" alt="QR Pay Maybank Ab Art Trading"><b>AB ART TRADING</b></div>
-<div class="notice"><b>Selepas bayaran</b><ol><li>Simpan bukti transaksi.</li><li>Isi maklumat pembeli.</li><li>Tekan hantar dan lampirkan bukti pembayaran.</li></ol></div>
-<form id="form">
-<label>Nama pembeli</label><input id="name" required placeholder="Nama penuh">
-<label>Nombor WhatsApp</label><input id="phone" required inputmode="tel" placeholder="Contoh: 0123456789">
-<label>Rujukan transaksi <small>(jika ada)</small></label><input id="ref" placeholder="Contoh: 12345678">
-<button>HANTAR BUKTI PEMBAYARAN →</button>
-<p class="small">Pengesahan dibuat oleh admin PKSK. Selepas bayaran disahkan, kod akses akan diberikan.</p>
-<div id="msg"></div></form>
-</section><p class="back"><a href="../">← Kembali ke PKSK</a></p></main>
-<footer>© Reqoo.co • Simulasi latihan, bukan peperiksaan rasmi KPM.</footer>
+<section id="login" class="card login"><div class="eyebrow">PKSK ADMIN</div><h1>Semakan pembayaran</h1><p>Masukkan token admin PKSK.</p><input id="token" type="password" placeholder="Token"><button id="loginBtn">MASUK</button><div id="loginMsg"></div></section>
+<section id="app" hidden>
+<div class="stats"><div><span>Jumlah Order</span><b id="total">0</b></div><div><span>Menunggu</span><b id="pending">0</b></div><div><span>Disahkan</span><b id="paid">0</b></div><div><span>License Aktif</span><b id="active">0</b></div></div>
+<div class="toolbar"><input id="search" placeholder="Cari order / nama / WhatsApp"><select id="filter"><option>Semua</option><option>PENDING</option><option>PAID</option><option>REJECTED</option></select></div>
+<div id="rows" class="list"></div>
+</section>
+</main>
+<div id="modal" class="modal" hidden><div class="modalbox"><button class="close" id="close">×</button><div id="detail"></div></div></div>
 <script>
 const API_URL="https://script.google.com/macros/s/AKfycbwVFg5bxd2EsbLxUe2CsVHqRE-yVNraIJBSx8_pDsrGvrtTUiVdJwVdJwhJbbacxpci/exec";
-const WHATSAPP_NUMBER="60165192803";
+const $=id=>document.getElementById(id);
+const loginBox=$("login"), appBox=$("app"), tokenInput=$("token"), loginBtn=$("loginBtn"), loginMsg=$("loginMsg");
+const refreshBtn=$("refresh"), searchInput=$("search"), filterSelect=$("filter"), rowsBox=$("rows"), totalBox=$("total"), pendingBox=$("pending"), paidBox=$("paid"), activeBox=$("active");
+const modalBox=$("modal"), detailBox=$("detail"), closeBtn=$("close");
+let TOKEN="",ORDERS=[];
 
-const payButton=document.querySelector("#form button");
-const paymentForm=document.getElementById("form");
-const nameInput=document.getElementById("name");
-const phoneInput=document.getElementById("phone");
-const refInput=document.getElementById("ref");
-const messageBox=document.getElementById("msg");
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
 
-function makeId(){
-  return "PKSK-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,6).toUpperCase();
+function api(action,extra,done){
+  const cb="pkskAdminCb_"+Date.now()+"_"+Math.random().toString(36).slice(2);
+  window[cb]=function(result){
+    try{delete window[cb];}catch(e){}
+    script.remove();
+    done(result);
+  };
+  const params=new URLSearchParams({action,callback:cb,token:TOKEN,...extra});
+  const script=document.createElement("script");
+  script.src=API_URL+"?"+params.toString();
+  script.onerror=function(){
+    try{delete window[cb];}catch(e){}
+    script.remove();
+    done({ok:false,error:"Sambungan API gagal."});
+  };
+  document.body.appendChild(script);
 }
 
-payButton.type="button";
+function render(){
+ const q=searchInput.value.trim().toLowerCase(),f=filterSelect.value;
+ const arr=ORDERS.filter(o=>(f==="Semua"||o.status===f)&&(!q||[o.orderNo,o.name,o.phone].join(" ").toLowerCase().includes(q)));
+ totalBox.textContent=ORDERS.length;
+ pendingBox.textContent=ORDERS.filter(x=>x.status==="PENDING").length;
+ paidBox.textContent=ORDERS.filter(x=>x.status==="PAID").length;
+ activeBox.textContent=ORDERS.filter(x=>x.licenseStatus==="ACTIVE").length;
+ rowsBox.innerHTML=arr.length?arr.map(o=>`<button class="row" data-i="${ORDERS.indexOf(o)}"><b>${esc(o.orderNo)}</b><span>${esc(o.name)}</span><span>${esc(o.phone)}</span><strong>RM${Number(o.amount||29).toFixed(2)}</strong><em class="${o.status}">${esc(o.status)}</em></button>`).join(""):'<div class="empty">Tiada order.</div>';
+}
 
-payButton.addEventListener("click",function(){
-  const name=nameInput.value.trim();
-  const phone=phoneInput.value.trim();
-  const ref=refInput.value.trim();
+function load(done){
+ api("listPKSKOrders",{},function(j){
+   if(!j.ok){ if(done)done(j); return; }
+   ORDERS=j.orders||[];
+   render();
+   if(done)done(j);
+ });
+}
 
-  if(!name){ messageBox.textContent="Sila masukkan nama pembeli."; nameInput.focus(); return; }
-  if(!phone){ messageBox.textContent="Sila masukkan nombor WhatsApp."; phoneInput.focus(); return; }
-
-  const orderNo=makeId();
-  messageBox.textContent="Memproses...";
-
-  const params=new URLSearchParams();
-  params.set("action","createPKSKOrder");
-  params.set("orderNo",orderNo);
-  params.set("name",name);
-  params.set("phone",phone);
-  params.set("ref",ref);
-  params.set("amount","29");
-
-  /* GET beacon: no CORS/fetch/JSONP dependency on the customer page. */
-  const beacon=new Image();
-  beacon.src=API_URL+"?"+params.toString()+"&_="+Date.now();
-
-  localStorage.setItem("pksk_pending_order",JSON.stringify({
-    orderNo:orderNo,name:name,phone:phone,ref:ref,amount:29,createdAt:new Date().toISOString()
-  }));
-
-  const text=
-    "PKSK SIMULASI — BUKTI BAYARAN\n"+
-    "Order: "+orderNo+"\n"+
-    "Nama: "+name+"\n"+
-    "WhatsApp: "+phone+"\n"+
-    "Jumlah: RM29\n"+
-    "Rujukan: "+(ref||"-")+"\n\n"+
-    "Saya sudah membuat bayaran RM29. Saya lampirkan bukti pembayaran dalam WhatsApp ini.";
-
-  messageBox.textContent="Order direkodkan. Membuka WhatsApp...";
-  setTimeout(function(){
-    window.location.href="https://wa.me/"+WHATSAPP_NUMBER+"?text="+encodeURIComponent(text);
-  },350);
+loginBtn.addEventListener("click",function(){
+ TOKEN=tokenInput.value.trim();
+ if(!TOKEN){loginMsg.textContent="Token diperlukan.";return;}
+ loginMsg.textContent="Menyemak...";
+ load(function(j){
+   if(!j.ok){loginMsg.textContent=j.error||"Gagal masuk.";return;}
+   loginBox.hidden=true;
+   appBox.hidden=false;
+   loginMsg.textContent="";
+ });
 });
+
+refreshBtn.addEventListener("click",function(){load(function(j){if(!j.ok)alert(j.error||"Gagal memuatkan order.");})});
+searchInput.addEventListener("input",render);
+filterSelect.addEventListener("change",render);
+closeBtn.addEventListener("click",function(){modalBox.hidden=true;});
+
+rowsBox.addEventListener("click",function(e){
+ const button=e.target.closest(".row"); if(!button)return;
+ const o=ORDERS[Number(button.dataset.i)];
+ if(!o)return;
+ detailBox.innerHTML=`<div class="eyebrow">ORDER PKSK</div><h2>${esc(o.orderNo)}</h2>
+ <p><b>Nama:</b> ${esc(o.name)}</p>
+ <p><b>WhatsApp:</b> ${esc(o.phone)}</p>
+ <p><b>Jumlah:</b> RM${Number(o.amount||29).toFixed(2)}</p>
+ <p><b>Rujukan:</b> ${esc(o.ref||"-")}</p>
+ <p><b>Status:</b> ${esc(o.status)}</p>
+ <div class="actions"><button id="verifySendBtn">✓ SAHKAN & HANTAR WHATSAPP</button><button class="reject" id="rejectBtn">TOLAK</button></div>
+ <div id="license"></div>`;
+ modalBox.hidden=false;
+ $("verifySendBtn").addEventListener("click",function(){verifyAndWhatsApp(o);});
+ $("rejectBtn").addEventListener("click",function(){rejectOrder(o.orderNo);});
+});
+
+function verifyAndWhatsApp(o){
+  if(!confirm("Sahkan bayaran RM"+Number(o.amount||29).toFixed(2)+" dan buka WhatsApp untuk customer ini?")) return;
+
+  const btn=$("verifySendBtn");
+  btn.disabled=true;
+  btn.textContent="MEMPROSES...";
+
+  api("verifyPKSKOrder",{orderNo:o.orderNo},function(j){
+    if(!j.ok){
+      btn.disabled=false;
+      btn.textContent="✓ SAHKAN & HANTAR WHATSAPP";
+      alert(j.error||"Gagal sahkan bayaran.");
+      return;
+    }
+
+    const code=j.accessCode;
+    const accessUrl="https://reqoo.co/pksk/akses/";
+    const phone=String(o.phone||"").replace(/\D/g,"");
+    const waPhone=phone.startsWith("0")?"60"+phone:phone;
+
+    const text=
+      "✅ Pembayaran PKSK telah disahkan.\n\n"+
+      "🔐 Access Code: "+code+"\n\n"+
+      "🎯 Akses simulasi:\n"+accessUrl+"\n\n"+
+      "Masukkan Access Code tersebut untuk mula menggunakan simulasi PKSK.\n\n"+
+      "Terima kasih kerana memilih REQOO.";
+
+    localStorage.setItem("pksk_last_whatsapp_order",o.orderNo);
+
+    $("license").innerHTML=
+      '<div class="license"><b>ACCESS CODE</b><strong>'+esc(code)+'</strong>'+
+      '<small>WhatsApp dibuka. Tekan Send untuk hantar kepada customer.</small></div>';
+
+    btn.textContent="✓ DISAHKAN";
+    btn.disabled=true;
+
+    window.location.href="https://wa.me/"+waPhone+"?text="+encodeURIComponent(text);
+  });
+}
+
+function rejectOrder(orderNo){
+ if(!confirm("Tolak pembayaran ini?"))return;
+ api("rejectPKSKOrder",{orderNo},function(j){
+   if(!j.ok){alert(j.error||"Gagal.");return;}
+   modalBox.hidden=true;
+   load();
+ });
+}
 </script></body></html>
