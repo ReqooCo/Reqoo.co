@@ -26,6 +26,7 @@
 const API_URL="https://script.google.com/macros/s/AKfycbwVFg5bxd2EsbLxUe2CsVHqRE-yVNraIJBSx8_pDsrGvrtTUiVdJwVdJwhJbbacxpci/exec";
 const WHATSAPP_NUMBER="60165192803";
 
+const payButton=document.querySelector("#form button");
 const paymentForm=document.getElementById("form");
 const nameInput=document.getElementById("name");
 const phoneInput=document.getElementById("phone");
@@ -36,75 +37,47 @@ function makeId(){
   return "PKSK-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,6).toUpperCase();
 }
 
-function sendOrder(data,done){
-  const callbackName="pkskCallback_"+Date.now()+"_"+Math.floor(Math.random()*100000);
-  const script=document.createElement("script");
+payButton.type="button";
 
-  window[callbackName]=function(result){
-    delete window[callbackName];
-    script.remove();
-    done(result);
-  };
-
-  const params=new URLSearchParams();
-  params.set("action","createPKSKOrder");
-  params.set("callback",callbackName);
-  params.set("orderNo",data.orderNo);
-  params.set("name",data.name);
-  params.set("phone",data.phone);
-  params.set("ref",data.ref);
-  params.set("amount","29");
-
-  script.src=API_URL+"?"+params.toString();
-  script.onerror=function(){
-    delete window[callbackName];
-    script.remove();
-    done({ok:false,error:"Sambungan server gagal."});
-  };
-  document.body.appendChild(script);
-}
-
-paymentForm.addEventListener("submit",function(event){
-  event.preventDefault();
-
+payButton.addEventListener("click",function(){
   const name=nameInput.value.trim();
   const phone=phoneInput.value.trim();
   const ref=refInput.value.trim();
+
+  if(!name){ messageBox.textContent="Sila masukkan nama pembeli."; nameInput.focus(); return; }
+  if(!phone){ messageBox.textContent="Sila masukkan nombor WhatsApp."; phoneInput.focus(); return; }
+
   const orderNo=makeId();
+  messageBox.textContent="Memproses...";
 
-  if(!name){
-    messageBox.textContent="Sila masukkan nama pembeli.";
-    nameInput.focus();
-    return;
-  }
-  if(!phone){
-    messageBox.textContent="Sila masukkan nombor WhatsApp.";
-    phoneInput.focus();
-    return;
-  }
+  const params=new URLSearchParams();
+  params.set("action","createPKSKOrder");
+  params.set("orderNo",orderNo);
+  params.set("name",name);
+  params.set("phone",phone);
+  params.set("ref",ref);
+  params.set("amount","29");
 
-  messageBox.textContent="Menyimpan order...";
+  /* GET beacon: no CORS/fetch/JSONP dependency on the customer page. */
+  const beacon=new Image();
+  beacon.src=API_URL+"?"+params.toString()+"&_="+Date.now();
 
-  sendOrder({orderNo,name,phone,ref},function(result){
-    if(!result || !result.ok){
-      messageBox.textContent=(result && result.error)||"Order gagal direkodkan. Cuba lagi.";
-      return;
-    }
+  localStorage.setItem("pksk_pending_order",JSON.stringify({
+    orderNo:orderNo,name:name,phone:phone,ref:ref,amount:29,createdAt:new Date().toISOString()
+  }));
 
-    localStorage.setItem("pksk_pending_order",JSON.stringify({
-      orderNo,name,phone,ref,amount:29,createdAt:new Date().toISOString()
-    }));
+  const text=
+    "PKSK SIMULASI — BUKTI BAYARAN\n"+
+    "Order: "+orderNo+"\n"+
+    "Nama: "+name+"\n"+
+    "WhatsApp: "+phone+"\n"+
+    "Jumlah: RM29\n"+
+    "Rujukan: "+(ref||"-")+"\n\n"+
+    "Saya sudah membuat bayaran RM29. Saya lampirkan bukti pembayaran dalam WhatsApp ini.";
 
-    const text=
-      "PKSK SIMULASI — BUKTI BAYARAN\n"+
-      "Order: "+orderNo+"\n"+
-      "Nama: "+name+"\n"+
-      "WhatsApp: "+phone+"\n"+
-      "Jumlah: RM29\n"+
-      "Rujukan: "+(ref||"-")+"\n\n"+
-      "Saya sudah membuat bayaran RM29. Saya lampirkan bukti pembayaran dalam WhatsApp ini.";
-
+  messageBox.textContent="Order direkodkan. Membuka WhatsApp...";
+  setTimeout(function(){
     window.location.href="https://wa.me/"+WHATSAPP_NUMBER+"?text="+encodeURIComponent(text);
-  });
+  },350);
 });
 </script></body></html>
