@@ -387,7 +387,9 @@ function showDashboard(){
 }
 async function loadProducts(){
   try{
-    const r=await fetch(API+'?action=listProducts&token='+encodeURIComponent(TOKEN));
+    // Cache-buster: every refresh reads the latest Products sheet data.
+    const url=API+'?action=listProducts&token='+encodeURIComponent(TOKEN)+'&_='+Date.now();
+    const r=await fetch(url,{cache:'no-store'});
     const j=await r.json();
     if(!j.ok)throw Error(j.error||'Gagal load produk');
     PRODUCTS=j.products||[];
@@ -527,8 +529,17 @@ async function saveProduct(){
       if(preview){preview.src=image;preview.style.display='block';}
     }
     const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'saveProduct',token:TOKEN,id,name,category,desc,image,active,sortOrder,variants})});
-    const j=await r.json(); if(!j.ok)throw Error(j.error||'Gagal simpan produk');
-    closeProductModal(); await loadProducts();
+    const j=await r.json();
+    if(!j.ok)throw Error(j.error||'Gagal simpan produk');
+
+    // Use the object returned by Apps Script immediately, then refresh from Sheet.
+    if(j.product){
+      const idx=PRODUCTS.findIndex(x=>String(x.id)===String(j.product.id));
+      if(idx>=0)PRODUCTS[idx]=j.product; else PRODUCTS.push(j.product);
+      renderProducts();
+    }
+    closeProductModal();
+    await loadProducts();
   }catch(e){document.getElementById('productErr').textContent=e.message}
   finally{if(btn)btn.disabled=false}
 }
