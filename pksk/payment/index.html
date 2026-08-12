@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ms"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1830"><title>Bayaran PKSK — Reqoo</title>
+<link rel="stylesheet" href="./style.css"></head>
+<body>
+<header><a href="../" class="brand"><b>R</b> REQOO</a><span>PKSK SIMULASI</span></header>
+<main>
+<div class="steps"><strong>1 Bayar</strong><i></i><span>2 Sahkan</span><i></i><span>3 Akses</span></div>
+<section class="card">
+<div class="eyebrow">PKSK SIMULASI • 100 SET</div><h1>Bayaran RM29</h1>
+<p class="muted">Imbas QR di bawah untuk membuat bayaran.</p>
+<div class="amount"><span>Jumlah perlu dibayar</span><b>RM29.00</b></div>
+<div class="qr"><img src="./assets/maybank-qr.jpeg" alt="QR Pay Maybank Ab Art Trading"><b>AB ART TRADING</b></div>
+<div class="notice"><b>Selepas bayaran</b><ol><li>Simpan bukti transaksi.</li><li>Isi maklumat pembeli.</li><li>Tekan hantar dan lampirkan bukti pembayaran.</li></ol></div>
+<form id="form">
+<label>Nama pembeli</label><input id="name" required placeholder="Nama penuh">
+<label>Nombor WhatsApp</label><input id="phone" required inputmode="tel" placeholder="Contoh: 0123456789">
+<label>Rujukan transaksi <small>(jika ada)</small></label><input id="ref" placeholder="Contoh: 12345678">
+<button>HANTAR BUKTI PEMBAYARAN →</button>
+<p class="small">Pengesahan dibuat oleh admin PKSK. Selepas bayaran disahkan, kod akses akan diberikan.</p>
+<div id="msg"></div></form>
+</section><p class="back"><a href="../">← Kembali ke PKSK</a></p></main>
+<footer>© Reqoo.co • Simulasi latihan, bukan peperiksaan rasmi KPM.</footer>
+<script>
+const API_URL=""; // Masukkan URL Web App Google Apps Script PKSK selepas deployment.
+const WHATSAPP_NUMBER="601XXXXXXXXX"; // Nombor WhatsApp admin PKSK.
+function makeId(){return "PKSK-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,6).toUpperCase();}
+form.addEventListener("submit",async e=>{
+ e.preventDefault();
+ const orderNo=makeId(), data={action:"createPKSKOrder",orderNo,name:name.value.trim(),phone:phone.value.trim(),ref:ref.value.trim(),amount:29};
+ if(API_URL){
+  try{const r=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(data)});const j=await r.json();if(!j.ok)throw Error(j.error||"Gagal");}
+  catch(err){msg.textContent="Order tidak dapat dihantar. Sila cuba lagi.";return;}
+ }
+ localStorage.setItem("pksk_pending_order",JSON.stringify({...data,createdAt:new Date().toISOString()}));
+ const text=`PKSK SIMULASI — BUKTI BAYARAN\nOrder: ${orderNo}\nNama: ${data.name}\nWhatsApp: ${data.phone}\nJumlah: RM29\nRujukan: ${data.ref||"-"}\n\nSaya sudah membuat bayaran RM29. Saya lampirkan bukti pembayaran dalam WhatsApp ini.`;
+ if(WHATSAPP_NUMBER.includes("X")){msg.textContent="Order "+orderNo+" direkodkan. Tetapkan nombor WhatsApp sebelum live.";return;}
+ location.href="https://wa.me/"+WHATSAPP_NUMBER+"?text="+encodeURIComponent(text);
+});
+</script></body></html>
