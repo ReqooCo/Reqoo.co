@@ -11,7 +11,7 @@
 <div id="rows" class="list"></div>
 </section>
 </main>
-<div id="modal" class="modal" hidden><div class="modalbox"><button class="close" id="close">×</button><div id="detail"></div></div></div>
+<div id="modal" class="modal" hidden style="display:none"><div class="modalbox"><button class="close" id="close">×</button><div id="detail"></div></div></div>
 <script>
 const API_URL="https://script.google.com/macros/s/AKfycbwVFg5bxd2EsbLxUe2CsVHqRE-yVNraIJBSx8_pDsrGvrtTUiVdJwVdJwhJbbacxpci/exec";
 const $=id=>document.getElementById(id);
@@ -74,7 +74,7 @@ loginBtn.addEventListener("click",function(){
 refreshBtn.addEventListener("click",function(){load(function(j){if(!j.ok)alert(j.error||"Gagal memuatkan order.");})});
 searchInput.addEventListener("input",render);
 filterSelect.addEventListener("change",render);
-closeBtn.addEventListener("click",function(){modalBox.hidden=true;});
+closeBtn.addEventListener("click",function(){modalBox.hidden=true;modalBox.style.display="none";});
 
 rowsBox.addEventListener("click",function(e){
  const button=e.target.closest(".row"); if(!button)return;
@@ -88,7 +88,7 @@ rowsBox.addEventListener("click",function(e){
  <p><b>Status:</b> ${esc(o.status)}</p>
  <div class="actions"><button id="verifySendBtn">✓ SAHKAN & HANTAR WHATSAPP</button><button class="reject" id="rejectBtn">TOLAK</button></div>
  <div id="license"></div>`;
- modalBox.hidden=false;
+ modalBox.hidden=false;modalBox.style.display="grid";
  $("verifySendBtn").addEventListener("click",function(){verifyAndWhatsApp(o);});
  $("rejectBtn").addEventListener("click",function(){rejectOrder(o.orderNo);});
 });
