@@ -6,16 +6,15 @@
 <main class="wrap">
 <section id="login" class="login"><h2>Promotion Manager</h2><p class="muted">Masukkan Admin Token yang sama seperti Google Apps Script.</p><input id="token" type="password" placeholder="Admin token"><button class="btn goldbtn" onclick="login()">Masuk</button><p id="err" style="color:#f66"></p></section>
 <section id="app" style="display:none">
-<div class="toolbar"><h1>Promotions</h1><button class="btn goldbtn" onclick="newCampaign()">+ Campaign Baru</button><button class="btn" style="background:#222;color:#fff" onclick="addItemToCampaign()">+ Produk Dalam Campaign</button><a class="btn" style="background:#222;color:#fff;text-decoration:none" href="/shop/promotion.html">Lihat Public Page</a></div>
-<div id="form" class="card" style="display:none;margin-bottom:15px"><h2 id="formTitle">Campaign Baru</h2><input id="id" type="hidden"><input id="mode" type="hidden" value="new">
+<div class="toolbar"><h1>Promotions</h1><button class="btn goldbtn" onclick="newPromo()">+ Promo Baru</button><a class="btn" style="background:#222;color:#fff;text-decoration:none" href="/shop/promotion.html">Lihat Public Page</a></div>
+<div id="form" class="card" style="display:none;margin-bottom:15px"><h2 id="formTitle">Promo Baru</h2><input id="id" type="hidden">
 <div class="formgrid">
 <div><label>Tajuk promo</label><input id="title" placeholder="Contoh: Merdeka Special"></div>
 <div><label>Slug</label><input id="slug" placeholder="merdeka-special"></div>
 <div><label>Subtitle</label><input id="subtitle" placeholder="Harga istimewa bulan ini"></div>
 <div><label>Produk</label><select id="product" onchange="syncProduct()"></select></div>
-<div><label>Variant</label><select id="variant" onchange="syncVariant()"></select></div>
-<div><label>Harga asal catalogue</label><input id="originalPrice" type="text" readonly></div>
-<div><label>Harga promo</label><input id="promoPrice" type="number" step="0.01" min="0" placeholder="Masukkan harga promo"></div>
+<div><label>Variant</label><select id="variant"></select></div>
+<div><label>Harga promo</label><input id="promoPrice" type="number" step="0.01" min="0"></div>
 <div><label>Tarikh mula</label><input id="start" type="date"></div>
 <div><label>Tarikh tamat</label><input id="end" type="date"></div>
 <div><label>Image</label><input id="image" placeholder="assets/plaque-basic.jpg"></div>
@@ -44,85 +43,12 @@ let TOKEN='',PROMOS=[];
 function money(n){return 'RM'+Number(n||0).toFixed(2)}function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 function login(){TOKEN=document.getElementById('token').value.trim();if(TOKEN)load()}
 async function load(){try{const r=await fetch(API+'?action=listPromotions&token='+encodeURIComponent(TOKEN));const j=await r.json();if(!j.ok)throw Error(j.error||'Token salah');PROMOS=j.promotions||[];document.getElementById('login').style.display='none';document.getElementById('app').style.display='block';render()}catch(e){document.getElementById('err').textContent=e.message}}
-function productById(id){
-  return PRODUCTS.find(p=>String(p.id)===String(id));
-}
-
-function fillProducts(){
-  const sel=document.getElementById('product');
-  sel.innerHTML=PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
-  syncProduct();
-}
-
-function syncProduct(){
-  const p=productById(document.getElementById('product').value);
-  if(!p)return;
-
-  const variant=document.getElementById('variant');
-  variant.innerHTML=p.v.map((x,i)=>`<option value="${i}">${x[0]} — ${money(x[1])}</option>`).join('');
-
-  document.getElementById('image').value=p.image||'';
-  syncVariant();
-}
-
-function syncVariant(){
-  const p=productById(document.getElementById('product').value);
-  if(!p)return;
-
-  const index=Number(document.getElementById('variant').value||0);
-  const v=p.v[index]||p.v[0];
-  if(!v)return;
-
-  // Automatically detect the catalogue price for the selected variant.
-  document.getElementById('originalPrice').value=money(v[1]);
-
-  // Keep the promo field separate: admin chooses the actual promo price.
-  document.getElementById('promoPrice').placeholder='Contoh '+v[1];
-
-  // Product image is always taken from the selected catalogue product.
-  document.getElementById('image').value=p.image||'';
-}
-
-function getCampaigns(){
-  const map=new Map();
-  PROMOS.forEach(p=>{
-    const slug=String(p.slug||'').trim().toLowerCase();
-    if(!slug)return;
-    if(!map.has(slug))map.set(slug,{slug,title:p.title,subtitle:p.subtitle,start:p.start,end:p.end,active:p.active,items:[]});
-    map.get(slug).items.push(p);
-  });
-  return [...map.values()];
-}
 function productById(id){return PRODUCTS.find(p=>String(p.id)===String(id))}
 function fillProducts(){document.getElementById('product').innerHTML=PRODUCTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');syncProduct()}
-function syncProduct(){const p=productById(document.getElementById('product').value);if(!p)return;document.getElementById('variant').innerHTML=p.v.map((x,i)=>`<option value="${i}">${x[0]} — ${money(x[1])}</option>`).join('');document.getElementById('image').value=p.image||'';syncVariant()}
-function syncVariant(){const p=productById(document.getElementById('product').value);if(!p)return;const v=p.v[+document.getElementById('variant').value||0];if(!v)return;const op=document.getElementById('originalPrice');if(op)op.value=money(v[1]);document.getElementById('promoPrice').placeholder='Contoh '+v[1];document.getElementById('image').value=p.image||''}
-function clearForm(){['title','slug','subtitle','promoPrice','start','end','description'].forEach(x=>document.getElementById(x).value='');document.getElementById('id').value='';document.getElementById('active').value='true';document.getElementById('mode').value='new'}
-function newCampaign(){fillProducts();clearForm();document.getElementById('formTitle').textContent='Campaign Baru';document.getElementById('form').style.display='block';window.scrollTo({top:0,behavior:'smooth'})}
-function addItemToCampaign(){
-  const campaigns=getCampaigns();
-  if(!campaigns.length){alert('Belum ada campaign. Buat Campaign Baru dahulu.');return;}
-  const choice=prompt('Masukkan slug campaign yang sedia ada:\n\n'+campaigns.map(c=>c.slug+' — '+c.title).join('\n'));
-  if(!choice)return;
-  const slug=choice.trim().toLowerCase();
-  const c=campaigns.find(x=>x.slug===slug);
-  if(!c){alert('Campaign tidak dijumpai.');return;}
-  fillProducts();clearForm();
-  document.getElementById('formTitle').textContent='Tambah Produk — '+c.title;
-  document.getElementById('title').value=c.title;
-  document.getElementById('slug').value=c.slug;
-  document.getElementById('subtitle').value=c.subtitle||'';
-  document.getElementById('start').value=c.start||'';
-  document.getElementById('end').value=c.end||'';
-  document.getElementById('active').value=String(c.active);
-  document.getElementById('form').style.display='block';
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-function edit(id){const p=PROMOS.find(x=>x.id===id);if(!p)return;fillProducts();clearForm();document.getElementById('formTitle').textContent='Edit Produk Promo';document.getElementById('id').value=p.id;document.getElementById('mode').value='edit';document.getElementById('title').value=p.title;document.getElementById('slug').value=p.slug;document.getElementById('subtitle').value=p.subtitle;document.getElementById('start').value=p.start;document.getElementById('end').value=p.end;document.getElementById('description').value=p.description;document.getElementById('active').value=String(p.active);document.getElementById('product').value=p.productId;syncProduct();const pr=productById(p.productId);const vi=pr?Math.max(0,pr.v.findIndex(x=>x[0]===p.variant)):0;document.getElementById('variant').value=vi;syncVariant();document.getElementById('promoPrice').value=p.promoPrice;document.getElementById('image').value=p.image||pr?.image||'';document.getElementById('form').style.display='block';window.scrollTo({top:0,behavior:'smooth'})}
-function render(){
-  const campaigns=getCampaigns();
-  document.getElementById('list').innerHTML=campaigns.length?campaigns.map(c=>`<section class="card" style="grid-column:1/-1"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div><div class="muted">CAMPAIGN • ${esc(c.active?'ACTIVE':'INACTIVE')} • ${esc(c.slug)}</div><h2 style="margin:5px 0">${esc(c.title)}</h2><div class="muted">${esc(c.subtitle||'')} ${c.start?'• '+esc(c.start):''} ${c.end?'→ '+esc(c.end):''}</div></div><button class="btn goldbtn" onclick="addItemToCampaign()">+ Produk</button></div><div class="grid" style="margin-top:14px">${c.items.map(p=>`<article class="card"><div class="promo"><img src="${esc(p.image)}"><div><div class="muted">${esc(p.productName)} • ${esc(p.variant)}</div><div class="price">${money(p.originalPrice)} → ${money(p.promoPrice)}</div><div class="actions" style="margin-top:10px"><button class="btn goldbtn" onclick="edit('${esc(p.id)}')">Edit</button><button class="btn danger" onclick="del('${esc(p.id)}')">Padam</button></div></div></div></article>`).join('')}</div></section>`).join(''):'<div class="card muted">Belum ada campaign.</div>';
-}
+function syncProduct(){const p=productById(document.getElementById('product').value);document.getElementById('variant').innerHTML=p.v.map((x,i)=>`<option value="${i}">${x[0]} — ${money(x[1])}</option>`).join('');const v=p.v[+document.getElementById('variant').value||0];document.getElementById('image').value=p.image;document.getElementById('promoPrice').placeholder='Contoh '+v[1]}
+document.getElementById('variant').onchange=()=>{};
+function newPromo(){fillProducts();document.getElementById('formTitle').textContent='Promo Baru';document.getElementById('id').value='';['title','slug','subtitle','promoPrice','start','end','description'].forEach(x=>document.getElementById(x).value='');document.getElementById('active').value='true';document.getElementById('form').style.display='block';window.scrollTo({top:0,behavior:'smooth'})}
+function edit(id){const p=PROMOS.find(x=>x.id===id);if(!p)return;fillProducts();document.getElementById('formTitle').textContent='Edit Promo';document.getElementById('id').value=p.id;document.getElementById('title').value=p.title;document.getElementById('slug').value=p.slug;document.getElementById('subtitle').value=p.subtitle;document.getElementById('start').value=p.start;document.getElementById('end').value=p.end;document.getElementById('image').value=p.image;document.getElementById('description').value=p.description;document.getElementById('active').value=String(p.active);document.getElementById('product').value=p.productId;syncProduct();const pr=productById(p.productId);const vi=Math.max(0,pr.v.findIndex(x=>x[0]===p.variant));document.getElementById('variant').value=vi;document.getElementById('promoPrice').value=p.promoPrice;document.getElementById('form').style.display='block';window.scrollTo({top:0,behavior:'smooth'})}
 async function save(){const p=productById(document.getElementById('product').value),v=p.v[+document.getElementById('variant').value||0],data={action:'savePromotion',token:TOKEN,id:document.getElementById('id').value||undefined,title:document.getElementById('title').value.trim(),slug:document.getElementById('slug').value.trim(),subtitle:document.getElementById('subtitle').value.trim(),productId:p.id,productName:p.name,variant:v[0],originalPrice:v[1],promoPrice:Number(document.getElementById('promoPrice').value||0),start:document.getElementById('start').value,end:document.getElementById('end').value,image:document.getElementById('image').value.trim()||p.image,description:document.getElementById('description').value.trim(),active:document.getElementById('active').value==='true'};if(!data.title||!data.slug||!data.promoPrice){alert('Isi tajuk, slug dan harga promo.');return}const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(data)}),j=await r.json();if(!j.ok){alert(j.error||'Gagal simpan');return}cancelEdit();load()}
 async function del(id){if(!confirm('Padam promo ini?'))return;const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'deletePromotion',token:TOKEN,id})}),j=await r.json();if(!j.ok)alert(j.error||'Gagal');else load()}
 function cancelEdit(){document.getElementById('form').style.display='none'}
