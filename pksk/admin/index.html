@@ -14,6 +14,10 @@
 <div id="modal" class="modal" hidden><div class="modalbox"><button class="close" id="close">×</button><div id="detail"></div></div></div>
 <script>
 const API_URL="https://script.google.com/macros/s/AKfycbwVFg5bxd2EsbLxUe2CsVHqRE-yVNraIJBSx8_pDsrGvrtTUiVdJwVdJwhJbbacxpci/exec";
+const $=id=>document.getElementById(id);
+const loginBox=$("login"), appBox=$("app"), tokenInput=$("token"), loginBtn=$("loginBtn"), loginMsg=$("loginMsg");
+const refreshBtn=$("refresh"), searchInput=$("search"), filterSelect=$("filter"), rowsBox=$("rows"), totalBox=$("total"), pendingBox=$("pending"), paidBox=$("paid"), activeBox=$("active");
+const modalBox=$("modal"), detailBox=$("detail"), closeBtn=$("close");
 let TOKEN="",ORDERS=[];
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
@@ -37,65 +41,104 @@ function api(action,extra,done){
 }
 
 function render(){
- const q=search.value.trim().toLowerCase(),f=filter.value;
+ const q=searchInput.value.trim().toLowerCase(),f=filterSelect.value;
  const arr=ORDERS.filter(o=>(f==="Semua"||o.status===f)&&(!q||[o.orderNo,o.name,o.phone].join(" ").toLowerCase().includes(q)));
- total.textContent=ORDERS.length;
- pending.textContent=ORDERS.filter(x=>x.status==="PENDING").length;
- paid.textContent=ORDERS.filter(x=>x.status==="PAID").length;
- active.textContent=ORDERS.filter(x=>x.licenseStatus==="ACTIVE").length;
- rows.innerHTML=arr.length?arr.map(o=>`<button class="row" data-i="${ORDERS.indexOf(o)}"><b>${esc(o.orderNo)}</b><span>${esc(o.name)}</span><span>${esc(o.phone)}</span><strong>RM${Number(o.amount||29).toFixed(2)}</strong><em class="${o.status}">${esc(o.status)}</em></button>`).join(""):'<div class="empty">Tiada order.</div>';
+ totalBox.textContent=ORDERS.length;
+ pendingBox.textContent=ORDERS.filter(x=>x.status==="PENDING").length;
+ paidBox.textContent=ORDERS.filter(x=>x.status==="PAID").length;
+ activeBox.textContent=ORDERS.filter(x=>x.licenseStatus==="ACTIVE").length;
+ rowsBox.innerHTML=arr.length?arr.map(o=>`<button class="row" data-i="${ORDERS.indexOf(o)}"><b>${esc(o.orderNo)}</b><span>${esc(o.name)}</span><span>${esc(o.phone)}</span><strong>RM${Number(o.amount||29).toFixed(2)}</strong><em class="${o.status}">${esc(o.status)}</em></button>`).join(""):'<div class="empty">Tiada order.</div>';
 }
 
 function load(done){
-  api("listPKSKOrders",{},function(j){
-    if(!j.ok){ if(done)done(j); return; }
-    ORDERS=j.orders||[];
-    render();
-    if(done)done(j);
+ api("listPKSKOrders",{},function(j){
+   if(!j.ok){ if(done)done(j); return; }
+   ORDERS=j.orders||[];
+   render();
+   if(done)done(j);
+ });
+}
+
+loginBtn.addEventListener("click",function(){
+ TOKEN=tokenInput.value.trim();
+ if(!TOKEN){loginMsg.textContent="Token diperlukan.";return;}
+ loginMsg.textContent="Menyemak...";
+ load(function(j){
+   if(!j.ok){loginMsg.textContent=j.error||"Gagal masuk.";return;}
+   loginBox.hidden=true;
+   appBox.hidden=false;
+   loginMsg.textContent="";
+ });
+});
+
+refreshBtn.addEventListener("click",function(){load(function(j){if(!j.ok)alert(j.error||"Gagal memuatkan order.");})});
+searchInput.addEventListener("input",render);
+filterSelect.addEventListener("change",render);
+closeBtn.addEventListener("click",function(){modalBox.hidden=true;});
+
+rowsBox.addEventListener("click",function(e){
+ const button=e.target.closest(".row"); if(!button)return;
+ const o=ORDERS[Number(button.dataset.i)];
+ if(!o)return;
+ detailBox.innerHTML=`<div class="eyebrow">ORDER PKSK</div><h2>${esc(o.orderNo)}</h2>
+ <p><b>Nama:</b> ${esc(o.name)}</p>
+ <p><b>WhatsApp:</b> ${esc(o.phone)}</p>
+ <p><b>Jumlah:</b> RM${Number(o.amount||29).toFixed(2)}</p>
+ <p><b>Rujukan:</b> ${esc(o.ref||"-")}</p>
+ <p><b>Status:</b> ${esc(o.status)}</p>
+ <div class="actions"><button id="verifySendBtn">✓ SAHKAN & HANTAR WHATSAPP</button><button class="reject" id="rejectBtn">TOLAK</button></div>
+ <div id="license"></div>`;
+ modalBox.hidden=false;
+ $("verifySendBtn").addEventListener("click",function(){verifyAndWhatsApp(o);});
+ $("rejectBtn").addEventListener("click",function(){rejectOrder(o.orderNo);});
+});
+
+function verifyAndWhatsApp(o){
+  if(!confirm("Sahkan bayaran RM"+Number(o.amount||29).toFixed(2)+" dan buka WhatsApp untuk customer ini?")) return;
+
+  const btn=$("verifySendBtn");
+  btn.disabled=true;
+  btn.textContent="MEMPROSES...";
+
+  api("verifyPKSKOrder",{orderNo:o.orderNo},function(j){
+    if(!j.ok){
+      btn.disabled=false;
+      btn.textContent="✓ SAHKAN & HANTAR WHATSAPP";
+      alert(j.error||"Gagal sahkan bayaran.");
+      return;
+    }
+
+    const code=j.accessCode;
+    const accessUrl="https://reqoo.co/pksk/akses/";
+    const phone=String(o.phone||"").replace(/\D/g,"");
+    const waPhone=phone.startsWith("0")?"60"+phone:phone;
+
+    const text=
+      "✅ Pembayaran PKSK telah disahkan.\n\n"+
+      "🔐 Access Code: "+code+"\n\n"+
+      "🎯 Akses simulasi:\n"+accessUrl+"\n\n"+
+      "Masukkan Access Code tersebut untuk mula menggunakan simulasi PKSK.\n\n"+
+      "Terima kasih kerana memilih REQOO.";
+
+    localStorage.setItem("pksk_last_whatsapp_order",o.orderNo);
+
+    $("license").innerHTML=
+      '<div class="license"><b>ACCESS CODE</b><strong>'+esc(code)+'</strong>'+
+      '<small>WhatsApp dibuka. Tekan Send untuk hantar kepada customer.</small></div>';
+
+    btn.textContent="✓ DISAHKAN";
+    btn.disabled=true;
+
+    window.location.href="https://wa.me/"+waPhone+"?text="+encodeURIComponent(text);
   });
 }
 
-loginBtn.onclick=function(){
-  TOKEN=token.value.trim();
-  if(!TOKEN){loginMsg.textContent="Token diperlukan.";return;}
-  loginMsg.textContent="Menyemak...";
-  load(function(j){
-    if(!j.ok){loginMsg.textContent=j.error||"Gagal masuk.";return;}
-    login.hidden=true;
-    app.hidden=false;
-  });
-};
-
-refresh.onclick=function(){load(function(j){if(!j.ok)alert(j.error||"Gagal");})};
-search.oninput=render;
-filter.onchange=render;
-close.onclick=function(){modal.hidden=true};
-
-rows.onclick=function(e){
-  const b=e.target.closest(".row"); if(!b)return;
-  const o=ORDERS[Number(b.dataset.i)];
-  detail.innerHTML=`<div class="eyebrow">ORDER PKSK</div><h2>${esc(o.orderNo)}</h2>
-  <p><b>Nama:</b> ${esc(o.name)}</p><p><b>WhatsApp:</b> ${esc(o.phone)}</p>
-  <p><b>Jumlah:</b> RM${Number(o.amount||29).toFixed(2)}</p>
-  <p><b>Rujukan:</b> ${esc(o.ref||"-")}</p><p><b>Status:</b> ${esc(o.status)}</p>
-  <div class="actions"><button onclick="verifyOrder('${esc(o.orderNo)}')">✓ SAHKAN BAYARAN</button>
-  <button class="reject" onclick="rejectOrder('${esc(o.orderNo)}')">TOLAK</button></div><div id="license"></div>`;
-  modal.hidden=false;
-};
-
-window.verifyOrder=function(orderNo){
-  api("verifyPKSKOrder",{orderNo},function(j){
-    if(!j.ok){alert(j.error||"Gagal");return;}
-    license.innerHTML=`<div class="license"><b>ACCESS CODE</b><strong>${esc(j.accessCode)}</strong><small>Simpan kod ini dan hantar kepada customer.</small></div>`;
-    load();
-  });
-};
-
-window.rejectOrder=function(orderNo){
-  if(!confirm("Tolak pembayaran ini?"))return;
-  api("rejectPKSKOrder",{orderNo},function(j){
-    if(!j.ok){alert(j.error||"Gagal");return;}
-    modal.hidden=true; load();
-  });
-};
+function rejectOrder(orderNo){
+ if(!confirm("Tolak pembayaran ini?"))return;
+ api("rejectPKSKOrder",{orderNo},function(j){
+   if(!j.ok){alert(j.error||"Gagal.");return;}
+   modalBox.hidden=true;
+   load();
+ });
+}
 </script></body></html>
