@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ms"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1830"><title>Simulasi PKSK — Reqoo</title>
+<style>
+:root{--n:#0b1830;--m:#6c7889;--l:#dce3ec;--s:#f5f7fa}
+*{box-sizing:border-box}body{margin:0;background:var(--s);color:#15243d;font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+main{min-height:100vh;display:grid;place-items:center;padding:20px}.card{width:min(480px,100%);background:#fff;border:1px solid var(--l);border-radius:20px;padding:30px;box-shadow:0 18px 45px #0b183012}
+.brand{font-weight:800;letter-spacing:.08em;color:var(--n);font-size:13px}.eyebrow{font-size:10px;letter-spacing:.14em;color:#55708f;font-weight:800;margin-top:35px}
+h1{font-size:31px;margin:8px 0}.muted{color:var(--m);font-size:13px;line-height:1.6}
+label{display:block;font-size:12px;font-weight:700;margin:20px 0 7px}input{width:100%;height:50px;border:1px solid var(--l);border-radius:10px;padding:0 14px;font:inherit;font-size:15px;letter-spacing:.06em}
+button{width:100%;height:49px;border:0;border-radius:10px;background:var(--n);color:#fff;font-weight:800;margin-top:12px}
+.note{margin-top:16px;padding:12px;background:#f3f6f9;border-radius:10px;color:var(--m);font-size:11px;line-height:1.5}#msg{margin-top:12px;text-align:center;font-size:12px}
+.ok{color:#207044}.bad{color:#a53b3b}
+</style></head>
+<body><main><section class="card">
+<div class="brand">REQOO / PKSK</div>
+<div class="eyebrow">SIMULASI PKSK</div>
+<h1>Aktifkan akses anda</h1>
+<p class="muted">Masukkan Access Code yang diberikan selepas pembayaran disahkan.</p>
+<label>Access Code</label>
+<input id="code" autocomplete="off" autocapitalize="characters" placeholder="PKSK-XXXXX-XXXXX">
+<button id="start">MULA SIMULASI</button>
+<div class="note">1 pembelian = 1 license • sehingga 2 peranti.</div>
+<div id="msg"></div>
+</section></main>
+<script>
+const API_URL="https://script.google.com/macros/s/AKfycbwVFg5bxd2EsbLxUe2CsVHqRE-yVNraIJBSx8_pDsrGvrtTUiVdJwVdJwhJbbacxpci/exec";
+const codeInput=document.getElementById("code"),btn=document.getElementById("start"),msg=document.getElementById("msg");
+
+function getDeviceId(){
+  let id=localStorage.getItem("reqoo_pksk_device_id");
+  if(!id){
+    id="DEV-"+crypto.getRandomValues(new Uint32Array(3)).join("-")+"-"+Date.now().toString(36);
+    localStorage.setItem("reqoo_pksk_device_id",id);
+  }
+  return id;
+}
+function api(action,data,done){
+  const cb="cb_"+Date.now()+"_"+Math.floor(Math.random()*99999);
+  const sc=document.createElement("script");
+  window[cb]=function(r){delete window[cb];sc.remove();done(r)};
+  const p=new URLSearchParams({action,callback:cb,...data});
+  sc.src=API_URL+"?"+p.toString();
+  sc.onerror=function(){delete window[cb];sc.remove();done({ok:false,error:"Sambungan server gagal."})};
+  document.body.appendChild(sc);
+}
+btn.onclick=function(){
+  const code=codeInput.value.trim().toUpperCase();
+  if(!code){msg.className="bad";msg.textContent="Masukkan Access Code.";return}
+  btn.disabled=true;btn.textContent="MENYEMAK...";
+  api("validateAccess",{code},function(v){
+    if(!v.ok){btn.disabled=false;btn.textContent="MULA SIMULASI";msg.className="bad";msg.textContent=v.error;return}
+    api("registerDevice",{code,deviceId:getDeviceId()},function(r){
+      btn.disabled=false;btn.textContent="MULA SIMULASI";
+      if(!r.ok){msg.className="bad";msg.textContent=r.error;return}
+      localStorage.setItem("reqoo_pksk_license",code);
+      msg.className="ok";msg.textContent="Akses disahkan. Membuka simulasi...";
+      // IMPORTANT: change this target to the actual simulator file when the gate is wired into the existing app.
+      setTimeout(function(){location.href="../simulator/";},450);
+    });
+  });
+};
+</script></body></html>
