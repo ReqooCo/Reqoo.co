@@ -1,83 +1,88 @@
 <!doctype html>
 <html lang="ms"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0b1830"><title>Bayaran PKSK — Reqoo</title>
+<meta name="theme-color" content="#0b1830"><title>Bayaran PKSK 50 — Reqoo</title>
 <link rel="stylesheet" href="./style.css"></head>
 <body>
-<header><a href="../" class="brand"><b>R</b> REQOO</a><span>PKSK SIMULASI</span></header>
+<header><a href="../" class="brand"><b>R</b> REQOO</a><span>PKSK 50 • PEMBAYARAN</span></header>
 <main>
-<div class="steps"><strong>1 Bayar</strong><i></i><span>2 Sahkan</span><i></i><span>3 Akses</span></div>
+<div class="steps"><strong>1 Bayar</strong><i></i><strong>2 Hantar Bukti</strong><i></i><span>3 Akses</span></div>
 <section class="card">
-<div class="eyebrow">PKSK SIMULASI • 50 SET</div><h1>Bayaran RM29</h1>
-<p class="muted">Imbas QR di bawah untuk membuat bayaran.</p>
+<div class="eyebrow">PKSK 50 • SIMULASI LATIHAN</div><h1>Bayaran RM29</h1>
+<p class="muted">Imbas QR, buat bayaran dan <b>lampirkan bukti pembayaran</b> terus di sini.</p>
 <div class="amount"><span>Jumlah perlu dibayar</span><b>RM29.00</b></div>
 <div class="qr"><img src="./assets/maybank-qr.jpeg" alt="QR Pay Maybank Ab Art Trading"><b>AB ART TRADING</b></div>
-<div class="notice"><b>Selepas bayaran</b><ol><li>Simpan bukti transaksi.</li><li>Isi maklumat pembeli.</li><li>Tekan hantar dan lampirkan bukti pembayaran.</li></ol></div>
+<div class="notice"><b>Selepas bayaran</b><ol><li>Simpan screenshot / bukti transaksi.</li><li>Isi nama dan WhatsApp.</li><li>Pilih gambar bukti pembayaran.</li><li>Tekan <b>HANTAR BUKTI</b>. Selepas berjaya dihantar, butang WhatsApp akan muncul.</li></ol></div>
 <form id="form">
-<label>Nama pembeli</label><input id="name" required placeholder="Nama penuh">
-<label>Nombor WhatsApp</label><input id="phone" required inputmode="tel" placeholder="Contoh: 0123456789">
+<label>Nama pembeli</label><input id="name" required placeholder="Nama penuh" autocomplete="name">
+<label>Nombor WhatsApp</label><input id="phone" required inputmode="tel" placeholder="Contoh: 0123456789" autocomplete="tel">
 <label>Rujukan transaksi <small>(jika ada)</small></label><input id="ref" placeholder="Contoh: 12345678">
-<button>HANTAR BUKTI PEMBAYARAN →</button>
-<p class="small">Pengesahan dibuat oleh admin PKSK. Selepas bayaran disahkan, kod akses akan diberikan.</p>
-<div id="msg"></div></form>
+<label>Bukti pembayaran <small>• JPG / PNG / WEBP • maksimum 6MB</small></label>
+<input id="proof" type="file" accept="image/jpeg,image/png,image/webp" required>
+<div id="preview" class="preview" hidden></div>
+<button id="submitBtn" type="submit">HANTAR BUKTI PEMBAYARAN →</button>
+<p class="small">Bukti pembayaran disimpan bersama order untuk semakan admin PKSK. Admin hanya akan mengaktifkan akses selepas bayaran disahkan.</p>
+<div id="msg" role="status"></div>
+<div id="whatsappBox" class="whatsapp-box" hidden>
+  <b>✅ Bukti pembayaran sudah dihantar.</b>
+  <span>Maklumkan admin supaya order boleh disemak dengan lebih cepat.</span>
+  <a id="whatsappBtn" href="#">💬 MAKLUMKAN ADMIN DI WHATSAPP</a>
+</div>
+</form>
 </section><p class="back"><a href="../">← Kembali ke PKSK</a></p></main>
 <footer>© Reqoo.co • Simulasi latihan, bukan peperiksaan rasmi KPM.</footer>
 <script>
 const API_URL="https://script.google.com/macros/s/AKfycbwVFg5bxd2EsbLxUe2CsVHqRE-yVNraIJBSx8_pDsrGvrtTUiVdJwVdJwhJbbacxpci/exec";
 const WHATSAPP_NUMBER="60165192803";
-
-const payButton=document.querySelector("#form button");
-const paymentForm=document.getElementById("form");
-const nameInput=document.getElementById("name");
-const phoneInput=document.getElementById("phone");
-const refInput=document.getElementById("ref");
-const messageBox=document.getElementById("msg");
-
-function makeId(){
-  return "PKSK-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,6).toUpperCase();
+const form=document.getElementById("form"), submitBtn=document.getElementById("submitBtn"), msg=document.getElementById("msg");
+const proofInput=document.getElementById("proof"), preview=document.getElementById("preview"), waBox=document.getElementById("whatsappBox"), waBtn=document.getElementById("whatsappBtn");
+let proofData="",proofName="";
+function makeId(){return "PKSK-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,6).toUpperCase();}
+function compressImage(file){
+ return new Promise((resolve,reject)=>{
+   if(!/^image\/(jpeg|png|webp)$/.test(file.type)){reject(new Error("Format bukti mesti JPG, PNG atau WEBP."));return;}
+   if(file.size>6*1024*1024){reject(new Error("Saiz gambar melebihi 6MB."));return;}
+   const reader=new FileReader();
+   reader.onload=()=>{
+     const img=new Image();
+     img.onload=()=>{
+       const max=1600,scale=Math.min(1,max/Math.max(img.width,img.height));
+       const c=document.createElement("canvas");c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));
+       const ctx=c.getContext("2d");ctx.drawImage(img,0,0,c.width,c.height);
+       // JPEG keeps the upload small and readable for payment screenshots.
+       resolve({data:c.toDataURL("image/jpeg",.82),name:file.name.replace(/\.[^.]+$/i,"_")+"jpg"});
+     };img.onerror=()=>reject(new Error("Gambar tidak dapat dibaca."));img.src=reader.result;
+   };reader.onerror=()=>reject(new Error("Gagal membaca gambar."));reader.readAsDataURL(file);
+ });
 }
-
-payButton.type="button";
-
-payButton.addEventListener("click",function(){
-  const name=nameInput.value.trim();
-  const phone=phoneInput.value.trim();
-  const ref=refInput.value.trim();
-
-  if(!name){ messageBox.textContent="Sila masukkan nama pembeli."; nameInput.focus(); return; }
-  if(!phone){ messageBox.textContent="Sila masukkan nombor WhatsApp."; phoneInput.focus(); return; }
-
-  const orderNo=makeId();
-  messageBox.textContent="Memproses...";
-
-  const params=new URLSearchParams();
-  params.set("action","createPKSKOrder");
-  params.set("orderNo",orderNo);
-  params.set("name",name);
-  params.set("phone",phone);
-  params.set("ref",ref);
-  params.set("amount","29");
-
-  /* GET beacon: no CORS/fetch/JSONP dependency on the customer page. */
-  const beacon=new Image();
-  beacon.src=API_URL+"?"+params.toString()+"&_="+Date.now();
-
-  localStorage.setItem("pksk_pending_order",JSON.stringify({
-    orderNo:orderNo,name:name,phone:phone,ref:ref,amount:29,createdAt:new Date().toISOString()
-  }));
-
-  const text=
-    "PKSK SIMULASI — BUKTI BAYARAN\n"+
-    "Order: "+orderNo+"\n"+
-    "Nama: "+name+"\n"+
-    "WhatsApp: "+phone+"\n"+
-    "Jumlah: RM29\n"+
-    "Rujukan: "+(ref||"-")+"\n\n"+
-    "Saya sudah membuat bayaran RM29. Saya lampirkan bukti pembayaran dalam WhatsApp ini.";
-
-  messageBox.textContent="Order direkodkan. Membuka WhatsApp...";
-  setTimeout(function(){
-    window.location.href="https://wa.me/"+WHATSAPP_NUMBER+"?text="+encodeURIComponent(text);
-  },350);
+proofInput.addEventListener("change",async()=>{
+ proofData="";proofName="";preview.hidden=true;preview.innerHTML="";
+ const file=proofInput.files&&proofInput.files[0];if(!file)return;
+ try{
+   const out=await compressImage(file);proofData=out.data;proofName=out.name;
+   preview.innerHTML='<img src="'+proofData+'" alt="Pratonton bukti pembayaran"><span>✓ Bukti dipilih: '+file.name+'</span>';preview.hidden=false;
+ }catch(e){msg.textContent=e.message;proofInput.value="";}
+});
+form.addEventListener("submit",async(e)=>{
+ e.preventDefault();
+ const name=document.getElementById("name").value.trim(),phone=document.getElementById("phone").value.trim(),ref=document.getElementById("ref").value.trim();
+ if(!name||!phone){msg.textContent="Sila lengkapkan nama dan nombor WhatsApp.";return;}
+ if(!proofData){msg.textContent="Sila pilih bukti pembayaran dahulu.";return;}
+ const orderNo=makeId();
+ submitBtn.disabled=true;submitBtn.textContent="MENGHANTAR BUKTI…";msg.textContent="Menyimpan order dan bukti pembayaran…";
+ const payload={action:"createPKSKOrder",orderNo,name,phone,ref,amount:29,proofData,proofName};
+ try{
+   // text/plain + no-cors avoids a browser CORS preflight while still sending JSON to Apps Script.
+   await fetch(API_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
+   const waPhone=String(WHATSAPP_NUMBER).replace(/\D/g,"");
+   const text="PKSK 50 — MAKLUMAN BAYARAN\n\nOrder: "+orderNo+"\nNama: "+name+"\nWhatsApp: "+phone+"\nJumlah: RM29\nRujukan: "+(ref||"-")+"\n\nSaya sudah membuat bayaran dan bukti pembayaran telah dihantar melalui laman Reqoo. Mohon semak order saya. ";
+   waBtn.href="https://wa.me/"+waPhone+"?text="+encodeURIComponent(text);
+   localStorage.setItem("pksk_pending_order",JSON.stringify({orderNo,name,phone,ref,amount:29,createdAt:new Date().toISOString()}));
+   msg.textContent="Bukti dihantar. Order anda sedang menunggu semakan admin.";
+   submitBtn.hidden=true;waBox.hidden=false;
+ }catch(err){
+   submitBtn.disabled=false;submitBtn.textContent="HANTAR BUKTI PEMBAYARAN →";
+   msg.textContent="Gagal menghantar. Sila cuba semula.";
+ }
 });
 </script></body></html>

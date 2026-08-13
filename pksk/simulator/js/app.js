@@ -13,12 +13,33 @@ function pkskLicense(){return (localStorage.getItem("reqoo_pksk_license")||"").t
 function pkskRequireAccess(next){
   const code=pkskLicense();
   if(!code){location.href="../access/";return;}
-  pkskApi("validateAccess",{code},function(r){
+  const deviceId=pkskDeviceId();
+  pkskApi("registerDevice",{code,deviceId,userAgent:navigator.userAgent},function(r){
     if(r&&r.ok){next();return;}
     localStorage.removeItem("reqoo_pksk_license");
-    alert((r&&r.error)||"Akses tidak sah atau telah tamat.");
+    alert((r&&r.error)||"Akses tidak sah atau peranti telah melebihi had.");
     location.href="../access/";
   });
+}
+function pkskDeviceId(){
+  let id=localStorage.getItem("reqoo_pksk_device_id");
+  if(!id){id="DEV-"+crypto.getRandomValues(new Uint32Array(3)).join("-")+"-"+Date.now().toString(36);localStorage.setItem("reqoo_pksk_device_id",id)}
+  return id;
+}
+function pkskDashApi(action,data,done){pkskApi(action,data,done)}
+function exitToDashboard(){
+  if(phase==="c"){localStorage.setItem(`pksk-set${String(setNo).padStart(2,"0")}-writing`,JSON.stringify({wTimer,selectedTopic,text:$("essay").value}))}
+  if(phase!=="idle"&&phase!=="done"&&phase!=="abBrief"&&phase!=="cBrief"){
+    if(!confirm("Keluar ke dashboard? Jawapan yang telah disimpan pada peranti akan kekal. Anda boleh sambung semula kemudian."))return;
+    if(phase==="ab")persistSession();
+  }
+  clearInterval(interval);clearInterval(winterval);location.href="../access/";
+}
+function toggleMobileNav(force){
+  const card=$("navCard");if(!card)return;
+  const open=typeof force==="boolean"?force:!card.classList.contains("mobile-open");
+  card.classList.toggle("mobile-open",open);
+  document.body.classList.toggle("nav-open",open);
 }
 
 // Audio pengawas: fail M4A dalam folder audio.
@@ -47,7 +68,7 @@ function updateSetUI(){
  document.querySelectorAll(".set-label").forEach(el=>el.textContent=label);
  const sel=$("setSelect"); if(sel) sel.value=String(setNo);
  const next=$("nextSetLabel");
- if(next) next.textContent=setNo<100?`SET ${String(setNo+1).padStart(2,"0")} →`:"KEMBALI KE SENARAI SET";
+ if(next) next.textContent=setNo<50?`SET ${String(setNo+1).padStart(2,"0")} →`:"KEMBALI KE SENARAI SET";
 }
 async function selectSet(n){ if(!pkskLicense()){location.href='../access/';return;} 
  clearInterval(interval); clearInterval(winterval);
@@ -82,7 +103,7 @@ function beginABBriefing(){ if(!pkskLicense()){location.href='../access/';return
 function startAB(){
  phase="ab";qidx=0;answers={};times={};timer=5400;
  const saved=JSON.parse(localStorage.getItem(`pksk-set${String(setNo).padStart(2,"0")}-session`)||"null");
- if(saved){answers=saved.answers||{};times=saved.times||{};timer=typeof saved.timer==="number"?saved.timer:5400;}qStarted=Date.now();abStartedAt=Date.now();show("exam");renderTimer();renderQ();
+ if(saved){answers=saved.answers||{};times=saved.times||{};timer=typeof saved.timer==="number"?saved.timer:5400;qidx=Math.max(0,Math.min(qs.length-1,Number(saved.qidx||0)));}qStarted=Date.now();abStartedAt=Date.now();show("exam");renderTimer();renderQ();
  clearInterval(interval);interval=setInterval(()=>{timer--;renderTimer();
   if(timer===600)playAudioOnly("ten");
   if(timer===300)playAudioOnly("five");
@@ -103,9 +124,14 @@ $("qvisual").innerHTML=q.visual?`<div class="question-visual"><img src="sets/${e
  $("grid").innerHTML=qs.map((x,i)=>`<button class="${answers[x.id]!==undefined?"done ":""}${i===qidx?"current":""}" onclick="gotoQ(${i})">${i+1}</button>`).join("");
 }
 function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function persistSession(){localStorage.setItem(`pksk-set${String(setNo).padStart(2,"0")}-session`,JSON.stringify({answers,times,timer}));}
-function answer(i){answers[qs[qidx].id]=i;persistSession();renderQ()}
-function gotoQ(i){saveTime();qidx=i;renderQ()}
+let lastSessionSync=0;
+function persistSession(){
+ localStorage.setItem(`pksk-set${String(setNo).padStart(2,"0")}-session`,JSON.stringify({answers,times,timer,qidx}));
+ const now=Date.now();
+ if(now-lastSessionSync>30000){lastSessionSync=now;pkskDashApi("saveProgress",{code:pkskLicense(),deviceId:pkskDeviceId(),setNo:setNo,completed:false,score:0,answered:Object.keys(answers).length,timeUsed:Math.round((5400-timer)/60)},()=>{})}
+}
+function answer(i){answers[qs[qidx].id]=i;persistSession();renderQ();toggleMobileNav(false)}
+function gotoQ(i){saveTime();qidx=i;renderQ();toggleMobileNav(false)}
 function nextQ(){saveTime();if(qidx<qs.length-1){qidx++;renderQ()}else confirmFinish()}
 function prevQ(){if(qidx>0){saveTime();qidx--;renderQ()}}
 function confirmFinish(){if(confirm("Hantar Bahagian A + B sekarang? Selepas dihantar, anda akan terus ke Bahagian C."))finishAB(false)}
@@ -116,9 +142,9 @@ function finishAB(auto){
  playAnnouncement("c",()=>countdown(startWriting));
 }
 function startWriting(){
- phase="c";show("writing");wTimer=2700;cStartedAt=Date.now();selectedTopic=0;renderWTimer();
- $("topics").innerHTML=writing.map((t,i)=>`<label class="topic ${i===0?"selected":""}" onclick="selectTopic(${i})"><input type="radio" name="topic" ${i===0?"checked":""}><b>${t.title}</b><span>${t.prompt}</span></label>`).join("");
- $("essay").value="";$("essay").oninput=updateWords;updateWords();
+ phase="c";show("writing");wTimer=2700;cStartedAt=Date.now();selectedTopic=0;const ws=JSON.parse(localStorage.getItem(`pksk-set${String(setNo).padStart(2,"0")}-writing`)||"null");if(ws){wTimer=typeof ws.wTimer==="number"?ws.wTimer:2700;selectedTopic=Number(ws.selectedTopic||0)}renderWTimer();
+ $("topics").innerHTML=writing.map((t,i)=>`<label class="topic ${i===selectedTopic?"selected":""}" onclick="selectTopic(${i})"><input type="radio" name="topic" ${i===selectedTopic?"checked":""}><b>${t.title}</b><span>${t.prompt}</span></label>`).join("");
+ $("essay").value=ws&&typeof ws.text==="string"?ws.text:"";$("essay").oninput=()=>{updateWords();localStorage.setItem(`pksk-set${String(setNo).padStart(2,"0")}-writing`,JSON.stringify({wTimer,selectedTopic,text:$('essay').value}))};updateWords();
  clearInterval(winterval);winterval=setInterval(()=>{wTimer--;renderWTimer();
   if(wTimer===600)playAudioOnly("ten");if(wTimer===300)playAudioOnly("five");
   if(wTimer<=0){clearInterval(winterval);playAudioOnly("end");finishWriting(true)}
@@ -160,6 +186,11 @@ function reviewB(){
    return `<article class="review-item ${status}"><div class="review-top"><b>${i+1}. ${escapeHtml(q.question)}</b><strong>${label}</strong></div><div class="review-answer"><span><b>Jawapan anda:</b> ${your}</span><span><b>Jawapan betul:</b> ${correct}</span></div><div class="review-explain"><b>Penerangan:</b> ${explain}</div></article>`;
  }).join("")+"</div>";
 }
+function syncProgressServer(score,extra){
+ const code=pkskLicense();if(!code)return;
+ const payload=Object.assign({code,deviceId:pkskDeviceId(),setNo:setNo,completed:true,score:Number(score||0)},extra||{});
+ pkskDashApi("saveProgress",payload,function(r){if(r&&r.ok){localStorage.setItem("pksk-last-server-sync",new Date().toISOString())}});
+}
 function progressHistory(score){
  let h=JSON.parse(localStorage.getItem("pksk-progress")||"[]");
  const found=h.find(x=>x.set===setNo); if(found)found.score=score; else h.push({set:setNo,score});
@@ -195,7 +226,7 @@ function goHome(){
  window.scrollTo({top:0,behavior:"smooth"});
 }
 async function nextSet(){
- if(setNo>=100){ goHome(); return; }
+ if(setNo>=50){ goHome(); return; }
  await selectSet(setNo+1);
  window.scrollTo({top:0,behavior:"smooth"});
 }
@@ -232,7 +263,9 @@ function buildResult(c){
  $("progress").innerHTML=progressHistory(bPct);
  show("result");
  localStorage.setItem(`pksk-set${String(setNo).padStart(2,"0")}-result`,JSON.stringify({answers,times,c,bCorrect,bPct,aIndex}));
- localStorage.removeItem(`pksk-set${String(setNo).padStart(2,"0")}-session`);
+ syncProgressServer(bPct,{aIndex,bCorrect,bAnswered,aAnswered,timeUsed:Math.round((abElapsed+cElapsed)/60),essayWords:c.words,completed:true});
+ localStorage.removeItem(`pksk-set${String(setNo).padStart(2,"0")}-session`);localStorage.removeItem(`pksk-set${String(setNo).padStart(2,"0")}-writing`);
 }
-const initialSet=Number(localStorage.getItem("pksk-selected-set")||1);
-load(initialSet).then(()=>updateSetUI()).catch(e=>console.error(e));
+const urlSet=Number(new URLSearchParams(location.search).get("set")||0);
+const initialSet=urlSet>=1&&urlSet<=50?urlSet:Number(localStorage.getItem("pksk-selected-set")||1);
+pkskRequireAccess(()=>load(initialSet).then(()=>updateSetUI()).catch(e=>console.error(e)));

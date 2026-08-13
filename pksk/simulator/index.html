@@ -66,17 +66,17 @@ html{background:var(--bg)}body{background:linear-gradient(180deg,#f8fafc 0,#eef3
  <header class="exam-top">
   <div class="exam-brand"><b>PKSK</b><span>SIMULASI <span class="set-label">SET 01</span></span></div>
   <div class="exam-title"><b id="partLabel">BAHAGIAN A + B</b><small id="partSub">100 SOALAN</small></div>
-  <div class="timer"><small>MASA BERBAKI</small><strong id="timer">90:00</strong></div>
+  <div class="timer"><small>MASA</small><strong id="timer">90:00</strong></div><button class="exam-dash" onclick="exitToDashboard()">⌂ DASHBOARD</button>
  </header>
  <div class="exam-layout">
   <main>
    <div class="crumb"><span id="sectionPill">BAHAGIAN A</span><span id="cat"></span></div>
-   <div class="q-head"><b id="qnum">Soalan 1 daripada 100</b><span id="saveStatus">● Jawapan disimpan</span></div>
+   <div class="q-head"><b id="qnum">Soalan 1 daripada 100</b><div class="q-tools"><span id="saveStatus">● Jawapan disimpan</span><button class="mobile-nav-btn" onclick="toggleMobileNav()">☷ SOALAN</button></div></div>
    <article class="q-card"><div id="qvisual"></div><div id="qtext" class="qtext"></div><div id="opts" class="options"></div></article>
    <div class="nav-row"><button id="prevBtn" class="ghost" onclick="prevQ()">← SEBELUM</button><button id="nextBtn" class="primary" onclick="nextQ()">SETERUSNYA →</button></div>
   </main>
-  <aside class="nav-card">
-   <div class="nav-head"><b>Navigasi</b><span id="answeredCount">0 / 100</span></div>
+  <aside class="nav-card" id="navCard">
+   <div class="nav-head"><b>Navigasi</b><span id="answeredCount">0 / 100</span><button class="nav-close" onclick="toggleMobileNav(false)">×</button></div>
    <div id="grid" class="q-grid"></div>
    <div class="legend"><span><i class="dot current"></i> Semasa</span><span><i class="dot done"></i> Dijawab</span><span><i class="dot"></i> Belum</span></div>
    <button class="finish-btn" onclick="confirmFinish()">HANTAR A + B</button>
@@ -114,7 +114,7 @@ html{background:var(--bg)}body{background:linear-gradient(180deg,#f8fafc 0,#eef3
   <div class="section-result"><div class="result-title"><span class="badge">✓</span><div><h2>Semakan Soalan B</h2><small>Semak jawapan, jawapan betul dan penerangan</small></div></div><div id="reviewB"></div></div>
   <div class="section-result"><div class="result-title"><span class="badge">📈</span><div><h2>Perkembangan Set</h2><small>Prestasi dari set ke set</small></div></div><div id="progress"></div></div>
   <div class="conclusion"><div class="eyebrow">RUMUSAN UNTUK LATIHAN SETERUSNYA</div><h2 id="conclusionTitle">Analisis anda</h2><p id="conclusion"></p></div>
-  <div class="result-actions">
+  <div class="result-actions"><button class="ghost" onclick="exitToDashboard()">⌂ DASHBOARD</button>
    <button class="ghost" onclick="goHome()">⌂ PILIH SET LAIN</button>
    <button class="start-btn" onclick="selectSet(setNo)">ULANG SET ↻</button>
    <button class="primary" onclick="nextSet()"><span id="nextSetLabel">SET SETERUSNYA →</span></button>
@@ -123,6 +123,6 @@ html{background:var(--bg)}body{background:linear-gradient(180deg,#f8fafc 0,#eef3
  </div>
 </section>
 </div>
-<script src="js/app.js?v=12"></script>
+<script src="js/app.js?v=13"></script>
 </body>
 </html>

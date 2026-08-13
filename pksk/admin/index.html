@@ -1,144 +1,27 @@
-<!doctype html>
-<html lang="ms"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0b1830"><title>PKSK Admin — Reqoo</title><link rel="stylesheet" href="./style.css"></head>
-<body>
-<header><a href="../" class="brand"><b>R</b> REQOO <span>/ PKSK ADMIN</span></a><button id="refresh">Muat Semula</button></header>
+<!doctype html><html lang="ms"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b1830"><title>PKSK Admin — Reqoo</title><link rel="stylesheet" href="./style.css"><style>.proofbox{margin:14px 0;padding:12px;border:1px solid #d9e1eb;border-radius:12px;background:#f8fafc;display:grid;gap:8px}.proofbox a{font-weight:800}.proofbox img{max-width:100%;max-height:320px;object-fit:contain;border-radius:8px}.muted{opacity:.6}</style></head><body>
+<header><a href="../" class="brand"><b>R</b> REQOO <span>/ PKSK ADMIN</span></a><div><button id="refresh">↻ Muat Semula</button></div></header>
 <main>
-<section id="login" class="card login"><div class="eyebrow">PKSK ADMIN</div><h1>Semakan pembayaran</h1><p>Masukkan token admin PKSK.</p><input id="token" type="password" placeholder="Token"><button id="loginBtn">MASUK</button><div id="loginMsg"></div></section>
+<section id="login" class="card login"><div class="eyebrow">PKSK ADMIN</div><h1>Dashboard kawalan</h1><p>Semak pembayaran, license, peranti dan prestasi customer.</p><input id="token" type="password" placeholder="Admin token"><button id="loginBtn" class="dark">MASUK</button><div id="loginMsg"></div></section>
 <section id="app" hidden>
-<div class="stats"><div><span>Jumlah Order</span><b id="total">0</b></div><div><span>Menunggu</span><b id="pending">0</b></div><div><span>Disahkan</span><b id="paid">0</b></div><div><span>License Aktif</span><b id="active">0</b></div></div>
-<div class="toolbar"><input id="search" placeholder="Cari order / nama / WhatsApp"><select id="filter"><option>Semua</option><option>PENDING</option><option>PAID</option><option>REJECTED</option></select></div>
-<div id="rows" class="list"></div>
-</section>
-</main>
-<div id="modal" class="modal" hidden style="display:none"><div class="modalbox"><button class="close" id="close">×</button><div id="detail"></div></div></div>
+<div class="hero"><div><div class="eyebrow">REQOO • PKSK</div><h1>Admin Dashboard</h1><p>Pantau keseluruhan sistem simulasi dalam satu tempat.</p></div><div class="live">● LIVE</div></div>
+<div class="stats"><div><span>Jumlah Order</span><b id="total">0</b></div><div><span>Menunggu</span><b id="pending">0</b></div><div><span>License Aktif</span><b id="active">0</b></div><div><span>Peranti Digunakan</span><b id="devices">0</b></div><div><span>Set Selesai</span><b id="completed">0</b></div><div><span>Bayaran Disahkan</span><b id="paid">0</b></div></div>
+<div class="toolbar"><input id="search" placeholder="Cari order / nama / WhatsApp / access code"><select id="view"><option value="licenses">License & Device</option><option value="orders">Order & Payment</option></select></div>
+<section id="licensesView" class="panel"><div class="panelhead"><div><h2>License customer</h2><p>Semak status, penggunaan peranti dan progress setiap customer.</p></div></div><div class="table"><div class="row head"><div>LICENSE</div><div>CUSTOMER</div><div>STATUS</div><div>DEVICE</div><div>PROGRESS</div></div><div id="licenseRows"></div></div></section>
+<section id="ordersView" class="panel" hidden><div class="panelhead"><div><h2>Order & pembayaran</h2><p>Sahkan atau tolak pembayaran seperti flow sedia ada.</p></div><select id="filter"><option>Semua</option><option>PENDING</option><option>PAID</option><option>REJECTED</option></select></div><div class="table"><div class="row orderhead"><div>ORDER</div><div>CUSTOMER</div><div>JUMLAH</div><div>STATUS</div><div>ACTION</div></div><div id="orderRows"></div></div></section>
+</section></main>
+<div id="modal" class="modal" hidden><div class="modalbox"><button class="close" id="close">×</button><div id="detail"></div></div></div>
 <script>
-const API_URL="https://script.google.com/macros/s/AKfycbwVFg5bxd2EsbLxUe2CsVHqRE-yVNraIJBSx8_pDsrGvrtTUiVdJwVdJwhJbbacxpci/exec";
-const $=id=>document.getElementById(id);
-const loginBox=$("login"), appBox=$("app"), tokenInput=$("token"), loginBtn=$("loginBtn"), loginMsg=$("loginMsg");
-const refreshBtn=$("refresh"), searchInput=$("search"), filterSelect=$("filter"), rowsBox=$("rows"), totalBox=$("total"), pendingBox=$("pending"), paidBox=$("paid"), activeBox=$("active");
-const modalBox=$("modal"), detailBox=$("detail"), closeBtn=$("close");
-let TOKEN="",ORDERS=[];
-
+const API_URL="https://script.google.com/macros/s/AKfycbwVFg5bxd2EsbLxUe2CsVHqRE-yVNraIJBSx8_pDsrGvrtTUiVdJwVdJwhJbbacxpci/exec";const $=id=>document.getElementById(id);let TOKEN="",DATA={orders:[],licenses:[]};
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
-
-function api(action,extra,done){
-  const cb="pkskAdminCb_"+Date.now()+"_"+Math.random().toString(36).slice(2);
-  window[cb]=function(result){
-    try{delete window[cb];}catch(e){}
-    script.remove();
-    done(result);
-  };
-  const params=new URLSearchParams({action,callback:cb,token:TOKEN,...extra});
-  const script=document.createElement("script");
-  script.src=API_URL+"?"+params.toString();
-  script.onerror=function(){
-    try{delete window[cb];}catch(e){}
-    script.remove();
-    done({ok:false,error:"Sambungan API gagal."});
-  };
-  document.body.appendChild(script);
-}
-
-function render(){
- const q=searchInput.value.trim().toLowerCase(),f=filterSelect.value;
- const arr=ORDERS.filter(o=>(f==="Semua"||o.status===f)&&(!q||[o.orderNo,o.name,o.phone].join(" ").toLowerCase().includes(q)));
- totalBox.textContent=ORDERS.length;
- pendingBox.textContent=ORDERS.filter(x=>x.status==="PENDING").length;
- paidBox.textContent=ORDERS.filter(x=>x.status==="PAID").length;
- activeBox.textContent=ORDERS.filter(x=>x.licenseStatus==="ACTIVE").length;
- rowsBox.innerHTML=arr.length?arr.map(o=>`<button class="row" data-i="${ORDERS.indexOf(o)}"><b>${esc(o.orderNo)}</b><span>${esc(o.name)}</span><span>${esc(o.phone)}</span><strong>RM${Number(o.amount||29).toFixed(2)}</strong><em class="${o.status}">${esc(o.status)}</em></button>`).join(""):'<div class="empty">Tiada order.</div>';
-}
-
-function load(done){
- api("listPKSKOrders",{},function(j){
-   if(!j.ok){ if(done)done(j); return; }
-   ORDERS=j.orders||[];
-   render();
-   if(done)done(j);
- });
-}
-
-loginBtn.addEventListener("click",function(){
- TOKEN=tokenInput.value.trim();
- if(!TOKEN){loginMsg.textContent="Token diperlukan.";return;}
- loginMsg.textContent="Menyemak...";
- load(function(j){
-   if(!j.ok){loginMsg.textContent=j.error||"Gagal masuk.";return;}
-   loginBox.hidden=true;
-   appBox.hidden=false;
-   loginMsg.textContent="";
- });
-});
-
-refreshBtn.addEventListener("click",function(){load(function(j){if(!j.ok)alert(j.error||"Gagal memuatkan order.");})});
-searchInput.addEventListener("input",render);
-filterSelect.addEventListener("change",render);
-closeBtn.addEventListener("click",function(){modalBox.hidden=true;modalBox.style.display="none";});
-
-rowsBox.addEventListener("click",function(e){
- const button=e.target.closest(".row"); if(!button)return;
- const o=ORDERS[Number(button.dataset.i)];
- if(!o)return;
- detailBox.innerHTML=`<div class="eyebrow">ORDER PKSK</div><h2>${esc(o.orderNo)}</h2>
- <p><b>Nama:</b> ${esc(o.name)}</p>
- <p><b>WhatsApp:</b> ${esc(o.phone)}</p>
- <p><b>Jumlah:</b> RM${Number(o.amount||29).toFixed(2)}</p>
- <p><b>Rujukan:</b> ${esc(o.ref||"-")}</p>
- <p><b>Status:</b> ${esc(o.status)}</p>
- <div class="actions"><button id="verifySendBtn">✓ SAHKAN & HANTAR WHATSAPP</button><button class="reject" id="rejectBtn">TOLAK</button></div>
- <div id="license"></div>`;
- modalBox.hidden=false;modalBox.style.display="grid";
- $("verifySendBtn").addEventListener("click",function(){verifyAndWhatsApp(o);});
- $("rejectBtn").addEventListener("click",function(){rejectOrder(o.orderNo);});
-});
-
-function verifyAndWhatsApp(o){
-  if(!confirm("Sahkan bayaran RM"+Number(o.amount||29).toFixed(2)+" dan buka WhatsApp untuk customer ini?")) return;
-
-  const btn=$("verifySendBtn");
-  btn.disabled=true;
-  btn.textContent="MEMPROSES...";
-
-  api("verifyPKSKOrder",{orderNo:o.orderNo},function(j){
-    if(!j.ok){
-      btn.disabled=false;
-      btn.textContent="✓ SAHKAN & HANTAR WHATSAPP";
-      alert(j.error||"Gagal sahkan bayaran.");
-      return;
-    }
-
-    const code=j.accessCode;
-    const accessUrl="https://reqoo.co/pksk/access/";
-    const phone=String(o.phone||"").replace(/\D/g,"");
-    const waPhone=phone.startsWith("0")?"60"+phone:phone;
-
-    const text=
-      "✅ Pembayaran PKSK telah disahkan.\n\n"+
-      "🔐 Access Code: "+code+"\n\n"+
-      "🎯 Akses simulasi:\n"+accessUrl+"\n\n"+
-      "Masukkan Access Code tersebut untuk mula menggunakan simulasi PKSK.\n\n"+
-      "Terima kasih kerana memilih REQOO.";
-
-    localStorage.setItem("pksk_last_whatsapp_order",o.orderNo);
-
-    $("license").innerHTML=
-      '<div class="license"><b>ACCESS CODE</b><strong>'+esc(code)+'</strong>'+
-      '<small>WhatsApp dibuka. Tekan Send untuk hantar kepada customer.</small></div>';
-
-    btn.textContent="✓ DISAHKAN";
-    btn.disabled=true;
-
-    window.location.href="https://wa.me/"+waPhone+"?text="+encodeURIComponent(text);
-  });
-}
-
-function rejectOrder(orderNo){
- if(!confirm("Tolak pembayaran ini?"))return;
- api("rejectPKSKOrder",{orderNo},function(j){
-   if(!j.ok){alert(j.error||"Gagal.");return;}
-   modalBox.hidden=true;
-   load();
- });
-}
+function api(action,extra,done){const cb="pkskAdmin_"+Date.now()+"_"+Math.floor(Math.random()*99999),sc=document.createElement("script");window[cb]=r=>{delete window[cb];sc.remove();done(r)};sc.onerror=()=>{delete window[cb];sc.remove();done({ok:false,error:"Sambungan API gagal."})};sc.src=API_URL+"?"+new URLSearchParams({action,callback:cb,token:TOKEN,...extra});document.body.appendChild(sc)}
+function load(done){api("getPKSKAdminDashboard",{},j=>{if(!j.ok){done&&done(j);return}DATA=j;render();done&&done(j)})}
+function render(){const s=DATA.summary||{};$('total').textContent=s.orders||0;$('pending').textContent=s.pending||0;$('active').textContent=s.active||0;$('devices').textContent=s.devices||0;$('completed').textContent=s.completedSets||0;$('paid').textContent=s.paid||0;renderLicenses();renderOrders()}
+function renderLicenses(){const q=$('search').value.trim().toLowerCase();const a=(DATA.licenses||[]).filter(x=>!q||JSON.stringify(x).toLowerCase().includes(q));$('licenseRows').innerHTML=a.length?a.map((x,i)=>`<button class="row" data-code="${esc(x.licenseCode)}"><div><b>${esc(x.licenseCode)}</b><small>${esc(x.orderNo)}</small></div><div><b>${esc(x.name)}</b><small>${esc(x.phone)}</small></div><div><em class="status ${x.status}">${esc(x.status)}</em></div><div><b>${x.deviceCount}/${x.maxDevices}</b><small>${x.deviceCount>=x.maxDevices?'Had penuh':'Slot tersedia'}</small></div><div><b>${x.setsCompleted}/50</b><small>${x.average?x.average+'% purata':'Belum ada skor'}</small></div></button>`).join(''):'<div class="empty">Tiada license.</div>'}
+function renderOrders(){const q=$('search').value.trim().toLowerCase(),f=$('filter').value;const a=(DATA.orders||[]).filter(x=>(f==='Semua'||x.status===f)&&(!q||JSON.stringify(x).toLowerCase().includes(q)));$('orderRows').innerHTML=a.length?a.map(x=>`<div class="row"><div><b>${esc(x.orderNo)}</b><small>${esc(x.ref||'-')}</small></div><div><b>${esc(x.name)}</b><small>${esc(x.phone)}</small></div><div><b>RM${Number(x.amount||0).toFixed(2)}</b></div><div><em class="status ${x.status}">${esc(x.status)}</em></div><div>${x.proofUrl?`<a class="mini" target="_blank" rel="noopener" href="${esc(x.proofUrl)}">📎 BUKTI</a>`:'<span class="mini muted">TIADA BUKTI</span>'} ${x.status==='PENDING'?`<button class="mini verify" onclick='verifyOrder(${JSON.stringify(x.orderNo)})'>SAHKAN</button><button class="mini reject" onclick='rejectOrder(${JSON.stringify(x.orderNo)})'>TOLAK</button>`:x.accessCode?`<button class="mini" onclick='openLicense(${JSON.stringify(x.accessCode)})'>LICENSE</button>`:''}</div></div>`).join(''):'<div class="empty">Tiada order.</div>'}
+function openLicense(code){api("getPKSKLicense",{code},j=>{if(!j.ok)return alert(j.error||'Gagal');const l=j.license;const d=j.devices||[];const p=j.progress||[];const a=j.activity||[];const ord=(DATA.orders||[]).find(x=>x.accessCode===l.licenseCode)||{};$('detail').innerHTML=`<div class="eyebrow">PKSK LICENSE</div><h2>${esc(l.licenseCode)}</h2><div class="detailgrid"><div><span>Customer</span><b>${esc(l.name)}</b></div><div><span>Status</span><b class="${l.status==='ACTIVE'?'good':'bad'}">${esc(l.status)}</b></div><div><span>Device</span><b>${l.deviceCount}/${l.maxDevices}</b></div><div><span>Set selesai</span><b>${p.filter(x=>x.completed).length}/50</b></div></div>${ord.proofUrl?`<div class="proofbox"><b>📎 Bukti pembayaran</b><a target="_blank" rel="noopener" href="${esc(ord.proofUrl)}">Buka bukti ↗</a><img src="https://drive.google.com/thumbnail?id=${encodeURIComponent(ord.proofDriveId||'')}&sz=w1000" alt="Bukti pembayaran" onerror="this.style.display='none'"></div>`:''}<h3>Peranti</h3><div class="devices">${d.length?d.map(x=>`<div class="device"><b>● ${esc(x.label)}</b><small>${esc(x.deviceId)}</small><small>Last active: ${esc(x.lastSeen)}</small></div>`).join(''):'<div class="empty">Tiada peranti.</div>'}</div><h3>Progress</h3><div class="progress">${p.length?p.map(x=>`<div><span>Set ${String(x.setNo).padStart(2,'0')}</span><i><b style="width:${Math.min(100,x.score||0)}%"></b></i><strong>${x.completed?x.score+'%':'Dalam latihan'}</strong></div>`).join(''):'<div class="empty">Belum ada rekod.</div>'}</div><h3>Aktiviti</h3><div class="activity">${a.slice(0,10).map(x=>`<div><b>${esc(x.message)}</b><small>${esc(x.createdAt)}</small></div>`).join('')||'<div class="empty">Belum ada aktiviti.</div>'}</div><div class="actions"><button id="resetBtn" class="dark">RESET SEMUA DEVICE</button><button id="blockBtn" class="reject">SEKAT LICENSE</button><button id="close2" class="light">TUTUP</button></div>`;$('modal').hidden=false;$('resetBtn').onclick=()=>resetDevices(l.licenseCode);$('blockBtn').onclick=()=>setStatus(l.licenseCode,'BLOCKED');$('close2').onclick=()=>{$('modal').hidden=true}})}
+function verifyOrder(orderNo){if(!confirm('Sahkan bayaran dan jana Access Code?'))return;api('verifyPKSKOrder',{orderNo},j=>{if(!j.ok)return alert(j.error||'Gagal');const o=(DATA.orders||[]).find(x=>x.orderNo===orderNo);const phone=String(o?.phone||'').replace(/\D/g,'');const wa=phone.startsWith('0')?'60'+phone:phone;const code=j.accessCode;const msg='✅ Pembayaran PKSK telah disahkan.\n\n🔐 Access Code: '+code+'\n\n🎯 Akses: https://reqoo.co/pksk/access/\n\nMasukkan Access Code tersebut untuk buka dashboard PKSK.\n\nTerima kasih kerana memilih REQOO.';window.open('https://wa.me/'+wa+'?text='+encodeURIComponent(msg),'_blank');load()})}
+function rejectOrder(orderNo){if(!confirm('Tolak pembayaran ini?'))return;api('rejectPKSKOrder',{orderNo},j=>{if(!j.ok)return alert(j.error||'Gagal');load()})}
+function resetDevices(code){if(!confirm('Reset semua peranti untuk license ini?'))return;api('resetDevices',{code},j=>{if(!j.ok)return alert(j.error||'Gagal');$('modal').hidden=true;load()})}
+function setStatus(code,status){if(!confirm(status==='BLOCKED'?'Sekat license ini?':'Aktifkan license ini?'))return;api('setLicenseStatus',{code,status},j=>{if(!j.ok)return alert(j.error||'Gagal');$('modal').hidden=true;load()})}
+$('loginBtn').onclick=()=>{TOKEN=$('token').value.trim();if(!TOKEN){$('loginMsg').textContent='Token diperlukan.';return}$('loginMsg').textContent='Menyemak...';load(j=>{if(!j.ok){$('loginMsg').textContent=j.error||'Gagal masuk.';return}$('login').hidden=true;$('app').hidden=false;$('loginMsg').textContent=''})};$('refresh').onclick=()=>{if(TOKEN)load()};$('search').oninput=()=>{renderLicenses();renderOrders()};$('filter').onchange=renderOrders;$('view').onchange=()=>{$('licensesView').hidden=$('view').value!=='licenses';$('ordersView').hidden=$('view').value!=='orders'};$('close').onclick=()=>{$('modal').hidden=true};$('licenseRows').onclick=e=>{const b=e.target.closest('.row');if(b)openLicense(b.dataset.code)};
 </script></body></html>
