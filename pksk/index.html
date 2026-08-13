@@ -4,39 +4,87 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b1830">
-  <title>PKSK Simulasi 100 Set — Reqoo</title>
-  <meta name="description" content="PKSK Simulasi 100 Set — latihan Bahagian A+B dan C, semakan jawapan, graf kemajuan dan pengalaman menjawab seperti ujian berkomputer.">
+  <title>PKSK 50 — Simulasi Latihan PKSK | Reqoo</title>
+  <meta name="description" content="PKSK 50 — 50 set latihan simulasi berkomputer untuk membantu calon membuat persediaan lebih awal sebelum PKSK.">
   <link rel="stylesheet" href="./style.css">
 
-<style id="urgent-pksk-ui">
-.pksk-urgency{margin:0 auto 20px;max-width:1040px;padding:0 22px}
-.pksk-urgency-inner{background:linear-gradient(135deg,#fff7e8,#fff);border:1px solid #f0d39a;border-radius:14px;padding:13px 16px;display:flex;align-items:center;justify-content:center;gap:10px;color:#6e4a13;font-size:12px;font-weight:800;text-align:center;box-shadow:0 8px 24px rgba(80,55,10,.06)}
-.pksk-urgency-inner .pulse{width:8px;height:8px;border-radius:50%;background:#d98b28;box-shadow:0 0 0 5px rgba(217,139,40,.12);animation:pkskPulse 1.5s infinite}
-@keyframes pkskPulse{50%{transform:scale(1.35);opacity:.65}}
-.pksk-sales{margin:22px 0 26px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.pksk-sales-card{background:#f7fafc;border:1px solid #e1e8f0;border-radius:12px;padding:13px 12px;text-align:center}
-.pksk-sales-card b{display:block;color:#10233f;font-size:12px;margin-bottom:4px}
-.pksk-sales-card span{font-size:10px;color:#68778b;line-height:1.45}
-.pksk-price{display:flex;align-items:center;gap:12px;margin:22px 0 8px;padding:15px 17px;border-radius:12px;background:#f5f8fb;border:1px solid #dce5ee}
-.pksk-price strong{font-size:28px;color:#10233f}
-.pksk-price small{color:#69788c;font-size:10px;line-height:1.45}
-.pksk-buy-wrap{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:14px}
-.pksk-buy-note{font-size:10px;color:#718096}
-.pksk-cta{position:relative;box-shadow:0 10px 24px rgba(16,35,63,.18)!important;transform:translateY(0);transition:.15s}
-.pksk-cta:hover{transform:translateY(-2px)}
-@media(max-width:700px){.pksk-sales{grid-template-columns:1fr}.pksk-urgency{padding:0 14px}.pksk-urgency-inner{font-size:11px}.pksk-buy-wrap{align-items:flex-start}}
+<style id="pksk-urgent-landing">
+:root{
+  --navy:#140b12;
+  --navy2:#2b0e16;
+  --ink:#1a1015;
+  --muted:#685862;
+  --line:#ead9dc;
+  --soft:#fff4f1;
+  --gold:#ffd21a;
+  --danger:#e11d2e;
+  --orange:#ff7a00;
+}
+body{background:#fff8f6}
+.site-header{background:rgba(20,11,18,.97);border-bottom:1px solid rgba(255,255,255,.12)}
+.brand{color:#fff}
+.brand-mark{background:#e11d2e}
+.header-link{color:#fff;border-color:rgba(255,255,255,.25);background:#e11d2e}
+.hero{
+  max-width:none;
+  padding:72px max(22px,calc((100% - 1180px)/2)) 55px;
+  grid-template-columns:minmax(0,1fr) minmax(360px,.72fr);
+  gap:35px;
+  background:
+    radial-gradient(circle at 85% 20%,rgba(255,122,0,.22),transparent 30%),
+    linear-gradient(135deg,#180a10 0%,#390d18 56%,#8f151b 100%);
+  color:#fff;
+  position:relative;
+  overflow:hidden;
+}
+.hero:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent 0 24px,rgba(255,255,255,.025) 25px 26px);pointer-events:none}
+.hero>*{position:relative;z-index:1}
+.eyebrow,.section-kicker{color:#ffcc18}
+.hero h1{font-weight:900;text-transform:uppercase;letter-spacing:-.055em;text-shadow:0 5px 0 rgba(0,0,0,.2)}
+.hero h1 span{color:#fff}
+.number-accent{color:#ffd21a!important;text-shadow:0 4px 0 #9f1b21}
+.hero-copy{color:#ffe7e3;max-width:720px;font-size:18px}
+.old-price{color:#e9b8b8}
+.price{color:#ffd21a;font-size:48px}
+.price-note{color:#fff;font-weight:800;background:#e11d2e;padding:8px 11px;border-radius:8px}
+.primary-btn{background:linear-gradient(90deg,#ffd21a,#ff8a00);color:#1b0d10;font-weight:950;box-shadow:0 12px 30px rgba(255,103,0,.35);border:2px solid #fff0a6}
+.primary-btn:hover{transform:translateY(-2px);filter:brightness(1.05)}
+.micro{color:#ffd6d0}
+.proof{margin-top:0;padding-top:20px}
+.stat{border-color:#efc8ca;background:#fff}
+.stat strong{color:#d61f2f}
+.urgent-stat{border:2px solid #ffb000;box-shadow:0 7px 22px rgba(225,29,46,.10)}
+.section-kicker{font-weight:900}
+.feature-grid article{border-color:#efd8d9;box-shadow:0 8px 24px rgba(78,18,25,.05)}
+.icon{background:#fff0ee;color:#d61f2f}
+.dark{background:linear-gradient(135deg,#170b11,#3b0d18);position:relative;overflow:hidden}
+.dark:after{content:"";position:absolute;inset:auto -10% -55% 30%;height:280px;background:radial-gradient(circle,rgba(255,112,0,.25),transparent 65%);pointer-events:none}
+.dark h2{color:#fff}
+.dark-copy{color:#f2cdd0;max-width:700px}
+.levels div{border-color:rgba(255,210,26,.3);background:rgba(255,255,255,.055)}
+.levels div:last-child{border-color:#ffd21a;background:rgba(255,210,26,.12)}
+.levels b{color:#ffd21a}
+.parent{background:#fff8f6}
+.report-card{border-color:#efd8d9}
+.cta{background:linear-gradient(135deg,#240a12,#8d111c 65%,#d61f2f);box-shadow:0 18px 50px rgba(130,14,28,.25);border:2px solid #ffb000}
+.cta .cta-badge{display:inline-block;background:#ffd21a;color:#210b10;padding:7px 12px;border-radius:999px}
+.cta-price{color:#ffd21a;font-size:48px}
+.primary-btn.light{background:#ffd21a;color:#210b10}
+.access button{background:#e11d2e}
+.panic-visual{align-self:center;position:relative;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:24px;padding:12px;box-shadow:0 20px 55px rgba(0,0,0,.25)}
+.panic-visual svg{display:block;width:100%;height:auto;border-radius:18px}
+.panic-badge{position:absolute;z-index:2;top:24px;right:24px;background:#ffd21a;color:#2a0c12;padding:8px 12px;border-radius:999px;font-size:11px;font-weight:950;box-shadow:0 8px 20px rgba(0,0,0,.2)}
+.panic-caption{font-size:13px;color:#ffe3df;padding:10px 8px 2px;text-align:center}
+.panic-caption b{color:#ffd21a}
+@media(max-width:760px){
+  .hero{padding:48px 20px 35px;display:block}
+  .panic-visual{margin-top:30px}
+  .proof{padding:15px 20px 0}
+}
 </style>
 
 </head>
 <body>
-
-<div class="pksk-urgency">
-  <div class="pksk-urgency-inner">
-    <i class="pulse"></i>
-    <span>PKSK semakin dekat — jangan tunggu saat akhir. Mula latihan sekarang dan bina momentum sebelum hari sebenar.</span>
-  </div>
-</div>
-
   <header class="site-header">
     <a class="brand" href="/" aria-label="Reqoo">
       <span class="brand-mark">R</span><span>REQOO</span>
@@ -46,8 +94,8 @@
 
   <main>
     <section class="hero">
-      <div class="eyebrow">SIMULASI LATIHAN • TINGKATAN 1</div>
-      <h1>PKSK 100 Set.<br><span>Latihan yang lebih tersusun.</span></h1>
+      <div class="eyebrow">PKSK 50 • PERSEDIAAN SEMAKIN DEKAT</div>
+      <h1>PKSK <span class="number-accent">50</span> Set.<br><span>Jangan tunggu saat akhir.</span></h1>
       <p class="hero-copy">Latihan berkomputer dengan masa, navigasi, semakan setiap soalan dan rekod kemajuan — untuk membantu calon berlatih sebelum hari PKSK.</p>
 
       <div class="price-row">
@@ -55,24 +103,72 @@
           <div class="old-price">Harga biasa RM60</div>
           <div class="price">RM29</div>
         </div>
-        <div class="price-note">Promosi pecutan terakhir</div>
+        <div class="price-note">Harga latihan • RM29</div>
       </div>
 
-      
-<div class="pksk-price">
-  <strong>RM29</strong>
-  <small>1 akses latihan PKSK<br>Set 01–50 • maksimum 2 peranti</small>
+      <a class="primary-btn" id="buyBtn" href="/pksk/payment/">MULA LATIHAN SEKARANG <span>→</span></a>
+      <p class="micro">⚠️ PKSK dah dekat — jangan tunggu last minute • Telefon + PC</p>
+    
+
+<div class="panic-visual" aria-label="Ibu bapa dan anak sedang bersedia menghadapi PKSK">
+  <div class="panic-badge">⚠ PKSK DAH DEKAT</div>
+  <svg viewBox="0 0 620 470" role="img" aria-hidden="true">
+    <defs>
+      <linearGradient id="bgG" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#fff1ed"/>
+        <stop offset="1" stop-color="#ffd8cf"/>
+      </linearGradient>
+      <linearGradient id="deskG" x1="0" x2="1">
+        <stop offset="0" stop-color="#35121a"/>
+        <stop offset="1" stop-color="#6b1d1d"/>
+      </linearGradient>
+    </defs>
+    <rect x="8" y="8" width="604" height="454" rx="30" fill="url(#bgG)"/>
+    <circle cx="530" cy="85" r="42" fill="#fff" stroke="#ef4444" stroke-width="8"/>
+    <line x1="530" y1="85" x2="530" y2="58" stroke="#111827" stroke-width="6" stroke-linecap="round"/>
+    <line x1="530" y1="85" x2="550" y2="96" stroke="#111827" stroke-width="6" stroke-linecap="round"/>
+    <text x="468" y="145" font-size="18" font-weight="800" fill="#b91c1c">MASA!</text>
+
+    <!-- parent -->
+    <circle cx="165" cy="185" r="55" fill="#9b5a3c"/>
+    <path d="M112 174 Q165 115 218 174 Q195 144 165 145 Q135 144 112 174" fill="#1f2937"/>
+    <path d="M98 305 Q103 226 165 222 Q227 226 232 305Z" fill="#172033"/>
+    <path d="M118 178 Q98 188 93 215 M212 178 Q232 188 237 215" fill="none" stroke="#9b5a3c" stroke-width="16" stroke-linecap="round"/>
+    <path d="M139 190 Q150 184 159 190 M171 190 Q180 184 191 190" fill="none" stroke="#111827" stroke-width="7" stroke-linecap="round"/>
+    <path d="M151 215 Q165 205 179 215" fill="none" stroke="#7f1d1d" stroke-width="7" stroke-linecap="round"/>
+
+    <!-- child -->
+    <circle cx="398" cy="215" r="48" fill="#c47a55"/>
+    <path d="M350 208 Q398 150 446 208 Q428 178 398 179 Q368 178 350 208" fill="#1f2937"/>
+    <path d="M337 330 Q343 257 398 252 Q453 257 459 330Z" fill="#0f4c5c"/>
+    <path d="M366 222 Q376 216 385 222 M410 222 Q420 216 430 222" fill="none" stroke="#111827" stroke-width="6" stroke-linecap="round"/>
+    <path d="M383 246 Q398 233 413 246" fill="none" stroke="#7f1d1d" stroke-width="7" stroke-linecap="round"/>
+    <path d="M352 184 L329 158 M444 184 L467 158" stroke="#9b5a3c" stroke-width="14" stroke-linecap="round"/>
+
+    <!-- desk/laptop -->
+    <path d="M60 355 L560 355 L595 432 L25 432Z" fill="url(#deskG)"/>
+    <rect x="215" y="270" width="200" height="120" rx="12" fill="#111827" stroke="#f59e0b" stroke-width="7"/>
+    <rect x="230" y="285" width="170" height="90" rx="7" fill="#fef3c7"/>
+    <text x="250" y="320" font-size="24" font-weight="900" fill="#b91c1c">PKSK 50</text>
+    <text x="249" y="350" font-size="16" font-weight="800" fill="#111827">LATIH SEKARANG!</text>
+    <rect x="235" y="390" width="160" height="10" rx="5" fill="#111827"/>
+
+    <!-- warning papers -->
+    <rect x="72" y="322" width="125" height="76" rx="8" fill="#fff" transform="rotate(-8 72 322)"/>
+    <text x="83" y="348" font-size="16" font-weight="900" fill="#dc2626" transform="rotate(-8 83 348)">JANGAN</text>
+    <text x="83" y="370" font-size="16" font-weight="900" fill="#dc2626" transform="rotate(-8 83 370)">TUNGGU!</text>
+    <path d="M520 245 l18 35 20 6 -15 12 4 21 -19 -10 -19 10 4 -21 -15 -12 20 -6Z" fill="#f59e0b"/>
+  </svg>
+  <div class="panic-caption">Ibu bapa gelabah? <b>Jangan tunggu last minute.</b></div>
 </div>
 
-<a class="primary-btn" id="buyBtn" href="/pksk/payment/">MULA LATIHAN SEKARANG <span>→</span></a>
-      <p class="micro">Akses digital • Mesra telefon & PC</p>
-    </section>
+</section>
 
     <section class="proof">
-      <div class="stat"><strong>100</strong><span>Set latihan</span></div>
-      <div class="stat"><strong>A+B</strong><span>100 soalan / 90 minit</span></div>
-      <div class="stat"><strong>C</strong><span>Penulisan / 45 minit</span></div>
-      <div class="stat"><strong>10</strong><span>Tahap kesukaran</span></div>
+      <div class="stat urgent-stat"><strong>50</strong><span>Set latihan PKSK</span></div>
+      <div class="stat"><strong>A+B</strong><span>Soalan objektif</span></div>
+      <div class="stat"><strong>C</strong><span>Penulisan</span></div>
+      <div class="stat urgent-stat"><strong>RM29</strong><span>Akses latihan</span></div>
     </section>
 
     <section class="section">
@@ -91,27 +187,23 @@
     </section>
 
     <section class="section dark">
-      <div class="section-kicker">DALAM SATU AKSES</div>
-      <h2>50 set untuk latihan berperingkat.</h2>
+      <div class="section-kicker">PKSK 50</div>
+      <h2>50 set. Latihan berperingkat. Mula sekarang.</h2>
+      <p class="dark-copy">Set disusun daripada tahap lebih mudah kepada lebih mencabar supaya calon boleh bina keyakinan secara berperingkat.</p>
       <div class="levels">
-        <div><b>01–10</b><span>Tahap 1</span></div>
-        <div><b>11–20</b><span>Tahap 2</span></div>
-        <div><b>21–30</b><span>Tahap 3</span></div>
-        <div><b>31–40</b><span>Tahap 4</span></div>
-        <div><b>41–50</b><span>Tahap 5</span></div>
-        <div><b>51–60</b><span>Tahap 6</span></div>
-        <div><b>61–70</b><span>Tahap 7</span></div>
-        <div><b>71–80</b><span>Tahap 8</span></div>
-        <div><b>81–90</b><span>Tahap 9</span></div>
-        <div><b>91–100</b><span>Tahap 10</span></div>
+        <div><b>01–10</b><span>Asas</span></div>
+        <div><b>11–20</b><span>Pengukuhan</span></div>
+        <div><b>21–30</b><span>Sederhana</span></div>
+        <div><b>31–40</b><span>Mencabar</span></div>
+        <div><b>41–50</b><span>Persediaan akhir</span></div>
       </div>
     </section>
 
     <section class="section parent">
       <div>
         <div class="section-kicker">UNTUK IBU BAPA</div>
-        <h2>Bukan hanya tahu markah.</h2>
-        <p class="section-copy">Selepas selesai set, laporan membantu melihat bahagian yang kuat, bahagian yang lemah dan perkembangan prestasi dari satu set ke set berikutnya.</p>
+        <h2>Ibu bapa pun tak perlu tunggu saat akhir.</h2>
+        <p class="section-copy">Masa semakin singkat. Gunakan latihan ini untuk melihat perkembangan anak, kenal pasti bahagian yang masih lemah dan bina rutin latihan sebelum hari PKSK.</p>
       </div>
       <div class="report-card">
         <div class="report-title">RINGKASAN PRESTASI</div>
@@ -124,10 +216,10 @@
     </section>
 
     <section class="cta" id="beli">
-      <div class="cta-badge">PROMOSI PECUTAN TERAKHIR</div>
-      <h2>50 set latihan.<br>Satu akses.</h2>
+      <div class="cta-badge">⚠️ PKSK DAH DEKAT</div>
+      <h2>PKSK 50.<br>Jangan tunggu saat akhir.</h2>
       <div class="cta-price"><span>RM60</span> RM29</div>
-      <p>Bayaran dibuat melalui sistem pesanan Reqoo. Selepas pesanan disahkan, akses akan diberikan mengikut sistem penghantaran digital.</p>
+      <p>Mula dengan RM29 sahaja. Bayaran melalui QR, kemudian akses diberikan selepas pembayaran disahkan.</p>
       <a class="primary-btn light" id="buyBtn2" href="/pksk/payment/">DAPATKAN AKSES SEKARANG <span>→</span></a>
       <p class="micro light-text">Ini ialah simulasi latihan, bukan peperiksaan rasmi KPM dan bukan salinan soalan sebenar.</p>
     </section>
