@@ -8,9 +8,9 @@
 <main>
 <div class="steps"><strong>1 Bayar</strong><i></i><strong>2 Hantar Bukti</strong><i></i><span>3 Akses</span></div>
 <section class="card">
-<div class="eyebrow">PKSK 50 • SIMULASI LATIHAN</div><h1>Bayaran RM29</h1>
+<div class="eyebrow">PKSK 50 • SIMULASI LATIHAN</div><h1>Bayaran RM35</h1>
 <p class="muted">Imbas QR, buat bayaran dan <b>lampirkan bukti pembayaran</b> terus di sini.</p>
-<div class="amount"><span>Jumlah perlu dibayar</span><b>RM29.00</b></div>
+<div class="amount"><span>Jumlah perlu dibayar</span><b>RM35.00</b></div>
 <div class="qr"><img src="./assets/maybank-qr.jpeg" alt="QR Pay Maybank Ab Art Trading"><b>AB ART TRADING</b></div>
 <div class="notice"><b>Selepas bayaran</b><ol><li>Simpan screenshot / bukti transaksi.</li><li>Isi nama dan WhatsApp.</li><li>Pilih gambar bukti pembayaran.</li><li>Tekan <b>HANTAR BUKTI</b>. Selepas berjaya dihantar, butang WhatsApp akan muncul.</li></ol></div>
 <form id="form">
@@ -34,9 +34,14 @@
 <script>
 const API_URL="https://script.google.com/macros/s/AKfycbwVFg5bxd2EsbLxUe2CsVHqRE-yVNraIJBSx8_pDsrGvrtTUiVdJwVdJwhJbbacxpci/exec";
 const WHATSAPP_NUMBER="60165192803";
-const form=document.getElementById("form"), submitBtn=document.getElementById("submitBtn"), msg=document.getElementById("msg");
-const proofInput=document.getElementById("proof"), preview=document.getElementById("preview"), waBox=document.getElementById("whatsappBox"), waBtn=document.getElementById("whatsappBtn");
+const PRICE=35;
+const form=document.getElementById("form"),submitBtn=document.getElementById("submitBtn"),msg=document.getElementById("msg");
+const proofInput=document.getElementById("proof"),preview=document.getElementById("preview"),waBox=document.getElementById("whatsappBox"),waBtn=document.getElementById("whatsappBtn");
+const refBadge=document.getElementById("refBadge");
 let proofData="",proofName="";
+const urlParams=new URLSearchParams(location.search);
+const referralCode=(urlParams.get("ref")||"").trim().toUpperCase().replace(/[^A-Z0-9_-]/g,"").slice(0,30);
+if(referralCode){refBadge.hidden=false;refBadge.textContent="Referral: "+referralCode;}
 function makeId(){return "PKSK-"+Date.now().toString(36).toUpperCase()+"-"+Math.random().toString(36).slice(2,6).toUpperCase();}
 function compressImage(file){
  return new Promise((resolve,reject)=>{
@@ -49,40 +54,80 @@ function compressImage(file){
        const max=1600,scale=Math.min(1,max/Math.max(img.width,img.height));
        const c=document.createElement("canvas");c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));
        const ctx=c.getContext("2d");ctx.drawImage(img,0,0,c.width,c.height);
-       // JPEG keeps the upload small and readable for payment screenshots.
        resolve({data:c.toDataURL("image/jpeg",.82),name:file.name.replace(/\.[^.]+$/i,"_")+"jpg"});
-     };img.onerror=()=>reject(new Error("Gambar tidak dapat dibaca."));img.src=reader.result;
-   };reader.onerror=()=>reject(new Error("Gagal membaca gambar."));reader.readAsDataURL(file);
+     };
+     img.onerror=()=>reject(new Error("Gambar tidak dapat dibaca."));
+     img.src=reader.result;
+   };
+   reader.onerror=()=>reject(new Error("Gagal membaca gambar."));
+   reader.readAsDataURL(file);
  });
 }
 proofInput.addEventListener("change",async()=>{
  proofData="";proofName="";preview.hidden=true;preview.innerHTML="";
  const file=proofInput.files&&proofInput.files[0];if(!file)return;
  try{
-   const out=await compressImage(file);proofData=out.data;proofName=out.name;
-   preview.innerHTML='<img src="'+proofData+'" alt="Pratonton bukti pembayaran"><span>✓ Bukti dipilih: '+file.name+'</span>';preview.hidden=false;
+   const o=await compressImage(file);proofData=o.data;proofName=o.name;
+   preview.innerHTML='<img src="'+proofData+'" alt="Pratonton bukti pembayaran"><span>✓ Bukti dipilih: '+file.name+'</span>';
+   preview.hidden=false;
  }catch(e){msg.textContent=e.message;proofInput.value="";}
 });
-form.addEventListener("submit",async(e)=>{
+function jsonp(action,data,timeout=12000){
+ return new Promise((resolve,reject)=>{
+   const cb="pkskPay_"+Date.now()+"_"+Math.floor(Math.random()*99999);
+   const sc=document.createElement("script");
+   let done=false;
+   const finish=(r,err)=>{
+     if(done)return;done=true;
+     clearTimeout(t);delete window[cb];sc.remove();
+     err?reject(err):resolve(r);
+   };
+   window[cb]=r=>finish(r);
+   sc.onerror=()=>finish(null,new Error("Sambungan server gagal."));
+   sc.src=API_URL+"?"+new URLSearchParams({action,callback:cb,...data});
+   document.body.appendChild(sc);
+   const t=setTimeout(()=>finish(null,new Error("Server mengambil masa terlalu lama.")),timeout);
+ });
+}
+async function confirmOrder(orderNo){
+ for(let i=0;i<4;i++){
+   try{
+     const r=await jsonp("getOrderStatus",{orderNo},10000);
+     if(r&&r.found)return r;
+   }catch(e){}
+   await new Promise(r=>setTimeout(r,1200*(i+1)));
+ }
+ return {found:false};
+}
+form.addEventListener("submit",async e=>{
  e.preventDefault();
- const name=document.getElementById("name").value.trim(),phone=document.getElementById("phone").value.trim(),ref=document.getElementById("ref").value.trim();
+ const name=document.getElementById("name").value.trim();
+ const phone=document.getElementById("phone").value.trim();
+ const ref=document.getElementById("ref").value.trim();
  if(!name||!phone){msg.textContent="Sila lengkapkan nama dan nombor WhatsApp.";return;}
  if(!proofData){msg.textContent="Sila pilih bukti pembayaran dahulu.";return;}
  const orderNo=makeId();
- submitBtn.disabled=true;submitBtn.textContent="MENGHANTAR BUKTI…";msg.textContent="Menyimpan order dan bukti pembayaran…";
- const payload={action:"createPKSKOrder",orderNo,name,phone,ref,amount:29,proofData,proofName};
+ submitBtn.disabled=true;submitBtn.textContent="MENGHANTAR BUKTI…";
+ msg.textContent="Menyimpan order dan bukti pembayaran. Jangan tutup halaman…";
+ const payload={action:"createPKSKOrder",orderNo,name,phone,ref:ref||referralCode,amount:PRICE,proofData,proofName};
  try{
-   // text/plain + no-cors avoids a browser CORS preflight while still sending JSON to Apps Script.
    await fetch(API_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
+   msg.textContent="Sedang mengesahkan penerimaan server…";
+   const check=await confirmOrder(orderNo);
+   if(!check.found){
+     submitBtn.disabled=false;submitBtn.textContent="CUBA HANTAR SEMULA";
+     msg.textContent="Server belum mengesahkan penerimaan. Jangan buat bayaran baru. Tekan semula untuk cuba menghantar order yang sama.";
+     return;
+   }
    const waPhone=String(WHATSAPP_NUMBER).replace(/\D/g,"");
-   const text="PKSK 50 — MAKLUMAN BAYARAN\n\nOrder: "+orderNo+"\nNama: "+name+"\nWhatsApp: "+phone+"\nJumlah: RM29\nRujukan: "+(ref||"-")+"\n\nSaya sudah membuat bayaran dan bukti pembayaran telah dihantar melalui laman Reqoo. Mohon semak order saya. ";
+   const text="PKSK 50 — MAKLUMAN BAYARAN\n\nOrder: "+orderNo+"\nNama: "+name+"\nWhatsApp: "+phone+"\nJumlah: RM35\nRujukan: "+(ref||referralCode||"-")+"\n\nSaya sudah membuat bayaran dan bukti pembayaran telah dihantar melalui laman Reqoo. Mohon semak order saya.";
    waBtn.href="https://wa.me/"+waPhone+"?text="+encodeURIComponent(text);
-   localStorage.setItem("pksk_pending_order",JSON.stringify({orderNo,name,phone,ref,amount:29,createdAt:new Date().toISOString()}));
-   msg.textContent="Bukti dihantar. Order anda sedang menunggu semakan admin.";
+   localStorage.setItem("pksk_pending_order",JSON.stringify({orderNo,name,phone,ref:ref||referralCode,amount:PRICE,createdAt:new Date().toISOString()}));
+   msg.textContent="✓ Bukti pembayaran diterima. Order anda sedang menunggu semakan admin.";
    submitBtn.hidden=true;waBox.hidden=false;
  }catch(err){
-   submitBtn.disabled=false;submitBtn.textContent="HANTAR BUKTI PEMBAYARAN →";
-   msg.textContent="Gagal menghantar. Sila cuba semula.";
+   submitBtn.disabled=false;submitBtn.textContent="CUBA HANTAR SEMULA";
+   msg.textContent="Sambungan terganggu. Sila cuba semula. Jangan buat bayaran baru.";
  }
 });
 </script></body></html>
