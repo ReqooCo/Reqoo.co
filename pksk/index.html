@@ -7,8 +7,36 @@
   <title>PKSK Simulasi 100 Set — Reqoo</title>
   <meta name="description" content="PKSK Simulasi 100 Set — latihan Bahagian A+B dan C, semakan jawapan, graf kemajuan dan pengalaman menjawab seperti ujian berkomputer.">
   <link rel="stylesheet" href="./style.css">
+
+<style id="urgent-pksk-ui">
+.pksk-urgency{margin:0 auto 20px;max-width:1040px;padding:0 22px}
+.pksk-urgency-inner{background:linear-gradient(135deg,#fff7e8,#fff);border:1px solid #f0d39a;border-radius:14px;padding:13px 16px;display:flex;align-items:center;justify-content:center;gap:10px;color:#6e4a13;font-size:12px;font-weight:800;text-align:center;box-shadow:0 8px 24px rgba(80,55,10,.06)}
+.pksk-urgency-inner .pulse{width:8px;height:8px;border-radius:50%;background:#d98b28;box-shadow:0 0 0 5px rgba(217,139,40,.12);animation:pkskPulse 1.5s infinite}
+@keyframes pkskPulse{50%{transform:scale(1.35);opacity:.65}}
+.pksk-sales{margin:22px 0 26px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pksk-sales-card{background:#f7fafc;border:1px solid #e1e8f0;border-radius:12px;padding:13px 12px;text-align:center}
+.pksk-sales-card b{display:block;color:#10233f;font-size:12px;margin-bottom:4px}
+.pksk-sales-card span{font-size:10px;color:#68778b;line-height:1.45}
+.pksk-price{display:flex;align-items:center;gap:12px;margin:22px 0 8px;padding:15px 17px;border-radius:12px;background:#f5f8fb;border:1px solid #dce5ee}
+.pksk-price strong{font-size:28px;color:#10233f}
+.pksk-price small{color:#69788c;font-size:10px;line-height:1.45}
+.pksk-buy-wrap{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:14px}
+.pksk-buy-note{font-size:10px;color:#718096}
+.pksk-cta{position:relative;box-shadow:0 10px 24px rgba(16,35,63,.18)!important;transform:translateY(0);transition:.15s}
+.pksk-cta:hover{transform:translateY(-2px)}
+@media(max-width:700px){.pksk-sales{grid-template-columns:1fr}.pksk-urgency{padding:0 14px}.pksk-urgency-inner{font-size:11px}.pksk-buy-wrap{align-items:flex-start}}
+</style>
+
 </head>
 <body>
+
+<div class="pksk-urgency">
+  <div class="pksk-urgency-inner">
+    <i class="pulse"></i>
+    <span>PKSK semakin dekat — jangan tunggu saat akhir. Mula latihan sekarang dan bina momentum sebelum hari sebenar.</span>
+  </div>
+</div>
+
   <header class="site-header">
     <a class="brand" href="/" aria-label="Reqoo">
       <span class="brand-mark">R</span><span>REQOO</span>
@@ -30,7 +58,13 @@
         <div class="price-note">Promosi pecutan terakhir</div>
       </div>
 
-      <a class="primary-btn" id="buyBtn" href="/pksk/payment/">DAPATKAN SEKARANG <span>→</span></a>
+      
+<div class="pksk-price">
+  <strong>RM29</strong>
+  <small>1 akses latihan PKSK<br>Set 01–50 • maksimum 2 peranti</small>
+</div>
+
+<a class="primary-btn" id="buyBtn" href="/pksk/payment/">MULA LATIHAN SEKARANG <span>→</span></a>
       <p class="micro">Akses digital • Mesra telefon & PC</p>
     </section>
 
@@ -94,7 +128,7 @@
       <h2>50 set latihan.<br>Satu akses.</h2>
       <div class="cta-price"><span>RM60</span> RM29</div>
       <p>Bayaran dibuat melalui sistem pesanan Reqoo. Selepas pesanan disahkan, akses akan diberikan mengikut sistem penghantaran digital.</p>
-      <a class="primary-btn light" id="buyBtn2" href="/pksk/payment/">BELI SEKARANG <span>→</span></a>
+      <a class="primary-btn light" id="buyBtn2" href="/pksk/payment/">DAPATKAN AKSES SEKARANG <span>→</span></a>
       <p class="micro light-text">Ini ialah simulasi latihan, bukan peperiksaan rasmi KPM dan bukan salinan soalan sebenar.</p>
     </section>
 
