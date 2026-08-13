@@ -20,13 +20,85 @@
 const API_URL="https://script.google.com/macros/s/AKfycbwVFg5bxd2EsbLxUe2CsVHqRE-yVNraIJBSx8_pDsrGvrtTUiVdJwVdJwhJbbacxpci/exec";
 const $=id=>document.getElementById(id);let LICENSE="";
 function getDeviceId(){let id=localStorage.getItem("reqoo_pksk_device_id");if(!id){id="DEV-"+crypto.getRandomValues(new Uint32Array(3)).join("-")+"-"+Date.now().toString(36);localStorage.setItem("reqoo_pksk_device_id",id)}return id}
-function api(action,data,done){const cb="pkskAccessCb_"+Date.now()+"_"+Math.floor(Math.random()*99999),sc=document.createElement("script");window[cb]=r=>{delete window[cb];sc.remove();done(r)};sc.onerror=()=>{delete window[cb];sc.remove();done({ok:false,error:"Sambungan server gagal."})};sc.src=API_URL+"?"+new URLSearchParams({action,callback:cb,...data});document.body.appendChild(sc)}
-function copyCode(){if(!LICENSE)return;navigator.clipboard?.writeText(LICENSE).then(()=>{$("copyCodeTop").textContent="✓ Disalin";setTimeout(()=>$("copyCodeTop").textContent="Salin Kod",1300)}).catch(()=>{const t=document.createElement("textarea");t.value=LICENSE;document.body.appendChild(t);t.select();document.execCommand("copy");t.remove()})}
-function enter(){const code=$("code").value.trim().toUpperCase();if(!code){$("msg").className="bad";$("msg").textContent="Masukkan Access Code.";return}$("start").disabled=true;$("start").textContent="MENYEMAK...";api("validateAccess",{code},v=>{if(!v.ok){$("start").disabled=false;$("start").textContent="SEMAK & MASUK";$("msg").className="bad";$("msg").textContent=v.error||"Akses tidak sah.";return}const deviceId=getDeviceId();api("registerDevice",{code,deviceId,userAgent:navigator.userAgent},r=>{if(!r.ok){$("start").disabled=false;$("start").textContent="SEMAK & MASUK";$("msg").className="bad";$("msg").textContent=r.error||"Peranti tidak dapat didaftarkan.";return}LICENSE=code;localStorage.setItem("reqoo_pksk_license",code);showDashboard()})})}
+function api(action,data,done,retries=2){
+ const attempt=(n)=>{
+  const cb="pkskAccessCb_"+Date.now()+"_"+Math.floor(Math.random()*99999),sc=document.createElement("script");
+  let finished=false;
+  const timer=setTimeout(()=>finish({ok:false,error:"Server mengambil masa terlalu lama."}),11000);
+  function finish(r){
+   if(finished)return;finished=true;clearTimeout(timer);delete window[cb];sc.remove();
+   if(r&&r.ok!==false){done(r);return;}
+   if(n<retries){setTimeout(()=>attempt(n+1),700*(n+1));return;}
+   done(r||{ok:false,error:"Sambungan server gagal. Sila cuba semula."});
+  }
+  window[cb]=finish;
+  sc.onerror=()=>finish({ok:false,error:"Sambungan server gagal."});
+  sc.src=API_URL+"?"+new URLSearchParams({action,callback:cb,...data});
+  document.body.appendChild(sc);
+ };
+ attempt(0);
+}
+function copyCode(){
+ if(!LICENSE)return;
+ const success=()=>{$("copyCodeTop").textContent="✓ Disalin";setTimeout(()=>$("copyCodeTop").textContent="Salin Kod",1300)};
+ if(navigator.clipboard?.writeText){navigator.clipboard.writeText(LICENSE).then(success).catch(()=>fallbackCopy())}else fallbackCopy();
+}
+function fallbackCopy(){const t=document.createElement("textarea");t.value=LICENSE;document.body.appendChild(t);t.select();document.execCommand("copy");t.remove();$("copyCodeTop").textContent="✓ Disalin";setTimeout(()=>$("copyCodeTop").textContent="Salin Kod",1300)}
+function enter(){
+ const code=$("code").value.trim().toUpperCase();
+ if(!code){$("msg").className="bad";$("msg").textContent="Masukkan Access Code.";return;}
+ $("start").disabled=true;$("start").textContent="MENYEMAK...";
+ api("validateAccess",{code},v=>{
+  if(!v.ok){$("start").disabled=false;$("start").textContent="SEMAK & MASUK";$("msg").className="bad";$("msg").textContent=v.error||"Akses tidak sah.";return;}
+  const deviceId=getDeviceId();
+  api("registerDevice",{code,deviceId,userAgent:navigator.userAgent},r=>{
+   if(!r.ok){$("start").disabled=false;$("start").textContent="SEMAK & MASUK";$("msg").className="bad";$("msg").textContent=r.error||"Peranti tidak dapat didaftarkan.";return;}
+   LICENSE=code;localStorage.setItem("reqoo_pksk_license",code);showDashboard();
+  });
+ });
+}
 function showDashboard(){$("login").style.display="none";$("dashboard").style.display="block";$("logout").style.display="block";$("copyCodeTop").style.display="block";loadDashboard()}
-function loadDashboard(){api("getCustomerDashboard",{code:LICENSE,deviceId:getDeviceId()},r=>{if(!r.ok){$("msg").className="bad";$("msg").textContent=r.error||"Gagal memuatkan dashboard.";return}renderDashboard(r)})}
-function renderDashboard(r){const l=r.license||{};$("name").textContent=l.name||"Pelajar";$("deviceInfo").textContent=`${l.deviceCount||0} / ${l.maxDevices||2} peranti digunakan`;$('devices').textContent=`${l.deviceCount||0} / ${l.maxDevices||2}`;const p=r.progress||[];const scores=p.map(x=>Number(x.score||0)).filter(Number.isFinite);$("doneSets").textContent=`${p.filter(x=>x.completed).length} / 50`;$("avgScore").textContent=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length)+"%":"—";$("bestScore").textContent=scores.length?Math.max(...scores)+"%":"—";const sorted=p.slice().sort((a,b)=>Number(a.setNo)-Number(b.setNo));$("sets").innerHTML=sorted.length?sorted.map(x=>`<div class="setrow"><b>Set ${String(x.setNo).padStart(2,"0")}</b><div><div class="bar"><i style="width:${Math.min(100,Number(x.score||0))}%"></i></div></div><div class="score">${x.completed?Number(x.score||0)+"%":"—"}</div><div class="state">${x.completed?"Selesai":"Dalam latihan"}</div></div>`).join(""):'<div class="empty">Belum ada set selesai. Jom mula Set 01.</div>';const inProgress=sorted.filter(x=>!x.completed&&Number(x.answered||0)>0).pop();const last=sorted.filter(x=>x.completed).pop();$("resume").dataset.set=String(inProgress?inProgress.setNo:(last?last.setNo:localStorage.getItem("pksk-selected-set")||1));$("resume").textContent=inProgress?`▶ SAMBUNG SET ${String(inProgress.setNo).padStart(2,"0")}`:(last?`▶ SAMBUNG SET ${String(last.setNo).padStart(2,"0")}`:"▶ MULA SET 01");$("activity").innerHTML=(r.activity||[]).slice(0,8).map(a=>`<div class="act"><span>${a.message||a.action||"Aktiviti"}</span><small>${a.createdAt||""}</small></div>`).join("")||'<div class="empty">Belum ada aktiviti.</div>'}
+function loadDashboard(){
+ $("msg").className="";$("msg").textContent="Memuatkan dashboard…";
+ api("getCustomerDashboard",{code:LICENSE,deviceId:getDeviceId()},r=>{
+  if(!r.ok){$("msg").className="bad";$("msg").textContent=r.error||"Gagal memuatkan dashboard.";return;}
+  $("msg").textContent="";renderDashboard(r);
+ });
+}
+function renderDashboard(r){
+ const l=r.license||{};$("name").textContent=l.name||"Pelajar";
+ $("deviceInfo").textContent=`${l.deviceCount||0} / ${l.maxDevices||2} peranti digunakan`;
+ $("devices").textContent=`${l.deviceCount||0} / ${l.maxDevices||2}`;
+ const p=r.progress||[];const scores=p.map(x=>Number(x.score||0)).filter(Number.isFinite);
+ $("doneSets").textContent=`${p.filter(x=>x.completed).length} / ${r.totalSets||50}`;
+ $("avgScore").textContent=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length)+"%":"—";
+ $("bestScore").textContent=scores.length?Math.max(...scores)+"%":"—";
+ const sorted=p.slice().sort((a,b)=>Number(a.setNo)-Number(b.setNo));
+ $("sets").innerHTML=sorted.length?sorted.map(x=>`<div class="setrow"><b>Set ${String(x.setNo).padStart(2,"0")}</b><div><div class="bar"><i style="width:${Math.min(100,Number(x.score||0))}%"></i></div></div><div class="score">${x.completed?Number(x.score||0)+"%":"—"}</div><div class="state">${x.completed?"Selesai":"Dalam latihan"}</div></div>`).join(""):'<div class="empty">Belum ada set selesai. Jom mula Set 01.</div>';
+ const inProgress=sorted.filter(x=>!x.completed&&Number(x.answered||0)>0).pop();const last=sorted.filter(x=>x.completed).pop();
+ $("resume").dataset.set=String(inProgress?inProgress.setNo:(last?last.setNo:localStorage.getItem("pksk-selected-set")||1));
+ $("resume").textContent=inProgress?`▶ SAMBUNG SET ${String(inProgress.setNo).padStart(2,"0")}`:(last?`▶ SAMBUNG SET ${String(last.setNo).padStart(2,"0")}`:"▶ MULA SET 01");
+ $("activity").innerHTML=(r.activity||[]).slice(0,8).map(a=>`<div class="act"><span>${a.message||a.action||"Aktiviti"}</span><small>${a.createdAt||""}</small></div>`).join("")||'<div class="empty">Belum ada aktiviti.</div>';
+}
 function goSimulator(set){location.href="../simulator/?set="+encodeURIComponent(set||1)}
-$("start").onclick=enter;$("code").addEventListener("keydown",e=>{if(e.key==="Enter")enter()});$("paste").onclick=async()=>{try{$("code").value=(await navigator.clipboard.readText()).trim().toUpperCase()}catch(e){$("msg").className="bad";$("msg").textContent="Tekan lama pada kotak untuk tampal."}};$("copyCodeTop").onclick=copyCode;$("resume").onclick=e=>goSimulator(e.currentTarget.dataset.set||1);$("choose").onclick=()=>goSimulator(1);$("logout").onclick=()=>{localStorage.removeItem("reqoo_pksk_license");location.reload()};
-const saved=(localStorage.getItem("reqoo_pksk_license")||"").trim().toUpperCase();if(saved){LICENSE=saved;api("validateAccess",{code:LICENSE},r=>{if(r.ok)showDashboard();else localStorage.removeItem("reqoo_pksk_license")})}
+$("start").onclick=enter;
+$("code").addEventListener("keydown",e=>{if(e.key==="Enter")enter()});
+$("paste").onclick=async()=>{try{$("code").value=(await navigator.clipboard.readText()).trim().toUpperCase()}catch(e){$("msg").className="bad";$("msg").textContent="Tekan lama pada kotak untuk tampal."}};
+$("copyCodeTop").onclick=copyCode;
+$("resume").onclick=e=>goSimulator(e.currentTarget.dataset.set||1);
+$("choose").onclick=()=>goSimulator(1);
+$("logout").onclick=()=>{localStorage.removeItem("reqoo_pksk_license");location.reload()};
+
+// Auto-fill from WhatsApp link. We still show the code so the customer can verify it.
+const queryCode=(new URLSearchParams(location.search).get("code")||"").trim().toUpperCase();
+if(queryCode){
+ $("code").value=queryCode;
+ setTimeout(()=>enter(),250);
+}else{
+ const saved=(localStorage.getItem("reqoo_pksk_license")||"").trim().toUpperCase();
+ if(saved){
+  LICENSE=saved;
+  api("validateAccess",{code:LICENSE},r=>{if(r.ok)showDashboard();else localStorage.removeItem("reqoo_pksk_license")});
+ }
+}
 </script></body></html>
