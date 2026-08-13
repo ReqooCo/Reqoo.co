@@ -4,7 +4,7 @@
   Do NOT replace backend/Code.gs wholesale.
 */
 const CONFIG = {
-  ORDER_URL: "/shop/",
+  ORDER_URL: "/pksk/payment/",
   VERIFY_URL: "", // Fill only after the PKSK access-code endpoint is added to the existing Reqoo backend.
   SIMULATOR_URL: "/pksk/simulator/"
 };
