@@ -1,0 +1,212 @@
+
+/* ============================================================
+   REQOO PKSK — QR PAYMENT / ACCESS ADD-ON
+   Paste into the EXISTING Reqoo Google Apps Script project.
+   Do NOT create a second doGet(). Merge the action cases below
+   into your existing doGet() router.
+   ============================================================ */
+
+const PKSK_SHEET_ORDERS = "PKSK_Orders";
+const PKSK_SHEET_LICENSES = "PKSK_Licenses";
+const PKSK_AMOUNT = 29;
+
+function pkskJsonp_(callback, payload) {
+  const safe = /^[A-Za-z0-9_$]+$/.test(String(callback || "")) ? String(callback) : "";
+  const text = JSON.stringify(payload);
+  return safe
+    ? ContentService.createTextOutput(safe + "(" + text + ")")
+        .setMimeType(ContentService.MimeType.JAVASCRIPT)
+    : ContentService.createTextOutput(text)
+        .setMimeType(ContentService.MimeType.JSON);
+}
+
+function pkskSheet_(name, headers) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sh = ss.getSheetByName(name);
+  if (!sh) {
+    sh = ss.insertSheet(name);
+    sh.getRange(1, 1, 1, headers.length).setValues([headers]);
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+function pkskOrders_() {
+  return pkskSheet_(PKSK_SHEET_ORDERS, [
+    "orderNo","name","phone","ref","amount","status","licenseCode",
+    "createdAt","verifiedAt","adminNote"
+  ]);
+}
+
+function pkskLicenses_() {
+  return pkskSheet_(PKSK_SHEET_LICENSES, [
+    "licenseCode","orderNo","name","phone","status","createdAt","activatedAt"
+  ]);
+}
+
+function pkskMakeCode_() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let s = "PKSK-";
+  for (let i = 0; i < 5; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  s += "-";
+  for (let i = 0; i < 5; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  return s;
+}
+
+function pkskFindRow_(sheet, col, value) {
+  const last = sheet.getLastRow();
+  if (last < 2) return -1;
+  const vals = sheet.getRange(2, col, last - 1, 1).getValues();
+  for (let i = 0; i < vals.length; i++) {
+    if (String(vals[i][0]).trim() === String(value).trim()) return i + 2;
+  }
+  return -1;
+}
+
+/* ---------- Customer: create order ---------- */
+function pkskCreateOrder_(p) {
+  const sh = pkskOrders_();
+  const orderNo = String(p.orderNo || "").trim().toUpperCase();
+  const name = String(p.name || "").trim();
+  const phone = String(p.phone || "").trim();
+  const ref = String(p.ref || "").trim();
+
+  if (!orderNo || !name || !phone)
+    return {ok:false,error:"Maklumat pembeli tidak lengkap."};
+
+  if (pkskFindRow_(sh,1,orderNo) > 0)
+    return {ok:true,duplicate:true,orderNo:orderNo};
+
+  sh.appendRow([
+    orderNo,name,phone,ref,PKSK_AMOUNT,"PENDING","",
+    new Date(),"",""
+  ]);
+
+  return {ok:true,orderNo:orderNo,status:"PENDING"};
+}
+
+/* ---------- Customer: validate access code ---------- */
+function pkskValidateAccess_(code) {
+  code = String(code || "").trim().toUpperCase();
+  if (!code) return {ok:false,error:"Masukkan Access Code."};
+
+  const sh = pkskLicenses_();
+  const row = pkskFindRow_(sh,1,code);
+  if (row < 2) return {ok:false,error:"Access Code tidak sah."};
+
+  const vals = sh.getRange(row,1,1,7).getValues()[0];
+  const status = String(vals[4] || "").toUpperCase();
+
+  if (status !== "ACTIVE")
+    return {ok:false,error:"Access Code belum aktif atau telah ditolak."};
+
+  return {
+    ok:true,
+    active:true,
+    licenseCode:code,
+    name:String(vals[2] || ""),
+    message:"Akses disahkan."
+  };
+}
+
+/* ---------- Admin: verify payment ---------- */
+function pkskVerifyOrder_(orderNo) {
+  const sh = pkskOrders_();
+  const row = pkskFindRow_(sh,1,orderNo);
+  if (row < 2) return {ok:false,error:"Order tidak dijumpai."};
+
+  const vals = sh.getRange(row,1,1,10).getValues()[0];
+  const status = String(vals[5] || "").toUpperCase();
+
+  if (status === "PAID" && vals[6])
+    return {ok:true,accessCode:String(vals[6]),status:"PAID",already:true};
+
+  if (Number(vals[4]) !== PKSK_AMOUNT)
+    return {ok:false,error:"Jumlah order tidak sepadan."};
+
+  const code = pkskMakeCode_();
+  sh.getRange(row,6,1,3).setValues([["PAID",code,new Date()]]);
+  sh.getRange(row,9).setValue(new Date());
+
+  const lic = pkskLicenses_();
+  lic.appendRow([
+    code,orderNo,String(vals[1]||""),String(vals[2]||""),
+    "ACTIVE",vals[7] || new Date(),new Date()
+  ]);
+
+  return {ok:true,accessCode:code,status:"PAID"};
+}
+
+/* ---------- Admin: reject ---------- */
+function pkskRejectOrder_(orderNo) {
+  const sh = pkskOrders_();
+  const row = pkskFindRow_(sh,1,orderNo);
+  if (row < 2) return {ok:false,error:"Order tidak dijumpai."};
+  sh.getRange(row,6).setValue("REJECTED");
+  sh.getRange(row,9).setValue(new Date());
+  return {ok:true};
+}
+
+/* ---------- Admin: list ---------- */
+function pkskListOrders_() {
+  const sh = pkskOrders_();
+  const last = sh.getLastRow();
+  if (last < 2) return {ok:true,orders:[]};
+
+  const vals = sh.getRange(2,1,last-1,10).getValues();
+  return {
+    ok:true,
+    orders:vals.map(function(v){
+      return {
+        orderNo:String(v[0]||""),
+        name:String(v[1]||""),
+        phone:String(v[2]||""),
+        ref:String(v[3]||""),
+        amount:Number(v[4]||0),
+        status:String(v[5]||""),
+        licenseCode:String(v[6]||""),
+        createdAt:v[7] instanceof Date ? v[7].toISOString() : String(v[7]||""),
+        verifiedAt:v[8] instanceof Date ? v[8].toISOString() : String(v[8]||"")
+      };
+    })
+  };
+}
+
+/* ============================================================
+   ADD THESE ACTION CASES TO YOUR EXISTING doGet(e)
+   ============================================================
+
+   const action = String(e.parameter.action || "");
+
+   if (action === "createPKSKOrder")
+     return pkskJsonp_(e.parameter.callback,
+       pkskCreateOrder_(e.parameter));
+
+   if (action === "validateAccess")
+     return pkskJsonp_(e.parameter.callback,
+       pkskValidateAccess_(e.parameter.code));
+
+   if (action === "verifyPKSKOrder") {
+     // IMPORTANT: protect this action with your existing admin token.
+     if (String(e.parameter.token || "") !== YOUR_EXISTING_ADMIN_TOKEN)
+       return pkskJsonp_(e.parameter.callback,{ok:false,error:"ADMIN_REQUIRED"});
+     return pkskJsonp_(e.parameter.callback,
+       pkskVerifyOrder_(e.parameter.orderNo));
+   }
+
+   if (action === "rejectPKSKOrder") {
+     // IMPORTANT: protect this action with your existing admin token.
+     if (String(e.parameter.token || "") !== YOUR_EXISTING_ADMIN_TOKEN)
+       return pkskJsonp_(e.parameter.callback,{ok:false,error:"ADMIN_REQUIRED"});
+     return pkskJsonp_(e.parameter.callback,
+       pkskRejectOrder_(e.parameter.orderNo));
+   }
+
+   if (action === "listPKSKOrders") {
+     // IMPORTANT: protect this action with your existing admin token.
+     if (String(e.parameter.token || "") !== YOUR_EXISTING_ADMIN_TOKEN)
+       return pkskJsonp_(e.parameter.callback,{ok:false,error:"ADMIN_REQUIRED"});
+     return pkskJsonp_(e.parameter.callback,pkskListOrders_());
+   }
+
+   ============================================================ */
