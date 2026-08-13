@@ -1,13 +1,45 @@
 
 const PKSK_ACCESS_API="https://script.google.com/macros/s/AKfycbwVFg5bxd2EsbLxUe2CsVHqRE-yVNraIJBSx8_pDsrGvrtTUiVdJwVdJwhJbbacxpci/exec";
-function pkskApi(action,data,done){
-  const cb="pkskGate_"+Date.now()+"_"+Math.floor(Math.random()*99999);
-  const sc=document.createElement("script");
-  window[cb]=function(r){delete window[cb];sc.remove();done(r)};
-  const p=new URLSearchParams({action,callback:cb,...data});
-  sc.src=PKSK_ACCESS_API+"?"+p.toString();
-  sc.onerror=()=>{delete window[cb];sc.remove();done({ok:false,error:"Sambungan akses gagal."})};
-  document.body.appendChild(sc);
+function pkskApi(action,data,done,retries=2){
+  const attempt=n=>{
+    const cb="pkskGate_"+Date.now()+"_"+Math.floor(Math.random()*99999);
+    const sc=document.createElement("script");let finished=false;
+    const timer=setTimeout(()=>finish({ok:false,error:"Server mengambil masa terlalu lama."}),11000);
+    const finish=r=>{
+      if(finished)return;finished=true;clearTimeout(timer);delete window[cb];sc.remove();
+      if(r&&r.ok!==false){done(r);return;}
+      if(n<retries){setTimeout(()=>attempt(n+1),700*(n+1));return;}
+      done(r||{ok:false,error:"Sambungan server gagal."});
+    };
+    window[cb]=finish;sc.onerror=()=>finish({ok:false,error:"Sambungan server gagal."});
+    sc.src=PKSK_ACCESS_API+"?"+new URLSearchParams({action,callback:cb,...data});
+    document.body.appendChild(sc);
+  };
+  attempt(0);
+}
+function pkskLicense(){return (localStorage.getItem("reqoo_pksk_license")||"").trim().toUpperCase();}
+function pkskDeviceId(){
+  let id=localStorage.getItem("reqoo_pksk_device_id");
+  if(!id){id="DEV-"+crypto.getRandomValues(new Uint32Array(3)).join("-")+"-"+Date.now().toString(36);localStorage.setItem("reqoo_pksk_device_id",id)}
+  return id
+}
+function queueProgress(payload){
+  let q=[];try{q=JSON.parse(localStorage.getItem("pksk-sync-queue")||"[]")}catch(e){}
+  q=q.filter(x=>!(x.setNo===payload.setNo&&x.completed===payload.completed));
+  q.push(Object.assign({},payload,{queuedAt:Date.now()}));
+  localStorage.setItem("pksk-sync-queue",JSON.stringify(q.slice(-20)));
+}
+function flushProgressQueue(){
+  let q=[];try{q=JSON.parse(localStorage.getItem("pksk-sync-queue")||"[]")}catch(e){q=[]}
+  if(!q.length||!pkskLicense())return;
+  const item=q[0];
+  pkskApi("saveProgress",item,r=>{
+    if(r&&r.ok){q.shift();localStorage.setItem("pksk-sync-queue",JSON.stringify(q));if(q.length)setTimeout(flushProgressQueue,300)}
+  },1);
+}
+function pkskDashApi(action,data,done){pkskApi(action,data,done)}
+function pkskReportError(type,message){
+  try{pkskApi("logClientError",{code:pkskLicense(),errorType:type,message:String(message||"").slice(0,400),deviceId:pkskDeviceId()},()=>{},0)}catch(e){}
 }
 function pkskLicense(){return (localStorage.getItem("reqoo_pksk_license")||"").trim().toUpperCase();}
 function pkskRequireAccess(next){
@@ -126,9 +158,13 @@ $("qvisual").innerHTML=q.visual?`<div class="question-visual"><img src="sets/${e
 function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 let lastSessionSync=0;
 function persistSession(){
+ const payload={code:pkskLicense(),deviceId:pkskDeviceId(),setNo:setNo,completed:false,score:0,answered:Object.keys(answers).length,timeUsed:Math.round((5400-timer)/60)};
  localStorage.setItem(`pksk-set${String(setNo).padStart(2,"0")}-session`,JSON.stringify({answers,times,timer,qidx}));
  const now=Date.now();
- if(now-lastSessionSync>30000){lastSessionSync=now;pkskDashApi("saveProgress",{code:pkskLicense(),deviceId:pkskDeviceId(),setNo:setNo,completed:false,score:0,answered:Object.keys(answers).length,timeUsed:Math.round((5400-timer)/60)},()=>{})}
+ if(now-lastSessionSync>30000){
+   lastSessionSync=now;
+   pkskDashApi("saveProgress",payload,r=>{if(!r||!r.ok)queueProgress(payload)},1);
+ }
 }
 function answer(i){answers[qs[qidx].id]=i;persistSession();renderQ();toggleMobileNav(false)}
 function gotoQ(i){saveTime();qidx=i;renderQ();toggleMobileNav(false)}
@@ -189,7 +225,10 @@ function reviewB(){
 function syncProgressServer(score,extra){
  const code=pkskLicense();if(!code)return;
  const payload=Object.assign({code,deviceId:pkskDeviceId(),setNo:setNo,completed:true,score:Number(score||0)},extra||{});
- pkskDashApi("saveProgress",payload,function(r){if(r&&r.ok){localStorage.setItem("pksk-last-server-sync",new Date().toISOString())}});
+ pkskDashApi("saveProgress",payload,function(r){
+   if(r&&r.ok){localStorage.setItem("pksk-last-server-sync",new Date().toISOString());}
+   else{queueProgress(payload);pkskReportError("SAVE_PROGRESS_FAILED",r&&r.error||"Progress sync gagal");}
+ },2);
 }
 function progressHistory(score){
  let h=JSON.parse(localStorage.getItem("pksk-progress")||"[]");
@@ -269,3 +308,5 @@ function buildResult(c){
 const urlSet=Number(new URLSearchParams(location.search).get("set")||0);
 const initialSet=urlSet>=1&&urlSet<=50?urlSet:Number(localStorage.getItem("pksk-selected-set")||1);
 pkskRequireAccess(()=>load(initialSet).then(()=>updateSetUI()).catch(e=>console.error(e)));
+
+window.addEventListener("online",flushProgressQueue);window.addEventListener("focus",flushProgressQueue);setTimeout(flushProgressQueue,1500);
