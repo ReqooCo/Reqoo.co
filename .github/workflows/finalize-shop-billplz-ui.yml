@@ -1,0 +1,49 @@
+name: Finalize SHOP Billplz UI
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, '[shop-billplz-ui]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch checkout flow
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('shop/index.html')
+          s = p.read_text(encoding='utf-8')
+          replacements = {
+            "if(cartTotal()&&!receipt){alert('Sila upload bukti pembayaran dahulu.');return}": "",
+            "Bayar melalui Maybank QR": "Bayar melalui Billplz",
+            "Scan QR menggunakan aplikasi bank anda. Selepas bayar, upload bukti pembayaran di bawah.": "Anda akan dibawa ke halaman pembayaran Billplz yang selamat untuk memilih kaedah bayaran.",
+            "payment:cartTotal()?'Maybank QR':'Quotation'": "payment:cartTotal()?'Billplz':'Quotation'",
+            "Saya Dah Bayar — Hantar Order WhatsApp": "Teruskan ke Pembayaran Billplz",
+          }
+          for old, new in replacements.items():
+              s = s.replace(old, new)
+          marker = "  const savedItems=Array.isArray(db.items)?db.items:items;"
+          patch = "  if(db.payment&&db.payment.billUrl){ window.location.href=db.payment.billUrl; return; }\n" + marker
+          if marker in s and "db.payment&&db.payment.billUrl" not in s:
+              s = s.replace(marker, patch, 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit
+        shell: bash
+        run: |
+          if git diff --quiet -- shop/index.html; then
+            echo 'No change needed.'
+            exit 0
+          fi
+          git config user.name 'reqoo-shop-billplz[bot]'
+          git config user.email 'reqoo-shop-billplz[bot]@users.noreply.github.com'
+          git add shop/index.html
+          git commit -m "[shop-billplz-ui] Route paid checkout to Billplz"
+          git push
