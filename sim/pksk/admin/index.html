@@ -12,7 +12,7 @@
 </header>
 
 <main>
-<section id="login" class="card login">
+<!-- REQOO_SINGLE_LOGIN_BRIDGE_V1 --><section id="login" class="card login" hidden>
   <div class="eyebrow">REQOO • PKSK</div>
   <h1>Admin Dashboard</h1>
   <p>Pantau payment, license, device, progress, referral dan aktiviti pengguna.</p>
@@ -82,7 +82,7 @@
 
 <script>
 const API_URL="/api/pksk";
-const $=id=>document.getElementById(id);let TOKEN="",DATA={orders:[],licenses:[],referrals:[]};
+const $=id=>document.getElementById(id);let TOKEN=localStorage.getItem("reqoo_admin_token")||"",DATA={orders:[],licenses:[],referrals:[]};
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
 function api(action,extra={},retries=2){
  return new Promise((resolve)=>{
@@ -95,7 +95,10 @@ function api(action,extra={},retries=2){
   };attempt(0);
  });
 }
+function goMainAdmin(){const here=location.pathname+location.search;location.replace("/admin/?return="+encodeURIComponent(here));}
+function ensureMainAdminSession(){if(!TOKEN){goMainAdmin();return false;}return true;}
 async function load(){
+ if(!ensureMainAdminSession())return;
  setLive(false);
  const j=await api("getPKSKAdminDashboard");
  if(!j?.ok){setLive(false);return showLoginMsg(j?.error||"Gagal memuatkan dashboard.");}
@@ -196,11 +199,12 @@ async function loadErrors(){
  const j=await api("getPKSKErrors");
  $("errorCards").innerHTML=(j?.errors||[]).map(x=>`<article class="item error-item"><div class="item-main"><div class="code">${esc(x.type)}</div><h3>${esc(x.message)}</h3><p>${esc(x.code||"—")} • ${esc(x.deviceId||"—")}</p></div><small>${esc(x.createdAt)}</small></article>`).join("")||'<div class="empty">Tiada error direkodkan.</div>';
 }
-$("loginBtn").onclick=async()=>{TOKEN=$("token").value.trim();if(!TOKEN)return showLoginMsg("Token diperlukan.");$("loginBtn").disabled=true;showLoginMsg("Menyemak…");const j=await api("getPKSKAdminDashboard");$("loginBtn").disabled=false;if(!j?.ok)return showLoginMsg(j?.error||"Gagal masuk.");$("login").hidden=true;$("app").hidden=false;DATA=j;setLive(true);render();loadErrors()};
+$("loginBtn").onclick=async()=>{TOKEN=$("token").value.trim();if(!TOKEN)return showLoginMsg("Token diperlukan.");localStorage.setItem("reqoo_admin_token",TOKEN);$("loginBtn").disabled=true;showLoginMsg("Menyemak…");const j=await api("getPKSKAdminDashboard");$("loginBtn").disabled=false;if(!j?.ok){localStorage.removeItem("reqoo_admin_token");TOKEN="";return showLoginMsg(j?.error||"Gagal masuk.");}$("login").hidden=true;$("app").hidden=false;DATA=j;setLive(true);render();loadErrors()};
 $("refresh").onclick=()=>TOKEN&&load();$("reloadOrders").onclick=()=>TOKEN&&load();$("reloadErrors").onclick=()=>TOKEN&&loadErrors();
 $("search").oninput=()=>{renderOrders();renderLicenses();renderReferrals()};$("filter").onchange=renderOrders;
 $("close").onclick=()=>{$("modal").hidden=true};
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".tab-panel").forEach(x=>x.hidden=true);$("tab-"+b.dataset.tab).hidden=false});
 $("saveSettings").onclick=async()=>{const price=Number($("price").value),commission=Number($("commission").value);const j=await api("updatePKSKSettings",{price,commission});$("settingsMsg").textContent=j?.ok?"✓ Tetapan disimpan.":(j?.error||"Gagal simpan.");if(j?.ok)await load()};
+if(ensureMainAdminSession()){ $("login").hidden=true; $("app").hidden=false; load(); }
 </script>
 </body></html>

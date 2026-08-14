@@ -66,7 +66,7 @@ select.statussel{margin:0;padding:7px 8px;width:140px;font-size:10px}
 <header><div class="wrap nav"><div class="brand">REQOO<span class="gold">.CO</span> <span style="font-size:10px;color:#777;letter-spacing:2px">ADMIN</span></div><div class="spacer"></div><div class="notificationWrap" id="notificationWrap" style="display:none"><button class="notifyBtn" onclick="openNotifications()" title="Notifikasi order">🔔</button><span class="notifyBadge" id="notifyBadge">0</span></div><button class="btn" onclick="load()">↻ Refresh</button></div></header><div class="toast" id="notifyToast"><b id="toastTitle">Order baharu</b><span id="toastText"></span></div>
 
 <main class="wrap">
-<section id="login" class="login">
+<!-- REQOO_SINGLE_LOGIN_BRIDGE_V1 --><section id="login" class="login" style="display:none">
 <h2>REQOO.CO Admin</h2><div class="sub">Masukkan Admin Token.</div>
 <input id="token" type="password" placeholder="Admin token">
 <button class="btn goldbtn" style="width:100%" onclick="login()">Masuk</button>
@@ -180,7 +180,7 @@ select.statussel{margin:0;padding:7px 8px;width:140px;font-size:10px}
 
 <script>
 const API='https://script.google.com/macros/s/AKfycbyFy2y76srL3i-wIp1kesaXw5KZl6fpTTCbLJk_5lQBUwl0QKkdRsxo6ynF7XCjnKb1MA/exec';
-let TOKEN='',ORDERS=[];
+let TOKEN=localStorage.getItem('reqoo_admin_token')||'',ORDERS=[];
 let notifyTimer=null,notifySeen=new Set(),notifyNew=0,audioCtx=null,notificationsReady=false;
 function initNotifications(){
   if(notificationsReady)return;
@@ -227,7 +227,8 @@ function startNotificationPolling(){clearInterval(notifyTimer);notifyTimer=setIn
 const money=n=>'RM'+Number(n||0).toFixed(2);
 function adminImageUrl(url){let v=String(url||'').trim();const gh=v.match(/^https?:\/\/github\.com\/([^/]+)\/([^/]+)\/blob\/([^/]+)\/(.+)$/i);if(gh)v=`https://raw.githubusercontent.com/${gh[1]}/${gh[2]}/${gh[3]}/${gh[4]}`;v=v.replace(/^\.?\/*shop\/assets\//i,'assets/');return v}
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-function login(){TOKEN=document.getElementById('token').value.trim();if(TOKEN){initNotifications();load()}}
+function login(){TOKEN=document.getElementById('token').value.trim();if(TOKEN){localStorage.setItem('reqoo_admin_token',TOKEN);initNotifications();load()}}
+if(TOKEN){document.getElementById('login').style.display='none';document.getElementById('app').style.display='block';initNotifications();load()}else{location.replace('/admin/?return='+encodeURIComponent(location.pathname+location.search))}
 async function load(){
  if(!TOKEN){document.getElementById('err').textContent='Masukkan token.';return}
  try{
