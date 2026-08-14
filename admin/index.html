@@ -4,61 +4,64 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#080808">
-<title>REQOO Admin</title>
+<title>REQOO Admin — Control Centre</title>
 <style>
-:root{--bg:#080808;--panel:#111;--gold:#d9b45e;--muted:#999;--line:#282828;--green:#53c27c;--red:#e66}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#fff;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}.wrap{max-width:1180px;margin:auto;padding:24px}.top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:20px}.brand{font-weight:950;letter-spacing:3px}.brand span{color:var(--gold)}.sub{color:#777;font-size:11px;margin-top:5px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:24px}.card{background:linear-gradient(180deg,#141414,#0e0e0e);border:1px solid var(--line);border-radius:16px;padding:20px}.label{font-size:10px;color:#888;letter-spacing:1.5px}.value{font-size:28px;font-weight:900;margin-top:8px}.sections{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:14px}.section{min-height:150px;cursor:pointer;transition:.18s;border-color:var(--line)}.section:hover{transform:translateY(-2px);border-color:#705d32;background:linear-gradient(180deg,#181818,#101010)}.section:active{transform:translateY(0)}.section h3{margin:10px 0}.section p{font-size:12px;color:#999;line-height:1.6}.tag{display:inline-block;padding:5px 8px;border:1px solid #444;border-radius:99px;color:var(--gold);font-size:9px;font-weight:800}.orders{margin-top:14px}.orders-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.orders h2{margin:0}.btn{border:1px solid #444;background:#171717;color:#fff;border-radius:10px;padding:9px 13px;cursor:pointer}.status{font-size:10px;padding:5px 8px;border-radius:99px;border:1px solid #444;white-space:nowrap}.table-wrap{overflow:auto;margin-top:14px}.table{width:100%;border-collapse:collapse;min-width:720px}.table th,.table td{padding:12px 10px;border-bottom:1px solid var(--line);text-align:left;font-size:12px}.table th{color:#777;font-size:10px;letter-spacing:1px}.muted{color:#777}.error{color:#e88}.empty{text-align:center;padding:30px;color:#777}.loading{color:#777;padding:20px 0}.hint{font-size:9px;color:#666;margin-top:10px;letter-spacing:.5px}@media(max-width:800px){.grid,.sections{grid-template-columns:repeat(2,1fr)}}@media(max-width:500px){.grid,.sections{grid-template-columns:1fr}.wrap{padding:16px}.top{align-items:flex-start}}
+:root{--bg:#070707;--panel:#101010;--panel2:#141414;--gold:#d9b45e;--gold2:#f0cf78;--text:#f5f5f5;--muted:#8b8b8b;--line:#252525;--green:#57c785;--red:#e46b78;--blue:#6ea8ff}
+*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;background:radial-gradient(circle at 80% -10%,rgba(217,180,94,.08),transparent 32%),var(--bg);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}.wrap{max-width:1380px;margin:auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:center;gap:20px;border-bottom:1px solid var(--line);padding:8px 0 18px}.brand{font-weight:950;letter-spacing:3px;font-size:17px}.brand span{color:var(--gold)}.sub{color:#707070;font-size:11px;margin-top:6px}.top-right{display:flex;align-items:center;gap:10px}.pill{border:1px solid var(--line);background:#111;border-radius:999px;padding:8px 12px;color:#aaa;font-size:10px}.healthy{color:var(--green)}.home{color:#aaa;text-decoration:none;font-size:11px}.nav{display:flex;gap:8px;margin:18px 0;overflow:auto;padding-bottom:2px}.nav button{flex:0 0 auto;border:1px solid var(--line);background:#0d0d0d;color:#999;border-radius:10px;padding:9px 14px;font-size:11px;cursor:pointer}.nav button.active,.nav button:hover{color:#fff;border-color:#5d4d2d;background:#17140d}.hero{display:flex;justify-content:space-between;align-items:end;gap:20px;margin:18px 0 22px}.hero h1{margin:0;font-size:30px;letter-spacing:-1px}.hero p{margin:7px 0 0;color:#777;font-size:12px}.date{color:#888;font-size:10px;border:1px solid var(--line);border-radius:9px;padding:9px 12px;background:#101010}.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.card{background:linear-gradient(180deg,rgba(24,24,24,.95),rgba(12,12,12,.98));border:1px solid var(--line);border-radius:16px;padding:17px;box-shadow:0 12px 30px rgba(0,0,0,.12)}.kpi{min-height:112px;position:relative;overflow:hidden}.kpi:after{content:"";position:absolute;width:70px;height:70px;border:1px solid rgba(217,180,94,.08);border-radius:50%;right:-25px;top:-25px}.label{font-size:9px;color:#777;letter-spacing:1.7px}.value{font-size:25px;font-weight:900;margin-top:10px;letter-spacing:-.5px}.delta{font-size:9px;color:#666;margin-top:7px}.green{color:var(--green)}.gold{color:var(--gold2)}.layout{display:grid;grid-template-columns:1.7fr 1fr;gap:14px;margin-top:14px}.section-title{display:flex;justify-content:space-between;align-items:center;gap:10px}.section-title h2{margin:0;font-size:15px}.section-title span{font-size:9px;color:#666}.chart{height:210px;margin-top:16px;display:flex;align-items:end;gap:8px;padding:10px 4px 4px;border-bottom:1px solid var(--line)}.bar{flex:1;min-width:8px;border-radius:6px 6px 2px 2px;background:linear-gradient(180deg,var(--gold2),#7d6530);opacity:.8;position:relative}.bar small{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:8px;color:#666}.status-list{margin-top:16px;display:grid;gap:10px}.status-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #1d1d1d;font-size:11px}.status-row:last-child{border-bottom:0}.dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:8px;background:#777}.dot.green{background:var(--green)}.dot.gold{background:var(--gold)}.dot.red{background:var(--red)}.module-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}.module{min-height:145px;cursor:pointer;transition:.18s}.module:hover{transform:translateY(-2px);border-color:#67562f;background:linear-gradient(180deg,#181818,#101010)}.tag{display:inline-block;padding:5px 8px;border:1px solid #3d3d3d;border-radius:99px;color:var(--gold);font-size:8px;font-weight:800;letter-spacing:1px}.module h3{margin:12px 0 7px;font-size:15px}.module p{margin:0;color:#777;font-size:10px;line-height:1.55}.open{margin-top:14px;color:#777;font-size:9px;letter-spacing:1px}.orders{margin-top:14px}.btn{border:1px solid #3b3b3b;background:#171717;color:#eee;border-radius:9px;padding:8px 12px;font-size:10px;cursor:pointer}.btn:hover{border-color:#6b592e}.table-wrap{overflow:auto;margin-top:12px}.table{width:100%;border-collapse:collapse;min-width:760px}.table th,.table td{padding:11px 9px;border-bottom:1px solid #202020;text-align:left;font-size:11px}.table th{color:#666;font-size:8px;letter-spacing:1.4px}.muted{color:#777}.status{font-size:8px;padding:5px 7px;border-radius:99px;border:1px solid #383838;white-space:nowrap}.status.paid{color:var(--green);border-color:#28563b}.status.pending{color:var(--gold);border-color:#554525}.loading{color:#777;padding:20px 0;font-size:11px}.error{color:#e88;padding:20px 0;font-size:11px}.attention{margin-top:14px}.attention-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}.attention-item{border:1px solid #272727;border-radius:12px;padding:12px;background:#0e0e0e}.attention-item b{font-size:11px}.attention-item p{font-size:9px;color:#777;margin:5px 0 0;line-height:1.5}.modal{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px;z-index:20}.modal.open{display:flex}.modal-box{width:min(460px,100%);background:#111;border:1px solid #333;border-radius:18px;padding:24px;box-shadow:0 30px 80px #000}.modal-box h2{margin:0 0 8px}.modal-box p{color:#888;font-size:11px;line-height:1.6}.modal-actions{display:flex;justify-content:flex-end;margin-top:18px;gap:8px}@media(max-width:1050px){.grid{grid-template-columns:repeat(3,1fr)}.module-grid{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}}@media(max-width:650px){.wrap{padding:15px}.grid{grid-template-columns:repeat(2,1fr)}.hero{align-items:flex-start;flex-direction:column}.top{align-items:flex-start}.top-right .pill{display:none}.attention-grid{grid-template-columns:1fr}.module-grid{grid-template-columns:1fr}.hero h1{font-size:25px}}@media(max-width:430px){.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <main class="wrap">
-<header class="top"><div><div class="brand">REQOO<span>.ADMIN</span></div><div class="sub">One control centre for SHOP · SIM · PLAY · REFERRAL</div></div><a href="https://reqoo.co/" style="color:#aaa;text-decoration:none;font-size:11px">REQOO.CO →</a></header>
-
-<section class="grid">
-<div class="card"><div class="label">SHOP</div><div class="value" id="shopCount">—</div><div class="sub">Orders</div></div>
-<div class="card"><div class="label">SHOP REVENUE</div><div class="value" id="shopRevenue">—</div><div class="sub">Jumlah order</div></div>
-<div class="card"><div class="label">PAID</div><div class="value" id="paidCount">—</div><div class="sub">Pembayaran berjaya</div></div>
-<div class="card"><div class="label">PENDING</div><div class="value" id="pendingCount">—</div><div class="sub">Perlu semakan</div></div>
-</section>
-
-<section class="sections">
-<div class="card section" onclick="openModule('shop')"><span class="tag">COMMERCE</span><h3>Orders & Payments</h3><p>Shop orders, payment state dan customer fulfilment. Data sekarang ditarik terus daripada SHOP_DB.</p><div class="hint">OPEN SHOP ADMIN →</div></div>
-<div class="card section" onclick="openModule('sim')"><span class="tag">SIM</span><h3>Licenses & Progress</h3><p>PKSK access codes, devices, progress dan customer activity.</p><div class="hint">SIM MODULE →</div></div>
-<div class="card section" onclick="openModule('referral')"><span class="tag">REFERRAL</span><h3>Partners</h3><p>Referral codes, status, sales dan commission tracking across all REQOO products.</p><div class="hint">REFERRAL MODULE →</div></div>
-<div class="card section" onclick="openModule('system')"><span class="tag">SYSTEM</span><h3>Health & Logs</h3><p>API health, client errors, configuration dan migration status.</p><div class="hint">SYSTEM MODULE →</div></div>
-</section>
-
-<section class="card orders">
-<div class="orders-head"><div><div class="label">SHOP</div><h2>Latest Orders</h2></div><button class="btn" onclick="loadOrders()">Refresh</button></div>
-<div id="state" class="loading">Memuatkan order…</div>
-<div class="table-wrap"><table class="table" id="ordersTable" style="display:none"><thead><tr><th>ORDER</th><th>CUSTOMER</th><th>TOTAL</th><th>PAYMENT</th><th>DATE</th></tr></thead><tbody id="ordersBody"></tbody></table></div>
+<header class="top">
+ <div><div class="brand">REQOO<span>.ADMIN</span></div><div class="sub">One control centre for SHOP · SIM · PLAY · REFERRAL</div></div>
+ <div class="top-right"><span class="pill"><span class="dot green"></span><span class="healthy">SYSTEM HEALTHY</span></span><a class="home" href="https://reqoo.co/">REQOO.CO →</a></div>
+</header>
+<nav class="nav">
+ <button class="active" onclick="scrollToId('dashboard')">Overview</button><button onclick="openModule('shop')">SHOP</button><button onclick="openModule('sim')">SIM</button><button onclick="openModule('play')">PLAY</button><button onclick="openModule('referral')">REFERRAL</button><button onclick="openModule('system')">SYSTEM</button>
+</nav>
+<section id="dashboard">
+ <div class="hero"><div><h1>Good afternoon, Admin.</h1><p>Ringkasan operasi REQOO untuk hari ini.</p></div><div class="date">14 AUG 2026 · LIVE DATA</div></div>
+ <section class="grid">
+  <div class="card kpi"><div class="label">SHOP REVENUE</div><div class="value gold" id="shopRevenue">—</div><div class="delta" id="revenueNote">Revenue daripada order</div></div>
+  <div class="card kpi"><div class="label">ORDERS</div><div class="value" id="shopCount">—</div><div class="delta">Jumlah order terkini</div></div>
+  <div class="card kpi"><div class="label">PAID</div><div class="value green" id="paidCount">—</div><div class="delta">Pembayaran berjaya</div></div>
+  <div class="card kpi"><div class="label">PENDING</div><div class="value gold" id="pendingCount">—</div><div class="delta">Perlu semakan</div></div>
+  <div class="card kpi"><div class="label">CUSTOMERS</div><div class="value" id="customerCount">—</div><div class="delta">Customer unik dalam order</div></div>
+ </section>
+ <section class="layout">
+  <div class="card"><div class="section-title"><h2>Revenue overview</h2><span>ORDER DATA</span></div><div class="chart" id="chart"></div></div>
+  <div class="card"><div class="section-title"><h2>Order status</h2><span>LIVE</span></div><div class="status-list"><div class="status-row"><span><i class="dot green"></i>Paid</span><b id="statusPaid">—</b></div><div class="status-row"><span><i class="dot gold"></i>Pending</span><b id="statusPending">—</b></div><div class="status-row"><span><i class="dot red"></i>Other / failed</span><b id="statusOther">—</b></div></div><div class="attention"><div class="label">ATTENTION</div><div class="attention-grid" style="grid-template-columns:1fr"><div class="attention-item"><b id="attentionText">Checking orders…</b><p>Semak order pending sebelum fulfilment.</p></div></div></div></div>
+ </section>
+ <section class="module-grid">
+  <div class="card module" onclick="openModule('shop')"><span class="tag">COMMERCE</span><h3>Orders & Payments</h3><p>Orders, customer, payment status, Billplz dan fulfilment SHOP.</p><div class="open">OPEN SHOP →</div></div>
+  <div class="card module" onclick="openModule('sim')"><span class="tag">SIM</span><h3>Licenses & Progress</h3><p>PKSK access codes, device, progress, active license dan customer activity.</p><div class="open">SIM MODULE →</div></div>
+  <div class="card module" onclick="openModule('play')"><span class="tag">PLAY</span><h3>Products & Users</h3><p>Produk Reqoo Play, users, purchases, progress dan completion.</p><div class="open">PLAY MODULE →</div></div>
+  <div class="card module" onclick="openModule('referral')"><span class="tag">REFERRAL</span><h3>Partners</h3><p>Referral code, sales, commission, payout dan partner performance.</p><div class="open">REFERRAL MODULE →</div></div>
+ </section>
+ <section class="card orders"><div class="section-title"><div><div class="label">SHOP</div><h2 style="margin:5px 0 0">Latest Orders</h2></div><button class="btn" onclick="loadOrders()">↻ Refresh</button></div><div id="state" class="loading">Memuatkan order…</div><div class="table-wrap"><table class="table" id="ordersTable" style="display:none"><thead><tr><th>ORDER</th><th>CUSTOMER</th><th>ITEM</th><th>TOTAL</th><th>PAYMENT</th><th>DATE</th></tr></thead><tbody id="ordersBody"></tbody></table></div></section>
 </section>
 </main>
+<div class="modal" id="modal"><div class="modal-box"><div class="label" id="modalTag">MODULE</div><h2 id="modalTitle">Module</h2><p id="modalText"></p><div class="modal-actions"><button class="btn" onclick="closeModal()">Tutup</button></div></div></div>
 <script>
 const money=n=>'RM'+Number(n||0).toFixed(2);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function scrollToId(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth'});}
 function openModule(module){
- if(module==='shop'){
-   window.location.href='/shop/admin.html';
-   return;
- }
- const names={sim:'SIM — Licenses & Progress',referral:'REFERRAL — Partners',system:'SYSTEM — Health & Logs'};
- alert(names[module]+'\n\nModul ini kita aktifkan seterusnya. Struktur Admin sudah diasingkan untuk SHOP, SIM, PLAY dan REFERRAL.');
+ if(module==='shop'){window.location.href='/shop/admin.html';return;}
+ const data={sim:['SIM','Licenses & Progress','Modul SIM sudah diasingkan dalam Admin REQOO. Seterusnya kita sambungkan access codes, devices, progress dan customer activity.'],play:['PLAY','Products & Users','Modul PLAY akan mengurus produk, users, purchases dan progress secara berasingan daripada SHOP.'],referral:['REFERRAL','Partners','Modul Referral akan mengurus partner, referral code, sales, commission dan payout.'],system:['SYSTEM','Health & Logs','Modul System akan mengumpulkan health check, API logs, error dan konfigurasi.']};
+ const x=data[module]||data.system;document.getElementById('modalTag').textContent=x[0];document.getElementById('modalTitle').textContent=x[1];document.getElementById('modalText').textContent=x[2];document.getElementById('modal').classList.add('open');
 }
+function closeModal(){document.getElementById('modal').classList.remove('open')}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
+function renderChart(orders){const el=document.getElementById('chart');const last=orders.slice(-10);const vals=last.map(o=>Number(o.total||0));const max=Math.max(...vals,1);el.innerHTML=vals.length?vals.map((v,i)=>`<div class="bar" style="height:${Math.max(10,(v/max)*170)}px"><small>${i+1}</small></div>`).join(''):'<span class="muted">Tiada data revenue.</span>';}
 async function loadOrders(){
- const state=document.getElementById('state'),table=document.getElementById('ordersTable'),body=document.getElementById('ordersBody');
- state.textContent='Memuatkan order…';state.className='loading';table.style.display='none';
+ const state=document.getElementById('state'),table=document.getElementById('ordersTable'),body=document.getElementById('ordersBody');state.textContent='Memuatkan order…';state.className='loading';table.style.display='none';
  try{
-  const r=await fetch('/api/shop-admin?action=listOrders&limit=50',{cache:'no-store'}); const d=await r.json();
-  if(!d.ok) throw new Error(d.error||'API error');
-  const orders=Array.isArray(d.orders)?d.orders:[];
-  document.getElementById('shopCount').textContent=orders.length;
-  document.getElementById('shopRevenue').textContent=money(orders.reduce((a,o)=>a+Number(o.total||0),0));
-  document.getElementById('paidCount').textContent=orders.filter(o=>['paid','paid'].includes(String(o.payment_status||'').toLowerCase())).length;
-  document.getElementById('pendingCount').textContent=orders.filter(o=>!['paid','completed','success'].includes(String(o.payment_status||'').toLowerCase())).length;
-  body.innerHTML=orders.map(o=>`<tr><td><b>${esc(o.order_ref||o.id)}</b></td><td>${esc(o.customer_name||'-')}<br><span class="muted">${esc(o.phone||o.email||'')}</span></td><td>${money(o.total)}</td><td><span class="status">${esc(o.payment_status||'unknown')}</span></td><td class="muted">${esc(o.created_at||'')}</td></tr>`).join('');
-  if(!orders.length){state.textContent='Belum ada order.';return;}
-  state.style.display='none';table.style.display='table';
+  const r=await fetch('/api/shop-admin?action=listOrders&limit=50',{cache:'no-store'});const d=await r.json();if(!d.ok)throw new Error(d.error||'API error');
+  const orders=Array.isArray(d.orders)?d.orders:[];const norm=o=>String(o.payment_status||'').toLowerCase();const paid=orders.filter(o=>['paid','completed','success'].includes(norm(o)));const pending=orders.filter(o=>!['paid','completed','success','failed','cancelled','refunded'].includes(norm(o)));const other=orders.length-paid.length-pending.length;
+  document.getElementById('shopCount').textContent=orders.length;document.getElementById('shopRevenue').textContent=money(paid.reduce((a,o)=>a+Number(o.total||0),0));document.getElementById('paidCount').textContent=paid.length;document.getElementById('pendingCount').textContent=pending.length;document.getElementById('customerCount').textContent=new Set(orders.map(o=>String(o.phone||o.email||o.customer_name||'')).filter(Boolean)).size;document.getElementById('statusPaid').textContent=paid.length;document.getElementById('statusPending').textContent=pending.length;document.getElementById('statusOther').textContent=other;document.getElementById('attentionText').textContent=pending.length?`${pending.length} order perlu semakan`:'Tiada order pending';renderChart(orders);
+  body.innerHTML=orders.slice().reverse().slice(0,20).map(o=>`<tr><td><b>${esc(o.order_ref||o.id)}</b></td><td>${esc(o.customer_name||'-')}<br><span class="muted">${esc(o.phone||o.email||'')}</span></td><td>${esc(o.item_name||o.product_name||o.product||'-')}</td><td>${money(o.total)}</td><td><span class="status ${norm(o)==='paid'||norm(o)==='completed'||norm(o)==='success'?'paid':'pending'}">${esc(o.payment_status||'unknown')}</span></td><td class="muted">${esc(o.created_at||'')}</td></tr>`).join('');
+  if(!orders.length){state.textContent='Belum ada order.';return;}state.style.display='none';table.style.display='table';
  }catch(e){state.className='error';state.textContent='Gagal sambung SHOP: '+e.message;}
 }
 loadOrders();
