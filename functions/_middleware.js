@@ -12,10 +12,9 @@ export async function onRequest(context){
   // ├─ play.reqoo.co
   // └─ admin.reqoo.co
   //
-  // One Pages project, multiple family domains.
-  // SIM children are resolved from top-level product folders:
-  // pksk.sim.reqoo.co -> /pksk/*
-  // xxx.sim.reqoo.co  -> /xxx/*
+  // SIM children live INSIDE the SIM family folder:
+  // sim/pksk/*
+  // sim/xxx/*
   // ============================================================
 
   // SIM parent/family hub
@@ -24,19 +23,21 @@ export async function onRequest(context){
     return context.env.ASSETS.fetch(new Request(url,context.request));
   }
 
-  // PKSK = first SIM child.
-  // Keep this explicit so the production hostname is unambiguous.
-  if(host==='pksk.sim.reqoo.co' && !url.pathname.startsWith('/api/')){
-    url.pathname=url.pathname==='/'?'/pksk/index.html':`/pksk${url.pathname}`;
-    return context.env.ASSETS.fetch(new Request(url,context.request));
-  }
-
-  // Future SIM children.
-  // xxx.sim.reqoo.co -> /xxx/*
+  // SIM product children.
+  // pksk.sim.reqoo.co -> /sim/pksk/*
+  // xxx.sim.reqoo.co  -> /sim/xxx/*
   if(host.endsWith('.sim.reqoo.co') && host!=='sim.reqoo.co' && !url.pathname.startsWith('/api/')){
     const child=host.slice(0,-'.sim.reqoo.co'.length);
+
     if(child && !child.includes('.')){
-      url.pathname=url.pathname==='/'?`/${child}/index.html`:`/${child}${url.pathname}`;
+      // Existing PKSK code uses absolute /pksk/... links.
+      // Strip the child prefix when present, then resolve inside /sim/<child>/.
+      let childPath=url.pathname;
+      if(childPath===`/${child}` || childPath.startsWith(`/${child}/`)){
+        childPath=childPath.slice(child.length+1) || '/';
+      }
+
+      url.pathname=childPath==='/'?`/sim/${child}/index.html`:`/sim/${child}${childPath}`;
       return context.env.ASSETS.fetch(new Request(url,context.request));
     }
   }
