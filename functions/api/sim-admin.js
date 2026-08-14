@@ -18,6 +18,7 @@ export async function onRequest(context) {
     const action = String(d.action||'summary');
     if (action === 'summary') return json(await summary(env));
     if (action === 'checkPhone') return json(await checkPhone(d,env));
+    if (action === 'listCustomers') return json(await listCustomers(d,env));
     if (action === 'listOrders') return json(await listOrders(d,env));
     if (action === 'listReferrals') return json(await listReferrals(d,env));
     if (action === 'listTables') return json(await listTables(env));
@@ -44,10 +45,25 @@ async function summary(env){
 }
 async function checkPhone(d,env){
   const phone=normPhone(d.phone); if(!phone)return {ok:false,error:'Nombor telefon diperlukan'};
+  if(await tableExists(env,'sim_customers')){
+    const sim=await env.DB.prepare('SELECT id,name,phone,email,status,referral_code,created_at FROM sim_customers WHERE phone_normalized=? LIMIT 1').bind(phone).first();
+    if(sim) return {ok:true,phone,exists:true,source:'sim_customers',customer:sim};
+  }
   if(!await tableExists(env,'orders')) return {ok:true,phone,exists:false};
   const rows=await env.DB.prepare('SELECT id,customer_name,phone,payment_status,created_at FROM orders').all();
   const match=(rows.results||[]).find(r=>normPhone(r.phone)===phone);
-  return {ok:true,phone,exists:!!match,customer:match||null};
+  return {ok:true,phone,exists:!!match,source:match?'orders':null,customer:match||null};
+}
+async function listCustomers(d,env){
+  if(!await tableExists(env,'sim_customers')) return {ok:true,customers:[]};
+  const limit=Math.min(Math.max(Number(d.limit||100),1),500);
+  const rows=await env.DB.prepare(`SELECT id,name,phone,email,referral_code,referred_by_code,status,created_at,updated_at
+    FROM sim_customers ORDER BY created_at DESC LIMIT ?`).bind(limit).all();
+  let customers=rows.results||[];
+  if(d.phone){const p=normPhone(d.phone);customers=customers.filter(r=>normPhone(r.phone)===p)}
+  if(d.referral_code)customers=customers.filter(r=>String(r.referred_by_code||'').toUpperCase()===String(d.referral_code).toUpperCase());
+  if(d.status)customers=customers.filter(r=>String(r.status||'').toLowerCase()===String(d.status).toLowerCase());
+  return {ok:true,customers};
 }
 async function listOrders(d,env){
   if(!await tableExists(env,'orders')) return {ok:true,orders:[]};
