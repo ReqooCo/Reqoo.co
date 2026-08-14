@@ -14,8 +14,14 @@ export async function onRequest(context) {
     const body = request.method === 'POST' && (request.headers.get('content-type')||'').includes('application/json') ? await request.json() : {};
     const d = {...q,...body};
     const token = request.headers.get('X-Admin-Token') || d.token || '';
-    if (!String(env.PKSK_ADMIN_TOKEN||'') || String(token) !== String(env.PKSK_ADMIN_TOKEN||'')) return json({ok:false,error:'Unauthorized'},401);
     const action = String(d.action||'summary');
+
+    // Cloudflare Text variable is the bootstrap/fallback token.
+    // Once Admin Settings saves a token, D1 becomes the active source.
+    const activeToken = await getActiveToken(env);
+    if (!activeToken || String(token) !== String(activeToken)) return json({ok:false,error:'Unauthorized'},401);
+
+    if (action === 'setAdminToken') return json(await setAdminToken(d,env));
     if (action === 'summary') return json(await summary(env));
     if (action === 'checkPhone') return json(await checkPhone(d,env));
     if (action === 'listCustomers') return json(await listCustomers(d,env));
@@ -29,6 +35,31 @@ export async function onRequest(context) {
 }
 
 function json(data,status=200){return new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json;charset=UTF-8',...cors}})}
+
+async function ensureSettingsTable(env){
+  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS sim_admin_settings (
+    id INTEGER PRIMARY KEY CHECK (id=1),
+    admin_token TEXT NOT NULL,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`).run();
+}
+
+async function getActiveToken(env){
+  await ensureSettingsTable(env);
+  const row=await env.DB.prepare('SELECT admin_token FROM sim_admin_settings WHERE id=1 LIMIT 1').first();
+  return String(row?.admin_token || env.PKSK_ADMIN_TOKEN || '');
+}
+
+async function setAdminToken(d,env){
+  const next=String(d.new_token||'').trim();
+  if(!next) return {ok:false,error:'Token baru tidak boleh kosong'};
+  if(next.length<8) return {ok:false,error:'Token mesti sekurang-kurangnya 8 aksara'};
+  await ensureSettingsTable(env);
+  await env.DB.prepare(`INSERT INTO sim_admin_settings (id,admin_token,updated_at) VALUES (1,?,CURRENT_TIMESTAMP)
+    ON CONFLICT(id) DO UPDATE SET admin_token=excluded.admin_token,updated_at=CURRENT_TIMESTAMP`).bind(next).run();
+  return {ok:true,message:'Admin token berjaya dikemas kini'};
+}
+
 function normPhone(v){let p=String(v||'').replace(/\D/g,'');if(p.startsWith('00'))p=p.slice(2);if(p.startsWith('0'))p='60'+p.slice(1);if(p&&!p.startsWith('60'))p='60'+p;return p;}
 async function tableExists(env,name){const r=await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?").bind(name).first();return !!r}
 async function summary(env){
