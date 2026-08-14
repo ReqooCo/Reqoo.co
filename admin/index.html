@@ -1,1 +1,59 @@
-<!doctype html><html lang="ms"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#080808"><title>REQOO Admin</title><style>:root{--bg:#080808;--panel:#111;--gold:#d9b45e;--muted:#999;--line:#282828}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#fff;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}.wrap{max-width:1180px;margin:auto;padding:24px}.top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:20px}.brand{font-weight:950;letter-spacing:3px}.brand span{color:var(--gold)}.sub{color:#777;font-size:11px;margin-top:5px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:24px}.card{background:linear-gradient(180deg,#141414,#0e0e0e);border:1px solid var(--line);border-radius:16px;padding:20px}.label{font-size:10px;color:#888;letter-spacing:1.5px}.value{font-size:28px;font-weight:900;margin-top:8px}.sections{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:14px}.section{min-height:150px}.section h3{margin:10px 0}.section p{font-size:12px;color:#999;line-height:1.6}.tag{display:inline-block;padding:5px 8px;border:1px solid #444;border-radius:99px;color:var(--gold);font-size:9px;font-weight:800}@media(max-width:800px){.grid,.sections{grid-template-columns:repeat(2,1fr)}}@media(max-width:500px){.grid,.sections{grid-template-columns:1fr}.wrap{padding:16px}}</style></head><body><main class="wrap"><header class="top"><div><div class="brand">REQOO<span>.ADMIN</span></div><div class="sub">One control centre for SHOP · SIM · PLAY · REFERRAL</div></div><a href="https://reqoo.co/" style="color:#aaa;text-decoration:none;font-size:11px">REQOO.CO →</a></header><section class="grid"><div class="card"><div class="label">SHOP</div><div class="value">—</div><div class="sub">Orders / revenue</div></div><div class="card"><div class="label">SIM</div><div class="value">—</div><div class="sub">Licenses / active</div></div><div class="card"><div class="label">PLAY</div><div class="value">—</div><div class="sub">Products / users</div></div><div class="card"><div class="label">REFERRAL</div><div class="value">—</div><div class="sub">Sales / commission</div></div></section><section class="sections"><div class="card section"><span class="tag">COMMERCE</span><h3>Orders & Payments</h3><p>Shop orders, payment state and customer fulfilment. Billplz integration will plug into the shared payment layer.</p></div><div class="card section"><span class="tag">SIM</span><h3>Licenses & Progress</h3><p>PKSK access codes, devices, progress and customer activity.</p></div><div class="card section"><span class="tag">REFERRAL</span><h3>Partners</h3><p>Referral codes, status, sales and commission tracking across all REQOO products.</p></div><div class="card section"><span class="tag">SYSTEM</span><h3>Health & Logs</h3><p>API health, client errors, configuration and migration status.</p></div></section></main></body></html>
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080808">
+<title>REQOO Admin</title>
+<style>
+:root{--bg:#080808;--panel:#111;--gold:#d9b45e;--muted:#999;--line:#282828;--green:#53c27c;--red:#e66}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#fff;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}.wrap{max-width:1180px;margin:auto;padding:24px}.top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:20px}.brand{font-weight:950;letter-spacing:3px}.brand span{color:var(--gold)}.sub{color:#777;font-size:11px;margin-top:5px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:24px}.card{background:linear-gradient(180deg,#141414,#0e0e0e);border:1px solid var(--line);border-radius:16px;padding:20px}.label{font-size:10px;color:#888;letter-spacing:1.5px}.value{font-size:28px;font-weight:900;margin-top:8px}.sections{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:14px}.section{min-height:150px}.section h3{margin:10px 0}.section p{font-size:12px;color:#999;line-height:1.6}.tag{display:inline-block;padding:5px 8px;border:1px solid #444;border-radius:99px;color:var(--gold);font-size:9px;font-weight:800}.orders{margin-top:14px}.orders-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.orders h2{margin:0}.btn{border:1px solid #444;background:#171717;color:#fff;border-radius:10px;padding:9px 13px;cursor:pointer}.status{font-size:10px;padding:5px 8px;border-radius:99px;border:1px solid #444;white-space:nowrap}.table-wrap{overflow:auto;margin-top:14px}.table{width:100%;border-collapse:collapse;min-width:720px}.table th,.table td{padding:12px 10px;border-bottom:1px solid var(--line);text-align:left;font-size:12px}.table th{color:#777;font-size:10px;letter-spacing:1px}.muted{color:#777}.error{color:#e88}.empty{text-align:center;padding:30px;color:#777}.loading{color:#777;padding:20px 0}@media(max-width:800px){.grid,.sections{grid-template-columns:repeat(2,1fr)}}@media(max-width:500px){.grid,.sections{grid-template-columns:1fr}.wrap{padding:16px}.top{align-items:flex-start}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header class="top"><div><div class="brand">REQOO<span>.ADMIN</span></div><div class="sub">One control centre for SHOP · SIM · PLAY · REFERRAL</div></div><a href="https://reqoo.co/" style="color:#aaa;text-decoration:none;font-size:11px">REQOO.CO →</a></header>
+
+<section class="grid">
+<div class="card"><div class="label">SHOP</div><div class="value" id="shopCount">—</div><div class="sub">Orders</div></div>
+<div class="card"><div class="label">SHOP REVENUE</div><div class="value" id="shopRevenue">—</div><div class="sub">Jumlah order</div></div>
+<div class="card"><div class="label">PAID</div><div class="value" id="paidCount">—</div><div class="sub">Pembayaran berjaya</div></div>
+<div class="card"><div class="label">PENDING</div><div class="value" id="pendingCount">—</div><div class="sub">Perlu semakan</div></div>
+</section>
+
+<section class="sections">
+<div class="card section"><span class="tag">COMMERCE</span><h3>Orders & Payments</h3><p>Shop orders, payment state dan customer fulfilment. Data sekarang ditarik terus daripada SHOP_DB.</p></div>
+<div class="card section"><span class="tag">SIM</span><h3>Licenses & Progress</h3><p>PKSK access codes, devices, progress dan customer activity. Modul ini kita sambungkan kemudian.</p></div>
+<div class="card section"><span class="tag">REFERRAL</span><h3>Partners</h3><p>Referral codes, status, sales dan commission tracking across all REQOO products.</p></div>
+<div class="card section"><span class="tag">SYSTEM</span><h3>Health & Logs</h3><p>API health, client errors, configuration dan migration status.</p></div>
+</section>
+
+<section class="card orders">
+<div class="orders-head"><div><div class="label">SHOP</div><h2>Latest Orders</h2></div><button class="btn" onclick="loadOrders()">Refresh</button></div>
+<div id="state" class="loading">Memuatkan order…</div>
+<div class="table-wrap"><table class="table" id="ordersTable" style="display:none"><thead><tr><th>ORDER</th><th>CUSTOMER</th><th>TOTAL</th><th>PAYMENT</th><th>DATE</th></tr></thead><tbody id="ordersBody"></tbody></table></div>
+</section>
+</main>
+<script>
+const money=n=>'RM'+Number(n||0).toFixed(2);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function loadOrders(){
+ const state=document.getElementById('state'),table=document.getElementById('ordersTable'),body=document.getElementById('ordersBody');
+ state.textContent='Memuatkan order…';state.className='loading';table.style.display='none';
+ try{
+  const r=await fetch('/api/shop-admin?action=listOrders&limit=50',{cache:'no-store'}); const d=await r.json();
+  if(!d.ok) throw new Error(d.error||'API error');
+  const orders=Array.isArray(d.orders)?d.orders:[];
+  document.getElementById('shopCount').textContent=orders.length;
+  document.getElementById('shopRevenue').textContent=money(orders.reduce((a,o)=>a+Number(o.total||0),0));
+  document.getElementById('paidCount').textContent=orders.filter(o=>['paid','paid'].includes(String(o.payment_status||'').toLowerCase())).length;
+  document.getElementById('pendingCount').textContent=orders.filter(o=>!['paid','completed','success'].includes(String(o.payment_status||'').toLowerCase())).length;
+  body.innerHTML=orders.map(o=>`<tr><td><b>${esc(o.order_ref||o.id)}</b></td><td>${esc(o.customer_name||'-')}<br><span class="muted">${esc(o.phone||o.email||'')}</span></td><td>${money(o.total)}</td><td><span class="status">${esc(o.payment_status||'unknown')}</span></td><td class="muted">${esc(o.created_at||'')}</td></tr>`).join('');
+  if(!orders.length){state.textContent='Belum ada order.';return;}
+  state.style.display='none';table.style.display='table';
+ }catch(e){state.className='error';state.textContent='Gagal sambung SHOP: '+e.message;}
+}
+loadOrders();
+</script>
+</body>
+</html>
