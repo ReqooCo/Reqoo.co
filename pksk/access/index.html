@@ -17,7 +17,7 @@
 <div class="section"><h2>Aktiviti terkini</h2><div id="activity" class="activity"></div></div>
 </section></main>
 <script>
-const API_URL="https://script.google.com/macros/s/AKfycbwVFg5bxd2EsbLxUe2CsVHqRE-yVNraIJBSx8_pDsrGvrtTUiVdJwVdJwhJbbacxpci/exec";
+const API_URL="/api/pksk";
 const $=id=>document.getElementById(id);let LICENSE="";
 function getDeviceId(){let id=localStorage.getItem("reqoo_pksk_device_id");if(!id){id="DEV-"+crypto.getRandomValues(new Uint32Array(3)).join("-")+"-"+Date.now().toString(36);localStorage.setItem("reqoo_pksk_device_id",id)}return id}
 function api(action,data,done,retries=2){

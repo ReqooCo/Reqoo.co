@@ -1,5 +1,5 @@
 
-const PKSK_ACCESS_API="https://script.google.com/macros/s/AKfycbwVFg5bxd2EsbLxUe2CsVHqRE-yVNraIJBSx8_pDsrGvrtTUiVdJwVdJwhJbbacxpci/exec";
+const PKSK_ACCESS_API="/api/pksk";
 function pkskApi(action,data,done,retries=2){
   const attempt=n=>{
     const cb="pkskGate_"+Date.now()+"_"+Math.floor(Math.random()*99999);

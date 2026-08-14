@@ -184,7 +184,7 @@ async function getOrderStatus(d, env) {
   const row = await env.DB.prepare('SELECT * FROM orders WHERE id=?').bind(orderNo).first();
   if (!row) return {ok:true,found:false,status:'NOT_FOUND'};
   const license = await env.DB.prepare('SELECT * FROM licenses WHERE order_id=?').bind(orderNo).first();
-  return {ok:true,found:true,orderNo,status:row.payment_status || '',proofUploaded:!!row.payment_ref,proofName:row.payment_ref || '',accessCode:license?.access_code || ''};
+  // Access Code is only returned by admin verification / authenticated access flows.\n  // Never expose it from the public order-status endpoint.\n  return {ok:true,found:true,orderNo,status:row.payment_status || '',proofUploaded:!!row.payment_ref,proofName:row.payment_ref || ''};
 }
 
 async function verifyOrder(d, env) {

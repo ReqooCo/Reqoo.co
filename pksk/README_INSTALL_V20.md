@@ -53,4 +53,4 @@ Customer:
 Selepas bukti dihantar, sistem buat semakan penerimaan server sebelum memaparkan WhatsApp.
 
 ## Penting
-API URL dalam frontend kekal URL Web App PKSK yang sama. Jangan ubah ke URL Shop Reqoo.
+API frontend PKSK menggunakan Cloudflare Pages Function yang sama dengan laman: `/api/pksk`. Jangan gunakan Google Apps Script lama.

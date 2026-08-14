@@ -81,7 +81,7 @@
 <div id="modal" class="modal" hidden><div class="modalbox"><button class="close" id="close">×</button><div id="detail"></div></div></div>
 
 <script>
-const API_URL="https://script.google.com/macros/s/AKfycbwVFg5bxd2EsbLxUe2CsVHqRE-yVNraIJBSx8_pDsrGvrtTUiVdJwVdJwhJbbacxpci/exec";
+const API_URL="/api/pksk";
 const $=id=>document.getElementById(id);let TOKEN="",DATA={orders:[],licenses:[],referrals:[]};
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
 function api(action,extra={},retries=2){
