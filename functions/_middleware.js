@@ -4,7 +4,6 @@ export async function onRequest(context){
 
   // ============================================================
   // REQOO FAMILY ROUTING
-  // ============================================================
   //
   // REQOO
   // ├─ shop.reqoo.co
@@ -13,10 +12,10 @@ export async function onRequest(context){
   // ├─ play.reqoo.co
   // └─ admin.reqoo.co
   //
-  // Product children are stored as top-level folders in this repo.
-  // Example: pksk.sim.reqoo.co -> /pksk/*
-  // This keeps the architecture ready for future products such as
-  // xxx.sim.reqoo.co without needing another routing rule.
+  // One Pages project, multiple family domains.
+  // SIM children are resolved from top-level product folders:
+  // pksk.sim.reqoo.co -> /pksk/*
+  // xxx.sim.reqoo.co  -> /xxx/*
   // ============================================================
 
   // SIM parent/family hub
@@ -25,14 +24,17 @@ export async function onRequest(context){
     return context.env.ASSETS.fetch(new Request(url,context.request));
   }
 
-  // SIM product children.
-  // pksk.sim.reqoo.co -> /pksk
-  // xxx.sim.reqoo.co  -> /xxx
+  // PKSK = first SIM child.
+  // Keep this explicit so the production hostname is unambiguous.
+  if(host==='pksk.sim.reqoo.co' && !url.pathname.startsWith('/api/')){
+    url.pathname=url.pathname==='/'?'/pksk/index.html':`/pksk${url.pathname}`;
+    return context.env.ASSETS.fetch(new Request(url,context.request));
+  }
+
+  // Future SIM children.
+  // xxx.sim.reqoo.co -> /xxx/*
   if(host.endsWith('.sim.reqoo.co') && host!=='sim.reqoo.co' && !url.pathname.startsWith('/api/')){
     const child=host.slice(0,-'.sim.reqoo.co'.length);
-
-    // Only a single-level child is allowed here.
-    // This prevents an accidental nested hostname from being treated as a product.
     if(child && !child.includes('.')){
       url.pathname=url.pathname==='/'?`/${child}/index.html`:`/${child}${url.pathname}`;
       return context.env.ASSETS.fetch(new Request(url,context.request));
