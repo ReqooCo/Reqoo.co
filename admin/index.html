@@ -7,7 +7,7 @@
 <title>REQOO Admin</title>
 <style>
 :root{--bg:#080808;--panel:#111;--gold:#d9b45e;--muted:#999;--line:#282828;--green:#53c27c;--red:#e66}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#fff;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}.wrap{max-width:1180px;margin:auto;padding:24px}.top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:20px}.brand{font-weight:950;letter-spacing:3px}.brand span{color:var(--gold)}.sub{color:#777;font-size:11px;margin-top:5px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:24px}.card{background:linear-gradient(180deg,#141414,#0e0e0e);border:1px solid var(--line);border-radius:16px;padding:20px}.label{font-size:10px;color:#888;letter-spacing:1.5px}.value{font-size:28px;font-weight:900;margin-top:8px}.sections{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:14px}.section{min-height:150px}.section h3{margin:10px 0}.section p{font-size:12px;color:#999;line-height:1.6}.tag{display:inline-block;padding:5px 8px;border:1px solid #444;border-radius:99px;color:var(--gold);font-size:9px;font-weight:800}.orders{margin-top:14px}.orders-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.orders h2{margin:0}.btn{border:1px solid #444;background:#171717;color:#fff;border-radius:10px;padding:9px 13px;cursor:pointer}.status{font-size:10px;padding:5px 8px;border-radius:99px;border:1px solid #444;white-space:nowrap}.table-wrap{overflow:auto;margin-top:14px}.table{width:100%;border-collapse:collapse;min-width:720px}.table th,.table td{padding:12px 10px;border-bottom:1px solid var(--line);text-align:left;font-size:12px}.table th{color:#777;font-size:10px;letter-spacing:1px}.muted{color:#777}.error{color:#e88}.empty{text-align:center;padding:30px;color:#777}.loading{color:#777;padding:20px 0}@media(max-width:800px){.grid,.sections{grid-template-columns:repeat(2,1fr)}}@media(max-width:500px){.grid,.sections{grid-template-columns:1fr}.wrap{padding:16px}.top{align-items:flex-start}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#fff;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}.wrap{max-width:1180px;margin:auto;padding:24px}.top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:20px}.brand{font-weight:950;letter-spacing:3px}.brand span{color:var(--gold)}.sub{color:#777;font-size:11px;margin-top:5px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:24px}.card{background:linear-gradient(180deg,#141414,#0e0e0e);border:1px solid var(--line);border-radius:16px;padding:20px}.label{font-size:10px;color:#888;letter-spacing:1.5px}.value{font-size:28px;font-weight:900;margin-top:8px}.sections{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:14px}.section{min-height:150px;cursor:pointer;transition:.18s;border-color:var(--line)}.section:hover{transform:translateY(-2px);border-color:#705d32;background:linear-gradient(180deg,#181818,#101010)}.section:active{transform:translateY(0)}.section h3{margin:10px 0}.section p{font-size:12px;color:#999;line-height:1.6}.tag{display:inline-block;padding:5px 8px;border:1px solid #444;border-radius:99px;color:var(--gold);font-size:9px;font-weight:800}.orders{margin-top:14px}.orders-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.orders h2{margin:0}.btn{border:1px solid #444;background:#171717;color:#fff;border-radius:10px;padding:9px 13px;cursor:pointer}.status{font-size:10px;padding:5px 8px;border-radius:99px;border:1px solid #444;white-space:nowrap}.table-wrap{overflow:auto;margin-top:14px}.table{width:100%;border-collapse:collapse;min-width:720px}.table th,.table td{padding:12px 10px;border-bottom:1px solid var(--line);text-align:left;font-size:12px}.table th{color:#777;font-size:10px;letter-spacing:1px}.muted{color:#777}.error{color:#e88}.empty{text-align:center;padding:30px;color:#777}.loading{color:#777;padding:20px 0}.hint{font-size:9px;color:#666;margin-top:10px;letter-spacing:.5px}@media(max-width:800px){.grid,.sections{grid-template-columns:repeat(2,1fr)}}@media(max-width:500px){.grid,.sections{grid-template-columns:1fr}.wrap{padding:16px}.top{align-items:flex-start}}
 </style>
 </head>
 <body>
@@ -22,10 +22,10 @@
 </section>
 
 <section class="sections">
-<div class="card section"><span class="tag">COMMERCE</span><h3>Orders & Payments</h3><p>Shop orders, payment state dan customer fulfilment. Data sekarang ditarik terus daripada SHOP_DB.</p></div>
-<div class="card section"><span class="tag">SIM</span><h3>Licenses & Progress</h3><p>PKSK access codes, devices, progress dan customer activity. Modul ini kita sambungkan kemudian.</p></div>
-<div class="card section"><span class="tag">REFERRAL</span><h3>Partners</h3><p>Referral codes, status, sales dan commission tracking across all REQOO products.</p></div>
-<div class="card section"><span class="tag">SYSTEM</span><h3>Health & Logs</h3><p>API health, client errors, configuration dan migration status.</p></div>
+<div class="card section" onclick="openModule('shop')"><span class="tag">COMMERCE</span><h3>Orders & Payments</h3><p>Shop orders, payment state dan customer fulfilment. Data sekarang ditarik terus daripada SHOP_DB.</p><div class="hint">OPEN SHOP ADMIN →</div></div>
+<div class="card section" onclick="openModule('sim')"><span class="tag">SIM</span><h3>Licenses & Progress</h3><p>PKSK access codes, devices, progress dan customer activity.</p><div class="hint">SIM MODULE →</div></div>
+<div class="card section" onclick="openModule('referral')"><span class="tag">REFERRAL</span><h3>Partners</h3><p>Referral codes, status, sales dan commission tracking across all REQOO products.</p><div class="hint">REFERRAL MODULE →</div></div>
+<div class="card section" onclick="openModule('system')"><span class="tag">SYSTEM</span><h3>Health & Logs</h3><p>API health, client errors, configuration dan migration status.</p><div class="hint">SYSTEM MODULE →</div></div>
 </section>
 
 <section class="card orders">
@@ -37,6 +37,14 @@
 <script>
 const money=n=>'RM'+Number(n||0).toFixed(2);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function openModule(module){
+ if(module==='shop'){
+   window.location.href='/shop/admin.html';
+   return;
+ }
+ const names={sim:'SIM — Licenses & Progress',referral:'REFERRAL — Partners',system:'SYSTEM — Health & Logs'};
+ alert(names[module]+'\n\nModul ini kita aktifkan seterusnya. Struktur Admin sudah diasingkan untuk SHOP, SIM, PLAY dan REFERRAL.');
+}
 async function loadOrders(){
  const state=document.getElementById('state'),table=document.getElementById('ordersTable'),body=document.getElementById('ordersBody');
  state.textContent='Memuatkan order…';state.className='loading';table.style.display='none';
