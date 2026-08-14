@@ -2,47 +2,43 @@ export async function onRequest(context){
   const url=new URL(context.request.url);
   const host=url.hostname;
 
-  // ============================================================
   // REQOO FAMILY ROUTING
-  //
-  // REQOO
-  // ├─ shop.reqoo.co
-  // ├─ sim.reqoo.co
-  // │  └─ <product>.sim.reqoo.co
-  // ├─ play.reqoo.co
-  // └─ admin.reqoo.co
-  //
-  // SIM children live INSIDE the SIM family folder:
-  // sim/pksk/*
-  // sim/xxx/*
-  // ============================================================
+  // REQOO -> SHOP / SIM / PLAY / ADMIN
+  // SIM -> PKSK / future SIM children
 
-  // SIM parent/family hub
+  // SIM parent
   if(host==='sim.reqoo.co' && !url.pathname.startsWith('/api/')){
     url.pathname=url.pathname==='/'?'/sim/index.html':`/sim${url.pathname}`;
     return context.env.ASSETS.fetch(new Request(url,context.request));
   }
 
-  // SIM product children.
-  // pksk.sim.reqoo.co -> /sim/pksk/*
-  // xxx.sim.reqoo.co  -> /sim/xxx/*
+  // Explicit PKSK child route.
+  // pksk.sim.reqoo.co/          -> /sim/pksk/index.html
+  // pksk.sim.reqoo.co/foo      -> /sim/pksk/foo
+  // pksk.sim.reqoo.co/pksk/foo -> /sim/pksk/foo
+  if(host==='pksk.sim.reqoo.co' && !url.pathname.startsWith('/api/')){
+    let path=url.pathname;
+    if(path==='/pksk' || path.startsWith('/pksk/')){
+      path=path.slice('/pksk'.length) || '/';
+    }
+    url.pathname=path==='/'?'/sim/pksk/index.html':`/sim/pksk${path}`;
+    return context.env.ASSETS.fetch(new Request(url,context.request));
+  }
+
+  // Future SIM children use the same family pattern.
   if(host.endsWith('.sim.reqoo.co') && host!=='sim.reqoo.co' && !url.pathname.startsWith('/api/')){
     const child=host.slice(0,-'.sim.reqoo.co'.length);
-
     if(child && !child.includes('.')){
-      // Existing PKSK code uses absolute /pksk/... links.
-      // Strip the child prefix when present, then resolve inside /sim/<child>/.
-      let childPath=url.pathname;
-      if(childPath===`/${child}` || childPath.startsWith(`/${child}/`)){
-        childPath=childPath.slice(child.length+1) || '/';
+      let path=url.pathname;
+      if(path===`/${child}` || path.startsWith(`/${child}/`)){
+        path=path.slice(child.length+1) || '/';
       }
-
-      url.pathname=childPath==='/'?`/sim/${child}/index.html`:`/sim/${child}${childPath}`;
+      url.pathname=path==='/'?`/sim/${child}/index.html`:`/sim/${child}${path}`;
       return context.env.ASSETS.fetch(new Request(url,context.request));
     }
   }
 
-  // PLAY parent platform
+  // PLAY parent
   if(host==='play.reqoo.co' && !url.pathname.startsWith('/api/')){
     url.pathname=url.pathname==='/'?'/play/index.html':`/play${url.pathname}`;
     return context.env.ASSETS.fetch(new Request(url,context.request));
@@ -63,9 +59,8 @@ export async function onRequest(context){
     return context.env.ASSETS.fetch(new Request(url,context.request));
   }
 
-  // Main REQOO site and all API/function routes fall through normally.
+  // Main REQOO site and API/function routes
   const response=await context.next();
-
   if(host!=='reqoo.co' && host!=='shop.reqoo.co') return response;
 
   const type=response.headers.get('content-type')||'';
