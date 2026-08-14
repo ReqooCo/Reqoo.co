@@ -39,7 +39,8 @@ async function summary(env){
     out.pending=Number((await env.DB.prepare("SELECT COUNT(*) n FROM orders WHERE lower(payment_status)='pending'").first())?.n||0);
   }
   if(await tableExists(env,'sim_customers')) out.customers=Number((await env.DB.prepare('SELECT COUNT(*) n FROM sim_customers').first())?.n||0);
-  if(await tableExists(env,'referrals')) out.referrals=Number((await env.DB.prepare('SELECT COUNT(*) n FROM referrals').first())?.n||0);
+  if(await tableExists(env,'sim_referral_agents')) out.referrals=Number((await env.DB.prepare("SELECT COUNT(*) n FROM sim_referral_agents WHERE lower(status)='active'").first())?.n||0);
+  else if(await tableExists(env,'referrals')) out.referrals=Number((await env.DB.prepare('SELECT COUNT(*) n FROM referrals').first())?.n||0);
   else if(await tableExists(env,'sim_referrals')) out.referrals=Number((await env.DB.prepare('SELECT COUNT(*) n FROM sim_referrals').first())?.n||0);
   return out;
 }
@@ -49,6 +50,10 @@ async function checkPhone(d,env){
     const sim=await env.DB.prepare('SELECT id,name,phone,email,status,referral_code,created_at FROM sim_customers WHERE phone_normalized=? LIMIT 1').bind(phone).first();
     if(sim) return {ok:true,phone,exists:true,source:'sim_customers',customer:sim};
   }
+  if(await tableExists(env,'sim_referral_agents')){
+    const agent=await env.DB.prepare('SELECT id,name,phone,referral_code,status,commission,created_at FROM sim_referral_agents WHERE phone_normalized=? LIMIT 1').bind(phone).first();
+    if(agent) return {ok:true,phone,exists:true,source:'sim_referral_agents',customer:agent};
+  }
   if(!await tableExists(env,'orders')) return {ok:true,phone,exists:false};
   const rows=await env.DB.prepare('SELECT id,customer_name,phone,payment_status,created_at FROM orders').all();
   const match=(rows.results||[]).find(r=>normPhone(r.phone)===phone);
@@ -57,8 +62,7 @@ async function checkPhone(d,env){
 async function listCustomers(d,env){
   if(!await tableExists(env,'sim_customers')) return {ok:true,customers:[]};
   const limit=Math.min(Math.max(Number(d.limit||100),1),500);
-  const rows=await env.DB.prepare(`SELECT id,name,phone,email,referral_code,referred_by_code,status,created_at,updated_at
-    FROM sim_customers ORDER BY created_at DESC LIMIT ?`).bind(limit).all();
+  const rows=await env.DB.prepare(`SELECT id,name,phone,email,referral_code,referred_by_code,status,created_at,updated_at FROM sim_customers ORDER BY created_at DESC LIMIT ?`).bind(limit).all();
   let customers=rows.results||[];
   if(d.phone){const p=normPhone(d.phone);customers=customers.filter(r=>normPhone(r.phone)===p)}
   if(d.referral_code)customers=customers.filter(r=>String(r.referred_by_code||'').toUpperCase()===String(d.referral_code).toUpperCase());
@@ -75,6 +79,14 @@ async function listOrders(d,env){
   return {ok:true,orders};
 }
 async function listReferrals(d,env){
+  if(await tableExists(env,'sim_referral_agents')){
+    const limit=Math.min(Math.max(Number(d.limit||100),1),500);
+    const rows=await env.DB.prepare('SELECT id,name,phone,bank_name,bank_account,referral_code,status,commission,created_at,updated_at FROM sim_referral_agents ORDER BY created_at DESC LIMIT ?').bind(limit).all();
+    let referrals=(rows.results||[]).map(r=>({...r,code:r.referral_code,source:'agent'}));
+    if(d.code)referrals=referrals.filter(r=>String(r.referral_code||'').toUpperCase().includes(String(d.code).toUpperCase()));
+    if(d.status)referrals=referrals.filter(r=>String(r.status||'').toLowerCase()===String(d.status).toLowerCase());
+    return {ok:true,table:'sim_referral_agents',referrals};
+  }
   let table='';
   if(await tableExists(env,'referrals'))table='referrals';
   else if(await tableExists(env,'sim_referrals'))table='sim_referrals';
