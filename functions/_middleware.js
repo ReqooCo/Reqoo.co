@@ -64,7 +64,6 @@ export async function onRequest(context){
   const response=await context.next();
 
   if(host!=='reqoo.co' && host!=='shop.reqoo.co') return response;
-  if(host!=='reqoo.co' && host!=='shop.reqoo.co') return response;
 
   const type=response.headers.get('content-type')||'';
   if(!type.includes('text/html')) return response;
