@@ -1,6 +1,7 @@
--- REQOO SIM referral agents v3
+-- REQOO SIM referral agents v4
 -- Run this on D1: reqoo-pksk-db
 -- Keeps existing SIM customer/referral tables untouched.
+-- Safe against the current sim_referral_events schema.
 
 CREATE TABLE IF NOT EXISTS sim_referral_agents (
     id TEXT PRIMARY KEY,
@@ -24,9 +25,6 @@ ON sim_referral_agents(status);
 
 CREATE INDEX IF NOT EXISTS idx_sim_referral_agents_phone
 ON sim_referral_agents(phone_normalized);
-
-CREATE INDEX IF NOT EXISTS idx_sim_referral_events_referral_code
-ON sim_referral_events(referral_code);
 
 CREATE TRIGGER IF NOT EXISTS trg_sim_referral_agent_phone_insert
 BEFORE INSERT ON sim_referral_agents
