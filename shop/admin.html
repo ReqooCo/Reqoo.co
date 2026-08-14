@@ -60,10 +60,54 @@ select.statussel{margin:0;padding:7px 8px;width:140px;font-size:10px}
 .configStatus{font-size:10px;color:#888;margin-top:7px}.configStatus.ok{color:var(--green)}
 
 .notificationWrap{position:relative}.notifyBtn{width:42px;height:42px;padding:0;border:1px solid #383838;background:#111;color:#fff;border-radius:12px;font-size:19px;cursor:pointer}.notifyBadge{position:absolute;right:-4px;top:-5px;min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:#ff4d5a;color:#fff;font-size:10px;font-weight:950;display:none;align-items:center;justify-content:center;border:2px solid #080808}.toast{position:fixed;right:18px;top:82px;z-index:100;background:#151515;border:1px solid #705d32;box-shadow:0 18px 50px #000b;border-radius:14px;padding:14px 16px;max-width:330px;display:none}.toast b{display:block;color:var(--gold2);margin-bottom:4px}.toast span{font-size:11px;color:#aaa}@media(max-width:560px){.toast{left:9px;right:9px;top:72px;max-width:none}}
+
+/* REQOO ADMIN STANDARD LIGHT UI */
+:root{
+  --bg:#f5f7fa;--panel:#ffffff;--panel2:#f8fafc;
+  --gold:#2563eb;--gold2:#1d4ed8;--line:#e2e8f0;
+  --muted:#64748b;--green:#16a34a;--blue:#2563eb;
+  --orange:#d97706;--red:#dc2626
+}
+body{background:var(--bg);color:#172033}
+body:before{background:linear-gradient(180deg,#eef4ff 0%,#f8fafc 45%,#f5f7fa 100%)}
+header{background:rgba(255,255,255,.96);border-bottom:1px solid var(--line);box-shadow:0 1px 8px rgba(15,23,42,.06)}
+.btn{background:#fff;color:#172033;border:1px solid #dbe3ee;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.btn:hover{background:#f8fafc}
+.goldbtn{background:#2563eb;color:#fff;border-color:#2563eb}
+.login,.panel,.kpi,.status,.prodCard,.assetBox,.detail,.items,.box{background:#fff;border-color:var(--line);box-shadow:0 4px 18px rgba(15,23,42,.045)}
+input,select{background:#fff;color:#172033;border-color:#d7e0eb}
+input::placeholder{color:#94a3b8}
+.kpi .label,.status span{color:#64748b}
+.kpi .tiny{color:#94a3b8}
+.chart{border-bottom-color:#e2e8f0}
+.bar{background:linear-gradient(180deg,#60a5fa,#2563eb)}
+.catrow{border-bottom-color:#edf1f5}
+.track{background:#e2e8f0}.fill{background:#2563eb}
+.table{border-color:#e2e8f0}.row{border-bottom-color:#edf1f5}
+.head{background:#f8fafc;color:#64748b}
+.order{color:#1d4ed8}
+.badge{background:#eef2f7;color:#475569}
+.badge.green{background:#dcfce7;color:#15803d}
+.badge.blue{background:#dbeafe;color:#1d4ed8}
+.badge.orange{background:#fef3c7;color:#b45309}
+.badge.red{background:#fee2e2;color:#b91c1c}
+.modal{background:rgba(15,23,42,.45)}
+.close{background:#f1f5f9;color:#172033}
+.notificationWrap .notifyBtn{background:#fff;color:#172033;border-color:#dbe3ee}
+.notifyBadge{border-color:#fff}
+.toast{background:#fff;border-color:#dbe3ee;box-shadow:0 18px 50px rgba(15,23,42,.16)}
+.toast b{color:#1d4ed8}.toast span{color:#64748b}
+.assetBox,.prodCard{background:#f8fafc}
+.previewImg,.prodCard img{background:#eef2f7}
+.configStatus{color:#64748b}.switchLine{color:#64748b}
+.main-admin-btn{white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.brand{color:#172033}
+@media(max-width:560px){.main-admin-btn{padding:9px 10px;font-size:10px}}
+
 </style>
 </head>
 <body>
-<header><div class="wrap nav"><div class="brand">REQOO<span class="gold">.CO</span> <span style="font-size:10px;color:#777;letter-spacing:2px">ADMIN</span></div><div class="spacer"></div><div class="notificationWrap" id="notificationWrap" style="display:none"><button class="notifyBtn" onclick="openNotifications()" title="Notifikasi order">🔔</button><span class="notifyBadge" id="notifyBadge">0</span></div><button class="btn" onclick="load()">↻ Refresh</button></div></header><div class="toast" id="notifyToast"><b id="toastTitle">Order baharu</b><span id="toastText"></span></div>
+<header><div class="wrap nav"><div class="brand">REQOO<span class="gold">.CO</span> <span style="font-size:10px;color:#777;letter-spacing:2px">ADMIN</span></div><div class="spacer"></div><a class="btn main-admin-btn" href="https://admin.reqoo.co" title="Kembali ke Main Admin">← MAIN ADMIN</a><div class="notificationWrap" id="notificationWrap" style="display:none"><button class="notifyBtn" onclick="openNotifications()" title="Notifikasi order">🔔</button><span class="notifyBadge" id="notifyBadge">0</span></div><button class="btn" onclick="load()">↻ Refresh</button></div></header><div class="toast" id="notifyToast"><b id="toastTitle">Order baharu</b><span id="toastText"></span></div>
 
 <main class="wrap">
 <!-- REQOO_SINGLE_LOGIN_BRIDGE_V1 --><section id="login" class="login" style="display:none">
