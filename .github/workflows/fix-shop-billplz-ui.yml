@@ -1,0 +1,55 @@
+name: Fix SHOP Billplz UI
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, '[shop-billplz-cleanup]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove legacy QR checkout UI
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('shop/index.html')
+          s = p.read_text(encoding='utf-8')
+          replacements = {
+              'Checkout terus dengan Maybank QR.': 'Checkout terus dengan Billplz — pembayaran selamat dan mudah.',
+              '<small>Maybank QR Payment</small>': '<small>Billplz Secure Payment</small>',
+              '<img src="assets/qr-maybank.png" alt="Maybank QR">': '',
+              'Anda akan dibawa ke halaman pembayaran Billplz yang selamat untuk memilih kaedah bayaran.': 'Tekan butang di bawah untuk meneruskan ke halaman pembayaran Billplz yang selamat.',
+              "'<div class=\\\"paybox\\\"><h3>Quotation</h3><p class=\\\"muted\\\">Produk ini memerlukan semakan harga. Hantar order untuk quotation.</p></div>'}": "'<div class=\\\"paybox\\\"><h3>Quotation</h3><p class=\\\"muted\\\">Produk ini memerlukan semakan harga. Hantar order untuk quotation.</p></div>'}",
+              "payment:cartTotal()?'Maybank QR':'Quotation'": "payment:cartTotal()?'Billplz':'Quotation'",
+              "Pembayaran: '+(savedTotal?'Maybank QR':'Quotation')": "Pembayaran: '+(savedTotal?'Billplz':'Quotation')",
+              'Products datang terus dari Google Sheet / Admin. P[] di atas hanya fallback': 'Products datang terus dari Cloudflare D1 / Admin. P[] di atas hanya fallback',
+              'async function loadProductsFromSheet(){': 'async function loadProductsFromAPI(){',
+              'loadProductsFromSheet()': 'loadProductsFromAPI()'
+          }
+          for old, new in replacements.items():
+              s = s.replace(old, new)
+
+          # Paid Billplz orders do not need manual payment proof upload.
+          old = '<label>Bukti pembayaran / resit${base?\'\':\' (jika ada)\'}</label><input id=\\"receiptFile\\" type=\\"file\\" accept=\\"image/*,.pdf\\" onchange=\\"previewReceipt(event)\\"><div class=\\"receiptPreview\\" id=\\"receiptPreview\\"></div><p id=\\"receiptName\\" class=\\"muted\\"></p>'
+          s = s.replace(old, '')
+
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit cleanup
+        shell: bash
+        run: |
+          if git diff --quiet -- shop/index.html; then
+            echo 'No SHOP UI changes needed.'
+            exit 0
+          fi
+          git config user.name 'reqoo-shop-billplz-cleanup[bot]'
+          git config user.email 'reqoo-shop-billplz-cleanup[bot]@users.noreply.github.com'
+          git add shop/index.html
+          git commit -m '[shop-billplz-cleanup] Remove legacy QR payment UI'
+          git push
