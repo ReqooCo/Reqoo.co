@@ -6,17 +6,16 @@ permissions:
   contents: write
 jobs:
   diagnose:
-    if: github.event.head_commit.message == 'Diagnose PKSK simulator JavaScript syntax'
+    if: github.event.head_commit.message == 'Capture PKSK JavaScript syntax diagnostic'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Diagnose JavaScript syntax
         shell: bash
         run: |
-          node --check sim/pksk/simulator/js/app.js > /tmp/pksk-nodecheck.txt 2>&1 || true
-          cp /tmp/pksk-nodecheck.txt pksk-nodecheck.txt
-          echo '--- first 40 lines of app.js ---' > pksk-nodecheck.txt
-          nl -ba sim/pksk/simulator/js/app.js | head -40 >> pksk-nodecheck.txt
+          : > pksk-nodecheck.txt
+          echo '--- first 80 lines of app.js ---' >> pksk-nodecheck.txt
+          nl -ba sim/pksk/simulator/js/app.js | sed -n '1,80p' >> pksk-nodecheck.txt
           echo '--- node check ---' >> pksk-nodecheck.txt
           node --check sim/pksk/simulator/js/app.js >> pksk-nodecheck.txt 2>&1 || true
       - name: Commit diagnostic
