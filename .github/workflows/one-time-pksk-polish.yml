@@ -1,0 +1,79 @@
+name: One-time PKSK polish
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.event.head_commit.message != 'Apply PKSK polish and progress persistence patch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch PKSK files
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          css=Path('sim/pksk/simulator/css/style.css')
+          s=css.read_text()
+          marker='/* PKSK REVIEW COMPACT V1 */'
+          if marker not in s:
+              s += '''\n\n/* PKSK REVIEW COMPACT V1 */\n.review-item{padding:12px 14px!important;border-radius:12px!important}\n.review-top b{font-size:13px!important;line-height:1.45!important;font-weight:600!important}.review-top strong{font-size:10px!important;white-space:nowrap}.review-answer{font-size:11px!important;line-height:1.45!important}.review-explain{font-size:11px!important;line-height:1.5!important;padding:9px 11px!important;margin-top:8px!important}.review-explain b{font-weight:600!important}.review-list{gap:9px!important}\n@media(max-width:760px){.review-item{padding:11px 12px!important}.review-top b{font-size:12px!important}.review-answer,.review-explain{font-size:10.5px!important}}\n'''
+              css.write_text(s)
+
+          p=Path('sim/pksk/access/index.html')
+          s=p.read_text()
+          old='const p=r.progress||[];const scores=p.map(x=>Number(x.score||0)).filter(Number.isFinite);'
+          new='''let p=Array.isArray(r.progress)?r.progress.slice():[];
+ const localRows=[];
+ try{for(let n=1;n<=50;n++){const raw=localStorage.getItem(`pksk-set${String(n).padStart(2,"0")}-result`);if(!raw)continue;const z=JSON.parse(raw);localRows.push({setNo:n,completed:true,score:Number(z.bPct||z.score||0),answered:Number(z.bAnswered||0),updated_at:new Date().toISOString()});}}catch(e){}
+ for(const lr of localRows){const ex=p.find(x=>Number(x.setNo)===lr.setNo);if(!ex)p.push(lr);else if(!ex.completed&&lr.completed)Object.assign(ex,lr);}
+ const pendingQueue=(()=>{try{return JSON.parse(localStorage.getItem("pksk-sync-queue")||"[]")}catch(e){return[]}})();
+ if(pendingQueue.length){for(const item of pendingQueue){if(!item.setNo)continue;const ex=p.find(x=>Number(x.setNo)===Number(item.setNo));if(!ex)p.push(Object.assign({},item,{completed:Boolean(item.completed)}));}}
+ const scores=p.map(x=>Number(x.score||0)).filter(Number.isFinite);'''
+          if old in s and 'localRows=[]' not in s:
+              s=s.replace(old,new)
+          old2='$("activity").innerHTML=(r.activity||[]).slice(0,8).map(a=>`<div class="act"><span>${a.message||a.action||"Aktiviti"}</span><small>${a.createdAt||""}</small></div>`).join("")||\'<div class="empty">Belum ada aktiviti.</div>\';'
+          new2='''const acts=(r.activity&&r.activity.length)?r.activity:sorted.filter(x=>x.completed).slice().reverse().map(x=>({message:`Set ${String(x.setNo).padStart(2,"0")} selesai • ${Number(x.score||0)}%`,createdAt:x.updated_at||x.completed_at||""}));
+ $("activity").innerHTML=acts.slice(0,8).map(a=>`<div class="act"><span>${a.message||a.action||"Aktiviti"}</span><small>${a.createdAt||""}</small></div>`).join("")||'<div class="empty">Belum ada aktiviti.</div>';'''
+          if old2 in s and 'const acts=' not in s:
+              s=s.replace(old2,new2)
+          p.write_text(s)
+
+          a=Path('sim/pksk/simulator/js/app.js')
+          s=a.read_text()
+          marker2='// PKSK FINAL SYNC V1'
+          old3='''function syncProgressServer(score,extra){
+ const code=pkskLicense();if(!code)return;
+ const payload=Object.assign({code,deviceId:pkskDeviceId(),setNo:setNo,completed:true,score:Number(score||0)},extra||{});
+ pkskDashApi("saveProgress",payload,function(r){
+   if(r&&r.ok){localStorage.setItem("pksk-last-server-sync",new Date().toISOString());}
+   else{queueProgress(payload);pkskReportError("SAVE_PROGRESS_FAILED",r&&r.error||"Progress sync gagal");}
+ },2);
+}'''
+          new3='''// PKSK FINAL SYNC V1
+function syncProgressServer(score,extra){
+ const code=pkskLicense();if(!code)return;
+ const payload=Object.assign({code,deviceId:pkskDeviceId(),setNo:setNo,completed:true,score:Number(score||0)},extra||{});
+ localStorage.setItem(`pksk-set${String(setNo).padStart(2,"0")}-result`,JSON.stringify(Object.assign({},payload,{savedAt:new Date().toISOString()})));
+ const save=r=>{if(r&&r.ok){localStorage.setItem("pksk-last-server-sync",new Date().toISOString());}else{queueProgress(payload);pkskReportError("SAVE_PROGRESS_FAILED",r&&r.error||"Progress sync gagal");}};
+ pkskDashApi("saveProgress",payload,save,2);
+ setTimeout(()=>pkskDashApi("saveProgress",payload,save,2),1800);
+}'''
+          if old3 in s and marker2 not in s:
+              s=s.replace(old3,new3)
+          a.write_text(s)
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add sim/pksk/simulator/css/style.css sim/pksk/access/index.html sim/pksk/simulator/js/app.js
+          git diff --cached --quiet && exit 0
+          git commit -m 'Apply PKSK polish and progress persistence patch'
+          git push
+      - name: Remove one-time workflow
+        run: |
+          git rm .github/workflows/one-time-pksk-polish.yml
+          git commit -m 'Remove one-time PKSK polish workflow'
+          git push
