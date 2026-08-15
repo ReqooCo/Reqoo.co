@@ -5,31 +5,32 @@ on:
 permissions:
   contents: write
 jobs:
-  repair:
-    if: github.event.head_commit.message == 'Remove malformed PKSK patch without blocking on syntax check'
+  diagnose:
+    if: github.event.head_commit.message == 'Diagnose cleaned PKSK simulator syntax'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Remove malformed PKSK UX patch
+      - name: Capture syntax error and context
         shell: bash
         run: |
+          node --check sim/pksk/simulator/js/app.js > /tmp/nodecheck.txt 2>&1 || true
           python3 - <<'PY'
           from pathlib import Path
-          p = Path('sim/pksk/simulator/js/app.js')
-          s = p.read_text()
-          marker = '/* PKSK UX PROGRESS FIX V2 */'
-          if marker not in s:
-              raise SystemExit('PKSK UX patch marker not found')
-          s = s.split(marker, 1)[0].rstrip() + '\n'
-          p.write_text(s)
-          print('Removed malformed PKSK UX patch')
+          import re
+          err=Path('/tmp/nodecheck.txt').read_text()
+          m=re.search(r'app\.js:(\d+)',err)
+          line=int(m.group(1)) if m else 1
+          lines=Path('sim/pksk/simulator/js/app.js').read_text().splitlines()
+          start=max(1,line-20); end=min(len(lines),line+20)
+          out=['--- node check ---',err,'--- context ---']
+          for n in range(start,end+1): out.append(f'{n:04d}: {lines[n-1]}')
+          Path('pksk-nodecheck.txt').write_text('\n'.join(out)+'\n')
           PY
-      - name: Commit cleaned app.js
+      - name: Commit diagnostic
         shell: bash
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add sim/pksk/simulator/js/app.js
-          git diff --cached --quiet && exit 0
-          git commit -m 'Remove malformed PKSK simulator patch'
+          git add pksk-nodecheck.txt
+          git commit -m 'Record cleaned PKSK syntax diagnostic'
           git push
