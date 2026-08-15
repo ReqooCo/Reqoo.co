@@ -6,11 +6,11 @@ permissions:
   contents: write
 jobs:
   repair:
-    if: github.event.head_commit.message == 'Add one-time workflow to repair malformed PKSK app.js patch'
+    if: github.event.head_commit.message == 'Harden one-time PKSK app.js repair'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Repair malformed escaped patch
+      - name: Remove malformed PKSK patch
         shell: bash
         run: |
           python3 - <<'PY'
@@ -20,15 +20,14 @@ jobs:
           marker = '/* PKSK UX PROGRESS FIX V2 */'
           if marker not in s:
               raise SystemExit('PKSK UX patch marker not found')
-          head, tail = s.split(marker, 1)
-          tail = tail.replace('\\\\n', '\\n').replace('\\\\"', '"')
-          p.write_text(head + marker + tail)
-          print('Repaired malformed escaped PKSK patch')
+          s = s.split(marker, 1)[0].rstrip() + '\n'
+          p.write_text(s)
+          print('Removed malformed escaped PKSK UX patch; restored valid simulator core')
           PY
       - name: Verify JavaScript syntax
         shell: bash
         run: node --check sim/pksk/simulator/js/app.js
-      - name: Commit repair and remove workflow
+      - name: Commit repair
         shell: bash
         run: |
           git config user.name github-actions[bot]
