@@ -1,1 +1,49 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 260"><defs><linearGradient id="fur" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFC15A"/><stop offset="1" stop-color="#E9862F"/></linearGradient></defs><g stroke="#713D27" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path fill="none" d="M74 137C25 112 30 55 84 70"/><ellipse cx="159" cy="150" rx="89" ry="66" fill="url(#fur)"/><path fill="url(#fur)" d="M91 100V45l39 31 42-30 4 60z"/><path fill="#FFD7C8" d="M103 67l24 17-25 4zM154 83l25-18-1 21z" stroke="none"/><circle cx="123" cy="105" r="8" fill="#34221B"/><circle cx="170" cy="105" r="8" fill="#34221B"/><path fill="#F48A9A" d="M142 119l11 7-11 8-11-8z"/><path fill="none" d="M142 134q-8 11-18 1M142 134q8 11 18 1M102 123l-34-5M102 132l-35 5M181 123l34-5M181 132l35 5"/><path fill="url(#fur)" d="M100 182l-8 48M131 188v49M174 188v49M205 181l10 49"/><path fill="none" d="M87 230h18M122 237h18M165 237h18M207 230h18"/><circle cx="143" cy="170" r="11" fill="#FFD34F"/><path fill="#FFD34F" d="M143 170l7 7-7 8-7-8z"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 360">
+<defs>
+ <linearGradient id="fur" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFD06A"/><stop offset=".55" stop-color="#F39A3D"/><stop offset="1" stop-color="#DF742B"/></linearGradient>
+ <linearGradient id="cream" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#FFF7E8"/><stop offset="1" stop-color="#FFE3C4"/></linearGradient>
+ <radialGradient id="eye"><stop stop-color="#FFF"/><stop offset=".22" stop-color="#8B5A2B"/><stop offset=".65" stop-color="#3A2418"/><stop offset="1" stop-color="#140D0A"/></radialGradient>
+ <filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="7" flood-color="#4A2B1F" flood-opacity=".25"/></filter>
+</defs>
+<g filter="url(#shadow)" stroke="#6A3A25" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+ <!-- fluffy tail -->
+ <path fill="none" stroke="#F09A3B" stroke-width="28" d="M92 214C28 226 29 145 83 143C120 142 116 184 91 191"/>
+ <path fill="none" stroke="#FFC35A" stroke-width="12" d="M83 151C56 157 58 188 81 189"/>
+ <!-- body -->
+ <ellipse cx="213" cy="222" rx="116" ry="92" fill="url(#fur)"/>
+ <ellipse cx="218" cy="242" rx="73" ry="56" fill="#F6AA4B" stroke="none"/>
+ <!-- head -->
+ <path fill="url(#fur)" d="M112 137L113 45L178 86Q211 69 245 84L307 43L302 140Q309 204 211 205Q106 201 112 137Z"/>
+ <!-- inner ears -->
+ <path fill="#FFB3B4" stroke="none" d="M132 68L139 113L174 91Z"/>
+ <path fill="#FFB3B4" stroke="none" d="M278 66L271 112L241 91Z"/>
+ <!-- forehead stripes -->
+ <path fill="#D96F29" stroke="none" d="M188 82h14l-7 34zM211 81h14l-7 35zM234 85h13l-7 29z"/>
+ <!-- face cream -->
+ <path fill="url(#cream)" stroke="none" d="M150 139Q157 112 211 111Q267 112 277 143Q282 193 212 195Q145 191 150 139Z"/>
+ <!-- eyes -->
+ <ellipse cx="170" cy="132" rx="25" ry="30" fill="url(#eye)"/>
+ <ellipse cx="252" cy="132" rx="25" ry="30" fill="url(#eye)"/>
+ <ellipse cx="162" cy="121" rx="7" ry="9" fill="#FFF" stroke="none"/>
+ <ellipse cx="244" cy="121" rx="7" ry="9" fill="#FFF" stroke="none"/>
+ <!-- muzzle -->
+ <ellipse cx="190" cy="164" rx="31" ry="24" fill="#FFF8EA" stroke="none"/>
+ <ellipse cx="232" cy="164" rx="31" ry="24" fill="#FFF8EA" stroke="none"/>
+ <path fill="#F08A99" d="M211 153l14 9-14 11-14-11z"/>
+ <path fill="none" d="M211 173q-8 14-22 4M211 173q8 14 22 4"/>
+ <!-- whiskers -->
+ <path fill="none" stroke-width="4" d="M157 160L103 148M158 171L99 174M266 160L320 148M265 171L324 175"/>
+ <!-- legs -->
+ <path fill="url(#fur)" d="M131 252Q112 281 120 319Q125 336 145 329L166 286L170 254Z"/>
+ <path fill="url(#fur)" d="M184 266L180 322Q181 339 201 338L216 323L218 267Z"/>
+ <path fill="url(#fur)" d="M248 266L248 323Q249 339 269 338L284 323L280 260Z"/>
+ <path fill="url(#fur)" d="M294 251Q314 279 307 318Q303 337 283 329L260 285L260 253Z"/>
+ <!-- paws -->
+ <path fill="#FFF0D8" stroke="none" d="M121 311q13 12 28 1v17q-17 12-29-1zM181 316q14 10 29 0v17q-17 11-29 0zM250 316q14 10 29 0v17q-17 11-29 0zM286 311q13 12 28 1v17q-17 12-29-1z"/>
+ <!-- collar -->
+ <path fill="#2D78D5" stroke="#21589D" d="M145 203Q211 226 278 203L274 222Q211 246 148 222Z"/>
+ <circle cx="211" cy="224" r="15" fill="#FFD34F" stroke="#B97917"/>
+ <path fill="#FFF2A0" stroke="none" d="M211 214l7 10-7 10-7-10z"/>
+ <!-- body stripes -->
+ <path fill="none" stroke="#D86D28" stroke-width="12" d="M131 205l28 13M128 229l30 12M290 205l-28 13M294 229l-30 12"/>
+</g></svg>
