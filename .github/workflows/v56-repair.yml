@@ -1,0 +1,89 @@
+name: V56 Repair Apply
+
+on:
+  push:
+    branches: [v56-repair]
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: "contains(github.event.head_commit.message, '[V56-APPLY]')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply V56 targeted repair
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          root=Path('.')
+
+          p=root/'functions/api/pksk.js'
+          s=p.read_text()
+          s=s.replace('const MAX_DEVICES = 2;', 'const MAX_DEVICES = 3;', 1)
+          if 'async function scoreAttemptV56' not in s:
+              helper=r'''async function scoreAttemptV56(d,env){
+            const code=cleanCode(d.code),setNo=Number(d.setNo||0);
+            if(!code||setNo<1||setNo>TOTAL_SETS)return {ok:false,error:'Data skor tidak sah'};
+            const l=await env.DB.prepare('SELECT id,status FROM licenses WHERE access_code=?').bind(code).first();
+            if(!l||l.status!=='active')return {ok:false,error:'License tidak aktif'};
+            let answers=d.answers;
+            if(typeof answers==='string'){try{answers=JSON.parse(answers)}catch(_){answers={}}}
+            if(!answers||typeof answers!=='object')answers={};
+            const groupStart=Math.floor((setNo-1)/10)*10+1,groupEnd=groupStart+9;
+            const group=`SET ${String(groupStart).padStart(2,'0')}-${String(groupEnd).padStart(2,'0')}`;
+            const url=`https://pksk.sim.reqoo.co/simulator/sets/${encodeURIComponent(group)}/data/set${String(setNo).padStart(2,'0')}.json`;
+            const rr=await fetch(url,{cf:{cacheTtl:60}});
+            if(!rr.ok)return {ok:false,error:'Bank soalan canonical tidak dapat dicapai'};
+            const bank=await rr.json(),qs=Array.isArray(bank.questions)?bank.questions:[];
+            if(!qs.length)return {ok:false,error:'Bank soalan kosong'};
+            let aScore=0,aMax=0,bCorrect=0,aAnswered=0,bAnswered=0;
+            for(const q of qs){
+              const v=answers[q.id]; if(v===undefined||v===null||v==='')continue;
+              const i=Number(v); if(!Number.isInteger(i))continue;
+              if(q.section==='BAHAGIAN A'){const w=Array.isArray(q.weights)?q.weights:[];if(w.length){aMax+=Math.max(...w);if(w[i]!==undefined){aScore+=Number(w[i])||0;aAnswered++;}}}
+              else if(q.section==='BAHAGIAN B'){bAnswered++;if(i===Number(q.answer))bCorrect++;}
+            }
+            const bMax=qs.filter(q=>q.section==='BAHAGIAN B').length||70;
+            return {ok:true,aIndex:aMax?Math.round(aScore/aMax*100):0,bPct:Math.round(bCorrect/bMax*100),bCorrect,aAnswered,bAnswered,bMax};
+          }
+          '''
+              pos=s.find('async function saveProgress')
+              s=s[:pos]+helper+s[pos:]
+          old=r"async function saveProgress\(d,env\).*?\nasync function listOrders"
+          new=r'''async function saveProgress(d,env){const code=cleanCode(d.code),setNo=Number(d.setNo||0),section=String(d.section||'OVERALL').trim()||'OVERALL';if(!code||setNo<1||setNo>TOTAL_SETS)return {ok:false,error:'Data progress tidak sah'};const l=await env.DB.prepare('SELECT * FROM licenses WHERE access_code=?').bind(code).first();if(!l||l.status!=='active')return {ok:false,error:'License tidak aktif'};let score=Number(d.score||0),scoreA=Number(d.scoreA||0),scoreB=Number(d.scoreB||0),answered=Number(d.answered||0);if(d.completed){if(!d.answers)return {ok:false,error:'Jawapan diperlukan untuk mengesahkan skor'};const scored=await scoreAttemptV56({code,setNo,answers:d.answers},env);if(!scored.ok)return scored;score=scored.bPct;scoreA=scored.aIndex;scoreB=scored.bCorrect;answered=Number(scored.aAnswered||0)+Number(scored.bAnswered||0);}const existing=await env.DB.prepare('SELECT id FROM progress WHERE license_id=? AND set_no=? AND section=?').bind(l.id,setNo,section).first(),values=[Boolean(d.completed),score,answered,Number(d.timeUsed||0),scoreA,scoreB,Number(d.scoreC||0),d.startedAt||null,d.completedAt||(d.completed?now():null),now()];if(existing)await env.DB.prepare(`UPDATE progress SET completed=?,score=?,answered=?,time_used=?,score_a=?,score_b=?,score_c=?,started_at=?,completed_at=?,updated_at=? WHERE id=?`).bind(...values,existing.id).run();else await env.DB.prepare(`INSERT INTO progress (id,license_id,set_no,section,completed,score,answered,time_used,score_a,score_b,score_c,started_at,completed_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(makeId('prog'),l.id,setNo,section,...values).run();return {ok:true,serverScore:score,scoreA,scoreB};}
+async function listOrders'''
+          s,n=re.subn(old,new,s,count=1,flags=re.S)
+          if n!=1: raise SystemExit('saveProgress patch target not found')
+          p.write_text(s)
+
+          a=root/'sim/pksk/simulator/js/app.js'
+          s=a.read_text()
+          s=s.replace('const payload={code:pkskLicense(),deviceId:pkskDeviceId(),setNo:setNo,completed:false,score:0,answered:Object.keys(answers).length,timeUsed:', 'const payload={code:pkskLicense(),deviceId:pkskDeviceId(),setNo:setNo,completed:false,score:0,answers:JSON.stringify(answers),answered:Object.keys(answers).length,timeUsed:', 1)
+          s=s.replace('const payload=Object.assign({code,deviceId:pkskDeviceId(),setNo:setNo,completed:true,score:Number(score||0)},extra||{});', 'const payload=Object.assign({code,deviceId:pkskDeviceId(),setNo:setNo,completed:true,score:Number(score||0),answers:JSON.stringify(answers)},extra||{});', 1)
+          a.write_text(s)
+
+          h=root/'sim/pksk/access/index.html'
+          s=h.read_text()
+          s=s.replace('Maksimum 2 peranti • Peranti ke-3 akan ditolak automatik', 'Maksimum 3 peranti • Peranti ke-4 akan ditolak automatik')
+          s=s.replace('l.maxDevices||2','l.maxDevices||3')
+          old='const inProgress=sorted.filter(x=>!x.completed&&Number(x.answered||0)>0).pop();const last=sorted.filter(x=>x.completed).pop();\n $("resume").dataset.set=String(inProgress?inProgress.setNo:(last?last.setNo:localStorage.getItem("pksk-selected-set")||1));\n $("resume").textContent=inProgress?`▶ SAMBUNG SET ${String(inProgress.setNo).padStart(2,"0")}`:(last?`▶ SAMBUNG SET ${String(last.setNo).padStart(2,"0")}`:"▶ MULA SET 01");'
+          new='const last=sorted.filter(x=>x.completed).pop();\n $("resume").dataset.set=String(last?last.setNo:(localStorage.getItem("pksk-selected-set")||1));\n $("resume").textContent=last?`▶ ULANG SET ${String(last.setNo).padStart(2,"0")}`:"▶ MULA SET 01";'
+          if old not in s: raise SystemExit('resume patch target not found')
+          h.write_text(s)
+
+          m=root/'docs/SIM-PKSK-V56-D1-MIGRATION.sql'
+          if m.exists(): m.unlink()
+          (root/'docs/V56-SERVER-SCORING.md').write_text('''# V56 server-authoritative scoring\n\n- Existing set JSON remains the canonical question bank.\n- Completed Bahagian A/B scores are recalculated on the server; client-reported score is ignored for completed attempts.\n- Completed sync includes the answer map.\n- No `pksk_question_keys` D1 table is required for this targeted repair.\n- Existing payment, referral, admin and simulator flows remain intact.\n- Device policy is 3.\n- An unfinished set is not resumed from the dashboard.\n''')
+
+      - name: Commit V56 repair
+        run: |
+          git config user.name "ReqooCo"
+          git config user.email "abarttrading1@gmail.com"
+          git add functions/api/pksk.js sim/pksk/simulator/js/app.js sim/pksk/access/index.html docs
+          git commit -m "fix: apply PKSK V56 server scoring and 3-device policy [skip ci]" || exit 0
+          git push
