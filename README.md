@@ -13,5 +13,3 @@ Promotion public dan link `?promo=slug` menggunakan `listPromotions` daripada Go
 akan mencari promo berdasarkan slug daripada senarai promotion public.
 
 API endpoint yang digunakan dikekalkan seperti dalam projek asal.
-
-<!-- PKSK polish workflow trigger -->
