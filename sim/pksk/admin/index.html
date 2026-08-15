@@ -120,10 +120,16 @@ function renderOrders(){
  const q=$("search").value.trim().toLowerCase(),f=$("filter").value;
  const arr=(DATA.orders||[]).filter(x=>(f==="Semua"||x.status===f)&&match(x,q));
  $("orderCards").innerHTML=arr.length?arr.map(x=>{
+  const hasProof=x.proofUploaded===true||String(x.proofRef||"").trim()!=="";
+  const isOnline=x.onlinePayment===true||String(x.paymentRef||"").startsWith("billplz:");
   const actions=x.status==="PENDING"
-   ?`<button class="primary" onclick='verifyOrder(${JSON.stringify(x.orderNo)})'>✓ SAHKAN</button><button class="danger" onclick='rejectOrder(${JSON.stringify(x.orderNo)})'>TOLAK</button>`
+   ?(hasProof
+      ?`<button class="primary" onclick='verifyOrder(${JSON.stringify(x.orderNo)})'>✓ SAHKAN</button><button class="danger" onclick='rejectOrder(${JSON.stringify(x.orderNo)})'>TOLAK</button>`
+      :isOnline
+        ?`<span class="small">💳 TUNGGU BAYARAN ONLINE</span>`
+        :`<button class="danger" onclick='rejectOrder(${JSON.stringify(x.orderNo)})'>TOLAK</button>`)
    :x.accessCode?`<button class="ghost" onclick='resendAccess(${JSON.stringify(x.accessCode)})'>↗ RESEND ACCESS</button><button class="ghost" onclick='copyText(${JSON.stringify(x.accessCode)})'>📋 COPY</button>`:"";
-  const proof=x.proofUploaded||x.proofRef?`<button class="ghost proof-btn" onclick='viewProof(${JSON.stringify(x.orderNo)})'>📎 BUKTI</button>`:`<span>⚠ Tiada bukti</span>`;
+  const proof=hasProof?`<button class="ghost proof-btn" onclick='viewProof(${JSON.stringify(x.orderNo)})'>📎 BUKTI</button>`:(isOnline?`<span class="small">💳 Billplz</span>`:`<span>⚠ Tiada bukti</span>`);
   return `<article class="item"><div class="item-main"><div class="code">${esc(x.orderNo)}</div><h3>${esc(x.name)}</h3><p>${esc(x.phone)} • RM${Number(x.amount||0).toFixed(2)}</p><div class="meta"><span class="status ${esc(x.status)}">${esc(x.status)}</span>${x.referralCode?`<span>REF ${esc(x.referralCode)}</span>`:""}${proof}</div></div><div class="item-actions">${actions}</div></article>`;
  }).join(""):'<div class="empty">Tiada order.</div>';
 }

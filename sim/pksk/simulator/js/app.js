@@ -41,7 +41,6 @@ function pkskDashApi(action,data,done){pkskApi(action,data,done)}
 function pkskReportError(type,message){
   try{pkskApi("logClientError",{code:pkskLicense(),errorType:type,message:String(message||"").slice(0,400),deviceId:pkskDeviceId()},()=>{},0)}catch(e){}
 }
-function pkskLicense(){return (localStorage.getItem("reqoo_pksk_license")||"").trim().toUpperCase();}
 function pkskRequireAccess(next){
   const code=pkskLicense();
   if(!code){location.href="../access/";return;}
@@ -53,12 +52,6 @@ function pkskRequireAccess(next){
     location.href="../access/";
   });
 }
-function pkskDeviceId(){
-  let id=localStorage.getItem("reqoo_pksk_device_id");
-  if(!id){id="DEV-"+crypto.getRandomValues(new Uint32Array(3)).join("-")+"-"+Date.now().toString(36);localStorage.setItem("reqoo_pksk_device_id",id)}
-  return id;
-}
-function pkskDashApi(action,data,done){pkskApi(action,data,done)}
 function exitToDashboard(){
   if(phase==="c"){localStorage.setItem(`pksk-set${String(setNo).padStart(2,"0")}-writing`,JSON.stringify({wTimer,selectedTopic,text:$("essay").value}))}
   if(phase!=="idle"&&phase!=="done"&&phase!=="abBrief"&&phase!=="cBrief"){
