@@ -1,53 +1,66 @@
-# REQOO PKSK — FINAL MERGE GUIDE
+# REQOO PKSK — CANONICAL PRODUCTION FLOW
 
 ## URL structure
-- Main Reqoo: `/`
-- Shop: `/shop/`
 - PKSK landing: `/pksk/`
-- Payment QR: `/pksk/payment/`
+- Payment: `/pksk/payment/`
 - Access: `/pksk/access/`
-- Admin: `/pksk/admin/`
 - Simulator: `/pksk/simulator/`
+- Admin: `/pksk/admin/`
 
-## Included
-- Set 01–50 only
-- JSON bank + visual assets
-- Existing Maybank QR in `pksk/payment/assets/maybank-qr.jpeg`
-- Existing access/admin/payment UI preserved
-- Simulator added under `pksk/simulator/`
-- Simulator gate checks the existing Google Apps Script access API before starting
+## Canonical backend
+PKSK production access, QR/manual payment, license, device registration, progress and dashboard use `/api/pksk`.
 
-## Google Apps Script
-Open the EXISTING Reqoo Apps Script project. Do NOT replace the existing `doGet()` or shop functions.
+Online Billplz payment uses `/api/sim-payment`.
 
-Open:
-`pksk/PKSK_QR_GAS_ADDON.gs.txt`
+Do not introduce a second PKSK payment/access backend.
 
-1. Paste the functions into the existing Apps Script.
-2. Merge the listed `action === ...` cases into the existing `doGet(e)`.
-3. Keep your existing admin token mechanism. Do not expose the token in public frontend code.
-4. Deploy the existing Apps Script as Web App and keep the same `/exec` URL already used by the current PKSK pages.
-5. The functions automatically create:
-   - `PKSK_Orders`
-   - `PKSK_Licenses`
+## Payment flow
+### Online
+1. Customer enters details.
+2. `/api/sim-payment` creates the Billplz bill.
+3. Billplz callback is signature-validated.
+4. Order becomes `PAID`.
+5. SIM license is created automatically.
+6. Customer is redirected to Access.
 
-## Important
-GitHub Pages is static. It cannot hide the JSON files or run server-side code. The access-code gate therefore controls the simulator UI, while the Google Apps Script controls license activation.
+### QR / manual
+1. Customer enters details.
+2. Customer pays RM35 through the displayed QR.
+3. Customer uploads JPG/PNG/WEBP proof.
+4. `/api/pksk` stores the proof in R2 and marks the order `PENDING`.
+5. Admin opens the proof and verifies it.
+6. Only a `PENDING` order with a valid R2 proof can be verified.
+7. Order becomes `PAID` and a SIM license becomes `ACTIVE`.
+8. Admin/customer flow sends the Access Code.
 
-For stronger content protection later, move the question JSON/assets behind a backend. That is NOT required for this QR/manual-approval V1.
+## License contract
+- 1 purchase = 1 license.
+- Maximum **2 active devices**.
+- License, device and progress records are owned by the SIM backend.
+- Access is validated server-side before simulator use.
 
-## Payment V1
-1. Customer scans the QR.
-2. Customer submits order details.
-3. Order is written to `PKSK_Orders` as PENDING.
-4. Admin verifies the bank payment manually.
-5. Admin gets an access code.
-6. Access code is sent to customer.
-7. Customer enters code.
-8. Simulator validates the code before starting.
+## Payment reference contract
+`orders.payment_ref` is typed:
 
-## Do not
-- Do not overwrite the root Reqoo `index.html`.
-- Do not overwrite the existing Shop.
-- Do not replace the existing Apps Script wholesale.
-- Do not expose the admin token in frontend code.
+- `billplz:<bill-id>` — online payment reference.
+- `proof:<r2-key>` — QR/manual payment proof.
+- `UPLOAD_FAILED:<reason>` — manual proof upload failure.
+
+Do not use a generic non-empty `payment_ref` as proof of payment.
+
+## Data ownership
+- SHOP owns SHOP orders.
+- SIM owns SIM licenses, devices and progress.
+- R2 stores payment proof and large SIM assets.
+- D1 stores structured SIM transactional data.
+
+## Question bank
+Set 01–50 and their JSON/visual/audio assets are canonical simulator content. Do not modify them during payment/access/backend maintenance unless the task explicitly targets the bank.
+
+## Legacy files
+Older Google Apps Script PKSK material is retained only as historical/reference material. It is **not** the production backend and must not be wired back into the current pages.
+
+## Production rule
+Before changing PKSK payment/access logic, audit this chain end-to-end:
+
+`Landing → Payment → D1 order → R2 proof/Billplz callback → Admin verify → License → Access → Device → Simulator → Progress → Dashboard`
