@@ -1,39 +1,12 @@
-const DATA={
- ms:[
-  {id:'kucing',word:'Kucing',sound:'Meow!',emoji:'🐱',color:'#fff0c2'},
-  {id:'bola',word:'Bola',sound:'Bola!',emoji:'⚽',color:'#dff1ff'},
-  {id:'susu',word:'Susu',sound:'Susu!',emoji:'🥛',color:'#ddf7ec'},
-  {id:'makan',word:'Makan',sound:'Makan!',emoji:'🍚',color:'#ffe4eb'}
- ],
- en:[
-  {id:'cat',word:'Cat',sound:'Meow!',emoji:'🐱',color:'#fff0c2'},
-  {id:'ball',word:'Ball',sound:'Ball!',emoji:'⚽',color:'#dff1ff'},
-  {id:'milk',word:'Milk',sound:'Milk!',emoji:'🥛',color:'#ddf7ec'},
-  {id:'eat',word:'Eat',sound:'Eat!',emoji:'🍚',color:'#ffe4eb'}
- ]
-};
-let lang=localStorage.getItem('reqooLang')||'ms';
-const app=document.getElementById('app');
-const t=(ms,en)=>lang==='ms'?ms:en;
-function speak(text){if(!('speechSynthesis'in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=lang==='ms'?'ms-MY':'en-US';u.rate=.68;u.pitch=1.08;speechSynthesis.speak(u)}
-function home(){
- const items=DATA[lang];
- app.innerHTML=`<div class="app"><main class="phone"><div class="world"><div class="sun">☀️</div><div class="cloud one">☁️</div><div class="cloud two">☁️</div><div class="hill a"></div><div class="hill b"></div><div class="grass"></div><div class="birds">🕊️　🕊️</div><div class="home-cat" id="homeCat">🐱</div></div><header class="top"><div class="logo">REQOO.PLAY</div><button class="lang" id="lang">${lang==='ms'?'BM':'BI'} ▾</button></header><section class="welcome"><div class="welcome-buddy">🧸</div><h1>${t('Jom Main!','Let’s Play!')}</h1><p>${t('Mari bermain dan belajar bersama.','Let’s play and learn together.')}</p></section><section class="word-orbs">${items.map((d,i)=>`<button class="word-orb orb-${i}" data-id="${d.id}" style="--orb:${d.color}"><span>${d.emoji}</span><b>${d.word}</b></button>`).join('')}</section><div class="play-hint">👆 ${t('Sentuh sesuatu untuk bermain','Tap something to play')}</div><div class="parent-mini">💡 ${t('Ibu/ayah: sebut dahulu, tunggu sekejap, kemudian ikut minat anak.','Parent: model the word, pause, then follow your child’s interest.')}</div></main></div>`;
- document.getElementById('lang').onclick=()=>{lang=lang==='ms'?'en':'ms';localStorage.setItem('reqooLang',lang);home()};
- document.querySelectorAll('.word-orb').forEach(b=>b.onclick=()=>lesson(b.dataset.id));
- document.getElementById('homeCat').onclick=()=>speak(t('Kucing!','Cat!'));
- setTimeout(()=>speak(t('Jom main!','Let’s play!')),700);
-}
+const DATA={ms:[{id:'kucing',word:'Kucing',sound:'Meow!',emoji:'🐱'},{id:'bola',word:'Bola',sound:'Bola!',emoji:'⚽'},{id:'susu',word:'Susu',sound:'Susu!',emoji:'🥛'},{id:'makan',word:'Makan',sound:'Makan!',emoji:'🍚'}],en:[{id:'cat',word:'Cat',sound:'Meow!',emoji:'🐱'},{id:'ball',word:'Ball',sound:'Ball!',emoji:'⚽'},{id:'milk',word:'Milk',sound:'Milk!',emoji:'🥛'},{id:'eat',word:'Eat',sound:'Eat!',emoji:'🍚'}]};
+let lang=localStorage.getItem('reqooLang')||'ms';const app=document.getElementById('app');const t=(a,b)=>lang==='ms'?a:b;
+const CAT=()=>`<div class="cat-character"><div class="tail"></div><div class="cat-body"></div><div class="leg l1"></div><div class="leg l2"></div><div class="leg l3"></div><div class="leg l4"></div><div class="cat-head"><span class="ear e1"></span><span class="ear e2"></span><span class="eye eye1"></span><span class="eye eye2"></span><span class="nose"></span><span class="mouth"></span><span class="whisk w1"></span><span class="whisk w2"></span></div><span class="bell"></span></div>`;
+function speak(text){if(!('speechSynthesis'in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=lang==='ms'?'ms-MY':'en-US';u.rate=.66;u.pitch=1.08;speechSynthesis.speak(u)}
+function world(){return `<div class="world"><div class="sky-glow"></div><div class="sun">☀️</div><div class="cloud c1"></div><div class="cloud c2"></div><div class="mountain m1"></div><div class="mountain m2"></div><div class="tree t1">🌳</div><div class="tree t2">🌴</div><div class="house"><div class="roof"></div><div class="door"></div><div class="window"></div></div><div class="lake"></div><div class="ground"></div><div class="flowers">🌼 🌸 🌼 🌷 🌼</div><div class="butterfly">🦋</div><div class="bird">⌁</div></div>`}
+function nav(){return `<header class="top"><div class="brand"><span class="brand-cat">🐱</span><b>Reqoo</b><small>PLAY</small></div><div class="top-actions"><button class="pill active" id="lang">${lang==='ms'?'BM':'EN'}</button><button class="pill">♫</button><button class="pill" id="sound">🔊</button><button class="parent-btn">👩‍👧<span>${t('Ibu Bapa','Parents')}</span></button></div></header>`}
+function side(){return `<aside class="side-nav"><button class="side active">⌂<small>${t('Utama','Home')}</small></button><button class="side">🐾<small>${t('Haiwan','Animals')}</small></button><button class="side">🍎<small>${t('Buah','Fruit')}</small></button><button class="side">🚗<small>${t('Kenderaan','Vehicles')}</small></button><button class="side">📖<small>${t('Cerita','Stories')}</small></button></aside>`}
+function home(){const items=DATA[lang];app.innerHTML=`<main class="game">${world()}${nav()}${side()}<section class="title-plaque"><div>${t('BELAJAR • MAIN • SEBUT','LEARN • PLAY • SPEAK')}</div><h1>Jom<br><span>Main</span></h1></section><section class="hero-cat">${CAT()}<div class="meow-bubble">Meow! <i>🔊</i></div></section><section class="learn-bubble"><div class="mini-cat">🐱</div><div>Hai! Ini kucing.<br>Kucing... <b>meow!</b><br><span>${t('Cuba sebut...','Try saying...')}</span><strong>${t('kucing!','cat!')}</strong></div><button id="hearHero">🔊</button></section><section class="action-dock"><div class="dock-label">${t('Tekan saya!','Tap me!')}</div>${items.map((d,i)=>`<button class="action-card" data-id="${d.id}"><div class="thumb">${d.emoji}</div><b>${i===0?t('Jalan','Walk'):i===1?t('Lompat','Jump'):i===2?t('Kejar','Chase'):t('Bola','Ball')}</b></button>`).join('')}</section><button class="round left">‹</button><button class="round right">›</button><div class="dots">● ○ ○ ○ ○</div><section class="parent-teaser">💡 <b>${t('Tonton & Dengar','Watch & Listen')}</b><small>${t('Bersama Ibu Reqoo','With Mama Reqoo')}</small><button>▶</button></section></main>`;
+document.getElementById('lang').onclick=()=>{lang=lang==='ms'?'en':'ms';localStorage.setItem('reqooLang',lang);home()};document.getElementById('hearHero').onclick=()=>speak(t('Hai! Ini kucing. Kucing... meow! Cuba sebut kucing!','Hi! This is a cat. Cat... meow! Try saying cat!'));document.querySelectorAll('.action-card').forEach(b=>b.onclick=()=>lesson(b.dataset.id));document.getElementById('sound').onclick=()=>speak(t('Jom main!','Let’s play!'));}
 function find(id){return DATA[lang].find(x=>x.id===id)||DATA[lang][0]}
-function lesson(id){
- const d=find(id);
- app.innerHTML=`<div class="app"><main class="phone"><div class="scene"><div class="world"><div class="sun">☀️</div><div class="cloud one">☁️</div><div class="cloud two">☁️</div><div class="hill a"></div><div class="hill b"></div><div class="grass"></div><div class="home-cat lesson-cat" id="cat">🐱</div></div><button class="back" id="back">← ${t('Jom Main','Play')}</button><div class="lesson-copy"><div class="bigword">${d.word}</div><div class="sub">${t('Dengar… lihat… dan cuba sebut.','Listen… look… and try to say it.')}</div></div><button class="object" id="object" aria-label="${d.word}">${d.emoji}</button><div class="cat-label">${d.word}</div><div class="parent-card"><strong>👩‍👦 ${t('Cuba dengan anak','Try with your child')}</strong>${t('Sebut perlahan: '+d.word+'. Tunggu sekejap. Anak boleh tengok, tunjuk, buat bunyi atau cuba sebut.','Say slowly: '+d.word+'. Pause. Your child can look, point, make a sound or try the word.')}</div><div class="scene-ui"><button id="speak">🔊 ${t('Dengar','Listen')}</button><button id="repeat">🔁 ${t('Lagi','Again')}</button></div></div></main></div>`;
- const say=()=>speak(`${d.word}. ${d.sound}`);
- document.getElementById('back').onclick=home;
- document.getElementById('speak').onclick=say;
- document.getElementById('repeat').onclick=say;
- document.getElementById('cat').onclick=say;
- document.getElementById('object').onclick=say;
- setTimeout(say,700);
-}
+function lesson(id){const d=find(id);app.innerHTML=`<main class="game lesson-game">${world()}${nav()}<button class="back" id="back">← ${t('Jom Main','Play')}</button><div class="lesson-word"><div>${d.word}</div><small>${t('Dengar • Lihat • Cuba','Listen • Look • Try')}</small></div><div class="lesson-cat-wrap">${CAT()}</div><button class="lesson-object" id="object">${d.emoji}</button><div class="word-sign">${d.word}<button id="speak">🔊</button></div><div class="lesson-actions"><button id="again">🔁 ${t('Lagi','Again')}</button><button id="jump">🦘 ${t('Lompat','Jump')}</button></div><div class="parent-card"><b>👩‍👧 ${t('Cuba dengan anak','Try with your child')}</b><br>${t('Sebut perlahan. Tunggu sekejap. Anak boleh tengok, tunjuk, buat bunyi atau cuba sebut.','Say slowly. Pause. Your child can look, point, make a sound or try the word.')}</div></main>`;const say=()=>speak(`${d.word}. ${d.sound}`);document.getElementById('back').onclick=home;document.getElementById('speak').onclick=say;document.getElementById('again').onclick=say;document.getElementById('object').onclick=say;document.getElementById('jump').onclick=()=>{document.querySelector('.lesson-cat-wrap').classList.add('jumping');setTimeout(()=>document.querySelector('.lesson-cat-wrap')?.classList.remove('jumping'),700);speak(t('Lompat!','Jump!'))};setTimeout(say,700)}
 home();
