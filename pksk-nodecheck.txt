@@ -1,87 +1,6 @@
---- first 80 lines of app.js ---
-     1	
-     2	const PKSK_ACCESS_API="/api/pksk";
-     3	function pkskApi(action,data,done,retries=2){
-     4	  const attempt=n=>{
-     5	    const cb="pkskGate_"+Date.now()+"_"+Math.floor(Math.random()*99999);
-     6	    const sc=document.createElement("script");let finished=false;
-     7	    const timer=setTimeout(()=>finish({ok:false,error:"Server mengambil masa terlalu lama."}),11000);
-     8	    const finish=r=>{
-     9	      if(finished)return;finished=true;clearTimeout(timer);delete window[cb];sc.remove();
-    10	      if(r&&r.ok!==false){done(r);return;}
-    11	      if(n<retries){setTimeout(()=>attempt(n+1),700*(n+1));return;}
-    12	      done(r||{ok:false,error:"Sambungan server gagal."});
-    13	    };
-    14	    window[cb]=finish;sc.onerror=()=>finish({ok:false,error:"Sambungan server gagal."});
-    15	    sc.src=PKSK_ACCESS_API+"?"+new URLSearchParams({action,callback:cb,...data});
-    16	    document.body.appendChild(sc);
-    17	  };
-    18	  attempt(0);
-    19	}
-    20	function pkskLicense(){return (localStorage.getItem("reqoo_pksk_license")||"").trim().toUpperCase();}
-    21	function pkskDeviceId(){
-    22	  let id=localStorage.getItem("reqoo_pksk_device_id");
-    23	  if(!id){id="DEV-"+crypto.getRandomValues(new Uint32Array(3)).join("-")+"-"+Date.now().toString(36);localStorage.setItem("reqoo_pksk_device_id",id)}
-    24	  return id
-    25	}
-    26	function queueProgress(payload){
-    27	  let q=[];try{q=JSON.parse(localStorage.getItem("pksk-sync-queue")||"[]")}catch(e){}
-    28	  q=q.filter(x=>!(x.setNo===payload.setNo&&x.completed===payload.completed));
-    29	  q.push(Object.assign({},payload,{queuedAt:Date.now()}));
-    30	  localStorage.setItem("pksk-sync-queue",JSON.stringify(q.slice(-20)));
-    31	}
-    32	function flushProgressQueue(){
-    33	  let q=[];try{q=JSON.parse(localStorage.getItem("pksk-sync-queue")||"[]")}catch(e){q=[]}
-    34	  if(!q.length||!pkskLicense())return;
-    35	  const item=q[0];
-    36	  pkskApi("saveProgress",item,r=>{
-    37	    if(r&&r.ok){q.shift();localStorage.setItem("pksk-sync-queue",JSON.stringify(q));if(q.length)setTimeout(flushProgressQueue,300)}
-    38	  },1);
-    39	}
-    40	function pkskDashApi(action,data,done){pkskApi(action,data,done)}
-    41	function pkskReportError(type,message){
-    42	  try{pkskApi("logClientError",{code:pkskLicense(),errorType:type,message:String(message||"").slice(0,400),deviceId:pkskDeviceId()},()=>{},0)}catch(e){}
-    43	}
-    44	function pkskLicense(){return (localStorage.getItem("reqoo_pksk_license")||"").trim().toUpperCase();}
-    45	function pkskRequireAccess(next){
-    46	  const code=pkskLicense();
-    47	  if(!code){location.href="../access/";return;}
-    48	  const deviceId=pkskDeviceId();
-    49	  pkskApi("registerDevice",{code,deviceId,userAgent:navigator.userAgent},function(r){
-    50	    if(r&&r.ok){next();return;}
-    51	    localStorage.removeItem("reqoo_pksk_license");
-    52	    alert((r&&r.error)||"Akses tidak sah atau peranti telah melebihi had.");
-    53	    location.href="../access/";
-    54	  });
-    55	}
-    56	function pkskDeviceId(){
-    57	  let id=localStorage.getItem("reqoo_pksk_device_id");
-    58	  if(!id){id="DEV-"+crypto.getRandomValues(new Uint32Array(3)).join("-")+"-"+Date.now().toString(36);localStorage.setItem("reqoo_pksk_device_id",id)}
-    59	  return id;
-    60	}
-    61	function pkskDashApi(action,data,done){pkskApi(action,data,done)}
-    62	function exitToDashboard(){
-    63	  if(phase==="c"){localStorage.setItem(`pksk-set${String(setNo).padStart(2,"0")}-writing`,JSON.stringify({wTimer,selectedTopic,text:$("essay").value}))}
-    64	  if(phase!=="idle"&&phase!=="done"&&phase!=="abBrief"&&phase!=="cBrief"){
-    65	    if(!confirm("Keluar ke dashboard? Jawapan yang telah disimpan pada peranti akan kekal. Anda boleh sambung semula kemudian."))return;
-    66	    if(phase==="ab")persistSession();
-    67	  }
-    68	  clearInterval(interval);clearInterval(winterval);location.href="../access/";
-    69	}
-    70	function toggleMobileNav(force){
-    71	  const card=$("navCard");if(!card)return;
-    72	  const open=typeof force==="boolean"?force:!card.classList.contains("mobile-open");
-    73	  card.classList.toggle("mobile-open",open);
-    74	  document.body.classList.toggle("nav-open",open);
-    75	}
-    76	
-    77	// Audio pengawas: fail M4A dalam folder audio.
-    78	let bank=null,qs=[],writing=[],setNo=1,phase="idle",qidx=0,answers={},times={},qStarted=0,timer=5400,wTimer=2700,interval=null,winterval=null,selectedTopic=0,abStartedAt=null,cStartedAt=null;
-    79	const $=id=>document.getElementById(id);
-    80	let loadToken=0;
 --- node check ---
 /home/runner/work/Reqoo.co/Reqoo.co/sim/pksk/simulator/js/app.js:313
-\n\n/* PKSK UX PROGRESS FIX V2 */\n(function(){\n  const style=document.createElement('style');\n  style.textContent=`\n    .review-list{gap:8px!important}\n    .review-item{padding:11px 13px!important;border-radius:12px!important}\n    .review-top{gap:8px!important;align-items:flex-start!important}\n    .review-top b{font-size:12px!important;line-height:1.4!important;font-weight:650!important}\n    .review-top strong{font-size:9px!important;white-space:nowrap!important;padding-top:2px}\n    .review-answer{margin-top:6px!important;gap:3px!important;font-size:10.5px!important;line-height:1.4!important}\n    .review-explain{margin-top:7px!important;padding:8px 10px!important;border-radius:8px!important;font-size:10.5px!important;line-height:1.45!important}\n    .pksk-exitbar{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:16px}\n    .pksk-exit{border:1px solid #cfd9e5;background:#fff;color:#506078;border-radius:9px;padding:10px 15px;font-size:11px;font-weight:800;box-shadow:none}\n    .pksk-exit:hover{border-color:#9db2c8;background:#f8fafc}\n    .pksk-exit.danger{color:#9f4b4b;border-color:#dfc4c4}\n    @media(max-width:760px){\n      .review-item{padding:10px 11px!important}\n      .review-top b{font-size:11px!important}\n      .review-answer,.review-explain{font-size:10px!important}\n      .pksk-exit{width:100%;max-width:360px}\n    }`;\n  document.head.appendChild(style);\n\n  function addButton(container, id, text, cls, handler){\n    if(!container || document.getElementById(id)) return;\n    const wrap=container.querySelector('.pksk-exitbar') || (()=>{const x=document.createElement('div');x.className='pksk-exitbar';container.appendChild(x);return x})();\n    const b=document.createElement('button'); b.id=id; b.type='button'; b.className='pksk-exit '+(cls||''); b.textContent=text; b.onclick=handler; wrap.appendChild(b);\n  }\n\n  function dashboard(){ location.href='../access/'; }\n  function confirmDashboard(){\n    if(phase==='ab') persistSession();\n    if(phase==='c'){\n      localStorage.setItem(`pksk-set${String(setNo).padStart(2,'0')}-writing`,JSON.stringify({wTimer,selectedTopic,text:$("essay")?.value||''}));\n    }\n    if(phase==='ab'||phase==='c') { if(!confirm('Keluar ke dashboard? Jawapan anda akan disimpan dan boleh disambung semula.')) return; }\n    clearInterval(interval); clearInterval(winterval); dashboard();\n  }\n\n  function mountExitControls(){\n    const start=document.getElementById('start');\n    if(start){\n      const card=start.querySelector('.start-card')||start;\n      addButton(card,'pkskCancelStart','← KEMBALI KE DASHBOARD','',dashboard);\n    }\n    const briefing=document.getElementById('briefing');\n    if(briefing){\n      const inner=briefing.querySelector('.brief-inner')||briefing;\n      addButton(inner,'pkskCancelBrief','← BATAL & KEMBALI','',dashboard);\n    }\n    const exam=document.getElementById('exam');\n    if(exam){\n      const nav=document.querySelector('.exam-layout')||exam;\n      addButton(nav,'pkskExitExam','KELUAR KE DASHBOARD','danger',confirmDashboard);\n    }\n    const writing=document.getElementById('writing');\n    if(writing){\n      const layout=document.querySelector('.write-layout')||writing;\n      addButton(layout,'pkskExitWriting','KELUAR KE DASHBOARD','danger',confirmDashboard);\n    }\n  }\n\n  // DOM may be rendered before/after this patch depending on cache; observe once for safety.\n  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mountExitControls,{once:true}); else mountExitControls();\n  const observer=new MutationObserver(()=>{mountExitControls();});\n  observer.observe(document.body,{childList:true,subtree:true});\n  setTimeout(()=>observer.disconnect(),15000);\n\n  // Make final progress save explicit and timestamped; existing sync function remains the source of truth.\n  const originalBuildResult=window.buildResult;\n  if(typeof originalBuildResult==='function'){\n    // no override: server sync is already called by buildResult; this patch only adds a second flush after result render.\n    setTimeout(()=>{try{flushProgressQueue();}catch(e){}},1200);\n  }\n})();\n
+\n\n
 ^
 
 SyntaxError: Invalid or unexpected token
@@ -89,3 +8,26 @@ SyntaxError: Invalid or unexpected token
     at checkSyntax (node:internal/main/check_syntax:78:3)
 
 Node.js v22.23.2
+
+--- context ---
+0293:  $("bAnalysis").innerHTML=tableB();
+0294:  $("reviewB").innerHTML=reviewB();
+0295:  $("cAnalysis").innerHTML=essayAnalysis(c);
+0296:  const slow=qs.map((q,i)=>({id:q.id,ms:times[i]||0})).filter(x=>x.ms).sort((x,y)=>y.ms-x.ms).slice(0,5);
+0297:  $("timeAnalysis").innerHTML=`<div class="table"><div class="row head"><div>Soalan paling lama</div><div>Masa</div><div></div><div></div><div></div></div>`+slow.map(x=>`<div class="row"><div>${x.id}</div><div>${Math.round(x.ms/1000)} saat</div><div></div><div></div><div></div></div>`).join("")+`</div><p class="note">“Tidak dijawab” bermaksud calon tidak memilih jawapan sebelum menghantar atau masa tamat.</p>`;
+0298:  const groups={};b.forEach(q=>{groups[q.category]??={a:0,c:0};if(answers[q.id]!==undefined){groups[q.category].a++;if(answers[q.id]===q.answer)groups[q.category].c++}});
+0299:  const weak=Object.entries(groups).filter(x=>x[1].a).sort((x,y)=>pct(x[1].c,x[1].a)-pct(y[1].c,y[1].a))[0];
+0300:  $("conclusionTitle").textContent=weak?`Fokus latihan: ${weak[0]}`:"Teruskan latihan secara konsisten";
+0301:  $("conclusion").textContent=`Anda menjawab ${Object.keys(answers).length} daripada 100 soalan A+B. Bahagian B mencatat ${bCorrect} betul, ${bWrong} salah dan ${bSkip} tidak dijawab. ${weak?`Bidang dengan ketepatan paling rendah dalam jawapan yang sempat dibuat ialah ${weak[0]}. Gunakan semakan setiap soalan untuk ulang kaji.`:"Semak setiap bidang dan ulang soalan yang mengambil masa paling lama."} Bahagian A dilaporkan sebagai indeks dan konsistensi respons, bukan betul/salah.`;
+0302:  $("progress").innerHTML=progressHistory(bPct);
+0303:  show("result");
+0304:  localStorage.setItem(`pksk-set${String(setNo).padStart(2,"0")}-result`,JSON.stringify({answers,times,c,bCorrect,bPct,aIndex}));
+0305:  syncProgressServer(bPct,{aIndex,bCorrect,bAnswered,aAnswered,timeUsed:Math.round((abElapsed+cElapsed)/60),essayWords:c.words,completed:true});
+0306:  localStorage.removeItem(`pksk-set${String(setNo).padStart(2,"0")}-session`);localStorage.removeItem(`pksk-set${String(setNo).padStart(2,"0")}-writing`);
+0307: }
+0308: const urlSet=Number(new URLSearchParams(location.search).get("set")||0);
+0309: const initialSet=urlSet>=1&&urlSet<=50?urlSet:Number(localStorage.getItem("pksk-selected-set")||1);
+0310: pkskRequireAccess(()=>load(initialSet).then(()=>updateSetUI()).catch(e=>console.error(e)));
+0311: 
+0312: window.addEventListener("online",flushProgressQueue);window.addEventListener("focus",flushProgressQueue);setTimeout(flushProgressQueue,1500);
+0313: \n\n
