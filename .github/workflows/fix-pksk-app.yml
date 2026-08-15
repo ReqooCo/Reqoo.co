@@ -5,24 +5,31 @@ on:
 permissions:
   contents: write
 jobs:
-  diagnose:
-    if: github.event.head_commit.message == 'Capture PKSK JavaScript syntax diagnostic'
+  repair:
+    if: github.event.head_commit.message == 'Remove malformed PKSK patch without blocking on syntax check'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Diagnose JavaScript syntax
+      - name: Remove malformed PKSK UX patch
         shell: bash
         run: |
-          : > pksk-nodecheck.txt
-          echo '--- first 80 lines of app.js ---' >> pksk-nodecheck.txt
-          nl -ba sim/pksk/simulator/js/app.js | sed -n '1,80p' >> pksk-nodecheck.txt
-          echo '--- node check ---' >> pksk-nodecheck.txt
-          node --check sim/pksk/simulator/js/app.js >> pksk-nodecheck.txt 2>&1 || true
-      - name: Commit diagnostic
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('sim/pksk/simulator/js/app.js')
+          s = p.read_text()
+          marker = '/* PKSK UX PROGRESS FIX V2 */'
+          if marker not in s:
+              raise SystemExit('PKSK UX patch marker not found')
+          s = s.split(marker, 1)[0].rstrip() + '\n'
+          p.write_text(s)
+          print('Removed malformed PKSK UX patch')
+          PY
+      - name: Commit cleaned app.js
         shell: bash
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add pksk-nodecheck.txt
-          git commit -m 'Record PKSK JavaScript syntax diagnostic'
+          git add sim/pksk/simulator/js/app.js
+          git diff --cached --quiet && exit 0
+          git commit -m 'Remove malformed PKSK simulator patch'
           git push
