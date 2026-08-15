@@ -1,6 +1,6 @@
 const DATA={
  ms:[
-  {id:'kucing',word:'Kucing',sound:'Miaow!',emoji:'🐱',color:'#fff0c2'},
+  {id:'kucing',word:'Kucing',sound:'Meow!',emoji:'🐱',color:'#fff0c2'},
   {id:'bola',word:'Bola',sound:'Bola!',emoji:'⚽',color:'#dff1ff'},
   {id:'susu',word:'Susu',sound:'Susu!',emoji:'🥛',color:'#ddf7ec'},
   {id:'makan',word:'Makan',sound:'Makan!',emoji:'🍚',color:'#ffe4eb'}
