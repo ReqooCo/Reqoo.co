@@ -5,34 +5,25 @@ on:
 permissions:
   contents: write
 jobs:
-  repair:
-    if: github.event.head_commit.message == 'Harden one-time PKSK app.js repair'
+  diagnose:
+    if: github.event.head_commit.message == 'Diagnose PKSK simulator JavaScript syntax'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Remove malformed PKSK patch
+      - name: Diagnose JavaScript syntax
         shell: bash
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('sim/pksk/simulator/js/app.js')
-          s = p.read_text()
-          marker = '/* PKSK UX PROGRESS FIX V2 */'
-          if marker not in s:
-              raise SystemExit('PKSK UX patch marker not found')
-          s = s.split(marker, 1)[0].rstrip() + '\n'
-          p.write_text(s)
-          print('Removed malformed escaped PKSK UX patch; restored valid simulator core')
-          PY
-      - name: Verify JavaScript syntax
-        shell: bash
-        run: node --check sim/pksk/simulator/js/app.js
-      - name: Commit repair
+          node --check sim/pksk/simulator/js/app.js > /tmp/pksk-nodecheck.txt 2>&1 || true
+          cp /tmp/pksk-nodecheck.txt pksk-nodecheck.txt
+          echo '--- first 40 lines of app.js ---' > pksk-nodecheck.txt
+          nl -ba sim/pksk/simulator/js/app.js | head -40 >> pksk-nodecheck.txt
+          echo '--- node check ---' >> pksk-nodecheck.txt
+          node --check sim/pksk/simulator/js/app.js >> pksk-nodecheck.txt 2>&1 || true
+      - name: Commit diagnostic
         shell: bash
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add sim/pksk/simulator/js/app.js
-          git diff --cached --quiet && exit 0
-          git commit -m 'Fix malformed PKSK simulator JavaScript'
+          git add pksk-nodecheck.txt
+          git commit -m 'Record PKSK JavaScript syntax diagnostic'
           git push
