@@ -1,5 +1,5 @@
 const TOTAL_SETS=50;
-const MAX_DEVICES=3;
+const MAX_DEVICES=2;
 const BANK_ORIGIN='https://pksk.sim.reqoo.co';
 
 export async function onRequest(context){
