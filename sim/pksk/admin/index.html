@@ -123,8 +123,15 @@ function renderOrders(){
   const actions=x.status==="PENDING"
    ?`<button class="primary" onclick='verifyOrder(${JSON.stringify(x.orderNo)})'>✓ SAHKAN</button><button class="danger" onclick='rejectOrder(${JSON.stringify(x.orderNo)})'>TOLAK</button>`
    :x.accessCode?`<button class="ghost" onclick='resendAccess(${JSON.stringify(x.accessCode)})'>↗ RESEND ACCESS</button><button class="ghost" onclick='copyText(${JSON.stringify(x.accessCode)})'>📋 COPY</button>`:"";
-  return `<article class="item"><div class="item-main"><div class="code">${esc(x.orderNo)}</div><h3>${esc(x.name)}</h3><p>${esc(x.phone)} • RM${Number(x.amount||0).toFixed(2)}</p><div class="meta"><span class="status ${esc(x.status)}">${esc(x.status)}</span>${x.referralCode?`<span>REF ${esc(x.referralCode)}</span>`:""}${x.proofUrl?`<a target="_blank" href="${esc(x.proofUrl)}">📎 Bukti</a>`:"<span>⚠ Tiada bukti</span>"}</div></div><div class="item-actions">${actions}</div></article>`;
+  const proof=x.proofUploaded||x.proofRef?`<button class="ghost proof-btn" onclick='viewProof(${JSON.stringify(x.orderNo)})'>📎 BUKTI</button>`:`<span>⚠ Tiada bukti</span>`;
+  return `<article class="item"><div class="item-main"><div class="code">${esc(x.orderNo)}</div><h3>${esc(x.name)}</h3><p>${esc(x.phone)} • RM${Number(x.amount||0).toFixed(2)}</p><div class="meta"><span class="status ${esc(x.status)}">${esc(x.status)}</span>${x.referralCode?`<span>REF ${esc(x.referralCode)}</span>`:""}${proof}</div></div><div class="item-actions">${actions}</div></article>`;
  }).join(""):'<div class="empty">Tiada order.</div>';
+}
+async function viewProof(orderNo){
+ const j=await api("getPaymentProof",{orderNo});
+ if(!j?.ok){alert(j?.error||"Bukti pembayaran tidak dapat dibuka.");return;}
+ $("detail").innerHTML=`<div class="eyebrow">PAYMENT PROOF</div><h2>${esc(orderNo)}</h2><div style="margin-top:16px;text-align:center"><img src="${esc(j.dataUrl)}" alt="Bukti pembayaran ${esc(orderNo)}" style="max-width:100%;max-height:70vh;border-radius:12px;object-fit:contain;border:1px solid #dce4ee;background:#fff"></div>`;
+ $("modal").hidden=false;
 }
 function renderLicenses(){
  const q=$("search").value.trim().toLowerCase();
@@ -140,8 +147,9 @@ async function verifyOrder(orderNo){
  if(!confirm("Sahkan bayaran dan jana Access Code?"))return;
  const j=await api("verifyPKSKOrder",{orderNo});
  if(!j?.ok){alert(j?.error||"Gagal sahkan.");return;}
- const o=(DATA.orders||[]).find(x=>x.orderNo===orderNo)||{};
- openWhatsApp(o.phone,j.accessCode,true);await load();
+ if(j.whatsappUrl){window.open(j.whatsappUrl,"_blank");}
+ else if(j.whatsappMessage){alert(j.whatsappMessage);}
+ await load();
 }
 async function rejectOrder(orderNo){
  if(!confirm("Tolak pembayaran ini?"))return;
@@ -149,14 +157,15 @@ async function rejectOrder(orderNo){
  if(!j?.ok)alert(j?.error||"Gagal.");else await load();
 }
 async function resendAccess(code){
- const l=await api("getPKSKLicense",{code});
- if(!l?.ok){alert(l?.error||"License tidak dijumpai");return;}
- openWhatsApp(l.license.phone,code,false);
- await api("logResendAccess",{code});
+ const j=await api("getPKSKLicense",{code});
+ if(!j?.ok){alert(j?.error||"License tidak dijumpai");return;}
+ const r=await api("logResendAccess",{code});
+ if(r?.whatsappUrl)window.open(r.whatsappUrl,"_blank");
+ else {const phone=j.license.phone;openWhatsApp(phone,code,false);}
 }
 function openWhatsApp(phone,code,first){
  let p=String(phone||"").replace(/\D/g,"");if(p.startsWith("0"))p="60"+p;
- const url="https://reqoo.co/pksk/access/?code="+encodeURIComponent(code);
+ const url="https://pksk.sim.reqoo.co/access/?code="+encodeURIComponent(code);
  const text=(first?"✅ Pembayaran PKSK telah disahkan.":"🔁 Mesej akses PKSK dihantar semula.")+"\n\n🔑 Access Code: "+code+"\n\n📚 Akses PKSK:\n"+url+"\n\nTekan pautan di atas. Access Code akan diisi secara automatik.\n\nTerima kasih kerana memilih REQOO.";
  window.open("https://wa.me/"+p+"?text="+encodeURIComponent(text),"_blank");
 }
