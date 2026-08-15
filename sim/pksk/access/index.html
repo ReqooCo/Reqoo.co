@@ -8,7 +8,7 @@
 </style></head><body>
 <header><div class="brand"><b>R</b> REQOO <span style="color:#7b8798;font-size:10px">/ PKSK</span></div><div class="head-actions"><button id="copyCodeTop" style="display:none">Salin Kod</button><button id="logout" style="display:none">Keluar</button></div></header>
 <main>
-<section id="login" class="card login"><div class="eyebrow">SIMULASI PKSK</div><h1>Masuk ke akses anda</h1><p class="muted">Masukkan Access Code yang diberikan selepas pembayaran disahkan. Selepas berjaya, anda akan masuk ke dashboard latihan — bukan terus ke simulator.</p><label>Access Code</label><input id="code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="PKSK-XXXXX-XXXXX"><div class="actions"><button id="start">SEMAK & MASUK</button><button id="paste" class="copy">TAMPAL</button></div><div class="note">1 pembelian = 1 lesen • Maksimum 2 peranti • Set 01–50</div><div id="msg"></div></section>
+<section id="login" class="card login"><div class="eyebrow">SIMULASI PKSK</div><h1>Masuk ke akses anda</h1><p class="muted">Pautan akses daripada WhatsApp akan cuba masuk secara automatik. Jika perlu, masukkan Access Code anda di sini.</p><label>Access Code</label><input id="code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="PKSK-XXXXX-XXXXX"><div class="actions"><button id="start">SEMAK & MASUK</button><button id="paste" class="copy">TAMPAL</button></div><div class="note">1 pembelian = 1 lesen • Maksimum 2 peranti • Peranti ke-3 akan ditolak automatik • Set 01–50</div><div id="msg"></div></section>
 <section id="dashboard">
 <div class="hero"><div><div class="eyebrow">DASHBOARD PELAJAR</div><h1>Selamat datang, <span id="name">Pelajar</span>.</h1><p class="muted">Pantau latihan, sambung set terakhir dan lihat perkembangan prestasi anda.</p></div><div class="license"><small>LICENSE STATUS</small><b>● ACTIVE</b><small id="deviceInfo" style="margin-top:7px"></small></div></div>
 <div class="kpis"><div class="kpi"><span>Set selesai</span><b id="doneSets">0 / 50</b></div><div class="kpi"><span>Purata prestasi</span><b id="avgScore">—</b></div><div class="kpi"><span>Skor terbaik</span><b id="bestScore">—</b></div><div class="kpi"><span>Peranti</span><b id="devices">1 / 2</b></div></div>
@@ -44,24 +44,43 @@ function copyCode(){
  if(navigator.clipboard?.writeText){navigator.clipboard.writeText(LICENSE).then(success).catch(()=>fallbackCopy())}else fallbackCopy();
 }
 function fallbackCopy(){const t=document.createElement("textarea");t.value=LICENSE;document.body.appendChild(t);t.select();document.execCommand("copy");t.remove();$("copyCodeTop").textContent="✓ Disalin";setTimeout(()=>$("copyCodeTop").textContent="Salin Kod",1300)}
-function enter(){
- const code=$("code").value.trim().toUpperCase();
- if(!code){$("msg").className="bad";$("msg").textContent="Masukkan Access Code.";return;}
- $("start").disabled=true;$("start").textContent="MENYEMAK...";
+function resetStart(){ $("start").disabled=false; $("start").textContent="SEMAK & MASUK"; }
+function loginWithCode(code,quiet=false){
+ code=String(code||"").trim().toUpperCase();
+ if(!code){if(!quiet){$("msg").className="bad";$("msg").textContent="Masukkan Access Code."}return;}
+ if(!quiet){$("start").disabled=true;$("start").textContent="MENYEMAK...";}
  api("validateAccess",{code},v=>{
-  if(!v.ok){$("start").disabled=false;$("start").textContent="SEMAK & MASUK";$("msg").className="bad";$("msg").textContent=v.error||"Akses tidak sah.";return;}
+  if(!v.ok){
+   resetStart();
+   if(quiet){localStorage.removeItem("reqoo_pksk_license");$("code").value=code;$("msg").className="bad";$("msg").textContent=v.error||"Akses tidak sah.";}
+   else{$("msg").className="bad";$("msg").textContent=v.error||"Akses tidak sah.";}
+   return;
+  }
   const deviceId=getDeviceId();
   api("registerDevice",{code,deviceId,userAgent:navigator.userAgent},r=>{
-   if(!r.ok){$("start").disabled=false;$("start").textContent="SEMAK & MASUK";$("msg").className="bad";$("msg").textContent=r.error||"Peranti tidak dapat didaftarkan.";return;}
-   LICENSE=code;localStorage.setItem("reqoo_pksk_license",code);showDashboard();
+   if(!r.ok){
+    resetStart();
+    $("code").value=code;
+    $("msg").className="bad";
+    $("msg").textContent=r.error||"Peranti tidak dapat didaftarkan.";
+    return;
+   }
+   LICENSE=code;
+   localStorage.setItem("reqoo_pksk_license",code);
+   showDashboard();
   });
  });
 }
+function enter(){loginWithCode($("code").value,false)}
 function showDashboard(){$("login").style.display="none";$("dashboard").style.display="block";$("logout").style.display="block";$("copyCodeTop").style.display="block";loadDashboard()}
 function loadDashboard(){
  $("msg").className="";$("msg").textContent="Memuatkan dashboard…";
  api("getCustomerDashboard",{code:LICENSE,deviceId:getDeviceId()},r=>{
-  if(!r.ok){$("msg").className="bad";$("msg").textContent=r.error||"Gagal memuatkan dashboard.";return;}
+  if(!r.ok){
+   localStorage.removeItem("reqoo_pksk_license");
+   $("dashboard").style.display="none";$("login").style.display="block";resetStart();
+   $("msg").className="bad";$("msg").textContent=r.error||"Gagal memuatkan dashboard.";return;
+  }
   $("msg").textContent="";renderDashboard(r);
  });
 }
@@ -89,16 +108,16 @@ $("resume").onclick=e=>goSimulator(e.currentTarget.dataset.set||1);
 $("choose").onclick=()=>goSimulator(1);
 $("logout").onclick=()=>{localStorage.removeItem("reqoo_pksk_license");location.reload()};
 
-// Auto-fill from WhatsApp link. We still show the code so the customer can verify it.
+// Auto-login from WhatsApp link. The server registers this browser/device and enforces the 2-device limit.
 const queryCode=(new URLSearchParams(location.search).get("code")||"").trim().toUpperCase();
 if(queryCode){
  $("code").value=queryCode;
- setTimeout(()=>enter(),250);
+ setTimeout(()=>loginWithCode(queryCode,true),250);
 }else{
  const saved=(localStorage.getItem("reqoo_pksk_license")||"").trim().toUpperCase();
  if(saved){
-  LICENSE=saved;
-  api("validateAccess",{code:LICENSE},r=>{if(r.ok)showDashboard();else localStorage.removeItem("reqoo_pksk_license")});
+  $("code").value=saved;
+  setTimeout(()=>loginWithCode(saved,true),150);
  }
 }
 </script></body></html>
