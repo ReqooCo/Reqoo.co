@@ -310,4 +310,3 @@ const initialSet=urlSet>=1&&urlSet<=50?urlSet:Number(localStorage.getItem("pksk-
 pkskRequireAccess(()=>load(initialSet).then(()=>updateSetUI()).catch(e=>console.error(e)));
 
 window.addEventListener("online",flushProgressQueue);window.addEventListener("focus",flushProgressQueue);setTimeout(flushProgressQueue,1500);
-\n\n
