@@ -1,6 +1,6 @@
 const DEFAULT_PRICE = 35;
 const DEFAULT_COMMISSION = 5;
-const MAX_DEVICES = 2;
+const MAX_DEVICES = 3;
 const TOTAL_SETS = 50;
 const ACCESS_URL = 'https://pksk.sim.reqoo.co/access/';
 const MAX_PROOF_BYTES = 2 * 1024 * 1024;
