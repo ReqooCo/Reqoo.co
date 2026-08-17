@@ -1,18 +1,13 @@
 name: Build PKSK Set 02
-on:
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/build_pksk_set02.py'
-      - '.github/workflows/build-pksk-set02.yml'
+on: push
 permissions:
   contents: write
 jobs:
   build:
-    if: github.event.head_commit.message != 'build(pksk): publish Set 02 from zero-generated bank'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Build Set 02
@@ -21,6 +16,6 @@ jobs:
         run: |
           git config user.name ReqooCo
           git config user.email actions@github.com
-          git add sim/pksk/simulator/sets/SET\ 01-10/data/set02.json
-          git commit -m 'build(pksk): publish Set 02 from zero-generated bank'
+          git add "sim/pksk/simulator/sets/SET 01-10/data/set02.json"
+          git commit -m "build(pksk): publish Set 02 from zero-generated bank"
           git push origin main
