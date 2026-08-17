@@ -1,0 +1,61 @@
+{
+  "section": "B",
+  "name": "Kecerdasan Intelek",
+  "count": 70,
+  "domains": {
+    "IQ": {"target": 12, "skills": ["pattern", "logic", "analogy", "sequence", "classification"]},
+    "Bahasa Melayu": {"target": 10, "skills": ["tatabahasa", "kosa kata", "pemahaman", "susunan ayat"]},
+    "Bahasa Inggeris": {"target": 10, "skills": ["grammar", "vocabulary", "reading", "usage"]},
+    "Matematik": {"target": 14, "skills": ["number", "fraction", "ratio", "percentage", "measurement", "geometry", "data", "multi_step_reasoning"], "difficulty": "higher_reasoning"},
+    "Sains": {"target": 10, "skills": ["concept", "application", "experiment", "cause_effect", "data_interpretation"]},
+    "Teknologi": {"target": 6, "skills": ["digital_literacy", "systems", "problem_solving", "safe_use"]},
+    "Pengetahuan Am": {"target": 8, "skills": ["Malaysia", "geography", "community", "environment", "general_knowledge"]}
+  },
+  "domain_total": 70,
+  "item_design": {
+    "options": 4,
+    "plausible_distractors": true,
+    "reasoning_required_when_appropriate": true,
+    "answer_position_balance": true,
+    "avoid_repeated_stem_template": true,
+    "avoid_same_context_reuse": true,
+    "avoid_name_swap_duplicates": true
+  },
+  "mathematics": {
+    "higher_reasoning": true,
+    "multi_step_target": true,
+    "visuals_when_materially_useful": true,
+    "no_visual_decoration": true,
+    "calculation_verified": true,
+    "answer_key_verified_independently": true
+  },
+  "science_and_technology": {
+    "visuals_when_useful": true,
+    "stimulus_must_match_stem": true,
+    "data_must_be_consistent": true
+  },
+  "anti_ai": {
+    "natural_bahasa_melayu": true,
+    "natural_bahasa_inggeris": true,
+    "avoid_generic_intro": true,
+    "avoid_repetitive_sentence_rhythm": true,
+    "avoid_translation_smell": true,
+    "avoid_formulaic_question_starters": true,
+    "old_bank_is_not_a_text_source": true
+  },
+  "cross_set": {
+    "semantic_collision_check": true,
+    "family_collision_check": true,
+    "context_collision_check": true,
+    "stimulus_collision_check": true,
+    "same_answer_pattern_check": true
+  },
+  "qa": {
+    "content_validation": true,
+    "answer_validation": true,
+    "distractor_review": true,
+    "red_team": true,
+    "regression": true,
+    "human_examiner_gate": true
+  }
+}
