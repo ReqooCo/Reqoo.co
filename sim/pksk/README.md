@@ -1,39 +1,35 @@
-# REQOO PKSK Landing V1
+# REQOO PKSK — Canonical Project Home
 
-Target URL:
-`https://reqoo.co/pksk/`
+Target simulator path:
+`/pksk/`
 
-## Tujuan
-Landing page mobile-first untuk produk PKSK Simulasi 100 Set.
+## Scope
+PKSK Tahap 2 / Tahun 6 for admission to Tingkatan 1 / Sekolah Khusus.
 
-## Flow yang dikunci
-Customer → `/pksk/` → butang Beli → sistem order Reqoo sedia ada → payment → order/admin → access code → customer kembali ke `/pksk/` → masukkan code → simulator.
+## Locked assessment architecture
+- Bahagian A: 30 items — Kecerdasan Insaniah
+- Bahagian B: 70 items — Kecerdasan Intelek
+- Bahagian C: 3 writing prompts; candidate chooses 1
 
-## Penting
-Landing page ini **tidak menggantikan** `shop/index.html`, `shop/admin.html` atau `backend/Code.gs`.
+The simulator is a practice product, not an official KPM examination and does not reproduce official questions.
 
-Sistem order sedia ada kekal sebagai base.
+## Engineering rules
+- This directory is the canonical home for all PKSK simulator/generator work.
+- Do not mix PKSK with UPKK.
+- Do not use legacy 60-question or 100-question generator formats.
+- Locked question sets are immutable.
+- Every generated question gets persistent identity, DNA, revision history and audit lineage.
+- Failed candidates go to quarantine with an explicit reason; they are not silently deleted.
+- Cross-set semantic/context/pattern collision checks are mandatory.
+- Generator changes must pass regression/dry-run gates before production generation.
 
-## Sebelum live
-1. Letakkan folder ini sebagai `pksk/` pada hosting yang sama dengan Reqoo.
-2. Pastikan `/shop/` ialah laluan shop sedia ada.
-3. Tambah produk PKSK pada katalog/order Reqoo.
-4. Tambah proses generate access code pada backend sedia ada.
-5. Tambah kolum access code/status/activation dalam Orders jika belum ada.
-6. Isi `VERIFY_URL` dalam `app.js` selepas endpoint backend siap.
-7. Tetapkan `SIMULATOR_URL` kepada lokasi simulator 100 set.
-8. Uji penuh: order → payment → admin → code → activation → simulator → progress.
+## Directory layout
+- `config/` — PKSK format and generation rules
+- `generator/` — generation, QA and persistence engine
+- `data/` — test/master data; production locks require explicit release snapshots
+- `docs/` — specifications and audit notes
+- `tests/` — regression and dry-run tests
+- `releases/` — immutable release manifests/snapshots
 
-## Access-code V1
-Cadangan medan order:
-- `product`
-- `accessCode`
-- `accessStatus` (UNUSED / ACTIVE / BLOCKED)
-- `activatedAt`
-- `lastSeenAt`
-- `deviceId` atau pengenal sesi yang sesuai
-
-Jangan bina DRM berat untuk V1. Fokus pada akses mudah dan kawalan asas.
-
-## Nota
-Produk ini ialah simulasi latihan dan bukan peperiksaan rasmi KPM atau salinan soalan sebenar.
+## Existing simulator
+The existing landing/simulator integration remains separate from the generator engine. Do not change payment, access-control or unrelated simulator logic while developing the question generator unless explicitly requested.
