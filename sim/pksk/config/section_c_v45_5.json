@@ -1,0 +1,52 @@
+{
+  "section": "C",
+  "name": "Penulisan",
+  "prompts": 3,
+  "selection": 1,
+  "language": "Bahasa Melayu",
+  "minimum_words": 100,
+  "design": {
+    "prompt_families": [
+      "pengalaman_diri",
+      "situasi_masyarakat",
+      "penyelesaian_masalah",
+      "idea_dan_hujah",
+      "refleksi",
+      "kreatif_berpandu"
+    ],
+    "three_prompts_must_use_distinct_families": true,
+    "distinct_context_required": true,
+    "distinct_command_structure_required": true,
+    "age_appropriate": true,
+    "clear_task": true,
+    "no_trick_instruction": true,
+    "no_copy_from_old_bank": true
+  },
+  "rubric": {
+    "enabled": true,
+    "dimensions": [
+      "relevance_and_task_fulfilment",
+      "ideas_and_development",
+      "organization_and_coherence",
+      "language_accuracy",
+      "vocabulary_and_sentence_control"
+    ],
+    "feedback_required": true,
+    "do_not_reward_length_alone": true
+  },
+  "anti_ai": {
+    "natural_bahasa_melayu": true,
+    "avoid_formulaic_prompt_openings": true,
+    "avoid_repeated_instruction_patterns": true,
+    "avoid_generic_ai_topics": true,
+    "vary_real_life_contexts": true
+  },
+  "qa": {
+    "prompt_distinctness": true,
+    "age_suitability": true,
+    "ambiguity_check": true,
+    "rubric_alignment": true,
+    "cross_set_similarity": true,
+    "human_examiner_gate": true
+  }
+}
