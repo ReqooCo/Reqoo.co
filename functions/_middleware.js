@@ -2,25 +2,22 @@ export async function onRequest(context){
   const url=new URL(context.request.url);
   const host=url.hostname;
 
-  // REQOO FAMILY ROUTING
-  // REQOO -> SHOP / SIM / PLAY / ADMIN
-  // SIM -> PKSK / future SIM children
-
   if(host==='sim.reqoo.co' && !url.pathname.startsWith('/api/')){
     url.pathname=url.pathname==='/'?'/sim/':`/sim${url.pathname}`;
     return context.env.ASSETS.fetch(url);
   }
 
-  // PKSK child route. V56 is injected additively after the existing page scripts.
   if(host==='pksk.sim.reqoo.co' && !url.pathname.startsWith('/api/')){
     let path=url.pathname;
     if(path==='/pksk' || path.startsWith('/pksk/'))path=path.slice('/pksk'.length)||'/';
+    const isSimulator=path==='/simulator' || path.startsWith('/simulator/');
     url.pathname=path==='/'?'/sim/pksk/':`/sim/pksk${path}`;
     const response=await context.env.ASSETS.fetch(url);
+    if(!isSimulator)return response;
     const type=response.headers.get('content-type')||'';
     if(!type.includes('text/html'))return response;
     return new HTMLRewriter().on('body',{element(el){
-      el.append('<script src="/sim/pksk/simulator/js/v56-sync.js?v=56"></script>',{html:true});
+      el.append('<script src="/simulator/js/v56-sync.js?v=56"></script>',{html:true});
     }}).transform(response);
   }
 
@@ -57,6 +54,6 @@ export async function onRequest(context){
   const type=response.headers.get('content-type')||'';
   if(!type.includes('text/html'))return response;
   return new HTMLRewriter().on('body',{element(el){
-    el.append('<script src="/shop/payment-fallback.js?v=4"></script><script src="/shop/payment-fix.js?v=1"></script>',{html:true});
+    el.append('<script src="/shop/payment-fallback.js?v=4"></script><script src="/shop/payment-fix.js?v=1"></script>',{html:true})
   }}).transform(response);
 }
