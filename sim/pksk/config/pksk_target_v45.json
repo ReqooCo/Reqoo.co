@@ -1,0 +1,76 @@
+{
+  "project": "REQOO PKSK SIMULATOR",
+  "scope": "PKSK Tahap 2 / kemasukan Tingkatan 1",
+  "production_target": {
+    "sets": 50,
+    "section_a_questions": 30,
+    "section_b_questions": 70,
+    "section_c_prompts": 3,
+    "section_c_selection": 1,
+    "questions_per_set": 100
+  },
+  "immutability": {
+    "locked_sets_must_not_be_overwritten": true,
+    "passed_questions_must_not_be_silently_deleted": true,
+    "failed_items_are_quarantined": true,
+    "legacy_formats_are_not_valid_targets": true
+  },
+  "generation": {
+    "deterministic_seed": true,
+    "question_id_required": true,
+    "question_dna_required": true,
+    "cross_set_collision_check_required": true,
+    "semantic_duplicate_check_required": true,
+    "context_diversity_required": true,
+    "wording_diversity_required": true,
+    "regression_check_required": true,
+    "red_team_check_required": true,
+    "human_examiner_check_required": true
+  },
+  "section_a": {
+    "count": 30,
+    "construct": "Kecerdasan Insaniah",
+    "note": "Do not reduce to generic knowledge MCQ; preserve the agreed EQ/SQ/SSQ-style assessment intent."
+  },
+  "section_b": {
+    "count": 70,
+    "construct": "Kecerdasan Intelek",
+    "domains": [
+      "IQ",
+      "Bahasa Melayu",
+      "Bahasa Inggeris",
+      "Matematik",
+      "Sains",
+      "Teknologi",
+      "Pengetahuan Am"
+    ],
+    "math": {
+      "target": "more challenging reasoning/application",
+      "visuals_when_useful": true
+    },
+    "visual_policy": "A visual is included only when it materially supports the question; visual data must agree exactly with the stem and answer."
+  },
+  "section_c": {
+    "prompts": 3,
+    "selection": 1,
+    "language": "Bahasa Melayu",
+    "target": "writing practice suitable for PKSK entry preparation",
+    "rubric_simulation": true,
+    "prompt_diversity_required": true
+  },
+  "anti_ai_style": {
+    "natural_malay": true,
+    "avoid_repetitive_templates": true,
+    "avoid_translation_smell": true,
+    "vary_sentence_rhythm": true,
+    "control_repeated_vocabulary": true,
+    "do_not_intentionally_add_grammar_errors": true
+  },
+  "batch_policy": {
+    "generate_one_set_at_a_time_for_qa": true,
+    "checkpoint_after_commit": true,
+    "global_audit_after_set_50": true,
+    "stop_on_critical_failure": true,
+    "never_force_generation_when_unique_pool_is_exhausted": true
+  }
+}
