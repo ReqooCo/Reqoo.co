@@ -1,0 +1,53 @@
+{
+  "section": "A",
+  "name": "Kecerdasan Insaniah",
+  "count": 30,
+  "baseline_mix": {
+    "situational": 20,
+    "agree_disagree": 10
+  },
+  "agree_disagree": {
+    "label": "Setuju/Tidak Setuju",
+    "options": ["Setuju", "Tidak setuju"],
+    "exact_option_count": 2,
+    "must_not_be_mcq4": true,
+    "statement_style": "natural_first_person_or_neutral_personal_judgement",
+    "avoid": [
+      "double_negative_statements",
+      "obvious_social_desirability_only_items",
+      "near_duplicate_statements",
+      "template_repetition",
+      "trick_wording"
+    ],
+    "cross_set": {
+      "statement_family_collision_block": true,
+      "context_collision_block": true,
+      "semantic_similarity_threshold": 0.82
+    }
+  },
+  "situational": {
+    "options": 4,
+    "must_have_plausible_distractors": true,
+    "avoid": [
+      "one_obviously_good_answer_with_three_silly_options",
+      "repeated_best_answer_position",
+      "same_scenario_with_name_changes"
+    ]
+  },
+  "authoring": {
+    "natural_bahasa_melayu": true,
+    "anti_ai_smell": true,
+    "vary_sentence_rhythm": true,
+    "vary_context": true,
+    "vary_opening_structure": true,
+    "no_copy_from_old_bank": true
+  },
+  "qa": {
+    "validate_count": true,
+    "validate_option_shape": true,
+    "validate_semantics": true,
+    "red_team": true,
+    "cross_set_audit": true,
+    "human_review_gate": true
+  }
+}
