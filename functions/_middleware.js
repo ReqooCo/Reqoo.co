@@ -11,13 +11,15 @@ export async function onRequest(context){
     let path=url.pathname;
     if(path==='/pksk' || path.startsWith('/pksk/'))path=path.slice('/pksk'.length)||'/';
     const isSimulator=path==='/simulator' || path.startsWith('/simulator/');
+    const isAccess=path==='/access' || path.startsWith('/access/');
     url.pathname=path==='/'?'/sim/pksk/':`/sim/pksk${path}`;
     const response=await context.env.ASSETS.fetch(url);
-    if(!isSimulator)return response;
+    if(!isSimulator&&!isAccess)return response;
     const type=response.headers.get('content-type')||'';
     if(!type.includes('text/html'))return response;
     return new HTMLRewriter().on('body',{element(el){
-      el.append('<script src="/simulator/js/v56-sync.js?v=56"></script>',{html:true});
+      if(isSimulator)el.append('<script src="/simulator/js/v56-sync.js?v=56"></script>',{html:true});
+      if(isAccess)el.append('<script src="/access/access-v56-sync.js?v=1"></script>',{html:true});
     }}).transform(response);
   }
 
