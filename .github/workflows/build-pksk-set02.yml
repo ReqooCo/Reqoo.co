@@ -4,10 +4,12 @@ on:
     branches: [main]
     paths:
       - 'scripts/build_pksk_set02.py'
+      - '.github/workflows/build-pksk-set02.yml'
 permissions:
   contents: write
 jobs:
   build:
+    if: github.event.head_commit.message != 'build(pksk): publish Set 02 from zero-generated bank'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
