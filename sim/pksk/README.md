@@ -1,39 +1,29 @@
-# REQOO PKSK Landing V1
+# REQOO PKSK — Production Canonical
 
-Target URL:
-`https://reqoo.co/pksk/`
+## Flow
+Landing → Payment → D1 order → R2 proof / Billplz callback → Admin verify → License → Access → Device → Simulator → Progress → Dashboard.
 
-## Tujuan
-Landing page mobile-first untuk produk PKSK Simulasi 100 Set.
+## Production backends
+- `/api/pksk` — canonical PKSK order, QR/manual payment proof, admin verification, license and admin operations.
+- `/api/pksk-v56` — access/device/progress validation layer used by the V56 client sync scripts.
+- `/api/sim-payment` — online Billplz payment flow.
 
-## Flow yang dikunci
-Customer → `/pksk/` → butang Beli → sistem order Reqoo sedia ada → payment → order/admin → access code → customer kembali ke `/pksk/` → masukkan code → simulator.
+The V56 layer is intentionally additive; it does not replace the payment/admin backend.
 
-## Penting
-Landing page ini **tidak menggantikan** `shop/index.html`, `shop/admin.html` atau `backend/Code.gs`.
+## License
+- 1 purchase = 1 license.
+- Maximum 3 active devices.
+- Access and progress are server-validated.
 
-Sistem order sedia ada kekal sebagai base.
+## Payment references
+- `billplz:<bill-id>` — online payment.
+- `proof:<r2-key>` — QR/manual payment proof.
+- `UPLOAD_FAILED:<reason>` — proof upload failure.
 
-## Sebelum live
-1. Letakkan folder ini sebagai `pksk/` pada hosting yang sama dengan Reqoo.
-2. Pastikan `/shop/` ialah laluan shop sedia ada.
-3. Tambah produk PKSK pada katalog/order Reqoo.
-4. Tambah proses generate access code pada backend sedia ada.
-5. Tambah kolum access code/status/activation dalam Orders jika belum ada.
-6. Isi `VERIFY_URL` dalam `app.js` selepas endpoint backend siap.
-7. Tetapkan `SIMULATOR_URL` kepada lokasi simulator 100 set.
-8. Uji penuh: order → payment → admin → code → activation → simulator → progress.
+Never treat a generic non-empty payment reference as proof of payment.
 
-## Access-code V1
-Cadangan medan order:
-- `product`
-- `accessCode`
-- `accessStatus` (UNUSED / ACTIVE / BLOCKED)
-- `activatedAt`
-- `lastSeenAt`
-- `deviceId` atau pengenal sesi yang sesuai
+## Question bank
+Set 01–50 and all JSON/visual/audio assets are canonical simulator content. Do not modify them during payment/access maintenance.
 
-Jangan bina DRM berat untuk V1. Fokus pada akses mudah dan kawalan asas.
-
-## Nota
-Produk ini ialah simulasi latihan dan bukan peperiksaan rasmi KPM atau salinan soalan sebenar.
+## Legacy
+Old Google Apps Script PKSK material is historical only and is not part of production.
