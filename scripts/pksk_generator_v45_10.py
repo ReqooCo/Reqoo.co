@@ -1,7 +1,4 @@
-"""REQOO PKSK Generator V45.10 — master QA/rules layer.
-
-Future Set 04-50 builders must run these hard gates before publication.
-"""
+"""REQOO PKSK Generator V45.10 — master QA/rules layer."""
 from __future__ import annotations
 import re
 from collections import Counter
@@ -18,6 +15,9 @@ RULES = {
     "max_correct_length_advantage_words": 2,
     "require_unique_stems_within_set": True,
     "require_unique_ids": True,
+    "require_A_answer_position_rotation": True,
+    "A_min_distinct_answer_positions": 3,
+    "A_max_position_share": 0.50,
 }
 
 def _words(text: str) -> int:
@@ -68,13 +68,19 @@ def validate_objective(item: Mapping) -> list[str]:
     return errors
 
 def validate_set(items: Sequence[Mapping], writing: Sequence[Mapping]) -> dict:
-    errors=[]; ids=[]; stems=[]; counts=Counter()
+    errors=[]; ids=[]; stems=[]; counts=Counter(); A_answers=[]
     for item in items:
         ident=str(item.get("id","")); ids.append(ident)
         stems.append(re.sub(r"\s+"," ",str(item.get("question","")).strip().casefold()))
-        counts[item.get("section")]+=1
+        section=item.get("section")
+        counts[section]+=1
+        if section == "BAHAGIAN A":
+            answer=item.get("answerIndex", item.get("answer"))
+            if isinstance(answer, int) and 0 <= answer < 4:
+                A_answers.append(answer)
         e=validate_objective(item)
         if e: errors.append({"id":ident,"errors":e})
+
     if len(items)!=100: errors.append({"set":"COUNT","errors":[f"objective_count={len(items)}, expected=100"]})
     if counts.get("BAHAGIAN A",0)!=30: errors.append({"set":"COUNT","errors":["A must be 30"]})
     if counts.get("BAHAGIAN B",0)!=70: errors.append({"set":"COUNT","errors":["B must be 70"]})
@@ -82,11 +88,26 @@ def validate_set(items: Sequence[Mapping], writing: Sequence[Mapping]) -> dict:
     dup=[s for s,n in Counter(stems).items() if s and n>1]
     if dup: errors.append({"set":"STEMS","errors":[f"duplicate_stems={len(dup)}"]})
     if len(writing)!=3: errors.append({"set":"COUNT","errors":["C must be 3"]})
+
+    if counts.get("BAHAGIAN A",0)==30:
+        if len(A_answers) != 30:
+            errors.append({"set":"A_ANSWER_POSITIONS","errors":[f"A answer positions found={len(A_answers)}, expected=30"]})
+        else:
+            pos_counts=Counter(A_answers)
+            distinct=len(pos_counts)
+            max_share=max(pos_counts.values())/30
+            if distinct < RULES["A_min_distinct_answer_positions"]:
+                errors.append({"set":"A_ANSWER_POSITIONS","errors":[f"only {distinct} distinct positions; minimum={RULES['A_min_distinct_answer_positions']}"]})
+            if max_share > RULES["A_max_position_share"]:
+                errors.append({"set":"A_ANSWER_POSITIONS","errors":[f"position share={max_share:.3f}; maximum={RULES['A_max_position_share']:.2f}", f"distribution={dict(sorted(pos_counts.items()))}"]})
+
     return {"version":VERSION,"status":"PASS" if not errors else "FAIL","hard_gate":True,"errors":errors,
             "counts":{"A":counts.get("BAHAGIAN A",0),"B":counts.get("BAHAGIAN B",0),"C":len(writing)},
+            "A_answer_position_distribution":dict(sorted(Counter(A_answers).items())),
             "rule":"Never fix a flagged item by mechanically shortening the correct option; regenerate/rephrase naturally."}
 
 def choose_balanced_option_position(item_index:int, seed_offset:int=0)->int:
+    """Deterministic balanced 0,1,2,3 rotation for generated objective items."""
     return (item_index+seed_offset)%4
 
 def generator_contract()->dict:
@@ -98,6 +119,9 @@ def generator_contract()->dict:
             "answer_length_bias_gate":"HARD_FAIL",
             "correct_answer_must_not_be_obviously_longest":True,
             "rotate_correct_option_position":True,
+            "answer_position_distribution_gate":"HARD_FAIL",
+            "minimum_distinct_positions":3,
+            "maximum_single_position_share":0.50,
             "natural_language_over_forced_length_matching":True,
         },
         "all_sections":{
