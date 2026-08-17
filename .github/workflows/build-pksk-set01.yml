@@ -1,0 +1,42 @@
+name: Build PKSK Set 01
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  build:
+    if: github.event.head_commit.message != 'build(pksk): publish Set 01 from audited candidates'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: |
+          git fetch origin pksk-upkk2024-format-v1:refs/remotes/origin/pksk-upkk2024-format-v1
+          git checkout origin/pksk-upkk2024-format-v1 -- sim/pksk/data/candidates/set01
+          python3 - <<'PY'
+          import json,glob,os
+          root='sim/pksk/data/candidates/set01'; qs=[]; ws=[]
+          def w(a): return [[3,2,1,0][(i-a)%4] for i in range(4)]
+          for p in sorted(glob.glob(root+'/*.json')):
+            d=json.load(open(p,encoding='utf8')); s=d.get('section')
+            if s in ('A','B'):
+              for q in d.get('questions',d.get('items',[])):
+                if 'statement' in q:
+                  item={'section':'BAHAGIAN A','category':'SSQ','question':q['statement'],'options':['Setuju','Tidak setuju'],'weights':[3,0],'type':'graded','plannedLevel':1,'constructFamily':q.get('family','SSQ'),'levelSignal':1,'contentDomain':'SSQ','setLevel':1,'rebuildStatus':'V45.9_GENERATED_FROM_ZERO','id':q['id']}
+                else:
+                  cat=q.get('category',q.get('domain','')); item={'section':'BAHAGIAN A' if s=='A' else 'BAHAGIAN B','category':cat,'question':q['question'],'options':q['options'],'weights':w(q['answer']),'type':'graded','plannedLevel':1,'constructFamily':q.get('family',cat),'levelSignal':1,'contentDomain':cat,'setLevel':1,'rebuildStatus':'V45.9_GENERATED_FROM_ZERO','id':q['id']}
+                qs.append(item)
+            elif s=='C':
+              for q in d['items']: ws.append({'id':q['id'],'title':q['prompt'][:48],'prompt':q['prompt'],'min_words':100,'plannedLevel':1,'constructFamily':q.get('family','writing'),'levelSignal':1,'rubric_focus':q.get('rubric_focus',[])})
+          assert len(qs)==100 and len(ws)==3 and sum(x['section']=='BAHAGIAN A' for x in qs)==30 and sum(x['section']=='BAHAGIAN B' for x in qs)==70 and len({x['id'] for x in qs})==100
+          out={'set':1,'questions':qs,'writing':ws,'difficulty':1,'rebuildVersion':'V45.9_SET01_PRODUCTION','source':'audited_candidates_set01','legacy_content_used':False,'structure':{'A':30,'B':70,'C':3},'qa':{'count':103,'unique_ids':True,'status':'BUILT_FROM_AUDITED_CANDIDATES'}}
+          os.makedirs('sim/pksk/simulator/sets/SET 01-10/data',exist_ok=True)
+          json.dump(out,open('sim/pksk/simulator/sets/SET 01-10/data/set01.json','w',encoding='utf8'),ensure_ascii=False,indent=2)
+          PY
+          python3 -m json.tool sim/pksk/simulator/sets/SET\ 01-10/data/set01.json >/dev/null
+          git config user.name ReqooCo; git config user.email actions@github.com
+          git add sim/pksk/data/candidates/set01 sim/pksk/simulator/sets/SET\ 01-10/data/set01.json
+          git commit -m 'build(pksk): publish Set 01 from audited candidates'
+          git push origin main
