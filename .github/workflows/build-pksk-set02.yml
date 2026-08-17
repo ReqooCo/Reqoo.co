@@ -1,0 +1,24 @@
+name: Build PKSK Set 02
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/build_pksk_set02.py'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Build Set 02
+        run: python3 scripts/build_pksk_set02.py
+      - name: Publish Set 02
+        run: |
+          git config user.name ReqooCo
+          git config user.email actions@github.com
+          git add sim/pksk/simulator/sets/SET\ 01-10/data/set02.json
+          git commit -m 'build(pksk): publish Set 02 from zero-generated bank'
+          git push origin main
