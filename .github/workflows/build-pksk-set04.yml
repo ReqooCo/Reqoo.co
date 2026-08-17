@@ -1,5 +1,10 @@
 name: Build PKSK Set 04
-on: push
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/build_pksk_set04_v4510.py'
+      - '.github/workflows/build-pksk-set04.yml'
 permissions:
   contents: write
 jobs:
@@ -8,8 +13,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Build and hard-gate Set 04
         run: python3 scripts/build_pksk_set04_v4510.py
+      - name: Validate production JSON
+        run: |
+          python3 - <<'PY'
+          import json
+          p='sim/pksk/simulator/sets/SET 01-10/data/set04.json'
+          d=json.load(open(p,encoding='utf-8'))
+          q=d['questions']
+          assert len(q)==100
+          assert sum(x['section']=='BAHAGIAN A' for x in q)==30
+          assert sum(x['section']=='BAHAGIAN B' for x in q)==70
+          assert len({x['id'] for x in q})==100
+          assert len(d['writing'])==3
+          assert d.get('legacy_content_used') is False
+          print('PASS V45.10: A30 B70 C3, 100 unique objective IDs, legacy=false')
+          PY
       - name: Publish
         run: |
           git config user.name ReqooCo
