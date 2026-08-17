@@ -1,0 +1,90 @@
+{
+  "schema_version": "pksk-tahun6-tingkatan1-v1",
+  "purpose": "Latihan PKSK Tahap 2/Tahun 6 untuk kemasukan Tingkatan 1 sekolah khusus/SBP",
+  "official_structure": {
+    "part_a": {
+      "name": "Kecerdasan Insaniah",
+      "questions": 30,
+      "weight_percent": 20,
+      "mode": "computer_based",
+      "components": ["EQ", "SQ", "SSQ"],
+      "scoring_note": "Objektif bergred; bukan model jawapan betul/salah biasa"
+    },
+    "part_b": {
+      "name": "Kecerdasan Intelek",
+      "questions": 70,
+      "weight_percent": 70,
+      "mode": "computer_based",
+      "components": [
+        "IQ",
+        "Bahasa Melayu",
+        "Bahasa Inggeris",
+        "Penyelesaian Masalah Matematik",
+        "Penyelesaian Masalah Sains",
+        "Penyelesaian Masalah Teknologi",
+        "Pengetahuan Am"
+      ],
+      "scoring_note": "Objektif aneka pilihan; item latihan menggunakan satu jawapan terbaik kecuali konfigurasi item menyatakan sebaliknya"
+    },
+    "part_c": {
+      "name": "Artikulasi Penulisan",
+      "prompts": 3,
+      "choose": 1,
+      "weight_percent": 10,
+      "mode": "written",
+      "language": "Bahasa Melayu",
+      "minimum_words": 100,
+      "assessment": "respon terbuka dengan rubrik"
+    }
+  },
+  "target_candidate": {
+    "level": "Tahun 6",
+    "entry": "Tingkatan 1",
+    "academic_source_range": "Tahun 4-6 untuk komponen akademik"
+  },
+  "generation_rules": {
+    "sets": 50,
+    "questions_per_set": {
+      "A": 30,
+      "B": 70,
+      "C": 3
+    },
+    "total_objective_questions": 100,
+    "part_a_style": "situational, forced-choice/graded-response style; avoid trivial factual recall",
+    "part_b_style": "mixed IQ, academic, knowledge and problem-solving items",
+    "part_b_english": "include dedicated English items within the 70-item allocation",
+    "math": "more challenging reasoning than routine primary-school drill; use relevant visual/stimulus where useful",
+    "science": "conceptual and quantitative reasoning where appropriate",
+    "technology": "RBT/technology problem-solving and application",
+    "part_c": "three genuinely distinct writing prompts; each must support rubric-based simulation"
+  },
+  "anti_repetition": {
+    "exact_duplicate": "forbidden",
+    "semantic_duplicate": "forbidden",
+    "same_context_plus_same_reasoning": "forbidden",
+    "name_rotation_only": "forbidden",
+    "number_rotation_only": "forbidden",
+    "wording_rotation_only": "forbidden",
+    "question_dna_required": true,
+    "cross_set_memory_required": true
+  },
+  "quality_gates": [
+    "content_accuracy",
+    "single_defensible_answer_for_part_b",
+    "distractor_integrity",
+    "age_appropriate_language",
+    "natural_malay_language",
+    "ai_pattern_penalty",
+    "difficulty_fit",
+    "visual_stimulus_integrity",
+    "cross_set_collision",
+    "regression_tests",
+    "answer_key_integrity",
+    "persistence_and_release_integrity"
+  ],
+  "source_notes": [
+    "KPM public PKSK materials describe three parts: A Kecerdasan Insaniah, B Kecerdasan Intelek, C Artikulasi Penulisan.",
+    "KPM 2026/2027 announcement confirms PKSK for Tingkatan 1 and Tingkatan 4; this project targets Tahun 6 preparation for Tingkatan 1 entry.",
+    "Public PKSK format references consistently describe A=30, B=70, C=3 prompts choose 1, with 20/70/10 weighting and 100-word minimum for Tingkatan 1."
+  ]
+}
