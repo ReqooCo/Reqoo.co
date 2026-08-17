@@ -1,0 +1,39 @@
+name: PKSK Set 04 V45.10
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/build_pksk_set04_v4510.py'
+      - 'scripts/pksk_generator_v45_10.py'
+      - '.github/workflows/build-pksk-set04-v4510.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    if: github.event_name == 'workflow_dispatch' || github.event.head_commit.message != 'build(pksk): publish Set 04 V45.10 production'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate and hard-validate
+        run: python3 scripts/build_pksk_set04_v4510.py
+      - name: Publish only after PASS
+        run: |
+          test -s "sim/pksk/simulator/sets/SET 01-10/data/set04.json"
+          python3 - <<'PY'
+          import json
+          p='sim/pksk/simulator/sets/SET 01-10/data/set04.json'
+          d=json.load(open(p,encoding='utf-8'))
+          assert len(d['questions'])==100
+          assert len([x for x in d['questions'] if x['section']=='BAHAGIAN A'])==30
+          assert len([x for x in d['questions'] if x['section']=='BAHAGIAN B'])==70
+          assert len(d['writing'])==3
+          assert d['legacy_content_used'] is False
+          assert d['qa']['status']=='PASS'
+          print('QA PASS: A30 B70 C3, legacy=false, hard-gate=PASS')
+          PY
+          git config user.name ReqooCo
+          git config user.email actions@github.com
+          git add "sim/pksk/simulator/sets/SET 01-10/data/set04.json"
+          git commit -m "build(pksk): publish Set 04 V45.10 production"
+          git push origin main
