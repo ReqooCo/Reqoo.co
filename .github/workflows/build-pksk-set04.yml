@@ -1,0 +1,19 @@
+name: Build PKSK Set 04
+on: push
+permissions:
+  contents: write
+jobs:
+  build:
+    if: github.event.head_commit.message != 'build(pksk): publish Set 04 V45.10 production'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and hard-gate Set 04
+        run: python3 scripts/build_pksk_set04_v4510.py
+      - name: Publish
+        run: |
+          git config user.name ReqooCo
+          git config user.email actions@github.com
+          git add "sim/pksk/simulator/sets/SET 01-10/data/set04.json"
+          git commit -m "build(pksk): publish Set 04 V45.10 production"
+          git push origin main
