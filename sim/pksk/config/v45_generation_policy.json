@@ -1,0 +1,56 @@
+{
+  "version": "V45.9",
+  "content_source": "generate_from_zero",
+  "legacy_bank_as_content_source": false,
+  "v43_is_reference_only": true,
+  "target": {"sets": 50, "A": 30, "B": 70, "C": 3},
+  "global_memory": {
+    "track_question_family": true,
+    "track_context": true,
+    "track_stem_pattern": true,
+    "track_concept": true,
+    "track_distractor_pattern": true,
+    "track_sts_statement_family": true,
+    "track_writing_theme": true,
+    "track_semantic_fingerprint": true
+  },
+  "hard_reject": [
+    "semantic_duplicate",
+    "near_duplicate_context",
+    "same_name_swap_pattern",
+    "template_repetition",
+    "answer_leak",
+    "invalid_answer",
+    "invalid_options",
+    "unsupported_schema",
+    "ai_smell",
+    "missing_reasoning_metadata"
+  ],
+  "section_a": {
+    "situational": 20,
+    "agree_disagree": 10,
+    "agree_disagree_options": ["Setuju", "Tidak setuju"]
+  },
+  "section_b": {
+    "domain_targets": {
+      "IQ": 12,
+      "Bahasa Melayu": 10,
+      "Bahasa Inggeris": 10,
+      "Matematik": 14,
+      "Sains": 10,
+      "Teknologi": 6,
+      "Pengetahuan Am": 8
+    }
+  },
+  "section_c": {
+    "prompts": 3,
+    "select": 1,
+    "distinct_prompt_families": true
+  },
+  "production": {
+    "write_only_after_full_set_pass": true,
+    "replace_existing_set_file": true,
+    "never_publish_partial_set": true,
+    "git_history_is_rollback": true
+  }
+}
