@@ -1,6 +1,9 @@
 name: PKSK V45.10 Generator
 
 on:
+  push:
+    paths:
+      - '.github/pksk-set05.trigger'
   workflow_dispatch:
     inputs:
       set_number:
@@ -12,6 +15,9 @@ on:
 permissions:
   contents: write
 
+env:
+  PKSK_SET_RUN: ${{ inputs.set_number || '5' }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,7 +27,7 @@ jobs:
 
       - name: Validate set number
         env:
-          PKSK_SET: ${{ inputs.set_number }}
+          PKSK_SET: ${{ env.PKSK_SET_RUN }}
         run: |
           python3 - <<'PY'
           import os
@@ -32,13 +38,13 @@ jobs:
 
       - name: Generate from V45.10
         env:
-          PKSK_SET_START: ${{ inputs.set_number }}
-          PKSK_SET_END: ${{ inputs.set_number }}
+          PKSK_SET_START: ${{ env.PKSK_SET_RUN }}
+          PKSK_SET_END: ${{ env.PKSK_SET_RUN }}
         run: python3 scripts/build_pksk_sets_04_50_v4510.py
 
       - name: Structural and hard QA
         env:
-          PKSK_SET: ${{ inputs.set_number }}
+          PKSK_SET: ${{ env.PKSK_SET_RUN }}
         run: |
           python3 - <<'PY'
           import json, os
@@ -65,7 +71,7 @@ jobs:
 
       - name: Mathematics answer-option gate
         env:
-          PKSK_SET: ${{ inputs.set_number }}
+          PKSK_SET: ${{ env.PKSK_SET_RUN }}
         run: |
           python3 - <<'PY'
           import json, os
@@ -83,7 +89,7 @@ jobs:
 
       - name: Publish verified JSON
         env:
-          PKSK_SET: ${{ inputs.set_number }}
+          PKSK_SET: ${{ env.PKSK_SET_RUN }}
         run: |
           git config user.name ReqooCo
           git config user.email actions@github.com
