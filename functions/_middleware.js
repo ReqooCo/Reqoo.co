@@ -4,9 +4,13 @@ export async function onRequest(context){
   if(host==='pksk.sim.reqoo.co'&&!url.pathname.startsWith('/api/')){
     let path=url.pathname;if(path==='/pksk'||path.startsWith('/pksk/'))path=path.slice('/pksk'.length)||'/';
     const isSimulator=path==='/simulator'||path.startsWith('/simulator/');
+    const isAdmin=path==='/admin'||path.startsWith('/admin/');
     url.pathname=path==='/'?'/sim/pksk/':`/sim/pksk${path}`;const response=await context.env.ASSETS.fetch(url);
-    if(!isSimulator)return response;const type=response.headers.get('content-type')||'';if(!type.includes('text/html'))return response;
-    return new HTMLRewriter().on('body',{element(el){el.append('<script src="/simulator/js/v58-core.js?v=58"></script>',{html:true})}}).transform(response);
+    if(!isSimulator&&!isAdmin)return response;const type=response.headers.get('content-type')||'';if(!type.includes('text/html'))return response;
+    return new HTMLRewriter().on('body',{element(el){
+      if(isSimulator)el.append('<script src="/simulator/js/v58-core.js?v=58"></script>',{html:true});
+      if(isAdmin)el.append('<script src="/sim/pksk/admin/delete-order.js?v=1"></script>',{html:true});
+    }}).transform(response);
   }
   if(host.endsWith('.sim.reqoo.co')&&host!=='sim.reqoo.co'&&!url.pathname.startsWith('/api/')){const child=host.slice(0,-'.sim.reqoo.co'.length);if(child&&!child.includes('.')){let path=url.pathname;if(path===`/${child}`||path.startsWith(`/${child}/`))path=path.slice(child.length+1)||'/';url.pathname=path==='/'?`/sim/${child}/`:`/sim/${child}${path}`;return context.env.ASSETS.fetch(url)}}
   if(host==='play.reqoo.co'&&!url.pathname.startsWith('/api/')){url.pathname=url.pathname==='/'?'/play/':`/play${url.pathname}`;return context.env.ASSETS.fetch(url)}
