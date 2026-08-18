@@ -6,7 +6,6 @@
   const API='/api/pksk-v56';
   const TOTAL=50;
   const $=id=>document.getElementById(id);
-  const setKey=n=>`pksk-set${String(n).padStart(2,'0')}`;
   const license=()=>String(localStorage.getItem('reqoo_pksk_license')||'').trim().toUpperCase();
   function device(){
     let id=localStorage.getItem('reqoo_pksk_device_id');
@@ -24,8 +23,7 @@
         if(n<retries){setTimeout(()=>run(n+1),700*(n+1));return}
         done(r||{ok:false,error:'Sambungan server gagal.'});
       }
-      window[cb]=finish;
-      sc.onerror=()=>finish({ok:false,error:'Sambungan server gagal.'});
+      window[cb]=finish;sc.onerror=()=>finish({ok:false,error:'Sambungan server gagal.'});
       sc.src=API+'?'+new URLSearchParams(Object.assign({action,callback:cb},data||{}));
       document.body.appendChild(sc);
     };
@@ -33,41 +31,29 @@
   }
   // Replace the legacy API bridge after app.js has loaded. All simulator access/progress
   // calls now use one V56 endpoint instead of competing /api/pksk and V56 wrappers.
-  window.pkskApi=function(action,data,done,retries=2){
-    const routed=['validateAccess','registerDevice','getCustomerDashboard','saveProgress','logClientError'];
-    if(routed.includes(action))return jsonp(action,data,done||function(){},retries);
-    return jsonp(action,data,done||function(){},retries);
-  };
+  window.pkskApi=function(action,data,done,retries=2){return jsonp(action,data,done||function(){},retries)};
   window.pkskDashApi=function(action,data,done){return window.pkskApi(action,data,done,2)};
   window.pkskLicense=license;
   window.pkskDeviceId=device;
-  window.pkskReportError=function(type,message){
-    try{jsonp('logClientError',{code:license(),errorType:type,message:String(message||'').slice(0,400),deviceId:device()},()=>{},0)}catch(_){ }
-  };
+  window.pkskReportError=function(type,message){try{jsonp('logClientError',{code:license(),errorType:type,message:String(message||'').slice(0,400),deviceId:device()},()=>{},0)}catch(_){}};
   window.pkskRequireAccess=function(next){
-    const code=license();
-    if(!code){location.href='../access/';return;}
+    const code=license();if(!code){location.href='../access/';return;}
     jsonp('registerDevice',{code,deviceId:device(),userAgent:navigator.userAgent},r=>{
-      if(r&&r.ok){next();return;}
+      if(r&&r.ok){next();return}
       localStorage.removeItem('reqoo_pksk_license');
-      alert((r&&r.error)||'Akses tidak sah atau had peranti telah dicapai.');
-      location.href='../access/';
+      alert((r&&r.error)||'Akses tidak sah atau had peranti telah dicapai.');location.href='../access/';
     },2);
   };
   // Text-only briefing. No audio and no countdown.
   function briefing(title,text,label,next){
     if(typeof window.show==='function')window.show('briefing');
     const titleEl=$('briefingTitle'),textEl=$('voiceText'),status=$('voiceStatus'),box=$('count');
-    if(titleEl)titleEl.textContent=title;
-    if(textEl)textEl.textContent=text;
+    if(titleEl)titleEl.textContent=title;if(textEl)textEl.textContent=text;
     if(status)status.textContent='Baca arahan di skrin sebelum meneruskan.';
     const mic=document.querySelector('.mic');if(mic)mic.style.display='none';
-    if(!box)return next();
-    box.innerHTML='';
-    const btn=document.createElement('button');
-    btn.type='button';btn.className='v57-start-btn';btn.textContent=label;
-    btn.onclick=()=>{btn.disabled=true;next()};
-    box.appendChild(btn);
+    if(!box)return next();box.innerHTML='';
+    const btn=document.createElement('button');btn.type='button';btn.className='v57-start-btn';btn.textContent=label;
+    btn.onclick=()=>{btn.disabled=true;next()};box.appendChild(btn);
   }
   window.beginABBriefing=function(){
     if(!license()){location.href='../access/';return;}
@@ -76,13 +62,11 @@
   };
   window.finishAB=function(auto){
     if(typeof phase!=='undefined'&&phase!=='ab')return;
-    if(typeof saveTime==='function')saveTime();
-    if(typeof clearInterval==='function')clearInterval(window.interval);
+    if(typeof saveTime==='function')saveTime();if(typeof clearInterval==='function')clearInterval(window.interval);
     if(typeof phase!=='undefined')phase='cBrief';
     const msg=auto?'Masa Bahagian A + B telah tamat.':'Bahagian A + B telah selesai.';
     briefing('Bahagian C — Artikulasi Penulisan',msg+' Pilih satu tajuk dan tulis sekurang-kurangnya 100 patah perkataan. Masa 45 minit.','MULA BAHAGIAN C →',()=>typeof startWriting==='function'&&startWriting());
   };
-  // Disable legacy audio calls even if an old timer path reaches them.
   window.playAnnouncement=function(_key,after){if(typeof after==='function')after()};
   window.playAudioOnly=function(){};
   window.countdown=function(cb){if(typeof cb==='function')cb()};
@@ -91,16 +75,11 @@
   window.selectSet=async function(n){
     const requested=Math.max(1,Math.min(TOTAL,Number(n)||1));
     const result=originalSelect?await originalSelect(requested):false;
-    if(result!==false || !originalSelect){
-      const u=new URL(location.href);u.searchParams.set('set',String(requested));history.replaceState(null,'',u.pathname+'?'+u.searchParams.toString()+u.hash);
-    }
+    if(result!==false || !originalSelect){const u=new URL(location.href);u.searchParams.set('set',String(requested));history.replaceState(null,'',u.pathname+'?'+u.searchParams.toString()+u.hash)}
     return result;
   };
-  // If the current URL already names a set, keep it canonical. Otherwise retain the
-  // selected set so a reload never silently falls back to another set.
   try{
-    const u=new URL(location.href),q=Number(u.searchParams.get('set')||0);
-    const saved=Number(localStorage.getItem('pksk-selected-set')||0);
+    const u=new URL(location.href),q=Number(u.searchParams.get('set')||0),saved=Number(localStorage.getItem('pksk-selected-set')||0);
     if(!q&&saved>=1&&saved<=TOTAL){u.searchParams.set('set',String(saved));history.replaceState(null,'',u.pathname+'?'+u.searchParams.toString()+u.hash)}
   }catch(_){ }
   function essayRubric(text){
@@ -111,13 +90,11 @@
     const r=[w>=100?4:Math.min(4,Math.floor(w/25)),Math.min(4,Math.max(1,Math.floor(w/55))),Math.min(4,ex+(w>=140?1:0)),Math.min(4,Math.max(1,1+Math.min(cx,3))),Math.min(4,(w>=100?2:1)+(co?2:0))];
     return {words:w,total:r.reduce((a,b)=>a+b,0)};
   }
-  function answerMap(){
-    try{return Object.assign({},window.answers||{});}catch(_){return {}}
-  }
+  function answerMap(){try{return Object.assign({},window.answers||{})}catch(_){return {}}}
   function sync(score,extra){
     const code=license();if(!code)return;
-    const text=$('essay')?.value||'';const c=essayRubric(text);
-    const payload=Object.assign({code,deviceId:device(),setNo:Number(window.setNo||1),completed:true,score:Number(score||0),answers:JSON.stringify(answerMap()),scoreC:c.total,essayWords:c.words},extra||{});
+    const text=$('essay')?.value||'',c=essayRubric(text);
+    const payload=Object.assign({code,deviceId:device(),setNo:Number(window.setNo||1),completed:true,score:Number(score||0),answers:JSON.stringify(answerMap()),scoreC:c.total,essayWords:c.words,essayText:text},extra||{});
     jsonp('saveProgress',payload,r=>{
       if(r&&r.ok){
         localStorage.setItem('pksk-last-server-sync',new Date().toISOString());
@@ -129,9 +106,7 @@
     },2);
   }
   window.syncProgressServer=sync;
-  // Keep the existing audited result renderer as the only report renderer.
-  const style=document.createElement('style');
-  style.id='v57-core-style';
+  const style=document.createElement('style');style.id='v57-core-style';
   style.textContent='.v57-start-btn{display:inline-flex;align-items:center;justify-content:center;min-width:260px;border:0;border-radius:14px;padding:16px 24px;background:linear-gradient(135deg,#123f67,#178f8a);color:#fff;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 10px 24px rgba(18,63,103,.25)}.v57-start-btn:disabled{opacity:.65}.brief-inner .voice-status{max-width:760px}.mic{display:none!important}';
   document.head.appendChild(style);
 })();
