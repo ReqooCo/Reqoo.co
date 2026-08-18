@@ -1,15 +1,14 @@
-# REQOO.CO Website
+# REQOO.CO
 
-Struktur GitHub Pages:
-- `/` — landing page utama REQOO.CO
-- `/shop/` — catalogue, customize, cart & checkout
-- `/shop/promotion.html` — public promotion page
-- `/shop/promotion-admin.html` — pengurusan promotion
-- `/shop/admin.html` — order dashboard
+## PKSK V2
 
-## Nota promotion
-Promotion public dan link `?promo=slug` menggunakan `listPromotions` daripada Google Apps Script yang sama. Shop tidak lagi bergantung kepada endpoint `getPromotion`, jadi link seperti:
-`/shop/?promo=merdeka-special`
-akan mencari promo berdasarkan slug daripada senarai promotion public.
+PKSK simulator and student dashboard now use the V2 backend at `/api/pksk-v2`.
 
-API endpoint yang digunakan dikekalkan seperti dalam projek asal.
+- Single canonical PKSK API for access, device registration, progress and dashboard.
+- JSON `POST` only for client/server communication.
+- Maximum 3 registered devices per license.
+- Server recalculates the final result from the canonical question bank before marking a set complete.
+- Set 01–50 question-bank files are kept unchanged by the backend rebuild.
+- Legacy PKSK API files and legacy PKSK generator/audit workflows have been removed.
+
+The public site and shop routes remain separate from the PKSK V2 runtime.
