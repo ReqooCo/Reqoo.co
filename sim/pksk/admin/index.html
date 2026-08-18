@@ -222,4 +222,4 @@ document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelect
 $("saveSettings").onclick=async()=>{const price=Number($("price").value),commission=Number($("commission").value);const j=await api("updatePKSKSettings",{price,commission});$("settingsMsg").textContent=j?.ok?"✓ Tetapan disimpan.":(j?.error||"Gagal simpan.");if(j?.ok)await load()};
 if(ensureMainAdminSession()){ $("login").hidden=true; $("app").hidden=false; load(); }
 </script>
-</body></html>
+<script src="./delete-order.js?v=1"></script></body></html>
