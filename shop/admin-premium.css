@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+/* REQOO SHOP ADMIN — premium typography + visual layer only */
+:root{
+  --rq-ink:#14243d;
+  --rq-muted:#718096;
+  --rq-gold:#b58a32;
+  --rq-gold-soft:#f7f0df;
+  --rq-line:#e6e9ee;
+  --rq-bg:#f6f7f9;
+  --rq-white:#fff;
+}
+html,body{font-family:'Outfit',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif!important;color:var(--rq-ink)!important;background:radial-gradient(circle at 90% 0%,rgba(181,138,50,.07),transparent 28%),linear-gradient(180deg,#fbfbfa 0%,#f4f6f8 100%)!important;-webkit-font-smoothing:antialiased!important}
+body{letter-spacing:-.012em!important}
+.wrap{max-width:1240px!important}
+header{background:rgba(255,255,255,.94)!important;border-bottom:1px solid #e8e8e6!important;box-shadow:0 8px 30px rgba(20,36,61,.045)!important;backdrop-filter:blur(12px)}
+.brand{font-weight:800!important;letter-spacing:.18em!important;color:var(--rq-ink)!important}
+.brand .gold{color:var(--rq-gold)!important}
+.brand span:last-child{font-weight:600!important;letter-spacing:.14em!important;color:#8a919d!important}
+.btn{font-weight:700!important;border-color:#dfe3e8!important;color:var(--rq-ink)!important;background:#fff!important;border-radius:11px!important;box-shadow:0 2px 8px rgba(20,36,61,.035)!important}
+.btn:hover{box-shadow:0 8px 22px rgba(20,36,61,.09)!important}
+.primary{background:var(--rq-ink)!important;border-color:var(--rq-ink)!important;color:#fff!important;box-shadow:0 7px 18px rgba(20,36,61,.16)!important}
+.app{padding-top:30px!important}
+.toolbar h1{font-family:'Outfit',sans-serif!important;font-size:34px!important;font-weight:700!important;letter-spacing:-.045em!important;color:var(--rq-ink)!important}
+.sub{color:var(--rq-muted)!important;font-weight:500!important}
+.kpis{gap:14px!important;margin:22px 0!important}
+.kpi{position:relative;overflow:hidden!important;padding:19px 20px!important;border:1px solid #e4e7eb!important;border-radius:17px!important;background:linear-gradient(145deg,#fff 0%,#fafbfc 100%)!important;box-shadow:0 10px 28px rgba(20,36,61,.055)!important}
+.kpi:after{content:'';position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,var(--rq-gold),#e6c97d);opacity:.9}
+.label{font-size:10px!important;letter-spacing:.16em!important;font-weight:700!important;color:#87909d!important}
+.num{font-family:'DM Mono',monospace!important;font-size:27px!important;font-weight:500!important;letter-spacing:-.055em!important;color:var(--rq-ink)!important}
+.panel{border:1px solid #e4e7eb!important;border-radius:18px!important;background:rgba(255,255,255,.96)!important;box-shadow:0 12px 34px rgba(20,36,61,.055)!important;padding:20px!important}
+.panel h2{font-size:18px!important;font-weight:700!important;letter-spacing:-.03em!important;color:var(--rq-ink)!important}
+.filters input,.filters select{border-color:#dfe4ea!important;border-radius:11px!important;font-family:'Outfit',sans-serif!important;color:var(--rq-ink)!important}
+.filters input:focus,.filters select:focus{border-color:#c6a85d!important;box-shadow:0 0 0 3px rgba(181,138,50,.10)!important}
+.table{border-color:#e2e6eb!important;border-radius:13px!important;box-shadow:inset 0 1px 0 #fff!important}
+.row{border-bottom-color:#edf0f3!important}
+.head{background:#f8f9fb!important;color:#7b8491!important;font-weight:700!important;letter-spacing:.13em!important}
+.row>div{font-size:11px!important;color:#455268!important}
+.order,.amount,.num{font-family:'DM Mono',monospace!important}
+.order{color:#8b6928!important;font-weight:500!important}
+.amount{color:var(--rq-ink)!important;font-weight:500!important}
+.badge{font-family:'Outfit',sans-serif!important;font-size:9px!important;letter-spacing:.04em!important;padding:5px 9px!important;font-weight:700!important}
+.detail{background:#fafbfc!important;border-color:#e4e8ed!important}
+.login{border-radius:20px!important;box-shadow:0 18px 50px rgba(20,36,61,.09)!important}
+.login h2{font-size:24px!important;font-weight:700!important;letter-spacing:-.04em!important}
+input,select{font-family:'Outfit',sans-serif!important}
+@media(max-width:700px){.toolbar h1{font-size:28px!important}.kpi{padding:16px!important}.num{font-size:23px!important}.panel{padding:15px!important}}
