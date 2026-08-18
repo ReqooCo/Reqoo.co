@@ -1,4 +1,4 @@
-# V45.10 Set 05 production only
+# V45.10 Set 05 production only — manual/automatic trigger; production remains generator-driven
 name: Build PKSK Set 05 V45.10
 on:
   workflow_dispatch:
@@ -35,7 +35,6 @@ jobs:
           assert len({x['question'].strip().casefold() for x in q})==100
           assert d.get('legacy_content_used') is False
           A=[x for x in q if x['section']=='BAHAGIAN A']
-          B=[x for x in q if x['section']=='BAHAGIAN B']
           pos=Counter(x['answerIndex'] for x in A)
           assert dict(sorted(pos.items()))=={0:8,1:8,2:7,3:7}, pos
           assert sum(x['format']=='AGREE_DISAGREE' for x in A)>=10
