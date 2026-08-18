@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'scripts/repair_pksk_v48.py'
+      - 'scripts/V48_TRIGGER.txt'
   workflow_dispatch:
 
 permissions:
@@ -19,16 +20,14 @@ jobs:
       - name: Hard QA
         run: |
           python3 - <<'PY'
-          import json,glob,os
+          import json,glob
           files=glob.glob('sim/pksk/simulator/sets/SET 21-30/data/set*.json')+glob.glob('sim/pksk/simulator/sets/SET 31-40/data/set*.json')+glob.glob('sim/pksk/simulator/sets/SET 41-50/data/set*.json')
           assert len(files)==30
           for p in files:
             d=json.load(open(p,encoding='utf8')); q=d['questions']; A=[x for x in q if x['section']=='BAHAGIAN A']; B=[x for x in q if x['section']=='BAHAGIAN B']
             assert len(q)==100 and len(A)==30 and len(B)==70 and len(d['writing'])==3
             assert len({x['id'] for x in q})==100 and len({x['question'].casefold() for x in q})==100
-            for x in q:
-              assert len(x['options'])==4 and len(set(x['options']))==4 and x['options'][x['answerIndex']]
-              assert x['rebuildStatus']=='V48_REBUILT_PRODUCTION'
+            for x in q: assert len(x['options'])==4 and len(set(x['options']))==4 and x['options'][x['answerIndex']] and x['rebuildStatus']=='V48_REBUILT_PRODUCTION'
             assert d['rebuildVersion']=='V48_REBUILT_PRODUCTION'
           print('V48 HARD QA PASS',len(files),'sets')
           PY
