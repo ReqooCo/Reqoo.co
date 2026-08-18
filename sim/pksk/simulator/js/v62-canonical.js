@@ -1,0 +1,39 @@
+/* REQOO PKSK V62 — CANONICAL LIVE COMPATIBILITY LAYER
+   app.js remains the question/timer renderer. V56 is the only live progress/scoring API.
+   Legacy V58/V59/V60/V61 patches are not part of the live contract.
+*/
+(function(){
+'use strict';
+const API='/api/pksk-v56';
+const $=id=>document.getElementById(id);
+function license(){return String(localStorage.getItem('reqoo_pksk_license')||'').trim().toUpperCase()}
+function storageKey(kind,set){return `reqoo:pksk:${license()}:set:${String(set).padStart(2,'0')}:${kind}`}
+function deviceId(){let id=localStorage.getItem('reqoo_pksk_device_id');if(!id){id='DEV-'+crypto.randomUUID();localStorage.setItem('reqoo_pksk_device_id',id)}return id}
+function api(action,data,done,retries=2){let n=0;const run=()=>{const cb='pkskV62_'+Date.now()+'_'+Math.random().toString(36).slice(2),s=document.createElement('script');let ended=false;const finish=r=>{if(ended)return;ended=true;clearTimeout(t);delete window[cb];s.remove();if(r&&r.ok!==false)return done(r);if(n++<retries)return setTimeout(run,500*n);done(r||{ok:false,error:'Sambungan server gagal.'})};const t=setTimeout(()=>finish({ok:false,error:'Server mengambil masa terlalu lama.'}),11000);window[cb]=finish;s.onerror=()=>finish({ok:false,error:'Sambungan server gagal.'});s.src=API+'?'+new URLSearchParams({action,callback:cb,...(data||{})});document.body.appendChild(s)};run()}
+window.pkskApi=api;window.pkskDashApi=api;window.pkskLicense=license;window.pkskDeviceId=deviceId;
+window.pkskRequireAccess=function(next){const code=license();if(!code){location.href='../access/';return}api('registerDevice',{code,deviceId:deviceId(),userAgent:navigator.userAgent},r=>{if(r&&r.ok){next();return}alert(r?.error||'Akses tidak sah atau peranti telah melebihi had.');location.href='../access/'})};
+/* Each license has isolated local drafts. A different license can never read another license's draft. */
+window.pkskScopedSessionKey=set=>storageKey('session',set);
+window.pkskScopedWritingKey=set=>storageKey('writing',set);
+window.pkskScopedResultKey=set=>storageKey('result',set);
+function clearSetDraft(set){localStorage.removeItem(storageKey('session',set));localStorage.removeItem(storageKey('writing',set));}
+/* A new start is always a fresh attempt. Incomplete work is recorded server-side, but never resumed mid-question. */
+const oldSelect=window.selectSet,oldStartAB=window.startAB,oldStartWriting=window.startWriting;
+window.selectSet=async function(n){const set=Math.max(1,Math.min(50,Number(n)||1));clearSetDraft(set);localStorage.setItem('pksk-selected-set',String(set));if(oldSelect)return oldSelect(set)};
+window.startAB=function(){clearSetDraft(window.setNo||1);if(oldStartAB)return oldStartAB()};
+window.startWriting=function(){const set=window.setNo||1;localStorage.removeItem(storageKey('writing',set));if(oldStartWriting)return oldStartWriting()};
+/* Prevent legacy session/writing keys from being read by app.js by clearing them before the legacy engine starts. */
+window.addEventListener('beforeunload',()=>{}, {once:true});
+/* Server-authoritative final score: send raw answers and essay to V56, never a browser-trusted score. */
+window.syncProgressServer=function(score,extra){const code=license();if(!code)return;let answers=window.answers||{};let essayText='';try{essayText=String($('essay')?.value||'')}catch(_){}const payload=Object.assign({code,deviceId:deviceId(),setNo:Number(window.setNo||1),completed:true,answers:JSON.stringify(answers),essayText},extra||{});delete payload.score;api('saveProgress',payload,r=>{if(r?.ok){localStorage.setItem('pksk-last-server-sync',new Date().toISOString())}else if(typeof window.pkskReportError==='function')window.pkskReportError('SAVE_PROGRESS_FAILED',r?.error||'Progress sync gagal')},2)};
+/* Text-only policy. No voice, no legacy countdown. */
+try{if(window.speechSynthesis){speechSynthesis.cancel();speechSynthesis.speak=()=>{};speechSynthesis.pause=()=>{};speechSynthesis.resume=()=>{};speechSynthesis.cancel=()=>{}}}catch(_){ }
+window.playAnnouncement=function(key,after){if(typeof window.show==='function')window.show('briefing');const c=key==='c'?{t:'Bahagian C — Artikulasi Penulisan',p:'Pilih satu tajuk dan tulis sekurang-kurangnya 100 patah perkataan. Masa 45 minit.'}:{t:'Bahagian A + B',p:'Jawab semua 100 soalan dengan teliti. Masa keseluruhan 90 minit.'};if($('briefingTitle'))$('briefingTitle').textContent=c.t;if($('voiceText'))$('voiceText').textContent=c.p;if($('voiceStatus'))$('voiceStatus').textContent='Arahan dipaparkan pada skrin. Tiada audio digunakan.';document.querySelectorAll('.mic,.voice-status').forEach(e=>e.style.display='none');if(typeof after==='function')after()};
+window.countdown=function(callback){const box=$('count');if(!box)return callback?.();box.innerHTML='';const b=document.createElement('button');b.className='v62-start-btn';b.type='button';b.textContent=(String($('briefingTitle')?.textContent||'').includes('Bahagian C'))?'MULA BAHAGIAN C →':'MULA BAHAGIAN A + B →';b.onclick=()=>{b.disabled=true;callback?.()};box.appendChild(b)};
+window.playAudioOnly=()=>{};
+/* No floating bottom-left button. Dashboard navigation must not cover Previous/Next. */
+function addDashboardButton(){if(document.getElementById('v62-dashboard'))return;const b=document.createElement('button');b.id='v62-dashboard';b.type='button';b.textContent='← DASHBOARD';b.onclick=()=>{if(typeof window.exitToDashboard==='function')window.exitToDashboard()};document.body.appendChild(b)}
+function active(){const e=$('exam'),w=$('writing');return !!((e&&!e.classList.contains('hidden'))||(w&&!w.classList.contains('hidden')))}
+function boot(){const st=document.createElement('style');st.textContent='#v62-dashboard{position:fixed;top:14px;left:14px;z-index:20;display:none;border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:8px 11px;background:#10233f;color:#fff;font:800 11px Inter,Arial,sans-serif}#v62-dashboard.show{display:inline-flex}.v62-start-btn{min-width:260px;border:0;border-radius:14px;padding:15px 22px;background:linear-gradient(135deg,#10233f,#178f8a);color:#fff;font:900 15px Inter,Arial,sans-serif}.v62-start-btn:disabled{opacity:.65}.mic{display:none!important}#briefing.hidden{pointer-events:none!important}#writing{position:relative;z-index:30}#writing textarea,#writing button{position:relative;z-index:31;pointer-events:auto;touch-action:manipulation}';document.head.appendChild(st);addDashboardButton();const tick=()=>{const b=$('v62-dashboard');if(b)b.classList.toggle('show',active())};tick();const o=new MutationObserver(tick);['exam','writing','briefing','result'].forEach(id=>{const e=$(id);if(e)o.observe(e,{attributes:true,attributeFilter:['class','style']})})}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
