@@ -10,8 +10,8 @@ export async function onRequest(context){
     const response=await context.env.ASSETS.fetch(url);
     if(!isSimulator&&!isAdmin&&!isAccess)return response;
     const type=response.headers.get('content-type')||'';if(!type.includes('text/html'))return response;
-    if(isSimulator)return new HTMLRewriter().on('body',{element(el){el.append('<script src="/simulator/js/v66-unified-runtime.js?v=66"></script>',{html:true})}}).transform(response);
-    if(isAccess)return new HTMLRewriter().on('body',{element(el){el.append('<script src="/sim/pksk/access/device-fix.js?v=1"></script>',{html:true})}}).transform(response);
+    if(isSimulator)return new HTMLRewriter().on('body',{element(el){el.append('<script src="/simulator/js/v66-unified-runtime.js?v=67"></script>',{html:true})}}).transform(response);
+    if(isAccess)return new HTMLRewriter().on('body',{element(el){el.append('<script src="/sim/pksk/access/device-fix.js?v=2"></script>',{html:true})}}).transform(response);
     return new HTMLRewriter().on('body',{element(el){el.append('<script src="/sim/pksk/admin/delete-order.js?v=1"></script>',{html:true})}}).transform(response);
   }
   if(host.endsWith('.sim.reqoo.co')&&host!=='sim.reqoo.co'&&!url.pathname.startsWith('/api/')){const child=host.slice(0,-'.sim.reqoo.co'.length);if(child&&!child.includes('.')){let path=url.pathname;if(path===`/${child}`||path.startsWith(`/${child}/`))path=path.slice(child.length+1)||'/';url.pathname=path==='/'?`/sim/${child}/`:`/sim/${child}${path}`;return context.env.ASSETS.fetch(url)}}
@@ -22,6 +22,6 @@ export async function onRequest(context){
   if(host!=='reqoo.co'&&host!=='shop.reqoo.co')return response;
   const type=response.headers.get('content-type')||'';if(!type.includes('text/html'))return response;
   const isSimulator=url.pathname==='/simulator'||url.pathname.startsWith('/simulator/');
-  if(host==='reqoo.co'&&isSimulator)return new HTMLRewriter().on('body',{element(el){el.append('<script src="/simulator/js/v66-unified-runtime.js?v=66"></script><script src="/shop/payment-fallback.js?v=4"></script><script src="/shop/payment-fix.js?v=1"></script>',{html:true})}}).transform(response);
+  if(host==='reqoo.co'&&isSimulator)return new HTMLRewriter().on('body',{element(el){el.append('<script src="/simulator/js/v66-unified-runtime.js?v=67"></script><script src="/shop/payment-fallback.js?v=4"></script><script src="/shop/payment-fix.js?v=1"></script>',{html:true})}}).transform(response);
   return new HTMLRewriter().on('body',{element(el){el.append('<script src="/shop/payment-fallback.js?v=4"></script><script src="/shop/payment-fix.js?v=1"></script>',{html:true})}}).transform(response);
 }
