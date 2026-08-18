@@ -8,7 +8,7 @@ export async function onRequest(context){
     url.pathname=path==='/'?'/sim/pksk/':`/sim/pksk${path}`;const response=await context.env.ASSETS.fetch(url);
     if(!isSimulator&&!isAdmin)return response;const type=response.headers.get('content-type')||'';if(!type.includes('text/html'))return response;
     return new HTMLRewriter().on('body',{element(el){
-      if(isSimulator)el.append('<script src="/simulator/js/v58-core.js?v=58"></script>',{html:true});
+      if(isSimulator)el.append('<script src="/simulator/js/v59-live.js?v=59"></script>',{html:true});
       if(isAdmin)el.append('<script src="/sim/pksk/admin/delete-order.js?v=1"></script>',{html:true});
     }}).transform(response);
   }
@@ -23,5 +23,5 @@ export async function onRequest(context){
       el.append('<link rel="stylesheet" href="/admin/reqoo-admin-universal.css?v=3.2.0"><link rel="stylesheet" href="/admin/reqoo-admin-premium-v2.css?v=1.0.0"><script src="/admin/reqoo-admin-shell.js?v=1.0.0"></script>',{html:true});
     }}).transform(response);
   }
-  const response=await context.next();if(host!=='reqoo.co'&&host!=='shop.reqoo.co')return response;const type=response.headers.get('content-type')||'';if(!type.includes('text/html'))return response;const isSimulator=url.pathname==='/simulator'||url.pathname.startsWith('/simulator/');return new HTMLRewriter().on('body',{element(el){if(host==='reqoo.co'&&isSimulator)el.append('<script src="/simulator/js/v58-core.js?v=58"></script>',{html:true});el.append('<script src="/shop/payment-fallback.js?v=4"></script><script src="/shop/payment-fix.js?v=1"></script>',{html:true})}}).transform(response);
+  const response=await context.next();if(host!=='reqoo.co'&&host!=='shop.reqoo.co')return response;const type=response.headers.get('content-type')||'';if(!type.includes('text/html'))return response;const isSimulator=url.pathname==='/simulator'||url.pathname.startsWith('/simulator/');return new HTMLRewriter().on('body',{element(el){if(host==='reqoo.co'&&isSimulator)el.append('<script src="/simulator/js/v59-live.js?v=59"></script>',{html:true});el.append('<script src="/shop/payment-fallback.js?v=4"></script><script src="/shop/payment-fix.js?v=1"></script>',{html:true})}}).transform(response);
 }
