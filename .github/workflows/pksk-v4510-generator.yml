@@ -8,20 +8,12 @@ on:
         required: true
         default: '5'
         type: string
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/build_pksk_sets_04_50_v4510.py'
-      - 'sim/pksk/PKSK_GENERATOR_RULES.md'
-      - 'sim/pksk/PKSK_SET_STATE.json'
-      - '.github/workflows/pksk-v4510-generator.yml'
 
 permissions:
   contents: write
 
 jobs:
   build:
-    if: github.event_name == 'workflow_dispatch' || github.event.head_commit.message != 'build(pksk): publish V45.10 production set'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -29,7 +21,7 @@ jobs:
 
       - name: Validate set number
         env:
-          PKSK_SET: ${{ inputs.set_number || '5' }}
+          PKSK_SET: ${{ inputs.set_number }}
         run: |
           python3 - <<'PY'
           import os
@@ -40,12 +32,13 @@ jobs:
 
       - name: Generate from V45.10
         env:
-          PKSK_SET: ${{ inputs.set_number || '5' }}
+          PKSK_SET_START: ${{ inputs.set_number }}
+          PKSK_SET_END: ${{ inputs.set_number }}
         run: python3 scripts/build_pksk_sets_04_50_v4510.py
 
       - name: Structural and hard QA
         env:
-          PKSK_SET: ${{ inputs.set_number || '5' }}
+          PKSK_SET: ${{ inputs.set_number }}
         run: |
           python3 - <<'PY'
           import json, os
@@ -72,7 +65,7 @@ jobs:
 
       - name: Mathematics answer-option gate
         env:
-          PKSK_SET: ${{ inputs.set_number || '5' }}
+          PKSK_SET: ${{ inputs.set_number }}
         run: |
           python3 - <<'PY'
           import json, os
@@ -90,10 +83,10 @@ jobs:
 
       - name: Publish verified JSON
         env:
-          PKSK_SET: ${{ inputs.set_number || '5' }}
+          PKSK_SET: ${{ inputs.set_number }}
         run: |
           git config user.name ReqooCo
           git config user.email actions@github.com
           git add "sim/pksk/simulator/sets/SET 01-10/data/set${PKSK_SET}.json"
-          git commit -m 'build(pksk): publish V45.10 production set' || echo 'No changes to commit'
+          git commit -m "build(pksk): publish V45.10 Set ${PKSK_SET} production"
           git push origin main
