@@ -15,8 +15,10 @@
     btn.addEventListener('click',function(e){
       e.preventDefault();
       e.stopPropagation();
-      if(typeof phase!=='undefined'&&phase!=='c')return;
+      const writing=document.getElementById('writing');
+      if(!writing||writing.classList.contains('hidden'))return;
       if(typeof finishWriting!=='function')return;
+      if(typeof phase!=='undefined'&&phase!=='c')phase='c';
       btn.disabled=true;
       const old=btn.textContent;
       btn.textContent='MEMPROSES...';
