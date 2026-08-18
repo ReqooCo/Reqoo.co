@@ -26,8 +26,8 @@ function install(){if(window.__reqooCanonicalV66||typeof window.startAB!=='funct
  const oldStartAB=window.startAB,oldStartC=window.startWriting,oldPersist=window.persistSession,oldFinish=window.finishWriting,oldBuild=window.buildResult;
  window.load=(function(old){return async function(n){const r=await old(n);normalize();return r}})(window.load);
  window.selectSet=async function(n){const x=Math.max(1,Math.min(50,Number(n)||1));clearInterval(window.interval);clearInterval(window.winterval);window.setNo=x;localStorage.setItem('pksk-selected-set',String(x));const ok=await window.load(x);if(ok!==false)show('start');return ok};
- window.startAB=function(){const n=setNo();restore(n);oldStartAB();applyAB(n);serverLoad(n,state=>{if(hydrate(n,state))applyAB(n)});serverSave(n,'AB')};
- window.startWriting=function(){const n=setNo();restore(n);oldStartC();applyC(n);serverLoad(n,state=>{if(hydrate(n,state))applyC(n)});serverSave(n,'C')};
+ window.startAB=function(){const n=setNo();restore(n);oldStartAB();applyAB(n);serverLoad(n,state=>{if(hydrate(n,state))applyAB(n)})};
+ window.startWriting=function(){const n=setNo();restore(n);oldStartC();applyC(n);serverLoad(n,state=>{if(hydrate(n,state))applyC(n)})};
  function applyAB(n){const s=jget(key('session',n));if(!s)return;window.answers=s.answers||{};window.times=s.times||{};if(typeof s.timer==='number')window.timer=s.timer;if(Number.isFinite(Number(s.qidx)))window.qidx=Math.max(0,Math.min((window.qs||[]).length-1,Number(s.qidx)));window.qStarted=Date.now();window.renderTimer?.();window.renderQ?.()}
  function applyC(n){const w=jget(key('writing',n));if(!w)return;if($('essay'))$('essay').value=String(w.text||'');window.wTimer=typeof w.wTimer==='number'?w.wTimer:window.wTimer;window.selectedTopic=Number(w.selectedTopic||0);window.renderWTimer?.();window.updateWords?.();if($('essay'))$('essay').oninput=saveC}
  function saveAB(){const n=setNo();jset(key('session',n),{answers:window.answers||{},times:window.times||{},timer:Number(window.timer||0),qidx:Number(window.qidx||0),abStartedAt:window.abStartedAt||null,updatedAt:Date.now()});serverSave(n,'AB')}
