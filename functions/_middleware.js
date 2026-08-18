@@ -22,6 +22,7 @@ export async function onRequest(context){
         el.append('<script src="/simulator/js/v56-sync.js?v=60"></script>',{html:true});
         el.append('<script src="/simulator/js/c-submit-fix.js?v=3"></script>',{html:true});
         el.append('<script src="/simulator/js/set-url-fix.js?v=1"></script>',{html:true});
+        el.append('<script src="/simulator/js/result-enhance.js?v=1"></script>',{html:true});
       }
       if(isAccess)el.append('<script src="/access/access-v56-sync.js?v=1"></script>',{html:true});
     }}).transform(response);
@@ -66,6 +67,7 @@ export async function onRequest(context){
       el.append('<script src="/simulator/js/v56-sync.js?v=60"></script>',{html:true});
       el.append('<script src="/simulator/js/c-submit-fix.js?v=3"></script>',{html:true});
       el.append('<script src="/simulator/js/set-url-fix.js?v=1"></script>',{html:true});
+      el.append('<script src="/simulator/js/result-enhance.js?v=1"></script>',{html:true});
     }
     el.append('<script src="/shop/payment-fallback.js?v=4"></script><script src="/shop/payment-fix.js?v=1"></script>',{html:true});
   }}).transform(response);
