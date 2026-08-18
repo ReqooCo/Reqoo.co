@@ -25,7 +25,6 @@ export async function onRequest(context){
   }
   if(host==='pksk.sim.reqoo.co'&&url.pathname==='/api/pksk'&&url.searchParams.get('action')==='registerDevice'){
     const code=String(url.searchParams.get('code')||'').trim().toUpperCase();
-    const oldDevice=String(url.searchParams.get('deviceId')||'').trim();
     const ua=String(url.searchParams.get('userAgent')||context.request.headers.get('user-agent')||'');
     const ip=String(context.request.headers.get('CF-Connecting-IP')||'');
     const lang=String(context.request.headers.get('accept-language')||'').split(',')[0];
@@ -37,9 +36,9 @@ export async function onRequest(context){
     if(code&&context.env.DB){
       const lic=await context.env.DB.prepare('SELECT id FROM licenses WHERE access_code=?').bind(code).first();
       if(lic){
-        const active=await context.env.DB.prepare("SELECT id,device_key,device_name FROM devices WHERE license_id=? AND status='active' ORDER BY first_seen ASC").bind(lic.id).all();
+        const active=await context.env.DB.prepare("SELECT id,device_name FROM devices WHERE license_id=? AND status='active' ORDER BY first_seen ASC").bind(lic.id).all();
         const sameFamily=(active.results||[]).filter(x=>String(x.device_name||'')===label);
-        if(sameFamily.length>1){
+        if(sameFamily.length){
           const keep=sameFamily[0];
           await context.env.DB.prepare("UPDATE devices SET device_key=?,last_seen=?,status='active' WHERE id=?").bind(`FP-${fp}`,new Date().toISOString(),keep.id).run();
           for(const dup of sameFamily.slice(1))await context.env.DB.prepare("UPDATE devices SET status='revoked',last_seen=? WHERE id=?").bind(new Date().toISOString(),dup.id).run();
