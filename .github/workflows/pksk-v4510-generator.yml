@@ -2,8 +2,7 @@ name: PKSK V45.10 Generator
 
 on:
   push:
-    paths:
-      - '.github/pksk-set05.trigger'
+    branches: [main]
   workflow_dispatch:
     inputs:
       set_number:
@@ -20,6 +19,7 @@ env:
 
 jobs:
   build:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'AUTO_SET_05')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
