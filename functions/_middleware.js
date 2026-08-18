@@ -18,7 +18,10 @@ export async function onRequest(context){
     const type=response.headers.get('content-type')||'';
     if(!type.includes('text/html'))return response;
     return new HTMLRewriter().on('body',{element(el){
-      if(isSimulator)el.append('<script src="/simulator/js/v56-sync.js?v=58"></script>',{html:true});
+      if(isSimulator){
+        el.append('<script src="/simulator/js/v56-sync.js?v=59"></script>',{html:true});
+        el.append('<script src="/simulator/js/c-submit-fix.js?v=1"></script>',{html:true});
+      }
       if(isAccess)el.append('<script src="/access/access-v56-sync.js?v=1"></script>',{html:true});
     }}).transform(response);
   }
