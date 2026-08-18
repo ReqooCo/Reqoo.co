@@ -1,0 +1,48 @@
+name: Repair PKSK wording
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Repair duplicated wording
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          files = [
+              Path('sim/pksk/simulator/sets/SET 11-20/data/set11.json'),
+              Path('sim/pksk/simulator/sets/SET 11-20/data/set19.json'),
+          ]
+
+          for path in files:
+              text = path.read_text(encoding='utf-8')
+              fixed = text.replace('projek projek', 'projek')
+              if fixed == text:
+                  print(f'No change needed: {path}')
+              else:
+                  path.write_text(fixed, encoding='utf-8')
+                  print(f'Repaired: {path}')
+          PY
+
+      - name: Commit repair and remove temporary workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f .github/workflows/repair-pksk-wording.yml
+          git add sim/pksk/simulator/sets/SET\ 11-20/data/set11.json sim/pksk/simulator/sets/SET\ 11-20/data/set19.json .github/workflows/repair-pksk-wording.yml
+          if git diff --cached --quiet; then
+            echo "Nothing to commit"
+            exit 0
+          fi
+          git commit -m "fix(pksk): repair duplicated project wording in Sets 11 and 19"
+          git push
