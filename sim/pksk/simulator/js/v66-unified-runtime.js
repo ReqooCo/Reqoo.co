@@ -1,96 +1,61 @@
-/* REQOO PKSK V66 — SINGLE CANONICAL RUNTIME BRIDGE
-   Loaded after app.js. No new parallel state engine. This layer only replaces conflicting legacy hooks.
+/* REQOO PKSK V66 — SINGLE CANONICAL RUNTIME
+   One state engine for Set 01–50. Legacy V58–V65 layers are retired shims.
+   Bank content and Section A mixed question format are untouched.
 */
-(function(){
-'use strict';
-const P='reqoo:pksk:';
-const pad=n=>String(n).padStart(2,'0');
+(function(){'use strict';
+const API='/api/pksk-v56',SESSION='/api/pksk-session',$=id=>document.getElementById(id),pad=n=>String(n).padStart(2,'0');
 const lic=()=>String(localStorage.getItem('reqoo_pksk_license')||'').trim().toUpperCase();
 const sn=()=>Math.max(1,Math.min(50,Number(window.setNo||localStorage.getItem('pksk-selected-set')||1)));
-const key=(name,n=sn())=>`${P}${lic()}:set:${pad(n)}:${name}`;
+const key=(name,n=sn())=>`reqoo:pksk:${lic()}:set:${pad(n)}:${name}`;
 const old=(name,n=sn())=>`pksk-set${pad(n)}-${name}`;
 const get=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch(_){return null}};
-const put=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(_) {}};
-const removeOld=n=>['session','writing','result'].forEach(x=>localStorage.removeItem(old(x,n)));
-
-/* Same physical-device family across Safari/Chrome where browser fingerprint inputs match. */
-window.pkskDeviceId=function(){
- const n=navigator,s=screen;
- const raw=[n.platform,n.language,(n.languages||[]).join(','),Intl.DateTimeFormat().resolvedOptions().timeZone,s.width,s.height,s.colorDepth,n.hardwareConcurrency,n.maxTouchPoints,n.deviceMemory||0].join('|');
- let h=2166136261;for(let i=0;i<raw.length;i++){h^=raw.charCodeAt(i);h=Math.imul(h,16777619)}
- const id='FAM-'+(h>>>0).toString(16);
- try{localStorage.setItem('reqoo_pksk_device_id',id)}catch(_){}
- return id;
-};
-
-function clearOverlays(){
- document.body.classList.remove('nav-open');document.documentElement.classList.remove('nav-open');
- const nav=document.getElementById('navCard');if(nav)nav.classList.remove('mobile-open');
- document.querySelectorAll('.nav-backdrop,.mobile-backdrop,.backdrop').forEach(el=>{if(!el.closest('#writing')){el.classList.remove('active','open','show');el.setAttribute('aria-hidden','true');el.style.pointerEvents='none';el.style.display='none'}});
-}
-function writingButton(){return [...document.querySelectorAll('button')].find(b=>/MULA BAHAGIAN C/i.test((b.textContent||'').trim()))}
-function submitButton(){return [...document.querySelectorAll('button')].find(b=>/HANTAR BAHAGIAN C/i.test((b.textContent||'').trim()))}
-function activateButton(b,fn){if(!b||b.dataset.v66==='1')return;if(b.disabled)b.disabled=false;b.removeAttribute('disabled');b.removeAttribute('onclick');b.style.pointerEvents='auto';b.style.position='relative';b.style.zIndex='9999';b.style.touchAction='manipulation';b.dataset.v66='1';b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();fn();},true)}
-
-/* Text-only instructions: voice/audio is legacy and must never block the flow. */
-window.playAnnouncement=function(_key,after){
- const status=document.getElementById('voiceStatus');if(status)status.textContent='Arahan dipaparkan dalam teks. Tekan terus untuk meneruskan.';
- setTimeout(()=>typeof after==='function'&&after(),50);
-};
-window.playAudioOnly=function(){};
-
-window.beginABBriefing=function(){
- if(!lic()){location.href='../access/';return}
- window.phase='abBrief';if(typeof show==='function')show('briefing');
- const t=document.getElementById('briefingTitle');if(t)t.textContent='Bahagian A + B';
- const v=document.getElementById('voiceText');if(v)v.textContent='Baca arahan pada skrin. Apabila bersedia, tekan MULA.';
- const c=document.getElementById('count');if(c)c.textContent='MULA';
-};
-window.finishAB=function(){
- if(window.phase!=='ab')return;
- try{saveTime()}catch(_){} clearInterval(window.interval);window.phase='cBrief';
- if(typeof show==='function')show('briefing');
- const t=document.getElementById('briefingTitle');if(t)t.textContent='Bahagian C — Artikulasi Penulisan';
- const v=document.getElementById('voiceText');if(v)v.textContent='Pilih satu tajuk, tulis jawapan anda dan tekan HANTAR BAHAGIAN C. Minimum 100 patah perkataan ialah panduan; jawapan tetap boleh dihantar walaupun kurang.';
- const c=document.getElementById('count');if(c)c.textContent='';
- setTimeout(()=>{const b=writingButton();if(b){b.disabled=false;b.style.pointerEvents='auto'}},50);
-};
-
-window.startAB=function(){
- window.phase='ab';window.qidx=0;window.answers={};window.times={};window.timer=5400;
- const s=get(key('session'));
- if(s){window.answers=s.answers||{};window.times=s.times||{};window.timer=typeof s.timer==='number'?s.timer:5400;window.qidx=Math.max(0,Math.min(window.qs.length-1,Number(s.qidx||0)))}
- window.qStarted=Date.now();window.abStartedAt=Date.now();show('exam');renderTimer();renderQ();clearInterval(window.interval);window.interval=setInterval(()=>{window.timer--;renderTimer();if(window.timer<=0){clearInterval(window.interval);finishAB(true)}},1000);
-};
-window.persistSession=function(){
- const n=sn();put(key('session',n),{answers:window.answers||{},times:window.times||{},timer:Number(window.timer||0),qidx:Number(window.qidx||0)});removeOld(n);
-};
-window.startWriting=function(){
- clearOverlays();window.phase='c';show('writing');window.wTimer=2700;window.cStartedAt=Date.now();window.selectedTopic=0;
- const ws=get(key('writing'))||{};if(typeof ws.wTimer==='number')window.wTimer=ws.wTimer;if(Number.isInteger(Number(ws.selectedTopic)))window.selectedTopic=Number(ws.selectedTopic);
- const topics=document.getElementById('topics');if(topics)topics.innerHTML=(window.writing||[]).map((t,i)=>`<label class="topic ${i===window.selectedTopic?'selected':''}" data-topic="${i}"><input type="radio" name="topic" ${i===window.selectedTopic?'checked':''}><b>${t.title}</b><span>${t.prompt}</span></label>`).join('');
- const essay=document.getElementById('essay');if(essay)essay.value=typeof ws.text==='string'?ws.text:'';
- if(typeof updateWords==='function')updateWords();
- document.querySelectorAll('#topics .topic').forEach(el=>el.addEventListener('click',()=>{const i=Number(el.dataset.topic);window.selectedTopic=i;document.querySelectorAll('#topics .topic').forEach((x,j)=>x.classList.toggle('selected',j===i));const r=document.querySelectorAll('#topics input[name="topic"]')[i];if(r)r.checked=true;persistWriting()}));
- if(essay)essay.oninput=()=>{if(typeof updateWords==='function')updateWords();persistWriting()};
- renderWTimer();clearInterval(window.winterval);window.winterval=setInterval(()=>{window.wTimer--;renderWTimer();if(window.wTimer<=0){clearInterval(window.winterval);finishWriting(true)}},1000);
-};
-function persistWriting(){put(key('writing'),{wTimer:Number(window.wTimer||0),selectedTopic:Number(window.selectedTopic||0),text:String(document.getElementById('essay')?.value||'')});removeOld(sn())}
-window.finishWriting=function(auto){
- if(window.phase!=='c')return;clearInterval(window.winterval);window.phase='done';const text=String(document.getElementById('essay')?.value||'').trim(),words=text?text.split(/\s+/).length:0;window.__pkskEssayText=text;const topic=(window.writing||[])[Number(window.selectedTopic||0)]||{};if(typeof buildResult==='function')buildResult({topic,text,words,auto});
-};
-window.progressHistory=function(score){const h=get(`reqoo:pksk:${lic()}:history`)||[];const i=h.findIndex(x=>Number(x.set)===sn());if(i>=0)h[i].score=score;else h.push({set:sn(),score});h.sort((a,b)=>a.set-b.set);put(`reqoo:pksk:${lic()}:history`,h);return h.map(x=>`<div class="progress-row"><b>Set ${pad(x.set)}</b><div class="progress-bar"><i style="width:${Math.min(100,Number(x.score)||0)}%"></i></div><span>${x.score}%</span></div>`).join('')||'<p>Belum ada rekod.</p>';};
-window.syncProgressServer=function(score,extra){
- const code=lic();if(!code)return;const e=extra||{};const payload=Object.assign({code,deviceId:window.pkskDeviceId(),setNo:sn(),completed:true,score:Number(score||0),answers:JSON.stringify(window.answers||{}),essayText:String(window.__pkskEssayText||'')},e);if(typeof pkskDashApi==='function')pkskDashApi('saveProgress',payload,r=>{if(!r?.ok&&typeof queueProgress==='function')queueProgress(payload)},2);
-};
-
-function install(){
- clearOverlays();
- const intro=writingButton();if(intro)activateButton(intro,()=>{clearOverlays();window.startWriting()});
- const submit=submitButton();if(submit)activateButton(submit,()=>window.finishWriting(false));
- const observer=new MutationObserver(()=>{clearOverlays();const a=writingButton();if(a)activateButton(a,()=>{clearOverlays();window.startWriting()});const b=submitButton();if(b)activateButton(b,()=>window.finishWriting(false));});
- observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style','disabled','hidden','aria-hidden']});
- setTimeout(()=>observer.disconnect(),180000);
-}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+const put=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(_){} };
+function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(16)}
+function deviceId(){const n=navigator,s=screen,raw=[n.platform,n.language,(n.languages||[]).join(','),Intl.DateTimeFormat().resolvedOptions().timeZone,s.width,s.height,s.colorDepth,n.hardwareConcurrency,n.maxTouchPoints,n.deviceMemory||0].join('|');const id='FAM-'+hash(raw);try{localStorage.setItem('reqoo_pksk_device_id',id)}catch(_){}return id}
+function call(base,action,data,done,retries=2){let n=0;const run=()=>{const cb='pkskV66_'+Date.now()+'_'+Math.random().toString(36).slice(2),sc=document.createElement('script');let ended=false;const finish=r=>{if(ended)return;ended=true;clearTimeout(t);delete window[cb];sc.remove();if(r&&r.ok!==false)return done(r);if(n++<retries)return setTimeout(run,500*n);done(r||{ok:false,error:'Sambungan server gagal.'})};const t=setTimeout(()=>finish({ok:false,error:'Server mengambil masa terlalu lama.'}),11000);window[cb]=finish;sc.onerror=()=>finish({ok:false,error:'Sambungan server gagal.'});sc.src=base+'?'+new URLSearchParams({action,callback:cb,...(data||{})});document.body.appendChild(sc)};run()}
+function api(action,data,done,retries){call(API,action,data,done,retries)}
+function session(action,data,done,retries){call(SESSION,action,data,done,retries)}
+function reconcileDevice(){const code=lic();if(!code)return;session('registerDevice',{code,deviceId:deviceId(),userAgent:navigator.userAgent,setNo:sn()},()=>{})}
+function clearOld(n){['session','writing','result'].forEach(x=>localStorage.removeItem(old(x,n)))}
+function restoreLegacy(n){const s=get(key('session',n)),w=get(key('writing',n));if(s)put(old('session',n),s);else localStorage.removeItem(old('session',n));if(w)put(old('writing',n),w);else localStorage.removeItem(old('writing',n))}
+function normalizeBank(){if(!Array.isArray(window.qs))return;for(const q of window.qs){if(q.section!=='BAHAGIAN B')continue;let a=Number.isInteger(Number(q.answerIndex))?Number(q.answerIndex):Number.isInteger(Number(q.answer))?Number(q.answer):null;if(a===null&&Array.isArray(q.weights)&&q.weights.length)a=q.weights.reduce((b,v,i)=>Number(v)>Number(q.weights[b]??-Infinity)?i:b,0);if(a!==null)q.answer=a;if(q.explanation==null&&q.scoringNote!=null)q.explanation=q.scoringNote}}
+function saveServer(n,section){const code=lic();if(!code)return;session('saveSession',{code,deviceId:deviceId(),setNo:n,section:section||'OVERALL',state:JSON.stringify({session:get(key('session',n)),writing:get(key('writing',n))})},()=>{},1)}
+function loadServer(n,done){if(!lic())return done(null);session('getSession',{code:lic(),deviceId:deviceId(),setNo:n},r=>done(r?.ok?r.state:null),1)}
+function hydrate(n,state){try{const x=typeof state==='string'?JSON.parse(state):state;if(x?.session)put(key('session',n),x.session);if(x?.writing)put(key('writing',n),x.writing);return !!x}catch(_){return false}}
+function show(id){['start','briefing','exam','writing','result'].forEach(x=>$(x)?.classList.add('hidden'));$(id)?.classList.remove('hidden')}
+function install(){if(window.__reqooV66Canonical)return true;window.__reqooV66Canonical=true;reconcileDevice();
+ const oldStartAB=window.startAB,oldStartC=window.startWriting,oldPersist=window.persistSession,oldFinish=window.finishWriting,oldBuild=window.buildResult,oldLoad=window.load;
+ window.pkskDeviceId=deviceId;
+ window.pkskDashApi=api;
+ window.pkskApi=api;
+ window.pkskLicense=lic;
+ window.load=async function(n){const r=await oldLoad(n);normalizeBank();return r};
+ window.selectSet=async function(n){const x=Math.max(1,Math.min(50,Number(n)||1));clearInterval(window.interval);clearInterval(window.winterval);window.setNo=x;localStorage.setItem('pksk-selected-set',String(x));const ok=await window.load(x);if(ok!==false)show('start');return ok};
+ function applyAB(n){const s=get(key('session',n));if(!s)return;window.answers=s.answers||{};window.times=s.times||{};if(typeof s.timer==='number')window.timer=s.timer;if(Number.isFinite(Number(s.qidx)))window.qidx=Math.max(0,Math.min((window.qs||[]).length-1,Number(s.qidx)));window.qStarted=Date.now();window.renderTimer?.();window.renderQ?.()}
+ function applyC(n){const w=get(key('writing',n));if(!w)return;if($('essay'))$('essay').value=String(w.text||'');if(typeof w.wTimer==='number')window.wTimer=w.wTimer;window.selectedTopic=Number(w.selectedTopic||0);window.renderWTimer?.();window.updateWords?.();if($('essay'))$('essay').oninput=saveC}
+ function saveAB(){const n=sn();put(key('session',n),{answers:window.answers||{},times:window.times||{},timer:Number(window.timer||0),qidx:Number(window.qidx||0),abStartedAt:window.abStartedAt||null,updatedAt:Date.now()});saveServer(n,'AB')}
+ function saveC(){const n=sn();put(key('writing',n),{wTimer:Number(window.wTimer||0),selectedTopic:Number(window.selectedTopic||0),text:String($('essay')?.value||''),updatedAt:Date.now()});window.updateWords?.();saveServer(n,'C')}
+ window.startAB=function(){const n=sn();restoreLegacy(n);oldStartAB();applyAB(n);loadServer(n,state=>{if(hydrate(n,state))applyAB(n)})};
+ window.startWriting=function(){const n=sn();restoreLegacy(n);oldStartC();applyC(n);loadServer(n,state=>{if(hydrate(n,state))applyC(n)});};
+ window.persistSession=function(){if(typeof oldPersist==='function')oldPersist();saveAB()};
+ window.finishWriting=function(auto){saveC();return oldFinish.call(this,auto)};
+ window.exitToDashboard=function(){const n=sn();if(window.phase==='ab')saveAB();if(window.phase==='c')saveC();saveServer(n,window.phase==='c'?'C':'AB');clearInterval(window.interval);clearInterval(window.winterval);clearOld(n);location.href='../access/'};
+ window.syncProgressServer=function(){const n=sn(),w=get(key('writing',n));const payload={code:lic(),deviceId:deviceId(),setNo:n,answers:JSON.stringify(window.answers||{}),essayText:String($('essay')?.value||w?.text||''),timeUsed:Number(5400-(window.timer||0)),startedAt:window.abStartedAt||null,completed:true,section:'OVERALL'};api('saveProgress',payload,r=>{if(!r?.ok)window.pkskReportError?.('SAVE_PROGRESS_FAILED',r?.error||'Progress sync gagal')},2)};
+ if(typeof oldBuild==='function')window.buildResult=function(c){const r=oldBuild.call(this,c);setTimeout(()=>{window.syncProgressServer();renderReview(nFromResult())},80);return r};
+ function nFromResult(){return sn()}
+ window.countdown=function(callback){const box=$('count');if(!box)return callback?.();box.innerHTML='';const b=document.createElement('button');b.type='button';b.className='v66-start-btn';b.textContent=String($('briefingTitle')?.textContent||'').includes('Bahagian C')?'MULA BAHAGIAN C →':'MULA BAHAGIAN A + B →';b.onclick=()=>{b.disabled=true;b.style.pointerEvents='none';callback?.()};box.appendChild(b)};
+ window.playAnnouncement=function(_key,after){if($('voiceStatus'))$('voiceStatus').textContent='Arahan dipaparkan pada skrin. Tekan MULA untuk meneruskan.';setTimeout(()=>after?.(),50)};
+ window.playAudioOnly=function(){};
+ function bind(){
+  document.querySelectorAll('#briefing button,button').forEach(b=>{const t=String(b.textContent||'').trim();if(!/MULA BAHAGIAN (?:A\s*\+\s*B|C)/i.test(t)||b.dataset.v66Canonical)return;b.dataset.v66Canonical='1';b.type='button';b.disabled=false;b.removeAttribute('onclick');b.style.pointerEvents='auto';b.style.zIndex='10002';b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();if(/BAHAGIAN C/i.test(String(b.textContent||'')))window.startWriting();else window.startAB()},true)});
+  document.querySelectorAll('#writing button,button').forEach(b=>{if(!/HANTAR BAHAGIAN C/i.test(String(b.textContent||''))||b.dataset.v66CanonicalSubmit)return;b.dataset.v66CanonicalSubmit='1';b.type='button';b.disabled=false;b.removeAttribute('onclick');b.style.pointerEvents='auto';b.style.zIndex='10002';b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();const t=String($('essay')?.value||'').trim(),words=t?t.split(/\s+/).filter(Boolean).length:0;if($('minStatus')){$('minStatus').textContent=words>=100?'✓ Minimum dicapai':`Minimum 100 patah perkataan — jawapan tetap boleh dihantar (${words} patah perkataan)`;$('minStatus').className=words>=100?'good':'warn'}window.finishWriting(false)},true)});
+ }
+ function renderReview(n){const box=$('reviewB');if(!box)return;const groupStart=Math.floor((n-1)/10)*10+1,group=`SET ${pad(groupStart)}-${pad(groupStart+9)}`;fetch(`sets/${encodeURIComponent(group)}/data/set${pad(n)}.json`,{cache:'no-store'}).then(r=>r.json()).then(bank=>{const ans=window.answers||get(key('session',n))?.answers||{};const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));box.innerHTML=(bank.questions||[]).filter(q=>q.section==='BAHAGIAN B').map((q,i)=>{const c=Number.isInteger(Number(q.answerIndex))?Number(q.answerIndex):Number.isInteger(Number(q.answer))?Number(q.answer):null,a=ans[q.id],st=a===undefined?'skip':Number(a)===c?'good':'bad',your=a===undefined?'—':`${String.fromCharCode(65+Number(a))}. ${esc(q.options?.[Number(a)]||'')}`,right=c===null?'—':`${String.fromCharCode(65+c)}. ${esc(q.options?.[c]||'')}`;return `<article class="review-item ${st}"><div class="review-top"><b>${i+1}. ${esc(q.question||'')}</b><strong>${st==='good'?'✓ BETUL':st==='bad'?'✕ SALAH':'○ TIDAK DIJAWAB'}</strong></div><div class="review-answer"><b>Jawapan anda:</b> ${your}<br><b>Jawapan betul:</b> ${right}</div><div class="review-explain"><b>Penerangan:</b> ${esc(q.explanation||q.scoringNote||'Semak sebab jawapan ini paling tepat.')}</div></article>`}).join('')}).catch(()=>{})}
+ const css=document.createElement('style');css.textContent='.v66-start-btn{min-width:260px;border:0;border-radius:14px;padding:15px 22px;background:linear-gradient(135deg,#10233f,#178f8a);color:#fff;font:900 15px Inter,Arial,sans-serif;box-shadow:0 8px 20px rgba(16,35,63,.2)}#briefing,#writing{position:relative!important;z-index:50!important;pointer-events:auto!important}#briefing button,#writing button,#writing textarea{position:relative!important;z-index:10002!important;pointer-events:auto!important;touch-action:manipulation!important}.v66-dashboard{position:fixed;right:12px;top:12px;z-index:10050;border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:9px 13px;background:#10233f;color:#fff;font:800 12px Inter,Arial,sans-serif}.review-list{display:grid;gap:10px}.review-item{border:1px solid #dbe3ed;border-radius:12px;padding:13px;background:#fff}.review-item.good{border-left:4px solid #208a70}.review-item.bad{border-left:4px solid #bd4b4b}.review-item.skip{border-left:4px solid #9b6a24}.review-top{display:flex;justify-content:space-between;gap:10px}.review-answer,.review-explain{margin-top:7px;font-size:12px;line-height:1.5;color:#59687b}.review-explain{padding-top:7px;border-top:1px solid #edf1f5}';document.head.appendChild(css);
+ const d=document.createElement('button');d.className='v66-dashboard';d.type='button';d.textContent='← DASHBOARD';d.onclick=()=>window.exitToDashboard();document.body.appendChild(d);const tick=()=>{d.style.display=['exam','writing'].some(id=>$(id)&&!$(id).classList.contains('hidden'))?'block':'none'};['exam','writing','briefing','result'].forEach(id=>{const e=$(id);if(e)new MutationObserver(tick).observe(e,{attributes:true,attributeFilter:['class','style']})});tick();
+ const mo=new MutationObserver(()=>{clearOverlays();bind()});function clearOverlays(){document.body.classList.remove('nav-open');document.documentElement.classList.remove('nav-open');const nav=$('navCard');if(nav)nav.classList.remove('mobile-open');document.querySelectorAll('.nav-backdrop,.mobile-backdrop,.backdrop').forEach(el=>{if(!el.closest('#writing')){el.classList.remove('active','open','show');el.setAttribute('aria-hidden','true');el.style.pointerEvents='none';el.style.display='none'}})}
+ mo.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style','disabled','hidden','aria-hidden']});bind();
+ return true}
+function boot(){reconcileDevice();install()}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
