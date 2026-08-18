@@ -1,4 +1,4 @@
-/* REQOO PKSK V64 — HARDEN BAHAGIAN C SUBMIT */
+/* REQOO PKSK V64 — BAHAGIAN C SUBMIT: ALWAYS ALLOW */
 (function(){
 'use strict';
 function words(){const e=document.getElementById('essay');const t=String(e&&e.value||'').trim();return t?t.split(/\s+/).filter(Boolean).length:0;}
@@ -11,11 +11,7 @@ function bind(){
  b.addEventListener('click',function(ev){
    ev.preventDefault();ev.stopPropagation();
    const n=words(),status=document.getElementById('minStatus');
-   if(n<100){
-     if(status){status.textContent=`Minimum 100 patah perkataan — masih kurang ${100-n} patah perkataan`;status.className='warn';}
-     e.focus();try{e.scrollIntoView({behavior:'smooth',block:'center'});}catch(_){ }
-     return false;
-   }
+   if(status){status.textContent=n>=100?'✓ Minimum dicapai':`Minimum 100 patah perkataan — jawapan tetap boleh dihantar (${n} patah perkataan)`;status.className=n>=100?'good':'warn';}
    if(typeof window.finishWriting==='function'){
      try{window.finishWriting(false);}catch(err){
        try{if(typeof window.pkskReportError==='function')window.pkskReportError('WRITE_SUBMIT_FAILED',err&&err.message||String(err));}catch(_){ }
