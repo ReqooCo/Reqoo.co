@@ -1,164 +1,52 @@
-/* REQOO PKSK — UNIFIED INTERACTION PATCH
-   One interaction layer for A+B briefing, C briefing and C submit.
-   Important: this file does not change bank content, scoring rules or Section A mixing.
+/* REQOO PKSK — UNIFIED CANONICAL RUNTIME
+   One runtime for A+B, C, progress, score and review. Bank content unchanged.
 */
-(function(){
-'use strict';
-
-const $=id=>document.getElementById(id);
-
-function visible(id){
-  const el=$(id);
-  if(!el)return false;
-  const s=getComputedStyle(el);
-  return !el.classList.contains('hidden') && s.display!=='none' && s.visibility!=='hidden' && el.getBoundingClientRect().height>0;
-}
-
-/* Remove stale mobile-navigation/backdrop layers before ANY exam CTA is tapped.
-   The previous patch only did this after Writing was visible, leaving the C briefing
-   underneath an invisible/click-blocking layer. */
-function clearStaleLayers(){
-  const active=visible('briefing')||visible('exam')||visible('writing')||visible('result');
-  if(!active)return;
-  try{ if(typeof window.toggleMobileNav==='function') window.toggleMobileNav(false); }catch(_){}
-  document.body.classList.remove('nav-open');
-  document.documentElement.classList.remove('nav-open');
-  const nav=$('navCard');
-  if(nav)nav.classList.remove('mobile-open');
-  document.querySelectorAll('.nav-backdrop,.mobile-backdrop,.backdrop').forEach(el=>{
-    if(el.closest('#writing'))return;
-    el.classList.remove('active','open','show');
-    el.setAttribute('aria-hidden','true');
-    el.style.pointerEvents='none';
-    el.style.display='none';
-  });
-}
-
-function prepareButton(b){
-  if(!b)return;
-  b.type='button';
-  b.disabled=false;
-  b.removeAttribute('disabled');
-  b.style.pointerEvents='auto';
-  b.style.touchAction='manipulation';
-  b.style.position='relative';
-  b.style.zIndex='10002';
-}
-
-function startButton(){
-  return [...document.querySelectorAll('#briefing button,button')]
-    .find(b=>/MULA BAHAGIAN (?:A\s*\+\s*B|C)/i.test(String(b.textContent||'')));
-}
-
-function submitButton(){
-  return [...document.querySelectorAll('#writing button,button')]
-    .find(b=>/HANTAR BAHAGIAN C/i.test(String(b.textContent||'')));
-}
-
-function bindStart(){
-  const b=startButton();
-  if(!b)return false;
-  if(b.dataset.reqooUnifiedStart==='1')return true;
-  b.dataset.reqooUnifiedStart='1';
-  prepareButton(b);
-  b.onclick=null;
-  b.addEventListener('click',function(ev){
-    ev.preventDefault();
-    ev.stopPropagation();
-    ev.stopImmediatePropagation();
-    clearStaleLayers();
-    const text=String(b.textContent||'');
-    try{
-      if(/BAHAGIAN C/i.test(text)){
-        if(typeof window.startWriting==='function')window.startWriting();
-        else { const w=$('writing'); document.querySelectorAll('section').forEach(x=>x.classList.add('hidden')); if(w)w.classList.remove('hidden'); }
-      }else{
-        if(typeof window.startAB==='function')window.startAB();
-      }
-    }catch(err){
-      try{window.pkskReportError?.('UNIFIED_START_FAILED',err?.message||String(err));}catch(_){}
-    }
-  },true);
-  return true;
-}
-
-function wordCount(){
-  const e=$('essay');
-  const t=String(e&&e.value||'').trim();
-  return t?t.split(/\s+/).filter(Boolean).length:0;
-}
-
-function bindSubmit(){
-  const b=submitButton(),e=$('essay');
-  if(!b||!e)return false;
-  if(b.dataset.reqooUnifiedSubmit==='1')return true;
-  b.dataset.reqooUnifiedSubmit='1';
-  prepareButton(b);
-  b.onclick=null;
-  b.addEventListener('click',function(ev){
-    ev.preventDefault();
-    ev.stopPropagation();
-    ev.stopImmediatePropagation();
-    const n=wordCount(),status=$('minStatus');
-    /* Word count is feedback only. It MUST NOT block submission. */
-    if(status){
-      status.textContent=n>=100?'✓ Minimum dicapai':`Minimum 100 patah perkataan — jawapan tetap boleh dihantar (${n} patah perkataan)`;
-      status.className=n>=100?'good':'warn';
-    }
-    try{
-      if(typeof window.finishWriting==='function')window.finishWriting(false);
-      else try{window.pkskReportError?.('WRITE_SUBMIT_MISSING','finishWriting tidak tersedia');}catch(_){}
-    }catch(err){
-      try{window.pkskReportError?.('WRITE_SUBMIT_FAILED',err?.message||String(err));}catch(_){}
-      if(status){status.textContent='Ralat semasa menghantar. Sila cuba sekali lagi.';status.className='bad';}
-    }
-  },true);
-  return true;
-}
-
-function keepInteractive(){
-  clearStaleLayers();
-  const briefing=$('briefing');
-  if(briefing&&visible('briefing')){
-    briefing.style.position='relative';
-    briefing.style.zIndex='40';
-    briefing.style.pointerEvents='auto';
-    const b=startButton();
-    if(b)prepareButton(b);
-  }
-  const writing=$('writing');
-  if(writing&&visible('writing')){
-    writing.style.position='relative';
-    writing.style.zIndex='40';
-    writing.style.pointerEvents='auto';
-    const e=$('essay');
-    if(e){e.style.position='relative';e.style.zIndex='41';e.style.pointerEvents='auto';e.style.touchAction='manipulation';}
-    writing.querySelectorAll('button').forEach(prepareButton);
-  }
-}
-
-function boot(){
-  let tries=0;
-  const run=()=>{
-    tries++;
-    clearStaleLayers();
-    const a=bindStart();
-    const b=bindSubmit();
-    keepInteractive();
-    if(tries<240 && (!a||!b))setTimeout(run,250);
-  };
-  run();
-  const mo=new MutationObserver(()=>{
-    clearStaleLayers();
-    bindStart();
-    bindSubmit();
-    keepInteractive();
-  });
-  mo.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style','disabled','hidden','aria-hidden']});
-  setTimeout(()=>mo.disconnect(),120000);
-  window.addEventListener('pageshow',()=>{clearStaleLayers();bindStart();bindSubmit();keepInteractive();});
-}
-
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
-else boot();
+(function(){'use strict';
+const API='/api/pksk-v56',SESSION='/api/pksk-session', $=id=>document.getElementById(id), pad=n=>String(n).padStart(2,'0');
+const lic=()=>String(localStorage.getItem('reqoo_pksk_license')||'').trim().toUpperCase();
+const setNo=()=>Math.max(1,Math.min(50,Number(window.setNo||localStorage.getItem('pksk-selected-set')||1)));
+const key=(k,n=setNo())=>`reqoo:pksk:${lic()}:set:${pad(n)}:${k}`;
+const legacy=(k,n=setNo())=>`pksk-set${pad(n)}-${k}`;
+function jget(k){try{return JSON.parse(localStorage.getItem(k)||'null')}catch(_){return null}}
+function jset(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(_){} }
+function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(16)}
+function deviceId(){const n=navigator,s=screen;const raw=[n.platform,n.language,(n.languages||[]).join(','),Intl.DateTimeFormat().resolvedOptions().timeZone,s.width,s.height,s.colorDepth,n.hardwareConcurrency,n.maxTouchPoints,n.deviceMemory||0].join('|');const id='FAM-'+hash(raw);try{localStorage.setItem('reqoo_pksk_device_id',id)}catch(_){}return id}
+function call(base,action,data,done,retries=2){let n=0;const run=()=>{const cb='pk_'+Date.now()+'_'+Math.random().toString(36).slice(2),sc=document.createElement('script');let end=false;const finish=r=>{if(end)return;end=true;clearTimeout(t);delete window[cb];sc.remove();if(r&&r.ok!==false)return done(r);if(n++<retries)return setTimeout(run,500*n);done(r||{ok:false,error:'Sambungan server gagal.'})};const t=setTimeout(()=>finish({ok:false,error:'Server mengambil masa terlalu lama.'}),11000);window[cb]=finish;sc.onerror=()=>finish({ok:false,error:'Sambungan server gagal.'});sc.src=base+'?'+new URLSearchParams({action,callback:cb,...(data||{})});document.body.appendChild(sc)};run()}
+function api(action,data,done,retries){call(API,action,data,done,retries)}
+function session(action,data,done,retries){call(SESSION,action,data,done,retries)}
+function requireAccess(next){const code=lic();if(!code){location.href='../access/';return}session('registerDevice',{code,deviceId:deviceId(),userAgent:navigator.userAgent,setNo:setNo()},r=>{if(r?.ok)return next();alert(r?.error||'Akses tidak sah.');location.href='../access/'})}
+function clearLegacy(n){localStorage.removeItem(legacy('session',n));localStorage.removeItem(legacy('writing',n));localStorage.removeItem(legacy('result',n))}
+function expose(){window.pkskLicense=lic;window.pkskDeviceId=deviceId;window.pkskApi=api;window.pkskDashApi=api;window.pkskRequireAccess=requireAccess}
+function serverSave(n,section){const payload={code:lic(),deviceId:deviceId(),setNo:n,section:section||'OVERALL',state:JSON.stringify({session:jget(key('session',n)),writing:jget(key('writing',n))})};if(!payload.code)return;session('saveSession',payload,r=>{if(!r?.ok)try{localStorage.setItem('pksk-last-sync-error',r?.error||'unknown')}catch(_){}},1)}
+function serverLoad(n,done){if(!lic())return done(null);session('getSession',{code:lic(),deviceId:deviceId(),setNo:n},r=>done(r?.ok?r.state:null),1)}
+function hydrate(n,state){try{const x=typeof state==='string'?JSON.parse(state):state;if(x?.session)jset(key('session',n),x.session);if(x?.writing)jset(key('writing',n),x.writing);return !!x}catch(_){return false}}
+function restore(n){const s=jget(key('session',n)),w=jget(key('writing',n));if(s)jset(legacy('session',n),s);else localStorage.removeItem(legacy('session',n));if(w)jset(legacy('writing',n),w);else localStorage.removeItem(legacy('writing',n))}
+function normalize(){if(!Array.isArray(window.qs))return;for(const q of window.qs){if(q.section!=='BAHAGIAN B')continue;let a=Number.isInteger(Number(q.answerIndex))?Number(q.answerIndex):Number.isInteger(Number(q.answer))?Number(q.answer):null;if(a===null&&Array.isArray(q.weights)&&q.weights.length)a=q.weights.reduce((b,v,i)=>Number(v)>Number(q.weights[b]??-Infinity)?i:b,0);if(a!==null)q.answer=a;if(q.explanation==null&&q.scoringNote!=null)q.explanation=q.scoringNote}}
+function install(){if(window.__reqooCanonicalV66||typeof window.startAB!=='function'||typeof window.startWriting!=='function')return !!window.__reqooCanonicalV66;window.__reqooCanonicalV66=true;expose();
+ const oldStartAB=window.startAB,oldStartC=window.startWriting,oldPersist=window.persistSession,oldFinish=window.finishWriting,oldBuild=window.buildResult;
+ window.load=(function(old){return async function(n){const r=await old(n);normalize();return r}})(window.load);
+ window.selectSet=async function(n){const x=Math.max(1,Math.min(50,Number(n)||1));clearInterval(window.interval);clearInterval(window.winterval);window.setNo=x;localStorage.setItem('pksk-selected-set',String(x));const ok=await window.load(x);if(ok!==false)show('start');return ok};
+ window.startAB=function(){const n=setNo();restore(n);oldStartAB();applyAB(n);serverLoad(n,state=>{if(hydrate(n,state))applyAB(n)});serverSave(n,'AB')};
+ window.startWriting=function(){const n=setNo();restore(n);oldStartC();applyC(n);serverLoad(n,state=>{if(hydrate(n,state))applyC(n)});serverSave(n,'C')};
+ function applyAB(n){const s=jget(key('session',n));if(!s)return;window.answers=s.answers||{};window.times=s.times||{};if(typeof s.timer==='number')window.timer=s.timer;if(Number.isFinite(Number(s.qidx)))window.qidx=Math.max(0,Math.min((window.qs||[]).length-1,Number(s.qidx)));window.qStarted=Date.now();window.renderTimer?.();window.renderQ?.()}
+ function applyC(n){const w=jget(key('writing',n));if(!w)return;if($('essay'))$('essay').value=String(w.text||'');window.wTimer=typeof w.wTimer==='number'?w.wTimer:window.wTimer;window.selectedTopic=Number(w.selectedTopic||0);window.renderWTimer?.();window.updateWords?.();if($('essay'))$('essay').oninput=saveC}
+ function saveAB(){const n=setNo();jset(key('session',n),{answers:window.answers||{},times:window.times||{},timer:Number(window.timer||0),qidx:Number(window.qidx||0),abStartedAt:window.abStartedAt||null,updatedAt:Date.now()});serverSave(n,'AB')}
+ function saveC(){const n=setNo();jset(key('writing',n),{wTimer:Number(window.wTimer||0),selectedTopic:Number(window.selectedTopic||0),text:String($('essay')?.value||''),updatedAt:Date.now()});window.updateWords?.();serverSave(n,'C')}
+ window.persistSession=function(){if(typeof oldPersist==='function')oldPersist();saveAB()};
+ window.finishWriting=function(auto){saveC();return oldFinish.call(this,auto)};
+ window.exitToDashboard=function(){const n=setNo();if(window.phase==='ab')saveAB();if(window.phase==='c')saveC();serverSave(n,window.phase==='c'?'C':'AB');clearInterval(window.interval);clearInterval(window.winterval);clearLegacy(n);location.href='../access/'};
+ window.syncProgressServer=function(){const n=setNo(),w=jget(key('writing',n));const payload={code:lic(),deviceId:deviceId(),setNo:n,answers:JSON.stringify(window.answers||{}),essayText:String($('essay')?.value||w?.text||''),timeUsed:Number(5400-(window.timer||0)),startedAt:window.abStartedAt||null,completed:true,section:'OVERALL'};api('saveProgress',payload,r=>{if(!r?.ok)window.pkskReportError?.('SAVE_PROGRESS_FAILED',r?.error||'Progress sync gagal')},2)};
+ if(typeof oldBuild==='function')window.buildResult=function(c){const r=oldBuild.call(this,c);setTimeout(()=>{window.syncProgressServer();reviewB(setNo())},100);return r};
+ window.countdown=function(callback){const box=$('count');if(!box)return callback?.();box.innerHTML='';const b=document.createElement('button');b.type='button';b.className='v66-start-btn';b.textContent=String($('briefingTitle')?.textContent||'').includes('Bahagian C')?'MULA BAHAGIAN C →':'MULA BAHAGIAN A + B →';b.onclick=()=>{b.disabled=true;b.style.pointerEvents='none';callback?.()};box.appendChild(b)};
+ function bindInteractive(){
+  document.querySelectorAll('#briefing button,button').forEach(b=>{const text=String(b.textContent||'').trim();if(!/MULA BAHAGIAN (?:A\s*\+\s*B|C)/i.test(text))return;if(b.dataset.v66Start)return;b.dataset.v66Start='1';b.type='button';b.disabled=false;b.onclick=null;b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();const t=String(b.textContent||'');if(/BAHAGIAN C/i.test(t))window.startWriting?.();else window.startAB?.()},true)});
+  document.querySelectorAll('#writing button,button').forEach(b=>{if(!/HANTAR BAHAGIAN C/i.test(String(b.textContent||''))||b.dataset.v66Submit)return;b.dataset.v66Submit='1';b.type='button';b.disabled=false;b.onclick=null;b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();const n=String($('essay')?.value||'').trim();const words=n?n.split(/\s+/).filter(Boolean).length:0;if($('minStatus')){$('minStatus').textContent=words>=100?'✓ Minimum dicapai':`Minimum 100 patah perkataan — jawapan tetap boleh dihantar (${words} patah perkataan)`;$('minStatus').className=words>=100?'good':'warn'}window.finishWriting?.(false)},true)});
+ }
+ const css=document.createElement('style');css.textContent='.v66-start-btn{min-width:260px;border:0;border-radius:14px;padding:15px 22px;background:linear-gradient(135deg,#10233f,#178f8a);color:#fff;font:900 15px Inter,Arial,sans-serif;box-shadow:0 8px 20px rgba(16,35,63,.2)}#briefing,#writing{position:relative!important;z-index:50!important;pointer-events:auto!important}#briefing button,#writing button,#writing textarea{position:relative!important;z-index:10002!important;pointer-events:auto!important;touch-action:manipulation!important}.reqoo-dashboard{position:fixed;right:12px;top:12px;z-index:10050;border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:9px 13px;background:#10233f;color:#fff;font:800 12px Inter,Arial,sans-serif}.review-list{display:grid;gap:10px}.review-item{border:1px solid #dbe3ed;border-radius:12px;padding:13px;background:#fff}.review-item.good{border-left:4px solid #208a70}.review-item.bad{border-left:4px solid #bd4b4b}.review-item.skip{border-left:4px solid #9b6a24}.review-top{display:flex;justify-content:space-between;gap:10px}.review-answer,.review-explain{margin-top:7px;font-size:12px;line-height:1.5;color:#59687b}.review-explain{padding-top:7px;border-top:1px solid #edf1f5}';document.head.appendChild(css);
+ const d=document.createElement('button');d.className='reqoo-dashboard';d.type='button';d.textContent='← DASHBOARD';d.onclick=()=>window.exitToDashboard();document.body.appendChild(d);const tick=()=>{d.style.display=['exam','writing'].some(id=>$(id)&&!$(id).classList.contains('hidden'))?'block':'none'};['exam','writing','briefing','result'].forEach(id=>{const e=$(id);if(e)new MutationObserver(tick).observe(e,{attributes:true,attributeFilter:['class','style']})});tick();
+ return true}
+ function reviewB(n){const box=$('reviewB');if(!box)return;const groupStart=Math.floor((n-1)/10)*10+1,group=`SET ${pad(groupStart)}-${pad(groupStart+9)}`;fetch(`sets/${encodeURIComponent(group)}/data/set${pad(n)}.json`,{cache:'no-store'}).then(r=>r.json()).then(bank=>{const ans=window.answers||jget(key('session',n))?.answers||{};const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));box.innerHTML=(bank.questions||[]).filter(q=>q.section==='BAHAGIAN B').map((q,i)=>{let c=Number.isInteger(Number(q.answerIndex))?Number(q.answerIndex):Number.isInteger(Number(q.answer))?Number(q.answer):null;const a=ans[q.id],st=a===undefined?'skip':Number(a)===c?'good':'bad',your=a===undefined?'—':`${String.fromCharCode(65+Number(a))}. ${esc(q.options?.[Number(a)]||'')}`,right=c===null?'—':`${String.fromCharCode(65+c)}. ${esc(q.options?.[c]||'')}`;return `<article class="review-item ${st}"><div class="review-top"><b>${i+1}. ${esc(q.question||'')}</b><strong>${st==='good'?'✓ BETUL':st==='bad'?'✕ SALAH':'○ TIDAK DIJAWAB'}</strong></div><div class="review-answer"><b>Jawapan anda:</b> ${your}<br><b>Jawapan betul:</b> ${right}</div><div class="review-explain"><b>Penerangan:</b> ${esc(q.explanation||q.scoringNote||'Semak sebab jawapan ini paling tepat.')}</div></article>`}).join('')}).catch(()=>{})}
+ function show(id){['start','briefing','exam','writing','result'].forEach(x=>$(x)?.classList.add('hidden'));$(id)?.classList.remove('hidden')}
+ function boot(){expose();let tries=0;const t=setInterval(()=>{if(install()||++tries>300)clearInterval(t);bindInteractive()},20);const mo=new MutationObserver(()=>{document.querySelectorAll('#briefing button,#writing button').forEach(b=>{b.disabled=false;b.style.pointerEvents='auto';b.style.zIndex='10002'});bindInteractive()});mo.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style','disabled','hidden','aria-hidden']});bindInteractive();setTimeout(()=>mo.disconnect(),120000)}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
