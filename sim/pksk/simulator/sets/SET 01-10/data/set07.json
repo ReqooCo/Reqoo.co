@@ -9,10 +9,10 @@
       "format": "AGREE_DISAGREE",
       "question": "Setuju atau Tidak Setuju: Menyemak hasil kerja sebelum dihantar dapat mengurangkan kesilapan yang boleh dielakkan.",
       "options": [
-        "Setuju kerana tindakan itu membantu membuat keputusan yang lebih baik.",
-        "Tidak setuju kerana tindakan itu tidak diperlukan dalam keadaan biasa.",
-        "Setuju hanya apabila ketua kumpulan memintanya.",
-        "Tidak setuju kerana keputusan boleh dibuat tanpa pertimbangan tambahan."
+        "Setuju kerana semakan akhir membantu mengesan kesilapan sebelum tugasan dihantar.",
+        "Tidak setuju kerana hasil kerja yang siap tidak perlu diperiksa lagi.",
+        "Setuju hanya jika tugasan itu dibuat secara berkumpulan.",
+        "Tidak setuju kerana kesilapan hanya boleh dikesan oleh guru."
       ],
       "answerIndex": 0,
       "weights": [
@@ -27,7 +27,7 @@
       "levelSignal": 4,
       "contentDomain": "Setuju/Tidak Setuju",
       "setLevel": 4,
-      "rebuildStatus": "V45.10_PRODUCTION_SET07"
+      "rebuildStatus": "V45.10_REPAIRED_HUMAN_REVIEW"
     },
     {
       "id": "A02",
@@ -36,10 +36,10 @@
       "format": "AGREE_DISAGREE",
       "question": "Setuju atau Tidak Setuju: Pendapat ahli yang paling senyap juga wajar dipertimbangkan sebelum keputusan dibuat.",
       "options": [
-        "Tidak setuju kerana tindakan itu tidak diperlukan dalam keadaan biasa.",
-        "Setuju kerana tindakan itu membantu membuat keputusan yang lebih baik.",
-        "Setuju hanya apabila ketua kumpulan memintanya.",
-        "Tidak setuju kerana keputusan boleh dibuat tanpa pertimbangan tambahan."
+        "Tidak setuju kerana pandangan ahli yang senyap tidak semestinya berkaitan dengan keputusan.",
+        "Setuju kerana setiap ahli mungkin mempunyai maklumat atau alasan yang berguna.",
+        "Setuju hanya jika ahli itu mengetuai perbincangan.",
+        "Tidak setuju kerana keputusan mesti dibuat oleh ahli yang paling banyak bercakap."
       ],
       "answerIndex": 1,
       "weights": [
@@ -54,7 +54,7 @@
       "levelSignal": 4,
       "contentDomain": "Setuju/Tidak Setuju",
       "setLevel": 4,
-      "rebuildStatus": "V45.10_PRODUCTION_SET07"
+      "rebuildStatus": "V45.10_REPAIRED_HUMAN_REVIEW"
     },
     {
       "id": "A03",
@@ -63,16 +63,16 @@
       "format": "AGREE_DISAGREE",
       "question": "Setuju atau Tidak Setuju: Maklumat daripada satu sumber sahaja tidak semestinya mencukupi untuk membuat kesimpulan penting.",
       "options": [
-        "Tidak setuju kerana tindakan itu tidak diperlukan dalam keadaan biasa.",
-        "Setuju hanya apabila ketua kumpulan memintanya.",
-        "Setuju kerana tindakan itu membantu membuat keputusan yang lebih baik.",
-        "Tidak setuju kerana keputusan boleh dibuat tanpa pertimbangan tambahan."
+        "Tidak setuju kerana satu sumber sentiasa mencukupi untuk semua dakwaan.",
+        "Setuju kerana sumber tambahan boleh membantu mengesahkan maklumat penting.",
+        "Setuju hanya jika sumber pertama datang daripada buku.",
+        "Tidak setuju kerana kesimpulan tidak memerlukan bukti tambahan."
       ],
-      "answerIndex": 2,
+      "answerIndex": 1,
       "weights": [
         0,
-        0,
         3,
+        0,
         0
       ],
       "type": "graded",
@@ -81,7 +81,7 @@
       "levelSignal": 4,
       "contentDomain": "Setuju/Tidak Setuju",
       "setLevel": 4,
-      "rebuildStatus": "V45.10_PRODUCTION_SET07"
+      "rebuildStatus": "V45.10_REPAIRED_HUMAN_REVIEW"
     },
     {
       "id": "A04",
@@ -90,17 +90,17 @@
       "format": "AGREE_DISAGREE",
       "question": "Setuju atau Tidak Setuju: Mengakui kesilapan lebih membantu pembaikan daripada menyalahkan orang lain.",
       "options": [
-        "Tidak setuju kerana tindakan itu tidak diperlukan dalam keadaan biasa.",
-        "Setuju hanya apabila ketua kumpulan memintanya.",
-        "Tidak setuju kerana keputusan boleh dibuat tanpa pertimbangan tambahan.",
-        "Setuju kerana tindakan itu membantu membuat keputusan yang lebih baik."
+        "Tidak setuju kerana menyalahkan orang lain lebih cepat menyelesaikan masalah.",
+        "Setuju kerana mengakui kesilapan memudahkan punca dikenal pasti dan diperbaiki.",
+        "Setuju hanya apabila kesilapan itu tidak memberi kesan.",
+        "Tidak setuju kerana kesilapan patut disembunyikan daripada kumpulan."
       ],
-      "answerIndex": 3,
+      "answerIndex": 1,
       "weights": [
         0,
+        3,
         0,
-        0,
-        3
+        0
       ],
       "type": "graded",
       "plannedLevel": 4,
@@ -108,7 +108,7 @@
       "levelSignal": 4,
       "contentDomain": "Setuju/Tidak Setuju",
       "setLevel": 4,
-      "rebuildStatus": "V45.10_PRODUCTION_SET07"
+      "rebuildStatus": "V45.10_REPAIRED_HUMAN_REVIEW"
     },
     {
       "id": "A05",
@@ -117,10 +117,10 @@
       "format": "AGREE_DISAGREE",
       "question": "Setuju atau Tidak Setuju: Keselamatan perlu diutamakan walaupun kerja menjadi sedikit lebih lambat.",
       "options": [
-        "Setuju kerana tindakan itu membantu membuat keputusan yang lebih baik.",
-        "Tidak setuju kerana tindakan itu tidak diperlukan dalam keadaan biasa.",
-        "Setuju hanya apabila ketua kumpulan memintanya.",
-        "Tidak setuju kerana keputusan boleh dibuat tanpa pertimbangan tambahan."
+        "Setuju kerana prosedur keselamatan mengurangkan risiko kecederaan atau kerosakan.",
+        "Tidak setuju kerana menyiapkan kerja dengan cepat lebih penting.",
+        "Setuju hanya apabila guru memerhatikan aktiviti.",
+        "Tidak setuju kerana risiko kecil tidak perlu dipertimbangkan."
       ],
       "answerIndex": 0,
       "weights": [
@@ -135,7 +135,7 @@
       "levelSignal": 4,
       "contentDomain": "Setuju/Tidak Setuju",
       "setLevel": 4,
-      "rebuildStatus": "V45.10_PRODUCTION_SET07"
+      "rebuildStatus": "V45.10_REPAIRED_HUMAN_REVIEW"
     },
     {
       "id": "A06",
@@ -144,10 +144,37 @@
       "format": "AGREE_DISAGREE",
       "question": "Setuju atau Tidak Setuju: Membahagikan tugasan mengikut kekuatan ahli boleh membantu kumpulan bekerja dengan lebih berkesan.",
       "options": [
-        "Tidak setuju kerana tindakan itu tidak diperlukan dalam keadaan biasa.",
-        "Setuju kerana tindakan itu membantu membuat keputusan yang lebih baik.",
-        "Setuju hanya apabila ketua kumpulan memintanya.",
-        "Tidak setuju kerana keputusan boleh dibuat tanpa pertimbangan tambahan."
+        "Tidak setuju kerana semua ahli mesti menerima tugasan yang sama tanpa mengira kemahiran.",
+        "Setuju kerana tugasan boleh diagihkan supaya kekuatan ahli digunakan dengan berkesan.",
+        "Setuju hanya jika semua ahli mempunyai kemahiran yang sama.",
+        "Tidak setuju kerana pembahagian tugas menyebabkan projek tidak adil."
+      ],
+      "answerIndex": 0,
+      "weights": [
+        3,
+        0,
+        0,
+        0
+      ],
+      "type": "graded",
+      "plannedLevel": 4,
+      "constructFamily": "planning",
+      "levelSignal": 4,
+      "contentDomain": "Setuju/Tidak Setuju",
+      "setLevel": 4,
+      "rebuildStatus": "V45.10_REPAIRED_HUMAN_REVIEW"
+    },
+    {
+      "id": "A07",
+      "section": "BAHAGIAN A",
+      "category": "Setuju/Tidak Setuju",
+      "format": "AGREE_DISAGREE",
+      "question": "Setuju atau Tidak Setuju: Percubaan yang gagal masih boleh memberi maklumat untuk percubaan seterusnya.",
+      "options": [
+        "Tidak setuju kerana percubaan gagal tidak memberikan sebarang maklumat.",
+        "Setuju kerana hasil kegagalan boleh menunjukkan perkara yang perlu diubah.",
+        "Setuju hanya jika percubaan itu hampir berjaya.",
+        "Tidak setuju kerana percubaan seterusnya mesti menggunakan kaedah yang sama."
       ],
       "answerIndex": 1,
       "weights": [
@@ -158,38 +185,11 @@
       ],
       "type": "graded",
       "plannedLevel": 4,
-      "constructFamily": "planning",
-      "levelSignal": 4,
-      "contentDomain": "Setuju/Tidak Setuju",
-      "setLevel": 4,
-      "rebuildStatus": "V45.10_PRODUCTION_SET07"
-    },
-    {
-      "id": "A07",
-      "section": "BAHAGIAN A",
-      "category": "Setuju/Tidak Setuju",
-      "format": "AGREE_DISAGREE",
-      "question": "Setuju atau Tidak Setuju: Percubaan yang gagal masih boleh memberi maklumat untuk percubaan seterusnya.",
-      "options": [
-        "Tidak setuju kerana tindakan itu tidak diperlukan dalam keadaan biasa.",
-        "Setuju hanya apabila ketua kumpulan memintanya.",
-        "Setuju kerana tindakan itu membantu membuat keputusan yang lebih baik.",
-        "Tidak setuju kerana keputusan boleh dibuat tanpa pertimbangan tambahan."
-      ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
       "constructFamily": "resilience",
       "levelSignal": 4,
       "contentDomain": "Setuju/Tidak Setuju",
       "setLevel": 4,
-      "rebuildStatus": "V45.10_PRODUCTION_SET07"
+      "rebuildStatus": "V45.10_REPAIRED_HUMAN_REVIEW"
     },
     {
       "id": "A08",
@@ -198,17 +198,17 @@
       "format": "AGREE_DISAGREE",
       "question": "Setuju atau Tidak Setuju: Meminta penjelasan apabila arahan tidak jelas ialah tindakan yang bertanggungjawab.",
       "options": [
-        "Tidak setuju kerana tindakan itu tidak diperlukan dalam keadaan biasa.",
-        "Setuju hanya apabila ketua kumpulan memintanya.",
-        "Tidak setuju kerana keputusan boleh dibuat tanpa pertimbangan tambahan.",
-        "Setuju kerana tindakan itu membantu membuat keputusan yang lebih baik."
+        "Tidak setuju kerana arahan yang tidak jelas patut ditafsir sendiri.",
+        "Setuju kerana mendapatkan penjelasan mengurangkan risiko melakukan tugasan secara salah.",
+        "Setuju hanya jika orang lain juga tidak memahami arahan.",
+        "Tidak setuju kerana bertanya akan melambatkan semua tugasan."
       ],
-      "answerIndex": 3,
+      "answerIndex": 1,
       "weights": [
         0,
+        3,
         0,
-        0,
-        3
+        0
       ],
       "type": "graded",
       "plannedLevel": 4,
@@ -216,7 +216,7 @@
       "levelSignal": 4,
       "contentDomain": "Setuju/Tidak Setuju",
       "setLevel": 4,
-      "rebuildStatus": "V45.10_PRODUCTION_SET07"
+      "rebuildStatus": "V45.10_REPAIRED_HUMAN_REVIEW"
     },
     {
       "id": "A09",
@@ -225,10 +225,10 @@
       "format": "AGREE_DISAGREE",
       "question": "Setuju atau Tidak Setuju: Keputusan yang adil perlu menggunakan kriteria yang sama untuk keadaan yang setara.",
       "options": [
-        "Setuju kerana tindakan itu membantu membuat keputusan yang lebih baik.",
-        "Tidak setuju kerana tindakan itu tidak diperlukan dalam keadaan biasa.",
-        "Setuju hanya apabila ketua kumpulan memintanya.",
-        "Tidak setuju kerana keputusan boleh dibuat tanpa pertimbangan tambahan."
+        "Setuju kerana kriteria yang konsisten membantu mengurangkan pilih kasih.",
+        "Tidak setuju kerana setiap orang patut dinilai menggunakan peraturan berbeza.",
+        "Setuju hanya apabila keputusan itu melibatkan pertandingan.",
+        "Tidak setuju kerana keadilan tidak berkaitan dengan kriteria."
       ],
       "answerIndex": 0,
       "weights": [
@@ -243,7 +243,7 @@
       "levelSignal": 4,
       "contentDomain": "Setuju/Tidak Setuju",
       "setLevel": 4,
-      "rebuildStatus": "V45.10_PRODUCTION_SET07"
+      "rebuildStatus": "V45.10_REPAIRED_HUMAN_REVIEW"
     },
     {
       "id": "A10",
@@ -252,10 +252,10 @@
       "format": "AGREE_DISAGREE",
       "question": "Setuju atau Tidak Setuju: Menilai bukti sebelum menerima sesuatu dakwaan membantu mengelakkan kesimpulan terburu-buru.",
       "options": [
-        "Tidak setuju kerana tindakan itu tidak diperlukan dalam keadaan biasa.",
-        "Setuju kerana tindakan itu membantu membuat keputusan yang lebih baik.",
-        "Setuju hanya apabila ketua kumpulan memintanya.",
-        "Tidak setuju kerana keputusan boleh dibuat tanpa pertimbangan tambahan."
+        "Tidak setuju kerana dakwaan boleh diterima tanpa bukti jika kedengaran meyakinkan.",
+        "Setuju kerana bukti membantu menentukan sama ada sesuatu dakwaan munasabah.",
+        "Setuju hanya jika dakwaan itu datang daripada rakan.",
+        "Tidak setuju kerana menyemak bukti mengambil terlalu banyak masa."
       ],
       "answerIndex": 1,
       "weights": [
@@ -270,7 +270,7 @@
       "levelSignal": 4,
       "contentDomain": "Setuju/Tidak Setuju",
       "setLevel": 4,
-      "rebuildStatus": "V45.10_PRODUCTION_SET07"
+      "rebuildStatus": "V45.10_REPAIRED_HUMAN_REVIEW"
     },
     {
       "id": "A11",
