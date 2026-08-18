@@ -9,4 +9,20 @@
   }
   function patchDashboard(){if(typeof window.renderDashboard==='function'&&!window.renderDashboard.__v56){const original=window.renderDashboard;const fn=function(r){if(r&&r.license)r.license.maxDevices=3;original.call(this,r);const note=document.querySelector('#login .note');if(note)note.textContent='1 pembelian = 1 lesen • Maksimum 3 peranti • Peranti ke-4 akan ditolak automatik • Set 01–50';const d=document.getElementById('devices');if(d&&r?.license)d.textContent=`${r.license.deviceCount||0} / 3`;const di=document.getElementById('deviceInfo');if(di&&r?.license)di.textContent=`${r.license.deviceCount||0} / 3 peranti digunakan`;const p=(r?.progress||[]).slice().sort((a,b)=>Number(a.setNo)-Number(b.setNo)),last=p.filter(x=>x.completed).pop(),resume=document.getElementById('resume');if(resume){resume.dataset.set=String(last?last.setNo:(localStorage.getItem('pksk-selected-set')||1));resume.textContent=last?`▶ ULANG SET ${String(last.setNo).padStart(2,'0')}`:'▶ MULA SET 01'}};fn.__v56=true;window.renderDashboard=fn}}
   patchDashboard();setTimeout(patchDashboard,500);setTimeout(patchDashboard,1500);
+
+  // Mobile bugfix: the navigation backdrop can survive the transition from A+B to C.
+  // Clear it whenever the simulator switches screen so it cannot block the writing editor.
+  function patchShow(){
+    if(typeof window.show!=='function'||window.show.__v56OverlayFix)return;
+    const original=window.show;
+    const fn=function(id){
+      document.body.classList.remove('nav-open');
+      const nav=document.getElementById('navCard');
+      if(nav)nav.classList.remove('mobile-open');
+      return original.apply(this,arguments);
+    };
+    fn.__v56OverlayFix=true;
+    window.show=fn;
+  }
+  patchShow();setTimeout(patchShow,100);setTimeout(patchShow,500);
 })();
