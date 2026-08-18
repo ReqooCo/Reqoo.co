@@ -16,7 +16,7 @@ export async function onRequest(context){
     url.pathname=url.pathname==='/'?'/admin/':url.pathname;
     const response=await context.env.ASSETS.fetch(url);const type=response.headers.get('content-type')||'';
     if(!type.includes('text/html'))return response;
-    return new HTMLRewriter().on('body',{element(el){el.append('<link rel="stylesheet" href="/admin/reqoo-admin-premium.css?v=1.0.1">',{html:true});if(isShopAdmin)el.append('<link rel="stylesheet" href="/shop/admin-premium.css?v=1.0.0">',{html:true})}}).transform(response);
+    return new HTMLRewriter().on('body',{element(el){el.append('<link rel="stylesheet" href="/admin/reqoo-admin-premium.css?v=1.0.1">',{html:true});if(isShopAdmin)el.append('<link rel="stylesheet" href="/shop/admin-premium.css?v=2.0.0">',{html:true})}}).transform(response);
   }
   const response=await context.next();if(host!=='reqoo.co'&&host!=='shop.reqoo.co')return response;const type=response.headers.get('content-type')||'';if(!type.includes('text/html'))return response;const isSimulator=url.pathname==='/simulator'||url.pathname.startsWith('/simulator/');return new HTMLRewriter().on('body',{element(el){if(host==='reqoo.co'&&isSimulator)el.append('<script src="/simulator/js/v58-core.js?v=58"></script>',{html:true});el.append('<script src="/shop/payment-fallback.js?v=4"></script><script src="/shop/payment-fix.js?v=1"></script>',{html:true})}}).transform(response);
 }
