@@ -26,19 +26,42 @@
   }
   patchShow();setTimeout(patchShow,100);setTimeout(patchShow,500);
 
-  // Text-only briefing: disable the spoken instruction before A+B and C.
-  // The existing on-screen instruction remains visible; countdown and exam flow are unchanged.
-  function patchBriefingVoice(){
-    if(typeof window.playAnnouncement!=='function'||window.playAnnouncement.__v57TextOnly)return;
-    const fn=function(key,after){
-      const status=document.getElementById('voiceStatus');
-      if(status)status.textContent='Arahan dipaparkan di skrin. Sila baca sebelum meneruskan.';
-      setTimeout(()=>{if(typeof after==='function')after()},350);
-    };
-    fn.__v57TextOnly=true;
-    window.playAnnouncement=fn;
+  // Text-only briefing: no voice and no countdown. Use an explicit start button.
+  function renderStartButton(label,callback){
+    const box=document.getElementById('count');
+    if(!box)return;
+    box.innerHTML='';
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.textContent=label;
+    btn.style.cssText='display:inline-block;border:0;border-radius:12px;padding:15px 28px;background:#10233f;color:#fff;font-size:15px;font-weight:850;letter-spacing:.02em;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.22)';
+    btn.addEventListener('click',()=>{btn.disabled=true;btn.style.opacity='.65';box.innerHTML='';callback()},{once:true});
+    box.appendChild(btn);
   }
-  patchBriefingVoice();
-  setTimeout(patchBriefingVoice,100);
-  setTimeout(patchBriefingVoice,500);
+  function textBriefing(title,text,label,callback){
+    document.body.classList.remove('nav-open');
+    const nav=document.getElementById('navCard');
+    if(nav)nav.classList.remove('mobile-open');
+    if(typeof window.show==='function')window.show('briefing');
+    const titleEl=document.getElementById('briefingTitle');
+    const textEl=document.getElementById('voiceText');
+    const statusEl=document.getElementById('voiceStatus');
+    if(titleEl)titleEl.textContent=title;
+    if(textEl)textEl.textContent=text;
+    if(statusEl)statusEl.textContent='Arahan dipaparkan di skrin. Sila baca sebelum mula.';
+    renderStartButton(label,callback);
+  }
+  window.beginABBriefing=function(){
+    if(typeof pkskLicense==='function'&&!pkskLicense()){location.href='../access/';return;}
+    if(typeof phase!=='undefined')phase='abBrief';
+    textBriefing('Bahagian A + B','Sila jawab semua soalan Bahagian A dan Bahagian B dengan teliti. Semak jawapan sebelum menghantar. Masa Bahagian A + B ialah 90 minit.','MULA BAHAGIAN A + B',function(){if(typeof startAB==='function')startAB()});
+  };
+  window.finishAB=function(auto){
+    if(typeof phase!=='undefined'&&phase!=='ab')return;
+    if(typeof saveTime==='function')saveTime();
+    if(typeof clearInterval==='function')clearInterval(interval);
+    if(typeof phase!=='undefined')phase='cBrief';
+    const msg=auto?'Masa Bahagian A + B telah tamat. Sila baca arahan Bahagian C.':'Bahagian A + B telah selesai. Sila baca arahan Bahagian C.';
+    textBriefing('Bahagian C — Artikulasi Penulisan',msg+' Tulis sekurang-kurangnya 100 patah perkataan. Pilih satu tajuk sahaja. Masa Bahagian C ialah 45 minit.','MULA BAHAGIAN C',function(){if(typeof startWriting==='function')startWriting()});
+  };
 })();
