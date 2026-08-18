@@ -25,4 +25,20 @@
     window.show=fn;
   }
   patchShow();setTimeout(patchShow,100);setTimeout(patchShow,500);
+
+  // Text-only briefing: disable the spoken instruction before A+B and C.
+  // The existing on-screen instruction remains visible; countdown and exam flow are unchanged.
+  function patchBriefingVoice(){
+    if(typeof window.playAnnouncement!=='function'||window.playAnnouncement.__v57TextOnly)return;
+    const fn=function(key,after){
+      const status=document.getElementById('voiceStatus');
+      if(status)status.textContent='Arahan dipaparkan di skrin. Sila baca sebelum meneruskan.';
+      setTimeout(()=>{if(typeof after==='function')after()},350);
+    };
+    fn.__v57TextOnly=true;
+    window.playAnnouncement=fn;
+  }
+  patchBriefingVoice();
+  setTimeout(patchBriefingVoice,100);
+  setTimeout(patchBriefingVoice,500);
 })();
