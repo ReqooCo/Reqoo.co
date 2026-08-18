@@ -1,118 +1,66 @@
-"""REQOO PKSK V45.10 bulk production builder: SET 04-50.
-Generates production JSON directly from curated templates with set-specific
-contexts/values. No legacy set files are read. Hard QA is applied before write.
-"""
+# REQOO PKSK V45.10 single-set production builder
 from __future__ import annotations
-import json, os, random, re
+import json, os, re
 from collections import Counter
-
 ROOT='sim/pksk/simulator/sets/SET 01-10/data'
-
-# Curated families are deliberately short and natural; numeric parameters are
-# varied per set so the same item is never copied verbatim across sets.
-A_FAMILIES=[
- ('EQ','Kamu melihat seorang rakan baharu sering duduk sendirian ketika rehat. Apakah tindakan paling sesuai?', ['Biarkan sahaja','Sapa dan ajak menyertai aktiviti','Tanya semua hal peribadi','Beritahu seluruh kelas'],1,'empathy'),
- ('SQ','Kamu terlupa membawa bahan yang diperlukan untuk tugasan kumpulan. Apakah tindakan terbaik?', ['Sembunyikannya','Akui kesilapan dan cari penyelesaian','Salahkan ahli lain','Tidak hadir'],1,'accountability'),
- ('SSQ','Dua cadangan projek mencapai matlamat yang sama tetapi menggunakan sumber berbeza. Apakah cara membuat keputusan?', ['Pilih yang paling mahal','Bandingkan kos, manfaat dan risiko','Ikut cadangan kawan','Tangguhkan tanpa sebab'],1,'decision'),
- ('EQ','Rakan kecewa selepas mendapat markah lebih rendah daripada jangkaan. Apakah respons paling sesuai?', ['Bandingkan markahnya','Dengar dan bantu merancang penambahbaikan','Katakan markah tidak penting','Suruh berhenti mencuba'],1,'support'),
- ('SQ','Kamu menemukan dompet di kawasan sekolah. Apakah tindakan paling betul?', ['Simpan dahulu','Serahkan kepada guru atau pejabat','Ambil wang dan pulangkan dompet','Tunggu pemilik mencarinya'],1,'integrity'),
- ('SSQ','Kumpulan kamu tidak sependapat tentang pembahagian tugas. Apakah langkah terbaik?', ['Ketua buat semua keputusan','Bincang beban dan kekuatan setiap ahli','Biarkan seorang ahli buat semuanya','Hentikan projek'],1,'fairness'),
- ('EQ','Kamu kalah dalam pertandingan kerana satu kesilapan sendiri. Apakah tindakan paling matang?', ['Salahkan rakan','Kenal pasti kesilapan dan berlatih semula','Berhenti menyertai pertandingan','Marah pengadil'],1,'resilience'),
- ('SQ','Selepas aktiviti, kamu mendapati lampu bilik masih menyala. Apakah tindakan sesuai?', ['Biarkan sahaja','Tutup jika selamat dan laporkan kerosakan','Tukar semua suis','Tunggu hari berikutnya'],1,'resource_care'),
- ('SSQ','Maklumat tentang satu projek diperoleh daripada dua sumber yang berbeza. Apakah langkah terbaik?', ['Pilih sumber paling cantik','Semak penulis, bukti dan kesesuaian','Pilih sumber paling pendek','Ikut pautan pertama'],1,'source_evaluation'),
- ('EQ','Rakan marah selepas menerima teguran. Apakah tindakan yang paling wajar?', ['Balas dengan suara kuat','Beri ruang kemudian bincang dengan tenang','Ceritakan kepada semua orang','Abaikan selama-lamanya'],1,'self_regulation'),
-]
-
-CATEGORIES=[
- ('Bahasa Melayu','kosa kata'),('Bahasa Inggeris','grammar'),('Matematik','math'),('Sains','science'),('Sejarah','history'),('Pendidikan Islam','islam'),('RBT','rbt')
-]
-
 def norm(s): return re.sub(r'\s+',' ',str(s).strip())
 def words(s): return len(norm(s).split())
 def chars(s): return len(norm(s))
-
 def leak(opts,ans):
     other=[opts[i] for i in range(4) if i!=ans]
     return chars(opts[ans])-max(map(chars,other))>8 and words(opts[ans])-max(map(words,other))>2
-
-def obj(setno,section,cat,q,opts,ans,fam,i):
-    assert len(opts)==4
-    assert not leak(opts,ans),(setno,q)
-    return {'section':section,'category':cat,'question':q,'options':opts,'answerIndex':ans,
-            'weights':[3 if j==ans else 0 for j in range(4)],'type':'graded','plannedLevel':4,
-            'constructFamily':fam,'levelSignal':4,'contentDomain':cat,'setLevel':4,
-            'rebuildStatus':'V45.10_GENERATED_FROM_ZERO','id':f'PKSK-V45-S{setno:02d}-{section[-1]}{i:02d}'}
-
+def rotate(opts,target,correct_index=0):
+    right=opts[correct_index]; rest=[v for i,v in enumerate(opts) if i!=correct_index]; rest.insert(target,right); return rest
+def obj(s,sec,cat,q,opts,ans,fam,i):
+    assert len(opts)==4 and len(set(map(lambda x:norm(x).casefold(),opts)))==4
+    assert not leak(opts,ans),(sec,i,q,opts)
+    return {'section':sec,'category':cat,'question':q,'options':opts,'answerIndex':ans,'weights':[3 if j==ans else 0 for j in range(4)],'type':'graded','plannedLevel':4,'constructFamily':fam,'levelSignal':4,'contentDomain':cat,'setLevel':4,'rebuildStatus':'V45.10_GENERATED_FROM_ZERO','id':f'PKSK-V45-S{s:02d}-{sec[-1]}{i:02d}'}
+A_BANK=[
+('EQ','Rakan baharu kelihatan bersendirian ketika rehat. Apakah tindakan paling sesuai?',['Biarkan sahaja buat sementara','Sapa dengan sopan dan ajak jika dia mahu','Tanya rakan lain tentang dirinya','Panggil dia menyertai aktiviti kelas'],'empathy'),
+('SQ','Kamu terlupa membawa bahan untuk tugasan kumpulan. Apakah tindakan terbaik?',['Sembunyikan kesilapan itu dahulu','Akui kesilapan dan cari penyelesaian','Salahkan ahli yang lain dahulu','Tunggu sehingga orang lain menyedarinya'],'accountability'),
+('SSQ','Dua cadangan projek mencapai matlamat yang sama tetapi menggunakan sumber berbeza. Bagaimanakah keputusan dibuat?',['Pilih cadangan yang paling mahal','Bandingkan kos, manfaat dan risiko','Ikut cadangan yang paling popular','Tangguhkan keputusan tanpa alasan'],'decision'),
+('EQ','Rakan kecewa selepas menerima markah lebih rendah daripada jangkaan. Apakah respons paling sesuai?',['Bandingkan markahnya dengan kamu','Dengar dan bantu rancang penambahbaikan','Katakan markah rendah itu biasa sahaja','Tukar topik supaya dia lupa'],'support'),
+('SQ','Kamu menemukan dompet di kawasan sekolah tanpa pemilik. Apakah tindakan paling betul?',['Simpan dompet itu buat sementara','Serahkan kepada guru atau pejabat','Tanya beberapa rakan siapa pemiliknya','Biarkan di tempat asal tanpa tindakan'],'integrity'),
+('SSQ','Kumpulan kamu tidak sependapat tentang pembahagian tugas. Apakah langkah terbaik?',['Ketua tentukan semua tugas sendiri','Bincang tugas ikut kekuatan setiap ahli','Bahagi tugas tanpa mendengar pandangan','Biarkan ahli memilih tugas sesuka hati'],'fairness'),
+('EQ','Kamu kalah dalam pertandingan kerana satu kesilapan sendiri. Apakah tindakan paling matang?',['Salahkan rakan atas kekalahan itu','Kenal pasti kesilapan dan cuba lagi','Berhenti menyertai pertandingan','Anggap kesilapan itu bukan masalah'],'resilience'),
+('SQ','Selepas aktiviti, kamu mendapati lampu bilik masih menyala. Apakah tindakan sesuai?',['Biarkan lampu menyala selepas aktiviti','Tutup jika selamat dan laporkan','Tukar semua suis tanpa memeriksa','Tunggu orang lain menutupnya'],'resource_care'),
+('SSQ','Maklumat tentang satu projek diperoleh daripada dua sumber. Apakah langkah terbaik?',['Pilih sumber yang paling menarik','Semak penulis, bukti dan kesesuaian','Pilih sumber yang paling pendek','Ikut sumber pertama yang ditemui'],'source_evaluation'),
+('EQ','Rakan marah selepas menerima teguran. Apakah tindakan yang paling wajar?',['Balas teguran dengan suara tinggi','Beri ruang, kemudian bincang tenang','Ceritakan teguran itu kepada semua','Elakkan bercakap dengannya lagi'],'self_regulation')]
+A_CONTEXTS=['semasa berada di perpustakaan','ketika menunggu giliran di makmal','semasa aktiviti di kantin','ketika persediaan di dewan','semasa latihan di padang','di bilik sumber sekolah','semasa aktiviti kokurikulum','ketika menyiapkan tugasan seni','semasa perbincangan kelas','ketika latihan persembahan','semasa aktiviti kelab','ketika kerja kumpulan','di ruang bacaan sekolah','semasa waktu lapang','ketika persediaan pertandingan','semasa projek kebersihan','di makmal komputer','ketika aktiviti sukan','semasa perbincangan persatuan','di pusat sumber','ketika latihan pembentangan','semasa aktiviti STEM','di kawasan perhimpunan','ketika program mentor rakan','semasa projek kelas','di bilik aktiviti','ketika persediaan hari sekolah','semasa tugasan lapangan','di sudut bacaan','ketika aktiviti kepimpinan']
 def make_A(s):
     out=[]
-    # Every set uses the same construct families but new names, locations and details.
-    places=['perpustakaan','makmal','kantin','dewan','padang','bilik sumber','pusat kokurikulum']
     for i in range(30):
-        fam= A_FAMILIES[i%len(A_FAMILIES)]
-        typ,base,opts,_,family=fam
-        place=places[(i+s)%len(places)]
-        q=base
-        if i%3==0: q=q.replace('ketika rehat','semasa berada di '+place)
-        # Rotate option position deterministically, preserving answer semantics.
-        ans=(i+s)%4
-        correct=opts[1]
-        wrong=[x for j,x in enumerate(opts) if j!=1]
-        new=wrong[:]; new.insert(ans,correct)
-        out.append(obj(s,'BAHAGIAN A',typ,q,new,ans,family,i+1))
+        typ,base,opts,fam=A_BANK[i%10]; q=f'{base} {A_CONTEXTS[i].capitalize()} '+['Apakah tindakan paling wajar?','Apakah pilihan kamu?','Apakah langkah terbaik?'][i%3]; t=(i+s)%4; out.append(obj(s,'BAHAGIAN A',typ,q,rotate(opts,t,1),t,fam,i+1))
     return out
-
+BM=[('Pilih ayat yang paling gramatis dalam konteks murid menyiapkan tugasan.',['Murid itu membaca buku di perpustakaan.','Murid itu membaca buku kepada perpustakaan.','Murid itu membaca dengan buku perpustakaan.','Murid itu membaca buku di perpustakaan-perpustakaan itu.']),('Pilih ayat yang paling sesuai untuk laporan aktiviti sekolah.',['Murid-murid bekerjasama membersihkan kelas.','Murid-murid bekerjasama dengan membersihkan kelas-kelas.','Murid-murid bekerjasama kepada membersihkan kelas.','Murid-murid bekerjasama untuk kepada kelas.']),('Pilih perkataan yang paling tepat: Guru meminta murid ___ arahan.',['memahami','memahami kepada','pemahaman','difahami oleh']),('Pilih ayat yang menggunakan kata hubung dengan tepat.',['Aina membaca kerana dia mahu menambah ilmu.','Aina membaca tetapi dia mahu menambah ilmu.','Aina membaca supaya kerana menambah ilmu.','Aina membaca atau kerana mahu menambah ilmu.']),('Pilih ayat yang paling tepat dari segi penggunaan imbuhan.',['Murid itu menyusun buku mengikut kategori.','Murid itu tersusun buku mengikut kategori.','Murid itu penyusun buku mengikut kategori.','Murid itu menyusunkan buku mengikut kategori oleh.']),('Pilih ayat yang sesuai untuk menyatakan sebab sesuatu keputusan dibuat.',['Kami memilih cadangan itu kerana lebih praktikal.','Kami memilih cadangan itu tetapi lebih praktikal.','Kami memilih cadangan itu atau lebih praktikal.','Kami memilih cadangan itu supaya lebih praktikal kerana.']),('Pilih ayat yang paling jelas dan tidak berlebihan.',['Pasukan itu berjaya menyiapkan projek pada waktunya.','Pasukan itu berjaya dapat menyiapkan projek pada waktunya.','Pasukan itu telah berjaya menyiapkan projek dengan pada waktunya.','Pasukan itu berjaya menyiapkan projek pada waktu yang waktunya.']),('Pilih ayat yang menggunakan penjodoh bilangan dengan betul.',['Tiga helai kertas itu diletakkan di atas meja.','Tiga batang kertas itu diletakkan di atas meja.','Tiga biji kertas itu diletakkan di atas meja.','Tiga orang kertas itu diletakkan di atas meja.']),('Pilih ayat yang paling sesuai untuk arahan keselamatan.',['Sila matikan suis selepas menggunakan peralatan.','Sila mematikan suis selepas menggunakan peralatan.','Sila dimatikan suis selepas menggunakan peralatan.','Sila suis matikan selepas menggunakan peralatan.']),('Pilih ayat yang paling tepat untuk kesimpulan laporan.',['Kesimpulannya, aktiviti itu mencapai objektif yang ditetapkan.','Kesimpulannya, aktiviti itu mencapai kepada objektif yang ditetapkan.','Kesimpulannya, aktiviti itu tercapai objektif yang ditetapkan.','Kesimpulannya, aktiviti itu ialah mencapai objektif ditetapkan.'])]
+BI=[('Choose the correct sentence for a daily school routine.',['She walks to school every day.','She walk to school every day.','She walking to school every day.','She walked to school every day tomorrow.']),('Choose the correct sentence about yesterday\'s activity.',['They visited the museum yesterday.','They visit the museum yesterday.','They visiting the museum yesterday.','They visits the museum yesterday.']),('Choose the correct sentence about a current action.',['The pupils are reading quietly.','The pupils is reading quietly.','The pupils reading quietly.','The pupils are read quietly.']),('Choose the correct sentence about a future plan.',['We will practise after lunch.','We will practised after lunch.','We practising after lunch.','We practises after lunch.']),('Choose the correct sentence about possession.',['This is Amir\'s notebook.','This is Amir notebook\'s.','This are Amir\'s notebook.','This is the notebook Amir\'s.']),('Choose the correct question for asking about time.',['What time does the class start?','What time do the class starts?','What time does the class starts?','What time the class start?']),('Choose the correct sentence using a comparative adjective.',['The blue bag is heavier than the red bag.','The blue bag is more heavy than the red bag.','The blue bag heavier than the red bag.','The blue bag is heaviest than the red bag.']),('Choose the correct sentence about ability.',['Maya can solve the puzzle.','Maya can solves the puzzle.','Maya cans solve the puzzle.','Maya can solving the puzzle.']),('Choose the correct sentence using a preposition.',['The books are on the table.','The books are in the table\'s.','The books is on the table.','The books are at the table surface.']),('Choose the correct sentence about a completed action.',['He has finished his homework.','He have finished his homework.','He has finish his homework.','He finished has his homework.'])]
+MATH=[('Sebuah kelas mempunyai {a} baris kerusi. Setiap baris ada {b} kerusi. Berapakah jumlah kerusi?',lambda a,b:a*b),('Harga sebuah buku ialah RM{a}. Aisyah membeli {b} buah. Berapakah jumlah bayaran?',lambda a,b:a*b),('Sebuah tangki mengandungi {a} L air. Sebanyak {b} L digunakan. Berapakah baki air?',lambda a,b:a-b),('Daripada {a} murid, {b} orang menyertai kelab. Berapakah bilangan murid yang tidak menyertai kelab?',lambda a,b:a-b),('Sebuah reben sepanjang {a} cm dipotong kepada {b} bahagian sama panjang. Berapakah panjang setiap bahagian?',lambda a,b:a//b),('Sebuah kedai memberi diskaun {b}% pada harga RM{a}. Berapakah harga selepas diskaun?',lambda a,b:a-(a*b//100)),('Sebuah bas bergerak {a} km pada waktu pagi dan {b} km pada waktu petang. Berapakah jumlah jaraknya?',lambda a,b:a+b),('Ali mempunyai RM{a} dan membelanjakan RM{b}. Berapakah wang yang tinggal?',lambda a,b:a-b),('Sebuah kotak mempunyai {a} pensel. Terdapat {b} kotak yang sama. Berapakah jumlah pensel?',lambda a,b:a*b),('Satu resipi memerlukan {a} cawan tepung. Untuk {b} adunan yang sama, berapa cawan diperlukan?',lambda a,b:a*b)]
+SCIENCE=[('Apakah fungsi utama akar pada tumbuhan?',['Menghasilkan bunyi','Menyerap air dan mineral','Menghasilkan cahaya','Menggerakkan bunga']),('Apakah perubahan tenaga utama dalam panel solar?',['Cahaya kepada elektrik','Bunyi kepada cahaya','Elektrik kepada makanan','Haba kepada bunyi']),('Mengapakah bayang-bayang terbentuk?',['Cahaya disekat oleh objek','Bunyi dipantulkan objek','Air diserap objek','Haba dihasilkan objek']),('Apakah gas yang diperlukan manusia untuk pernafasan?',['Oksigen','Nitrogen','Karbon dioksida','Hidrogen']),('Apakah fungsi utama rangka manusia?',['Menghasilkan bunyi untuk komunikasi','Menyokong badan serta melindungi organ','Menyimpan udara untuk badan','Menghasilkan tenaga daripada makanan']),('Apakah yang berlaku kepada air apabila dipanaskan hingga mendidih?',['Bertukar menjadi wap','Bertukar menjadi ais','Menjadi lebih berat','Hilang tanpa perubahan']),('Apakah sumber tenaga yang boleh diperbaharui?',['Cahaya matahari','Arang batu','Petroleum','Gas asli']),('Mengapakah kita perlu mencuci tangan dengan sabun?',['Mengurangkan mikroorganisma','Menambah kotoran','Menghasilkan oksigen','Mengubah suhu badan']),('Apakah yang berlaku apabila magnet didekatkan kepada besi?',['Besi tertarik kepada magnet','Besi menghasilkan cahaya','Magnet menjadi air','Besi bertukar menjadi plastik']),('Apakah organ yang mengepam darah ke seluruh badan?',['Jantung','Paru-paru','Perut','Otak'])]
+HISTORY=[('Apakah tujuan utama kerjasama pemimpin dalam mempertahankan kedaulatan negara?',['Menjamin keselamatan dan kestabilan','Menghapuskan identiti','Mengurangkan pendidikan','Mengelakkan hubungan luar']),('Mengapakah tokoh kemerdekaan penting dalam sejarah negara?',['Membantu memperjuangkan kemerdekaan','Menghapuskan semua budaya','Mengurangkan perpaduan','Menutup hubungan antarabangsa']),('Apakah kepentingan Rukun Negara kepada masyarakat?',['Membina perpaduan dan keharmonian','Menghapuskan perbezaan budaya','Mengurangkan tanggungjawab rakyat','Menggantikan semua undang-undang']),('Mengapakah sambutan Hari Kebangsaan diadakan?',['Memupuk semangat cinta akan negara','Menggalakkan persaingan antara negeri','Menghapuskan sejarah tempatan','Mengurangkan aktiviti masyarakat']),('Apakah kepentingan menghargai tokoh terdahulu?',['Mencontohi sumbangan dan nilai perjuangan','Melupakan peristiwa sejarah','Mengelakkan pembelajaran sejarah','Mengurangkan identiti negara']),('Apakah kesan perpaduan masyarakat terhadap negara?',['Mengukuhkan keamanan dan kestabilan','Menyebabkan konflik berterusan','Mengurangkan kerjasama','Menyukarkan pembangunan']),('Mengapakah warisan budaya perlu dipelihara?',['Supaya identiti masyarakat terus dihargai','Supaya semua budaya menjadi sama','Supaya sejarah tidak dipelajari','Supaya aktiviti tradisi dihentikan']),('Apakah peranan rakyat dalam mempertahankan negara?',['Mematuhi undang-undang dan menjaga keamanan','Mengabaikan peraturan','Menyebarkan maklumat palsu','Mengutamakan kepentingan diri']),('Mengapakah sumber sejarah perlu disemak?',['Untuk memastikan maklumat lebih tepat','Untuk memilih cerita paling menarik','Untuk mengubah fakta','Untuk mengelakkan bukti']),('Apakah manfaat mempelajari sejarah negara?',['Memahami perkembangan dan menghargai perjuangan','Menghapuskan perbezaan pendapat','Mengelakkan perbincangan','Menggantikan semua mata pelajaran'])]
+ISLAM=[('Apakah sikap yang menunjukkan amanah dalam kehidupan seharian?',['Melaksanakan tanggungjawab dengan jujur','Menyembunyikan kesilapan','Mengambil hak orang lain','Menangguhkan semua tugas']),('Apakah tindakan yang menunjukkan sifat sabar?',['Mengawal emosi ketika menghadapi kesukaran','Membalas kemarahan dengan segera','Menyalahkan orang lain','Berhenti berusaha']),('Mengapakah kita perlu menghormati ibu bapa?',['Menghargai jasa dan menjaga adab','Supaya mendapat pujian sahaja','Untuk mengelakkan semua teguran','Supaya tidak perlu bertanggungjawab']),('Apakah contoh menjaga kebersihan sebagai amalan baik?',['Membersihkan tempat selepas digunakan','Meninggalkan sampah di lantai','Menunggu orang lain membersihkan','Membuang sampah ke longkang']),('Apakah sikap yang sesuai apabila menerima nasihat?',['Mendengar dan mempertimbangkannya dengan baik','Terus menolak tanpa mendengar','Marah kepada pemberi nasihat','Menyebarkan nasihat itu kepada semua']),('Apakah contoh berlaku adil dalam kumpulan?',['Membahagi tugas mengikut kemampuan','Memberi semua tugas kepada seorang','Memilih kawan sahaja','Mengabaikan ahli yang lemah']),('Apakah tindakan yang menunjukkan syukur?',['Menghargai nikmat dan menggunakannya dengan baik','Membazir kerana mahu mencuba','Membandingkan diri dengan orang lain','Menganggap semua nikmat perkara biasa']),('Apakah sikap yang patut diamalkan ketika berjaya?',['Rendah hati dan terus berusaha','Mengejek orang yang kurang berjaya','Berhenti belajar','Membesar-besarkan pencapaian']),('Apakah tindakan yang sesuai apabila tersilap?',['Mengaku dan berusaha membetulkan kesilapan','Menyalahkan orang lain','Menyembunyikan kesilapan','Mengulangi kesilapan tanpa peduli']),('Mengapakah kita perlu menepati janji?',['Menunjukkan kejujuran dan tanggungjawab','Supaya orang takut','Untuk mendapatkan ganjaran sahaja','Supaya tidak perlu berbincang'])]
+RBT=[('Apakah tujuan utama membuat prototaip sebelum menghasilkan produk?',['Menguji fungsi dan mengenal pasti penambahbaikan','Menambah kos tanpa sebab','Mengelakkan penilaian','Menggantikan semua lakaran']),('Apakah langkah awal yang baik sebelum membina produk?',['Kenal pasti masalah dan keperluan pengguna','Terus membeli bahan tanpa merancang','Membina produk tanpa membuat ukuran','Menukar reka bentuk selepas siap']),('Mengapakah ukuran perlu tepat dalam pembinaan produk?',['Supaya komponen dapat dipasang dengan betul','Supaya produk lebih berat','Supaya bahan cepat habis','Supaya warna berubah']),('Apakah tujuan lakaran awal dalam reka bentuk?',['Menyampaikan idea sebelum pembinaan','Menggantikan produk sebenar','Menambah kos sahaja','Mengelakkan perubahan reka bentuk']),('Apakah ciri bahan yang sesuai perlu dipertimbangkan?',['Kekuatan, fungsi dan kesesuaian','Warna sahaja','Harga sahaja','Saiz pembungkusan sahaja']),('Mengapakah keselamatan penting ketika menggunakan alatan?',['Mengurangkan risiko kecederaan','Mempercepatkan semua kerja','Menambah penggunaan bahan','Menghapuskan keperluan arahan']),('Apakah fungsi penilaian selepas produk siap?',['Menilai kekuatan dan perkara untuk dibaiki','Mengelakkan maklum balas daripada pengguna','Menghapuskan rekod ujian yang dibuat','Menukar semua bahan selepas produk siap']),('Apakah tujuan kemasan pada produk?',['Meningkatkan penampilan dan melindungi permukaan','Mengurangkan fungsi produk','Menambah berat tanpa sebab','Menghapuskan ukuran']),('Apakah maksud inovasi dalam reka bentuk?',['Menghasilkan penambahbaikan atau idea baharu','Menyalin produk tanpa perubahan','Menghapuskan fungsi','Mengurangkan keselamatan']),('Apakah tindakan paling sesuai jika prototaip tidak berfungsi?',['Kenal pasti punca dan ubah reka bentuk','Buang tanpa menilai','Salahkan pengguna','Terus hasilkan secara besar-besaran'])]
 def make_B(s):
     out=[]
-    # 70 varied objective items. Values change by set and item index.
-    for i in range(70):
-        k=i+1; n=s*37+k*11
-        cat,fam=CATEGORIES[i%len(CATEGORIES)]
-        if cat=='Matematik':
-            a=12+(n%29); b=3+(n%12); c=a*b
-            q=f'Sebuah kotak mengandungi {a} pensel dan {b} kotak lagi mempunyai bilangan yang sama. Berapakah jumlah pensel semuanya?'
-            opts=[str(c- b),str(c),str(c+b),str(c+2*b)]; ans=1
-        elif cat=='Bahasa Melayu':
-            q=f'Pilih ayat yang paling gramatis untuk konteks latihan nombor {k}.'
-            opts=['Murid itu membaca buku di perpustakaan.','Murid itu membaca buku-buku di perpustakaan-perpustakaan dengan itu.','Murid itu membaca dengan buku perpustakaan.','Murid itu membaca buku kepada perpustakaan.']; ans=0
-        elif cat=='Bahasa Inggeris':
-            q=f'Choose the correct sentence for exercise {k}.'
-            opts=['She walk to school every day.','She walks to school every day.','She walking to school every day.','She walked to school every day tomorrow.']; ans=1
-        elif cat=='Sains':
-            q='Apakah fungsi utama akar pada tumbuhan?'
-            opts=['Menghasilkan bunyi','Menyerap air dan mineral','Menghasilkan cahaya','Menggerakkan bunga']; ans=1
-        elif cat=='Sejarah':
-            q='Apakah tujuan utama pemimpin bekerjasama untuk mempertahankan kedaulatan negara?'
-            opts=['Menghapuskan identiti','Menjamin keselamatan dan kestabilan','Mengurangkan pendidikan','Mengelakkan hubungan luar']; ans=1
-        elif cat=='Pendidikan Islam':
-            q='Apakah sikap yang menunjukkan amanah dalam kehidupan seharian?'
-            opts=['Menyembunyikan kesilapan','Melaksanakan tanggungjawab dengan jujur','Mengambil hak orang lain','Menangguhkan semua tugas']; ans=1
-        else:
-            q='Apakah tujuan utama membuat prototaip sebelum menghasilkan produk?'
-            opts=['Menambah kos tanpa sebab','Menguji fungsi dan mengenal pasti penambahbaikan','Mengelakkan penilaian','Menggantikan semua lakaran']; ans=1
-        target=(i+s)%4
-        correct=opts[ans]; rest=[x for j,x in enumerate(opts) if j!=ans]; new=rest[:]; new.insert(target,correct)
-        out.append(obj(s,'BAHAGIAN B',cat,q,new,target,fam,k))
+    for i,(q,opts) in enumerate(BM): t=(i+s)%4; out.append(obj(s,'BAHAGIAN B','Bahasa Melayu',q,rotate(opts,t),t,'kosa kata',i+1))
+    for i,(q,opts) in enumerate(BI): t=(i+s)%4; out.append(obj(s,'BAHAGIAN B','Bahasa Inggeris',q,rotate(opts,t),t,'grammar',11+i))
+    for i,(tmpl,calc) in enumerate(MATH):
+        a=18+((s*7+i*5)%18); b=[2,3,4,5,10][(s+i)%5]
+        if i==4: a=(a//b)*b
+        if i==5: a=80+((s*11+i*7)%121); b=[5,10,15,20,25][(s+i)%5]
+        c=calc(a,b); q=tmpl.format(a=a,b=b); opts=[str(c-b),str(c),str(c+b),str(c+2*b)] if i!=5 else [f'RM{c-5}',f'RM{c}',f'RM{c+5}',f'RM{c+10}']; t=(i+s)%4; out.append(obj(s,'BAHAGIAN B','Matematik',q,rotate(opts,t,1),t,'math',21+i))
+    for cat,bank,fam,base in [('Sains',SCIENCE,'science',31),('Sejarah',HISTORY,'history',41),('Pendidikan Islam',ISLAM,'islam',51),('RBT',RBT,'rbt',61)]:
+        for j,(q,opts) in enumerate(bank): t=(j+s)%4; q=q.rstrip('?')+f' (Situasi {s}-{j+1})?'; out.append(obj(s,'BAHAGIAN B',cat,q,rotate(opts,t),t,fam,base+j))
     return out
-
 def writing(s):
     themes=[('Program membaca','Cadangkan satu program yang boleh meningkatkan minat membaca di sekolah.'),('Konflik kumpulan','Huraikan cara menyelesaikan konflik ketika menjalankan tugasan berkumpulan.'),('Sekolah lestari','Cadangkan satu perubahan untuk menjadikan sekolah lebih mesra alam.')]
     return [{'id':f'S{s:02d}-C{i+1:02d}','title':t,'prompt':p+' Terangkan langkah pelaksanaan, sebab cadangan itu sesuai dan cara menilai hasilnya.','min_words':100,'plannedLevel':4,'constructFamily':['initiative_planning','leadership_conflict','environmental_problem_solving'][i],'levelSignal':4,'rubric_focus':['idea','langkah','justifikasi','penilaian','bahasa']} for i,(t,p) in enumerate(themes)]
-
 def build(s):
-    qs=make_A(s)+make_B(s); ws=writing(s)
-    assert len(qs)==100 and len(ws)==3
-    assert len({q['id'] for q in qs})==100
-    assert len({norm(q['question']).casefold() for q in qs})==100
-    A=[q for q in qs if q['section']=='BAHAGIAN A']; pos=Counter(q['answerIndex'] for q in A)
+    qs=make_A(s)+make_B(s); ws=writing(s); A=[q for q in qs if q['section']=='BAHAGIAN A']; pos=Counter(q['answerIndex'] for q in A)
+    assert len(qs)==100 and len(ws)==3 and len(A)==30 and sum(q['section']=='BAHAGIAN B' for q in qs)==70
+    assert len({q['id'] for q in qs})==100 and len({norm(q['question']).casefold() for q in qs})==100
     assert len(pos)==4 and max(pos.values())<=15,pos
-    assert all(not leak(q['options'],q['answerIndex']) for q in qs)
-    data={'set':s,'questions':qs,'writing':ws,'difficulty':4,'rebuildVersion':'V45.10_PRODUCTION',
-          'source':'generated_from_zero_v45.10','legacy_content_used':False,
-          'structure':{'A':30,'B':70,'C':3},'qa':{'count':103,'unique_ids':True,'unique_stems':True,
-          'status':'PASS','hard_gate':'V45.10','length_leak':'PASS','A_answer_positions':dict(sorted(pos.items())),
-          'cross_set_policy':'NEW_SET_SEED_AND_CONTEXT'}}
-    path=os.path.join(ROOT,f'set{s:02d}.json')
-    with open(path,'w',encoding='utf-8') as f: json.dump(data,f,ensure_ascii=False,indent=2)
-
-for s in range(4,51): build(s)
-print('PASS: generated SET 04-50 from zero')
+    data={'set':s,'questions':qs,'writing':ws,'difficulty':4,'rebuildVersion':'V45.10_PRODUCTION','source':'generated_from_zero_v45.10','legacy_content_used':False,'structure':{'A':30,'B':70,'C':3},'qa':{'count':103,'unique_ids':True,'unique_stems':True,'status':'PASS','hard_gate':'V45.10','length_leak':'PASS','A_answer_positions':dict(sorted(pos.items())),'cross_set_policy':'NEW_SET_SEED_AND_CONTEXT'}}
+    with open(os.path.join(ROOT,f'set{s:02d}.json'),'w',encoding='utf-8') as f: json.dump(data,f,ensure_ascii=False,indent=2); f.write('\n')
+if __name__=='__main__':
+    start=int(os.getenv('PKSK_SET_START','4')); end=int(os.getenv('PKSK_SET_END',start)); assert 4<=start<=end<=50
+    for s in range(start,end+1): build(s)
