@@ -12,6 +12,26 @@ export const SHOP_PROMOTIONS = [
   { code:'WELCOME5', type:'fixed', value:5, minSpend:50, label:'RM5 OFF', active:true }
 ];
 
+export const REQOO_WHATSAPP_BUSINESS = '60103982803';
+
+// Safety net: normalise any legacy customer-facing WhatsApp link in the Shop page
+// to the single official REQOO business number.
+if(typeof document !== 'undefined'){
+  const normalizeWhatsAppLinks=()=>{
+    document.querySelectorAll('a[href*="wa.me/"]').forEach(a=>{
+      try{
+        const u=new URL(a.href,location.href);
+        if(u.hostname==='wa.me'){
+          u.pathname='/'+REQOO_WHATSAPP_BUSINESS;
+          a.href=u.toString();
+        }
+      }catch(_){/* ignore malformed links */}
+    });
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',normalizeWhatsAppLinks,{once:true});
+  else normalizeWhatsAppLinks();
+}
+
 export function findProduct(sku){return SHOP_CATALOG.find(p=>p.sku===String(sku||'').toUpperCase())||null;}
 export function calculateCart(items=[]){return items.reduce((total,item)=>{const p=findProduct(item.sku);const qty=Math.max(1,Number(item.qty||1));const price=Number(item.unitPrice ?? p?.from ?? 0);return total+(Number.isFinite(price)&&price>=0?price*qty:0)},0)}
 export function findPromotion(code,subtotal){const c=String(code||'').trim().toUpperCase();const p=SHOP_PROMOTIONS.find(x=>x.active&&x.code===c);if(!p)return {ok:false,discount:0};if(subtotal<Number(p.minSpend||0))return {ok:false,discount:0,message:`Minimum spend RM ${Number(p.minSpend).toFixed(2)}`};const discount=p.type==='percent'?subtotal*(Number(p.value)/100):Number(p.value);return {ok:true,discount:Math.min(discount,subtotal),label:p.label,code:p.code};}
