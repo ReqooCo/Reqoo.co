@@ -1,8 +1,6 @@
 name: PKSK V45.10 Generator
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
     inputs:
       set_number:
@@ -15,11 +13,10 @@ permissions:
   contents: write
 
 env:
-  PKSK_SET_RUN: ${{ inputs.set_number || '5' }}
+  PKSK_SET_RUN: ${{ inputs.set_number }}
 
 jobs:
   build:
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'AUTO_SET_05')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -94,5 +91,9 @@ jobs:
           git config user.name ReqooCo
           git config user.email actions@github.com
           git add "sim/pksk/simulator/sets/SET 01-10/data/set${PKSK_SET}.json"
+          if git diff --cached --quiet; then
+            echo "No production JSON changes to publish."
+            exit 0
+          fi
           git commit -m "build(pksk): publish V45.10 Set ${PKSK_SET} production"
           git push origin main
