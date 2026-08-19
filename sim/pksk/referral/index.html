@@ -4,20 +4,21 @@
 const API_URL="/api/referral";
 const $=id=>document.getElementById(id);
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function referralLink(code){return location.origin+"/pksk/?ref="+encodeURIComponent(code)}
+function referralLink(code){return location.origin+"/pksk/payment/?ref="+encodeURIComponent(code)}
 $("submit").onclick=async()=>{
  const name=$("name").value.trim(),whatsapp=$("whatsapp").value.trim(),bank=$("bank").value.trim(),account=$("account").value.trim();
  if(!name||!whatsapp||!bank||!account){$("msg").innerHTML='<div class="errorbox">Lengkapkan semua maklumat.</div>';return}
- $("submit").disabled=true;$("msg").textContent="Mendaftar…";$("result").classList.add('hidden');
+ $("submit").disabled=true;$("submit").textContent="Mendaftar…";$("msg").textContent="";$("result").classList.add('hidden');
  try{
    const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'registerReferral',name,whatsapp,bank,account})}).then(x=>x.json());
-   if(!r.ok){$("submit").disabled=false;$("msg").innerHTML='<div class="errorbox">'+esc(r.error||'Pendaftaran gagal.')+'</div>';return}
+   if(!r.ok){$("submit").disabled=false;$("submit").textContent='DAFTAR REFERRAL';$("msg").innerHTML='<div class="errorbox">'+esc(r.error||'Pendaftaran gagal.')+'</div>';return}
    const link=referralLink(r.referralCode);
    $("result").classList.remove('hidden');
    $("result").innerHTML='<b>✅ Referral berjaya didaftarkan</b><div class="code">'+esc(r.referralCode)+'</div><p>Komisen semasa: <b>RM'+Number(r.commission||5).toFixed(2)+'</b> setiap pembelian yang layak.</p><p>Link anda:</p><div class="link">'+esc(link)+'</div><button class="btn" id="copyBtn">SALIN LINK</button>';
    $("copyBtn").onclick=()=>navigator.clipboard.writeText(link).then(()=>$("copyBtn").textContent='✓ LINK DISALIN');
    $("msg").textContent="";
    $("name").value="";$("whatsapp").value="";$("bank").value="";$("account").value="";
- }catch(e){$("submit").disabled=false;$("msg").innerHTML='<div class="errorbox">Sambungan terganggu. Cuba lagi.</div>'}
+   $("submit").disabled=false;$("submit").textContent='DAFTAR REFERRAL';
+ }catch(e){$("submit").disabled=false;$("submit").textContent='DAFTAR REFERRAL';$("msg").innerHTML='<div class="errorbox">Sambungan terganggu. Cuba lagi.</div>'}
 }
 </script></body></html>
