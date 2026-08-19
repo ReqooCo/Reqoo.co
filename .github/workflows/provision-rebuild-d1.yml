@@ -1,0 +1,72 @@
+name: Provision REQOO Rebuild D1
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  provision:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Wrangler
+        run: npm install --global wrangler@latest
+
+      - name: Verify Cloudflare credentials
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo 'Missing CLOUDFLARE_API_TOKEN'; exit 1; }
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo 'Missing CLOUDFLARE_ACCOUNT_ID'; exit 1; }
+          wrangler whoami
+
+      - name: Create or reuse isolated D1
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          DB_NAME='reqoo-rebuild'
+          DB_JSON="$(wrangler d1 list --json)"
+          DB_ID="$(printf '%s' "$DB_JSON" | python -c "import json,sys; rows=json.load(sys.stdin); print(next((x.get('uuid') or x.get('database_id') for x in rows if x.get('name')=='reqoo-rebuild'), ''))")"
+          if [ -z "$DB_ID" ]; then
+            CREATE_JSON="$(wrangler d1 create "$DB_NAME" --json)"
+            DB_ID="$(printf '%s' "$CREATE_JSON" | python -c "import json,sys; x=json.load(sys.stdin); print(x.get('database_id') or x.get('uuid') or x.get('result',{}).get('uuid') or x.get('result',{}).get('database_id') or '')")"
+          fi
+          test -n "$DB_ID" || { echo 'Unable to resolve D1 database id'; exit 1; }
+          python - <<'PY'
+          from pathlib import Path
+          import os
+          db_id = os.environ.get('REQOO_D1_ID')
+          if not db_id:
+              raise SystemExit('REQOO_D1_ID not exported')
+          Path('wrangler.toml').write_text(f'''name = "reqoo-rebuild"\ncompatibility_date = "2026-08-19"\n\n[[d1_databases]]\nbinding = "DB"\ndatabase_name = "reqoo-rebuild"\ndatabase_id = "{db_id}"\nmigrations_dir = "migrations"\n''', encoding='utf-8')
+          PY
+        env:
+          REQOO_D1_ID: ${{ steps.resolve.outputs.database_id }}
+
+      - name: Apply migration 0001 to remote D1
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: wrangler d1 migrations apply reqoo-rebuild --remote
+
+      - name: Commit D1 binding configuration
+        run: |
+          git config user.name 'REQOO Bot'
+          git config user.email 'actions@reqoo.co'
+          git add wrangler.toml
+          if git diff --cached --quiet; then echo 'No config change.'; exit 0; fi
+          git commit -m 'provision isolated rebuild D1 binding'
+          git push
