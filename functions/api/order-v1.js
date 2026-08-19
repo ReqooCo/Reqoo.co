@@ -4,6 +4,7 @@ function now() { return new Date().toISOString(); }
 function id(prefix) { return `${prefix}${crypto.randomUUID().replaceAll("-", "")}`; }
 function clean(value, max = 5000) { if (value == null) return null; const s = String(value).trim(); return s ? s.slice(0, max) : null; }
 function money(value, fallback = 0) { if (value == null || value === "") return fallback; const n = Number(value); return Number.isInteger(n) && n >= 0 ? n : null; }
+function admin(request, env, traceId) { if (!env.ADMIN_API_KEY) return json({ ok: false, error: "ORDER_ADMIN_AUTH_NOT_CONFIGURED" }, 503, traceId); if (request.headers.get("authorization") !== `Bearer ${env.ADMIN_API_KEY}`) return json({ ok: false, error: "ORDER_ADMIN_UNAUTHORIZED" }, 401, traceId); return null; }
 async function customerExists(db, customerId) { return customerId ? !!(await db.prepare("SELECT id FROM customers WHERE id = ? AND status = 'active'").bind(customerId).first()) : true; }
 async function getProduct(db, productId) { return db.prepare("SELECT * FROM products WHERE id = ? AND status = 'active'").bind(productId).first(); }
 async function getVariation(db, productId, variationId) { return variationId ? db.prepare("SELECT * FROM product_variations WHERE id = ? AND product_id = ? AND status = 'active'").bind(variationId, productId).first() : null; }
@@ -16,7 +17,9 @@ async function createOrder(request, env, traceId) {
   if (!input || !Array.isArray(input.items) || input.items.length === 0) return json({ ok: false, error: "ORDER_ITEMS_REQUIRED" }, 400, traceId);
   if (!(await customerExists(env.DB, input.customer_id))) return json({ ok: false, error: "CUSTOMER_NOT_FOUND" }, 404, traceId);
 
-  const priorEvent = await env.DB.prepare(`SELECT order_id FROM activity_events WHERE event_type = 'order.created' AND json_extract(metadata_json, '$.idempotency_key') = ? LIMIT 1`).bind(idempotencyKey).first();
+  const priorEvent = input.customer_id
+    ? await env.DB.prepare(`SELECT order_id FROM activity_events WHERE event_type = 'order.created' AND customer_id = ? AND json_extract(metadata_json, '$.idempotency_key') = ? LIMIT 1`).bind(input.customer_id, idempotencyKey).first()
+    : await env.DB.prepare(`SELECT order_id FROM activity_events WHERE event_type = 'order.created' AND customer_id IS NULL AND json_extract(metadata_json, '$.idempotency_key') = ? LIMIT 1`).bind(idempotencyKey).first();
   if (priorEvent?.order_id) {
     const priorOrder = await env.DB.prepare("SELECT * FROM orders WHERE id = ?").bind(priorEvent.order_id).first();
     if (priorOrder) return json({ ok: true, idempotent_replay: true, order: priorOrder }, 200, traceId);
@@ -91,6 +94,8 @@ export async function onRequest(context) {
   if (request.method === "POST" && !orderId) return createOrder(request, env, traceId);
   if (request.method === "GET") {
     if (!orderId) return json({ ok: false, error: "ORDER_ID_REQUIRED" }, 400, traceId);
+    const auth = admin(request, env, traceId);
+    if (auth) return auth;
     const order = await env.DB.prepare("SELECT * FROM orders WHERE id = ?").bind(orderId).first();
     if (!order) return json({ ok: false, error: "ORDER_NOT_FOUND" }, 404, traceId);
     const items = await env.DB.prepare("SELECT * FROM order_items WHERE order_id = ? ORDER BY created_at").bind(orderId).all();
