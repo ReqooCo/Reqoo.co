@@ -1,35 +1,26 @@
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" };
-
-function json(data, status = 200, traceId = crypto.randomUUID()) {
-  return new Response(JSON.stringify({ ...data, trace_id: traceId }), { status, headers: { ...JSON_HEADERS, "x-reqoo-trace-id": traceId } });
-}
+function json(data, status = 200, traceId = crypto.randomUUID()) { return new Response(JSON.stringify({ ...data, trace_id: traceId }), { status, headers: { ...JSON_HEADERS, "x-reqoo-trace-id": traceId } }); }
 function now() { return new Date().toISOString(); }
 function id(prefix) { return `${prefix}${crypto.randomUUID().replaceAll("-", "")}`; }
 function clean(value, max = 5000) { if (value == null) return null; const s = String(value).trim(); return s ? s.slice(0, max) : null; }
 function money(value, fallback = 0) { if (value == null || value === "") return fallback; const n = Number(value); return Number.isInteger(n) && n >= 0 ? n : null; }
-
-async function customerExists(db, customerId) {
-  return customerId ? !!(await db.prepare("SELECT id FROM customers WHERE id = ? AND status = 'active'").bind(customerId).first()) : true;
-}
-async function getProduct(db, productId) {
-  return db.prepare("SELECT * FROM products WHERE id = ? AND status = 'active'").bind(productId).first();
-}
-async function getVariation(db, productId, variationId) {
-  if (!variationId) return null;
-  return db.prepare("SELECT * FROM product_variations WHERE id = ? AND product_id = ? AND status = 'active'").bind(variationId, productId).first();
-}
+async function customerExists(db, customerId) { return customerId ? !!(await db.prepare("SELECT id FROM customers WHERE id = ? AND status = 'active'").bind(customerId).first()) : true; }
+async function getProduct(db, productId) { return db.prepare("SELECT * FROM products WHERE id = ? AND status = 'active'").bind(productId).first(); }
+async function getVariation(db, productId, variationId) { return variationId ? db.prepare("SELECT * FROM product_variations WHERE id = ? AND product_id = ? AND status = 'active'").bind(variationId, productId).first() : null; }
 
 async function createOrder(request, env, traceId) {
-  const idempotencyKey = request.headers.get("idempotency-key");
+  const idempotencyKey = clean(request.headers.get("idempotency-key"), 200);
   if (!idempotencyKey) return json({ ok: false, error: "IDEMPOTENCY_KEY_REQUIRED" }, 400, traceId);
   let input;
   try { input = await request.json(); } catch { return json({ ok: false, error: "INVALID_JSON" }, 400, traceId); }
   if (!input || !Array.isArray(input.items) || input.items.length === 0) return json({ ok: false, error: "ORDER_ITEMS_REQUIRED" }, 400, traceId);
   if (!(await customerExists(env.DB, input.customer_id))) return json({ ok: false, error: "CUSTOMER_NOT_FOUND" }, 404, traceId);
 
-  // Idempotency is scoped to the traceable order record through a deterministic lookup in metadata.
-  const existing = await env.DB.prepare("SELECT * FROM orders WHERE json_extract(CAST(? AS TEXT), '$') IS NULL LIMIT 0").bind("{}").first().catch(() => null);
-  void existing;
+  const priorEvent = await env.DB.prepare(`SELECT order_id FROM activity_events WHERE event_type = 'order.created' AND json_extract(metadata_json, '$.idempotency_key') = ? LIMIT 1`).bind(idempotencyKey).first();
+  if (priorEvent?.order_id) {
+    const priorOrder = await env.DB.prepare("SELECT * FROM orders WHERE id = ?").bind(priorEvent.order_id).first();
+    if (priorOrder) return json({ ok: true, idempotent_replay: true, order: priorOrder }, 200, traceId);
+  }
 
   const items = [];
   let subtotal = 0;
@@ -47,7 +38,6 @@ async function createOrder(request, env, traceId) {
     subtotal += lineTotal;
     items.push({ raw, product, variation, quantity, unitPrice, lineTotal });
   }
-
   const discount = money(input.discount_minor);
   const shipping = money(input.shipping_minor);
   const tax = money(input.tax_minor);
@@ -57,16 +47,12 @@ async function createOrder(request, env, traceId) {
   const timestamp = now();
   const source = clean(input.source, 50) || "shop";
   const currency = clean(input.currency, 10) || "MYR";
-
   try {
-    await env.DB.prepare(`INSERT INTO orders (id,customer_id,source,currency,subtotal_minor,discount_minor,shipping_minor,tax_minor,total_minor,payment_status,fulfillment_status,referral_code,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-      .bind(orderId, input.customer_id || null, source, currency, subtotal, discount, shipping, tax, total, "pending", "pending", clean(input.referral_code, 100), timestamp, timestamp).run();
+    await env.DB.prepare(`INSERT INTO orders (id,customer_id,source,currency,subtotal_minor,discount_minor,shipping_minor,tax_minor,total_minor,payment_status,fulfillment_status,referral_code,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(orderId, input.customer_id || null, source, currency, subtotal, discount, shipping, tax, total, "pending", "pending", clean(input.referral_code, 100), timestamp, timestamp).run();
     for (const item of items) {
-      await env.DB.prepare(`INSERT INTO order_items (id,order_id,product_id,variation_id,product_name_snapshot,sku_snapshot,variation_snapshot_json,customization_snapshot_json,addons_snapshot_json,unit_price_minor,quantity,line_total_minor,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-        .bind(id("itm_"), orderId, item.product.id, item.variation?.id || null, item.product.name, item.variation?.sku || item.product.sku || null, JSON.stringify(item.variation || {}), JSON.stringify(item.raw.customization || {}), JSON.stringify(item.raw.addons || []), item.unitPrice, item.quantity, item.lineTotal, timestamp).run();
+      await env.DB.prepare(`INSERT INTO order_items (id,order_id,product_id,variation_id,product_name_snapshot,sku_snapshot,variation_snapshot_json,customization_snapshot_json,addons_snapshot_json,unit_price_minor,quantity,line_total_minor,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(id("itm_"), orderId, item.product.id, item.variation?.id || null, item.product.name, item.variation?.sku || item.product.sku || null, JSON.stringify(item.variation || {}), JSON.stringify(item.raw.customization || {}), JSON.stringify(item.raw.addons || []), item.unitPrice, item.quantity, item.lineTotal, timestamp).run();
     }
-    await env.DB.prepare(`INSERT INTO activity_events (id,customer_id,order_id,event_type,trace_id,metadata_json,created_at) VALUES (?,?,?,?,?,?,?)`)
-      .bind(id("evt_"), input.customer_id || null, orderId, "order.created", traceId, JSON.stringify({ source, item_count: items.length, idempotency_key: idempotencyKey }), timestamp).run();
+    await env.DB.prepare(`INSERT INTO activity_events (id,customer_id,order_id,event_type,trace_id,metadata_json,created_at) VALUES (?,?,?,?,?,?,?)`).bind(id("evt_"), input.customer_id || null, orderId, "order.created", traceId, JSON.stringify({ source, item_count: items.length, idempotency_key: idempotencyKey }), timestamp).run();
     return json({ ok: true, order: { id: orderId, customer_id: input.customer_id || null, source, currency, subtotal_minor: subtotal, discount_minor: discount, shipping_minor: shipping, tax_minor: tax, total_minor: total, payment_status: "pending", fulfillment_status: "pending" } }, 201, traceId);
   } catch (error) {
     await env.DB.prepare(`INSERT INTO error_events (id,customer_id,order_id,trace_id,endpoint,error_code,message,metadata_json,created_at) VALUES (?,?,?,?,?,?,?,?,?)`).bind(id("err_"), input.customer_id || null, orderId, traceId, "/api/order-v1", "ORDER_CREATE_FAILED", String(error?.message || error), JSON.stringify({ idempotency_key: idempotencyKey }), now()).run().catch(() => {});
@@ -86,9 +72,7 @@ async function updateOrder(request, env, orderId, traceId) {
   if (input.payment_status && !paymentStatuses.includes(input.payment_status)) return json({ ok: false, error: "INVALID_PAYMENT_STATUS" }, 400, traceId);
   if (input.fulfillment_status && !fulfillmentStatuses.includes(input.fulfillment_status)) return json({ ok: false, error: "INVALID_FULFILLMENT_STATUS" }, 400, traceId);
   const fields = [], values = [];
-  for (const key of ["payment_status", "fulfillment_status", "referral_code"]) {
-    if (input[key] !== undefined) { fields.push(`${key} = ?`); values.push(key === "referral_code" ? clean(input[key], 100) : input[key]); }
-  }
+  for (const key of ["payment_status", "fulfillment_status", "referral_code"]) { if (input[key] !== undefined) { fields.push(`${key} = ?`); values.push(key === "referral_code" ? clean(input[key], 100) : input[key]); } }
   if (!fields.length) return json({ ok: true, order: existing }, 200, traceId);
   fields.push("updated_at = ?"); values.push(now(), orderId);
   try {
