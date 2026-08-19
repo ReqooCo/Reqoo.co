@@ -1,0 +1,11 @@
+name = "reqoo-catalog-api"
+main = "worker.js"
+compatibility_date = "2026-08-19"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "reqoo-catalog"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+[vars]
+# Set ADMIN_KEY as a Worker secret; do not commit the real value.
