@@ -25,6 +25,16 @@ jobs:
           grep -q "schema: 'ready'" functions/api/health-v1.js
           echo "REQOO CORE HEALTH SOURCE VERIFIED"
 
+      - name: Verify customer core source
+        run: |
+          set -euo pipefail
+          test -f functions/api/customer-v1.js
+          grep -q "CUSTOMER_NAME_REQUIRED" functions/api/customer-v1.js
+          grep -q "CUSTOMER_CONTACT_REQUIRED" functions/api/customer-v1.js
+          grep -q "customer.created" functions/api/customer-v1.js
+          grep -q "customer.resolved" functions/api/customer-v1.js
+          echo "REQOO CUSTOMER CORE SOURCE VERIFIED"
+
       - name: Verify rebuild D1 binding
         run: |
           set -euo pipefail
