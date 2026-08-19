@@ -34,17 +34,6 @@ function adminAuthorized(request, env) {
     : { ok: false, status: 401, code: "PRODUCT_ADMIN_UNAUTHORIZED" };
 }
 
-function parseJsonObject(value, fallback) {
-  if (value == null) return fallback;
-  if (typeof value === "object") return value;
-  try {
-    const parsed = JSON.parse(value);
-    return parsed && typeof parsed === "object' && !Array.isArray(parsed) ? parsed : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
 function validateProduct(input, partial = false) {
   const errors = [];
   if (!partial || input.name !== undefined) {
