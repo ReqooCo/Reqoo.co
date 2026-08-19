@@ -1,5 +1,5 @@
 /* REQOO PKSK PAYMENT V2
-   JSON POST for client actions. Billplz callback/redirect accept GET or POST.
+   JSON POST for client actions. Billplz callback/redirect accept GET or form POST.
    Reuses existing orders/licenses tables so current admin activation remains compatible.
    QR is manual verification by transaction reference; no screenshot/base64 upload is stored.
 */
@@ -7,16 +7,22 @@ const PRICE=35,MAX_DEVICES=3,BILLPLZ_BASE='https://www.billplz.com/api/v3',SITE=
 export async function onRequest({request,env}){
   if(request.method==='OPTIONS')return new Response(null,{status:204,headers:cors()});
   try{
-    const u=new URL(request.url),q=Object.fromEntries(u.searchParams.entries());
+    const u=new URL(request.url),q=Object.fromEntries(u.searchParams.entries()),queryAction=String(q.action||'');
     if(request.method==='GET'){
-      const action=String(q.action||'');
-      if(action==='redirect')return redirect(q,env);
-      if(action==='callback')return callback(q,env);
+      if(queryAction==='redirect')return redirect(q,env);
+      if(queryAction==='callback')return callback(q,env);
       return json({ok:false,error:'Method POST diperlukan.'},405);
     }
     if(request.method!=='POST')return json({ok:false,error:'Method POST diperlukan.'},405);
-    const ct=request.headers.get('content-type')||'';
-    if(!ct.toLowerCase().includes('application/json'))return json({ok:false,error:'Content-Type application/json diperlukan.'},415);
+    const ct=(request.headers.get('content-type')||'').toLowerCase();
+    if(queryAction==='callback'||queryAction==='redirect'){
+      let body={};
+      if(ct.includes('application/x-www-form-urlencoded')||ct.includes('multipart/form-data'))body=Object.fromEntries(new URLSearchParams(await request.text()).entries());
+      else if(ct.includes('application/json'))body=await request.json();
+      const d={...q,...body};
+      return queryAction==='callback'?callback(d,env):redirect(d,env);
+    }
+    if(!ct.includes('application/json'))return json({ok:false,error:'Content-Type application/json diperlukan.'},415);
     const d=await request.json();
     if(!d||typeof d!=='object'||Array.isArray(d))return json({ok:false,error:'Payload tidak sah.'},400);
     switch(String(d.action||'')){
@@ -24,8 +30,6 @@ export async function onRequest({request,env}){
       case'status':return json(await status(d,env));
       case'createQR':return json(await createQR(d,env));
       case'qrStatus':return json(await status(d,env));
-      case'callback':return callback({...q,...d},env);
-      case'redirect':return redirect({...q,...d},env);
       default:return json({ok:false,error:'Action Payment V2 tidak disokong.'},400);
     }
   }catch(e){return json({ok:false,error:String(e?.message||e)},500)}
