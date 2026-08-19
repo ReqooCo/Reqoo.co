@@ -1,6 +1,6 @@
 const H={"content-type":"application/json; charset=utf-8","cache-control":"no-store"};
 const STATUSES=['pending','processing','fulfilled','cancelled'];
-function json(b,s=200,t=crypto.randomUUID()){return new Response(JSON.stringify({...b,trace_id:t}),{status:s,headers:{...H,"x-reqoo-trace-id":t})}
+function json(b,s=200,t=crypto.randomUUID()){return new Response(JSON.stringify({...b,trace_id:t}),{status:s,headers:{...H,"x-reqoo-trace-id":t}})}
 function id(p){return `${p}${crypto.randomUUID().replaceAll('-','')}`}
 function clean(v,m=500){if(v==null)return null;const s=String(v).trim();return s?s.slice(0,m):null}
 function admin(r,e,t){if(!e.ADMIN_API_KEY)return json({ok:false,error:'FULFILLMENT_ADMIN_AUTH_NOT_CONFIGURED'},503,t);if(r.headers.get('authorization')!==`Bearer ${e.ADMIN_API_KEY}`)return json({ok:false,error:'FULFILLMENT_ADMIN_UNAUTHORIZED'},401,t);return null}
