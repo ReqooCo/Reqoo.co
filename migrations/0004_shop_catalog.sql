@@ -1,0 +1,9 @@
+PRAGMA foreign_keys = ON;
+CREATE TABLE IF NOT EXISTS product_images (id TEXT PRIMARY KEY,product_id TEXT NOT NULL REFERENCES products(id),url TEXT NOT NULL,alt_text TEXT,sort_order INTEGER NOT NULL DEFAULT 0,is_primary INTEGER NOT NULL DEFAULT 0,created_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS idx_product_images_product ON product_images(product_id,sort_order);
+CREATE TABLE IF NOT EXISTS product_variations (id TEXT PRIMARY KEY,product_id TEXT NOT NULL REFERENCES products(id),name TEXT NOT NULL,sku TEXT,price_minor INTEGER NOT NULL DEFAULT 0,sale_price_minor INTEGER,status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active','hidden')),metadata_json TEXT NOT NULL DEFAULT '{}',created_at TEXT NOT NULL,updated_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS idx_product_variations_product ON product_variations(product_id,status);
+CREATE TABLE IF NOT EXISTS product_custom_fields (id TEXT PRIMARY KEY,product_id TEXT NOT NULL REFERENCES products(id),field_key TEXT NOT NULL,label TEXT NOT NULL,field_type TEXT NOT NULL CHECK(field_type IN ('text','textarea','date','number','select','checkbox')),required INTEGER NOT NULL DEFAULT 0,options_json TEXT NOT NULL DEFAULT '[]',sort_order INTEGER NOT NULL DEFAULT 0,created_at TEXT NOT NULL,updated_at TEXT NOT NULL,UNIQUE(product_id,field_key));
+CREATE INDEX IF NOT EXISTS idx_product_custom_fields_product ON product_custom_fields(product_id,sort_order);
+CREATE TABLE IF NOT EXISTS product_addons (id TEXT PRIMARY KEY,product_id TEXT NOT NULL REFERENCES products(id),name TEXT NOT NULL,price_minor INTEGER NOT NULL DEFAULT 0,status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active','hidden')),sort_order INTEGER NOT NULL DEFAULT 0,created_at TEXT NOT NULL,updated_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS idx_product_addons_product ON product_addons(product_id,status,sort_order);
