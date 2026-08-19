@@ -1,0 +1,48 @@
+name: REQOO Product Core Check
+
+on:
+  push:
+    branches:
+      - rebuild/v1-foundation
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  product:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify product API source
+        run: |
+          set -euo pipefail
+          test -f functions/api/product-v1.js
+          grep -q 'CORE_DB_BINDING_MISSING' functions/api/product-v1.js
+          grep -q 'PRODUCT_ADMIN_AUTH_NOT_CONFIGURED' functions/api/product-v1.js
+          grep -q 'product.created' functions/api/product-v1.js
+          grep -q 'product.updated' functions/api/product-v1.js
+          grep -q 'product_images' functions/api/product-v1.js
+          grep -q 'product_variations' functions/api/product-v1.js
+          grep -q 'product_custom_fields' functions/api/product-v1.js
+          grep -q 'product_addons' functions/api/product-v1.js
+          echo 'REQOO PRODUCT API SOURCE VERIFIED'
+
+      - name: Verify product schema contract
+        run: |
+          set -euo pipefail
+          test -f migrations/0001_reqoo_core.sql
+          grep -q 'CREATE TABLE IF NOT EXISTS products' migrations/0001_reqoo_core.sql
+          grep -q 'CREATE TABLE IF NOT EXISTS product_images' migrations/0001_reqoo_core.sql
+          grep -q 'CREATE TABLE IF NOT EXISTS product_variations' migrations/0001_reqoo_core.sql
+          grep -q 'CREATE TABLE IF NOT EXISTS product_custom_fields' migrations/0001_reqoo_core.sql
+          grep -q 'CREATE TABLE IF NOT EXISTS product_addons' migrations/0001_reqoo_core.sql
+          echo 'REQOO PRODUCT SCHEMA VERIFIED'
+
+      - name: Syntax check product API
+        run: |
+          set -euo pipefail
+          node --check functions/api/product-v1.js
+          echo 'REQOO PRODUCT API SYNTAX VERIFIED'
