@@ -1,0 +1,31 @@
+name: REQOO Payment Core Check
+
+on:
+  push:
+    branches:
+      - rebuild/v1-foundation
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  payment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Syntax check
+        run: node --check functions/api/payment-v1.js
+      - name: Contract checks
+        run: |
+          set -euo pipefail
+          test -f functions/api/payment-v1.js
+          grep -q 'IDEMPOTENCY_KEY_REQUIRED' functions/api/payment-v1.js
+          grep -q 'PAYMENT_CREATE_FAILED' functions/api/payment-v1.js
+          grep -q 'payment.created' functions/api/payment-v1.js
+          grep -q 'payment.updated' functions/api/payment-v1.js
+          grep -q 'UPDATE orders SET payment_status' functions/api/payment-v1.js
+          echo 'REQOO PAYMENT CORE SOURCE VERIFIED'
