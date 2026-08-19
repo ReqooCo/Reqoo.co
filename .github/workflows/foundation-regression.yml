@@ -1,4 +1,4 @@
-name: REQOO Foundation Regression v2
+name: REQOO Foundation Regression
 on:
   push:
     branches: [rebuild/v1-foundation]
@@ -31,8 +31,10 @@ jobs:
           grep -q "SUM(amount_minor)" functions/api/payment-v1.js
           grep -q "access_grants" functions/api/sim-v1.js
           grep -q "access_grants" functions/api/play-v1.js
-          grep -q "product_custom_fields" functions/api/order-v1.js
-          grep -q "product_addons" functions/api/order-v1.js
+          grep -q "product_custom_fields" migrations/0004_shop_catalog.sql
+          grep -q "product_addons" migrations/0004_shop_catalog.sql
+          grep -q "customization_snapshot_json" functions/api/order-v1.js
+          grep -q "addons_snapshot_json" functions/api/order-v1.js
           grep -q "documents" functions/api/invoice-v1.js
           grep -q "documents" functions/api/quote-v1.js
           echo "FOUNDATION REGRESSION SOURCE CHECK PASSED"
