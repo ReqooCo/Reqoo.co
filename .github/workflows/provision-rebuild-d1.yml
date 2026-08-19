@@ -10,11 +10,13 @@ jobs:
   provision:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: 22
 
@@ -26,36 +28,26 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          test -n "$CLOUDFLARE_API_TOKEN" || { echo 'Missing CLOUDFLARE_API_TOKEN'; exit 1; }
-          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo 'Missing CLOUDFLARE_ACCOUNT_ID'; exit 1; }
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo "Missing CLOUDFLARE_API_TOKEN"; exit 1; }
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "Missing CLOUDFLARE_ACCOUNT_ID"; exit 1; }
           wrangler whoami
 
       - name: Create or reuse isolated D1
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        shell: bash
         run: |
           set -euo pipefail
-          DB_NAME='reqoo-rebuild'
+          DB_NAME="reqoo-rebuild"
           DB_JSON="$(wrangler d1 list --json)"
-          DB_ID="$(printf '%s' "$DB_JSON" | python -c "import json,sys; rows=json.load(sys.stdin); print(next((x.get('uuid') or x.get('database_id') for x in rows if x.get('name')=='reqoo-rebuild'), ''))")"
-          if [ -z "$DB_ID" ]; then
+          DB_ID="$(printf '%s' "$DB_JSON" | jq -r '.[] | select(.name == "reqoo-rebuild") | (.uuid // .database_id)' | head -n 1)"
+          if [ -z "$DB_ID" ] || [ "$DB_ID" = "null" ]; then
             CREATE_JSON="$(wrangler d1 create "$DB_NAME" --json)"
-            DB_ID="$(printf '%s' "$CREATE_JSON" | python -c "import json,sys; x=json.load(sys.stdin); print(x.get('database_id') or x.get('uuid') or x.get('result',{}).get('uuid') or x.get('result',{}).get('database_id') or '')")"
+            DB_ID="$(printf '%s' "$CREATE_JSON" | jq -r '.database_id // .uuid // .result.uuid // .result.database_id')"
           fi
-          test -n "$DB_ID" || { echo 'Unable to resolve D1 database id'; exit 1; }
-          cat > wrangler.toml <<EOF
-          name = "reqoo-rebuild"
-          compatibility_date = "2026-08-19"
-
-          [[d1_databases]]
-          binding = "DB"
-          database_name = "reqoo-rebuild"
-          database_id = "$DB_ID"
-          migrations_dir = "migrations"
-          EOF
-          sed -i 's/^          //' wrangler.toml
+          test -n "$DB_ID" && [ "$DB_ID" != "null" ] || { echo "Unable to resolve D1 database id"; exit 1; }
+          printf '%s\n' "name = \"reqoo-rebuild\"" "compatibility_date = \"2026-08-19\"" "" "[[d1_databases]]" "binding = \"DB\"" "database_name = \"reqoo-rebuild\"" "database_id = \"$DB_ID\"" "migrations_dir = \"migrations\"" > wrangler.toml
+          cat wrangler.toml
 
       - name: Apply migration 0001 to remote D1
         env:
@@ -65,9 +57,12 @@ jobs:
 
       - name: Commit D1 binding configuration
         run: |
-          git config user.name 'REQOO Bot'
-          git config user.email 'actions@reqoo.co'
+          git config user.name "REQOO Bot"
+          git config user.email "actions@reqoo.co"
           git add wrangler.toml
-          if git diff --cached --quiet; then echo 'No config change.'; exit 0; fi
-          git commit -m 'provision isolated rebuild D1 binding'
+          if git diff --cached --quiet; then
+            echo "No config change."
+            exit 0
+          fi
+          git commit -m "provision isolated rebuild D1 binding"
           git push
