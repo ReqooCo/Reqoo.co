@@ -41,9 +41,10 @@ body{background:#fff8f6}.pay-wrap{max-width:820px;margin:42px auto;padding:0 20p
 const ONLINE_API='/api/sim-payment',MANUAL_API='/api/pksk';
 const form=document.getElementById('form'),pay=document.getElementById('pay'),msg=document.getElementById('msg'),result=document.getElementById('result');
 const onlineMethod=document.getElementById('onlineMethod'),qrMethod=document.getElementById('qrMethod'),onlinePanel=document.getElementById('onlinePanel'),qrPanel=document.getElementById('qrPanel');
+const referralCode=(new URLSearchParams(location.search).get('ref')||'').trim().toUpperCase();
 let mode='online',busy=false;
 function orderId(){return 'PKSK-'+Date.now().toString(36).toUpperCase()+'-'+Math.random().toString(36).slice(2,7).toUpperCase()}
-async function callOnline(action,data={}){const r=await fetch(ONLINE_API,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action,...data})});return await r.json()}
+async function callOnline(action,data={}){const payload={action,...data};if(referralCode)payload.ref=referralCode;const r=await fetch(ONLINE_API,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});return await r.json()}
 async function callManual(action,data={}){const r=await fetch(MANUAL_API,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action,...data})});return await r.json()}
 function setMode(next){mode=next;onlineMethod.classList.toggle('active',mode==='online');qrMethod.classList.toggle('active',mode==='qr');onlinePanel.hidden=mode!=='online';qrPanel.hidden=mode!=='qr';msg.textContent=''}
 onlineMethod.onclick=()=>setMode('online');qrMethod.onclick=()=>setMode('qr');
