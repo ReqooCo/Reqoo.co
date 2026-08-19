@@ -67,6 +67,21 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: wrangler d1 migrations apply reqoo-rebuild --remote
 
+      - name: Verify core schema on remote D1
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          REQUIRED_TABLES="customers products product_images product_variations product_custom_fields product_addons orders order_items payments fulfillments documents document_items payment_allocations licenses license_devices referrals referral_attributions referral_commissions activity_events error_events admin_audit_events pricing_materials pricing_machines pricing_rules pricing_calculations schema_migrations"
+          SQL="SELECT name FROM sqlite_master WHERE type='table' AND name IN ($(printf "'%s'," $REQUIRED_TABLES | sed 's/,$//')) ORDER BY name;"
+          wrangler d1 execute reqoo-rebuild --remote --command "$SQL" --json > /tmp/schema.json
+          cat /tmp/schema.json
+          EXPECTED="$(printf '%s\n' $REQUIRED_TABLES | sort)"
+          ACTUAL="$(jq -r '.result[0].results[]?.name // empty' /tmp/schema.json | sort)"
+          test "$ACTUAL" = "$EXPECTED" || { echo "Schema verification failed"; echo "Expected:"; printf '%s\n' "$EXPECTED"; echo "Actual:"; printf '%s\n' "$ACTUAL"; exit 1; }
+          echo "REQOO CORE SCHEMA VERIFIED: all required tables exist."
+
       - name: Commit D1 binding configuration
         run: |
           git config user.name "REQOO Bot"
