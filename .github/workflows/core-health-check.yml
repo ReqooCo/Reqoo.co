@@ -44,9 +44,12 @@ jobs:
           grep -Eq 'database_id = "[0-9a-f-]{36}"' wrangler.toml
           echo "REQOO REBUILD D1 BINDING VERIFIED"
 
-      - name: Verify order remains guarded
+      - name: Verify order core contract
         run: |
           set -euo pipefail
-          grep -q "ORDER_CORE_NOT_ENABLED" functions/api/order-v1.js
+          test -f functions/api/order-v1.js
           grep -q "IDEMPOTENCY_KEY_REQUIRED" functions/api/order-v1.js
-          echo "ORDER WRITE GUARD VERIFIED"
+          grep -q "ORDER_ITEMS_REQUIRED" functions/api/order-v1.js
+          grep -q "PRODUCT_NOT_FOUND_OR_INACTIVE" functions/api/order-v1.js
+          grep -q "VARIATION_NOT_FOUND_OR_INACTIVE" functions/api/order-v1.js
+          echo "ORDER CORE CONTRACT VERIFIED"
