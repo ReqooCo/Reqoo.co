@@ -29,7 +29,12 @@ jobs:
           set -euo pipefail
           find functions -type f -name '*.js' -print0 | xargs -0 -n1 node --check
 
-      - name: Start local Pages runtime with remote D1
+      - name: Prepare local D1 schema
+        run: |
+          set -euo pipefail
+          wrangler d1 migrations apply reqoo-rebuild --local --persist-to=/tmp/reqoo-d1
+
+      - name: Start local Pages runtime with local D1
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -38,7 +43,7 @@ jobs:
           test -n "$CLOUDFLARE_API_TOKEN" || { echo "Missing CLOUDFLARE_API_TOKEN"; exit 1; }
           test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "Missing CLOUDFLARE_ACCOUNT_ID"; exit 1; }
           rm -f /tmp/health.json /tmp/reqoo-pages.log /tmp/reqoo-pages.pid
-          wrangler pages dev . --d1 DB=reqoo-rebuild --remote --compatibility-date=2026-08-19 --ip=127.0.0.1 --port=8788 > /tmp/reqoo-pages.log 2>&1 &
+          wrangler pages dev . --d1 DB=15123ddd-d63a-4033-912c-51c1f05c11c5 --compatibility-date=2026-08-19 --ip=127.0.0.1 --port=8788 --persist-to=/tmp/reqoo-d1 > /tmp/reqoo-pages.log 2>&1 &
           echo $! > /tmp/reqoo-pages.pid
           for i in $(seq 1 45); do
             if curl -fsS http://127.0.0.1:8788/api/health-v1 > /tmp/health.json; then
@@ -56,7 +61,7 @@ jobs:
         run: |
           set -euo pipefail
           jq -e '.ok == true and .status == "ok" and .db == "connected" and .schema == "ready" and (.trace_id | length > 0)' /tmp/health.json
-          echo "REQOO CORE HEALTH VERIFIED: DB binding and schema are ready."
+          echo "REQOO CORE HEALTH VERIFIED: Pages Functions build and D1 schema are ready."
 
       - name: Stop local runtime
         if: always()
