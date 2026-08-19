@@ -1,0 +1,38 @@
+name: REQOO Order Core CI
+
+on:
+  push:
+    branches:
+      - rebuild/v1-foundation
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  order-core:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Syntax check Order Core
+        run: node --check functions/api/order-v1.js
+
+      - name: Contract check Order Core
+        run: |
+          set -euo pipefail
+          test -f functions/api/order-v1.js
+          grep -q 'IDEMPOTENCY_KEY_REQUIRED' functions/api/order-v1.js
+          grep -q 'order.created' functions/api/order-v1.js
+          grep -q 'order.updated' functions/api/order-v1.js
+          grep -q 'error_events' functions/api/order-v1.js
+          grep -q 'activity_events' functions/api/order-v1.js
+          grep -q 'orders' migrations/0001_reqoo_core.sql
+          grep -q 'order_items' migrations/0001_reqoo_core.sql
+          echo 'REQOO ORDER CORE CONTRACT VERIFIED'
