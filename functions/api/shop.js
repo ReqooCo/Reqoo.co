@@ -1,4 +1,4 @@
-const ALLOWED_ACTIONS = new Set(['health','createOrder','getOrder','listProducts','getShipping','listPromotions','getPromotion','customerOrders','billplz-callback','billplz-redirect']);
+const ALLOWED_ACTIONS = new Set(['health','createOrder','getOrder','listProducts','getShipping','listPromotions','getPromotion','customerOrders','billplz-callback','billplz-redirect','syncBillStatus']);
 const CORS = {'access-control-allow-origin':'*','access-control-allow-methods':'GET,POST,OPTIONS','access-control-allow-headers':'Content-Type, x-reqoo-customer-token','cache-control':'no-store'};
 const BILLPLZ_BASE = 'https://www.billplz.com/api/v3';
 
@@ -31,6 +31,7 @@ async function route(action,d,env){
   if(action==='listPromotions') return listPromotions(env);
   if(action==='getPromotion') return getPromotion(d,env);
   if(action==='customerOrders') return customerOrders(d,env);
+  if(action==='syncBillStatus') return syncBillStatus(d,env);
 }
 async function listProducts(env){
   if(!env.SHOP_DB)return {ok:false,error:'SHOP_DB binding belum tersedia'};
@@ -72,5 +73,30 @@ async function createOrder(d,env){
 }
 async function getOrder(d,env){if(!env.SHOP_DB)return {ok:false,error:'SHOP_DB binding belum tersedia'};const auth=await verifyCustomerToken(d,env);if(!auth.ok)return {ok:false,error:auth.error};const key=String(d.orderRef||d.orderId||'').trim();if(!key)return {ok:false,error:'Order diperlukan'};const r=await env.SHOP_DB.prepare('SELECT o.* FROM orders o JOIN customers c ON c.id=o.customer_id WHERE (o.order_ref=? OR o.id=?) AND c.phone=? LIMIT 1').bind(key,key,auth.phone).first();if(!r)return {ok:false,error:'Order tidak dijumpai'};const items=await env.SHOP_DB.prepare('SELECT * FROM order_items WHERE order_id=? ORDER BY rowid').bind(r.id).all();return {ok:true,order:{...r,items:items.results||[]}}}
 async function verifyXSignature(data,key){const supplied=String(data.x_signature||'').toLowerCase();if(!supplied||!key)return false;const source=Object.keys(data).filter(k=>k!=='x_signature').sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:'base'})).map(k=>`${k}${data[k]??''}`).join('|');const cryptoKey=await crypto.subtle.importKey('raw',new TextEncoder().encode(String(key)),{name:'HMAC',hash:'SHA-256'},false,['sign']);const sig=new Uint8Array(await crypto.subtle.sign('HMAC',cryptoKey,new TextEncoder().encode(source)));let hex='';for(const b of sig)hex+=b.toString(16).padStart(2,'0');return safeEqual(hex,supplied)}function safeEqual(a,b){if(a.length!==b.length)return false;let diff=0;for(let i=0;i<a.length;i++)diff|=a.charCodeAt(i)^b.charCodeAt(i);return diff===0}
+async function markBillPaid(env,order,bill){
+  const state=String(bill?.state||'').toLowerCase(),paid=String(bill?.paid).toLowerCase()==='true'||bill?.paid===true;
+  const paidAmount=Number(bill?.paid_amount||0),expected=cents(order.total);
+  if(!paid||state!=='paid'){
+    await env.SHOP_DB.prepare(`UPDATE orders SET billplz_state=?,billplz_transaction_id=?,billplz_transaction_status=?,updated_at=? WHERE id=?`).bind(state,String(bill?.transaction_id||''),String(bill?.transaction_status||''),new Date().toISOString(),order.id).run();
+    return {ok:true,updated:false,status:state||'unknown',orderRef:order.order_ref};
+  }
+  if(paidAmount!==expected)return {ok:false,error:'Amount mismatch',expected,paidAmount,orderRef:order.order_ref};
+  if(order.payment_status==='PAID')return {ok:true,updated:false,status:'PAID',orderRef:order.order_ref};
+  const now=new Date().toISOString(),paidAt=String(bill?.paid_at||'')||now;
+  const orderUpdate=await env.SHOP_DB.prepare(`UPDATE orders SET status='PROCESSING',payment_status='PAID',billplz_state=?,billplz_transaction_id=?,billplz_transaction_status=?,paid_at=?,updated_at=? WHERE id=? AND payment_status<>'PAID'`).bind(state,String(bill?.transaction_id||''),String(bill?.transaction_status||''),paidAt,now,order.id).run();
+  if(Number(orderUpdate?.meta?.changes||0)===1)await env.SHOP_DB.prepare(`UPDATE customers SET total_orders=total_orders+1,total_spend=total_spend+?,last_order_at=?,updated_at=? WHERE id=?`).bind(Number(order.total),now,now,order.customer_id).run();
+  return {ok:true,updated:Number(orderUpdate?.meta?.changes||0)===1,status:'PAID',orderRef:order.order_ref};
+}
+async function syncBillStatus(d,env){
+  if(!env.SHOP_DB)return {ok:false,error:'SHOP_DB binding belum tersedia'};
+  if(!env.BILLPLZ_API_KEY)return {ok:false,error:'Billplz API key belum dikonfigurasi'};
+  const key=String(d.orderRef||d.orderId||'').trim();if(!key)return {ok:false,error:'Order diperlukan'};
+  const order=await env.SHOP_DB.prepare('SELECT * FROM orders WHERE order_ref=? OR id=? LIMIT 1').bind(key,key).first();if(!order)return {ok:false,error:'Order tidak dijumpai'};
+  if(!order.billplz_id)return {ok:false,error:'Billplz bill belum dipautkan',orderRef:order.order_ref};
+  const bp=await fetch(`${BILLPLZ_BASE}/bills/${encodeURIComponent(String(order.billplz_id))}`,{headers:{Authorization:billAuth(String(env.BILLPLZ_API_KEY))}});const text=await bp.text();let bill;try{bill=JSON.parse(text)}catch(e){bill={error:text}};
+  if(!bp.ok)return {ok:false,error:'Billplz status check gagal',detail:bill?.error||bill?.message||'Unknown error',orderRef:order.order_ref};
+  if(env.BILLPLZ_COLLECTION_ID&&String(bill.collection_id||'')!==String(env.BILLPLZ_COLLECTION_ID))return {ok:false,error:'Invalid collection',orderRef:order.order_ref};
+  return markBillPaid(env,order,bill);
+}
 async function handleBillplzCallback(d,env){if(!env.SHOP_DB)return new Response('SHOP_DB binding belum tersedia',{status:500});if(!env.BILLPLZ_X_SIGNATURE)return new Response('X Signature secret missing',{status:500});if(!await verifyXSignature(d,env.BILLPLZ_X_SIGNATURE))return new Response('Invalid signature',{status:401});const collection=String(d.collection_id||'');if(env.BILLPLZ_COLLECTION_ID&&collection!==String(env.BILLPLZ_COLLECTION_ID))return new Response('Invalid collection',{status:400});const billId=String(d.id||'');if(!billId)return new Response('Missing bill id',{status:400});const order=await env.SHOP_DB.prepare('SELECT * FROM orders WHERE billplz_id=? LIMIT 1').bind(billId).first();if(!order)return new Response('OK',{status:200});const paid=String(d.paid||'').toLowerCase()==='true',state=String(d.state||'').toLowerCase(),paidAmount=Number(d.paid_amount||0),expected=cents(order.total),txStatus=String(d.transaction_status||''),txId=String(d.transaction_id||''),paidAt=String(d.paid_at||'')||null;if(paid&&state==='paid'){if(paidAmount&&paidAmount!==expected)return new Response('Amount mismatch',{status:400});if(order.payment_status==='PAID')return new Response('OK',{status:200});const now=new Date().toISOString();const orderUpdate=await env.SHOP_DB.prepare(`UPDATE orders SET status='PROCESSING',payment_status='PAID',billplz_state=?,billplz_transaction_id=?,billplz_transaction_status=?,paid_at=?,updated_at=? WHERE id=? AND payment_status<>'PAID'`).bind(state,txId,txStatus,paidAt||now,now,order.id).run();if(Number(orderUpdate?.meta?.changes||0)===1)await env.SHOP_DB.prepare(`UPDATE customers SET total_orders=total_orders+1,total_spend=total_spend+?,last_order_at=?,updated_at=? WHERE id=?`).bind(Number(order.total),now,now,order.customer_id).run();return new Response('OK',{status:200})}await env.SHOP_DB.prepare(`UPDATE orders SET billplz_state=?,billplz_transaction_id=?,billplz_transaction_status=?,updated_at=? WHERE id=?`).bind(state,txId,txStatus,new Date().toISOString(),order.id).run();return new Response('OK',{status:200})}
-async function handleBillplzRedirect(d,env){const billId=String(d['billplz[id]']||d.id||'');let order=null;if(env.SHOP_DB&&billId)order=await env.SHOP_DB.prepare('SELECT order_ref,payment_status FROM orders WHERE billplz_id=? LIMIT 1').bind(billId).first();const status=order?.payment_status==='PAID'?'success':'pending';const url=new URL('/','https://shop.reqoo.co');url.searchParams.set('payment',status);if(order?.order_ref)url.searchParams.set('order',order.order_ref);return Response.redirect(url.toString(),303)}
+async function handleBillplzRedirect(d,env){const billId=String(d['billplz[id]']||d.id||'');let order=null;if(env.SHOP_DB&&billId)order=await env.SHOP_DB.prepare('SELECT * FROM orders WHERE billplz_id=? LIMIT 1').bind(billId).first();if(order&&env.BILLPLZ_API_KEY){try{const sync=await syncBillStatus({orderRef:order.order_ref},env);if(sync.ok&&sync.status==='PAID')order={...order,payment_status:'PAID'}}catch(e){console.error('Billplz redirect sync failed',e)}}const status=order?.payment_status==='PAID'?'success':'pending';const url=new URL('/','https://shop.reqoo.co');url.searchParams.set('payment',status);if(order?.order_ref)url.searchParams.set('order',order.order_ref);return Response.redirect(url.toString(),303)}
