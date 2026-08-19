@@ -1,0 +1,1 @@
+export const rq = { q: (s, r=document) => r.querySelector(s), qa: (s, r=document) => [...r.querySelectorAll(s)], esc: (v='') => String(v).replace(/[&<>\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c])) };
