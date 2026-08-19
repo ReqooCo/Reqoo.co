@@ -44,10 +44,8 @@ jobs:
           set -euo pipefail
           DB_NAME="reqoo-rebuild"
           API="https://api.cloudflare.com/client/v4"
-
           LIST_JSON="$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" "$API/accounts/$CLOUDFLARE_ACCOUNT_ID/d1/database")"
           DB_ID="$(printf '%s' "$LIST_JSON" | jq -r --arg name "$DB_NAME" '.result[] | select(.name == $name) | .uuid' | head -n 1)"
-
           if [ -z "$DB_ID" ] || [ "$DB_ID" = "null" ]; then
             echo "Creating isolated D1: $DB_NAME"
             CREATE_JSON="$(curl -fsS -X POST -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" "$API/accounts/$CLOUDFLARE_ACCOUNT_ID/d1/database" --data "$(jq -nc --arg name "$DB_NAME" '{name:$name}')")"
@@ -56,7 +54,6 @@ jobs:
           else
             echo "Reusing existing D1: $DB_NAME"
           fi
-
           test -n "$DB_ID" && [ "$DB_ID" != "null" ] || { echo "Unable to resolve D1 database id"; exit 1; }
           printf '%s\n' "name = \"reqoo-rebuild\"" "compatibility_date = \"2026-08-19\"" "" "[[d1_databases]]" "binding = \"DB\"" "database_name = \"reqoo-rebuild\"" "database_id = \"$DB_ID\"" "migrations_dir = \"migrations\"" > wrangler.toml
           cat wrangler.toml
@@ -78,7 +75,7 @@ jobs:
           wrangler d1 execute reqoo-rebuild --remote --command "$SQL" --json > /tmp/schema.json
           cat /tmp/schema.json
           EXPECTED="$(printf '%s\n' $REQUIRED_TABLES | sort)"
-          ACTUAL="$(jq -r '.result[0].results[]?.name // empty' /tmp/schema.json | sort)"
+          ACTUAL="$(jq -r '.[0].results[]?.name // empty' /tmp/schema.json | sort)"
           test "$ACTUAL" = "$EXPECTED" || { echo "Schema verification failed"; echo "Expected:"; printf '%s\n' "$EXPECTED"; echo "Actual:"; printf '%s\n' "$ACTUAL"; exit 1; }
           echo "REQOO CORE SCHEMA VERIFIED: all required tables exist."
 
