@@ -1,9 +1,44 @@
+const CUSTOMER_TOKEN_TTL=30*24*60*60*1000;
+
+function jsonError(error,status){return new Response(JSON.stringify({ok:false,error}),{status,headers:{'content-type':'application/json;charset=UTF-8','cache-control':'no-store'}})}
+function b64u(v){return btoa(v).replaceAll('+','-').replaceAll('/','_').replaceAll('=','')}
+function unb64u(v){return atob(String(v).replaceAll('-','+').replaceAll('_','/')+'='.repeat((4-String(v).length%4)%4))}
+async function hmac(value,secret){const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(String(secret)),{name:'HMAC',hash:'SHA-256'},false,['sign']);const sig=await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(value));return b64u(String.fromCharCode(...new Uint8Array(sig)))}
+async function safeToken(value,secret){const [payload,sig]=String(value||'').split('.');if(!payload||!sig||!secret)return null;const expected=await hmac(payload,secret);if(expected!==sig)return null;try{const data=JSON.parse(unb64u(payload));if(!data?.phone||Number(data.exp||0)<Date.now())return null;return data}catch{return null}}
+
+async function protectPayment(request,env){
+  const expected=String(env.ADMIN_API_KEY||'');
+  if(!expected)return jsonError('PAYMENT_ADMIN_AUTH_NOT_CONFIGURED',503);
+  if(request.headers.get('authorization')!==`Bearer ${expected}`)return jsonError('PAYMENT_ADMIN_UNAUTHORIZED',401);
+  return null;
+}
+
+async function protectShopCustomer(request,env,url){
+  const secret=String(env.SHOP_CUSTOMER_SECRET||'');
+  if(!secret)return jsonError('SHOP_CUSTOMER_AUTH_NOT_CONFIGURED',503);
+  const token=request.headers.get('x-reqoo-customer-token')||url.searchParams.get('customer_token');
+  const customer=await safeToken(token,secret);
+  if(!customer)return jsonError('CUSTOMER_AUTH_REQUIRED',401);
+  if(url.searchParams.get('action')==='customerOrders'){
+    url.searchParams.set('phone',customer.phone);
+    url.searchParams.delete('customer_token');
+    return null;
+  }
+  if(url.searchParams.get('action')==='getOrder'){
+    const key=String(url.searchParams.get('orderRef')||url.searchParams.get('orderId')||'').trim();
+    if(!key)return jsonError('ORDER_REQUIRED',400);
+    if(!env.SHOP_DB)return jsonError('SHOP_DB_BINDING_MISSING',503);
+    const row=await env.SHOP_DB.prepare('SELECT o.id,c.phone FROM orders o JOIN customers c ON c.id=o.customer_id WHERE (o.order_ref=? OR o.id=?) LIMIT 1').bind(key,key).first();
+    if(!row||String(row.phone)!==String(customer.phone))return jsonError('ORDER_NOT_FOUND',404);
+    return null;
+  }
+  return null;
+}
+
 export async function onRequest(context){
   const {request,env}=context;
   const url=new URL(request.url),host=url.hostname;
 
-  // V2 API is the only canonical PKSK backend. This compatibility rewrite keeps
-  // any stale cached client from reaching a deleted legacy function.
   if(host==='pksk.sim.reqoo.co'&&url.pathname==='/api/pksk-v56'){
     url.pathname='/api/pksk-v2';
     return context.next(new Request(url,request));
@@ -52,6 +87,18 @@ export async function onRequest(context){
   if(host==='play.reqoo.co'&&!url.pathname.startsWith('/api/')){
     url.pathname=url.pathname==='/'?'/play/':`/play${url.pathname}`;
     return env.ASSETS.fetch(url);
+  }
+
+  if(host==='shop.reqoo.co'&&url.pathname.startsWith('/api/payment-v1')){
+    const denied=await protectPayment(request,env);if(denied)return denied;
+  }
+
+  if(host==='shop.reqoo.co'&&url.pathname==='/api/shop'){
+    const action=url.searchParams.get('action');
+    if(action==='customerOrders'||action==='getOrder'){
+      const denied=await protectShopCustomer(request,env,url);if(denied)return denied;
+      return context.next(new Request(url,request));
+    }
   }
 
   if(host==='shop.reqoo.co'&&!url.pathname.startsWith('/api/')&&!url.pathname.startsWith('/shop/')){
