@@ -8,11 +8,15 @@ export async function onRequest(context) {
     const body = await input(request);
     const action = String(body.action || '');
     if (action === 'health') return json({ ok:true, provider:'Billplz', apiVersion:'v4', configured:!!(env.BILLPLZ_API_KEY && env.BILLPLZ_COLLECTION_ID && env.BILLPLZ_X_SIGNATURE_KEY) });
-    if (action === 'createBill') return json(await createBill(body, env));
+    if (action === 'createBill') {
+      const auth = requirePaymentToken(request, env);
+      if (auth) return auth;
+      return json(await createBill(body, env));
+    }
     if (action === 'verifyCallback') return json(await verifyCallback(body, env));
     return json({ ok:false, error:'Action tidak dikenali' }, 400);
   } catch (e) {
-    return json({ ok:false, error:String(e?.message || e) }, 500);
+    return json({ ok:false, error:'BILLPLZ_REQUEST_FAILED' }, 500);
   }
 }
 
@@ -23,19 +27,28 @@ async function input(request) {
   return Object.fromEntries(new URLSearchParams(await request.text()));
 }
 
-function cors(){return {'access-control-allow-origin':'*','access-control-allow-methods':'GET,POST,OPTIONS','access-control-allow-headers':'Content-Type','cache-control':'no-store'};}
+function cors(){return {'access-control-allow-origin':'*','access-control-allow-methods':'GET,POST,OPTIONS','access-control-allow-headers':'Content-Type,X-Reqoo-Payment-Token','cache-control':'no-store'};}
 function json(data,status=200){return new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=UTF-8',...cors()}});}
 function apiBase(env){return String(env.BILLPLZ_ENV || 'sandbox').toLowerCase()==='production' ? PROD_API : SANDBOX_API;}
 function required(env){if(!env.BILLPLZ_API_KEY)return 'BILLPLZ_API_KEY belum ditetapkan';if(!env.BILLPLZ_COLLECTION_ID)return 'BILLPLZ_COLLECTION_ID belum ditetapkan';if(!env.BILLPLZ_X_SIGNATURE_KEY)return 'BILLPLZ_X_SIGNATURE_KEY belum ditetapkan';return '';}
+function requirePaymentToken(request, env){
+  const expected=String(env.REQOO_PAYMENT_TOKEN || '');
+  if(!expected)return json({ok:false,error:'PAYMENT_AUTH_NOT_CONFIGURED'},503);
+  if(request.headers.get('X-Reqoo-Payment-Token')!==expected)return json({ok:false,error:'PAYMENT_UNAUTHORIZED'},401);
+  return null;
+}
 
 async function createBill(d, env) {
   const missing=required(env); if(missing)return {ok:false,error:missing,configurationRequired:true};
   const amount=Math.round(Number(d.amount||0)*100);
   const name=String(d.name||'').trim(), email=String(d.email||'').trim();
   if(amount<=0||!name||!email)return {ok:false,error:'amount, name dan email diperlukan'};
-  const origin=new URL(d.redirectUrl || 'https://reqoo.co/').origin;
-  const callbackUrl=String(d.callbackUrl || `${origin}/api/billplz`);
+  const publicOrigin=String(env.REQOO_PUBLIC_ORIGIN || 'https://reqoo.co').replace(/\/$/,'');
+  let origin;
+  try { origin=new URL(publicOrigin).origin; } catch { return {ok:false,error:'REQOO_PUBLIC_ORIGIN tidak sah'}; }
+  const callbackUrl=`${origin}/api/billplz`;
   const redirectUrl=String(d.redirectUrl || origin);
+  try { if(new URL(redirectUrl).origin!==origin)return {ok:false,error:'REDIRECT_URL_NOT_ALLOWED'}; } catch { return {ok:false,error:'REDIRECT_URL_INVALID'}; }
   const params=new URLSearchParams();
   params.set('collection_id',String(env.BILLPLZ_COLLECTION_ID));
   params.set('description',String(d.description||'REQOO Order'));
