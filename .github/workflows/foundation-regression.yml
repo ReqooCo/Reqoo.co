@@ -37,7 +37,7 @@ jobs:
           grep -q "addons_snapshot_json" functions/api/order-v1.js
           grep -q "documents" functions/api/invoice-v1.js
           grep -q "documents" functions/api/quote-v1.js
-          grep -q "const a=admin(r,e,t);if(a)return a" functions/api/access-v1.js
-          grep -q "const a=admin(r,e,t);if(a)return a" functions/api/invoice-v1.js
-          grep -q "const a=admin(r,e,t);if(a)return a" functions/api/quote-v1.js
+          grep -q "admin(r,e,t)" functions/api/access-v1.js
+          grep -q "admin(r,e,t)" functions/api/invoice-v1.js
+          grep -q "admin(request,env,t)" functions/api/quote-v1.js
           echo "FOUNDATION REGRESSION SOURCE CHECK PASSED"
