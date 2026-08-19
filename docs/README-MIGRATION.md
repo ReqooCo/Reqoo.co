@@ -1,1 +1,0 @@
-Migration baseline is locked. Existing SHOP and SIM must be preserved and upgraded in place.

@@ -1,14 +1,7 @@
-# REQOO.CO
+# Reqoo.co
 
-## PKSK V2
+Clean rebuild foundation.
 
-PKSK simulator and student dashboard now use the V2 backend at `/api/pksk-v2`.
+The PKSK Set 01–50 data is preserved unchanged under `sim/pksk/simulator/sets/`.
 
-- Single canonical PKSK API for access, device registration, progress and dashboard.
-- JSON `POST` only for client/server communication.
-- Maximum 3 registered devices per license.
-- Server recalculates the final result from the canonical question bank before marking a set complete.
-- Set 01–50 question-bank files are kept unchanged by the backend rebuild.
-- Legacy PKSK API files and legacy PKSK generator/audit workflows have been removed.
-
-The public site and shop routes remain separate from the PKSK V2 runtime.
+All legacy application code is intentionally removed from this rebuild and will be rebuilt against the locked 18-module structure.
