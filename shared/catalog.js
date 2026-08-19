@@ -1,10 +1,17 @@
 export const CATALOG_API = 'https://api.reqoo.co';
 
+const adminKey = () => sessionStorage.getItem('reqoo_admin_key') || '';
+export const catalogAuth = Object.freeze({
+  getKey: adminKey,
+  setKey: (key) => sessionStorage.setItem('reqoo_admin_key', String(key || '')),
+  clear: () => sessionStorage.removeItem('reqoo_admin_key')
+});
+
 async function request(path, options = {}) {
-  const res = await fetch(`${CATALOG_API}${path}`, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }
-  });
+  const key = adminKey();
+  const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+  if (key) headers['X-Admin-Key'] = key;
+  const res = await fetch(`${CATALOG_API}${path}`, { ...options, headers });
   const text = await res.text();
   let data = null;
   try { data = text ? JSON.parse(text) : null; } catch { data = { error: text || 'Invalid API response' }; }
