@@ -19,6 +19,19 @@ async function request(path, options = {}) {
   return data;
 }
 
+export async function uploadMedia(file) {
+  if (!(file instanceof File)) throw new Error('Pilih gambar dahulu');
+  const form = new FormData();
+  form.append('file', file, file.name);
+  const key = adminKey();
+  const res = await fetch(`${CATALOG_API}/media/upload`, { method: 'POST', headers: key ? { 'X-Admin-Key': key } : {}, body: form });
+  const text = await res.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch { data = { error: text || 'Invalid upload response' }; }
+  if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+  return data;
+}
+
 export const catalog = Object.freeze({
   list: (publishedOnly = false) => request(`/products${publishedOnly ? '?published=true' : ''}`),
   create: (product) => request('/products', { method: 'POST', body: JSON.stringify(product) }),
