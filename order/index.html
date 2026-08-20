@@ -1,0 +1,7 @@
+<!doctype html>
+<html lang="ms"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Order · Reqoo.co</title><link rel="stylesheet" href="../shared/reqoo.css"></head>
+<body><div class="rq-shell"><nav class="rq-nav"><a class="rq-brand" href="../">REQOO.CO</a><div class="rq-navlinks"><a href="../shop/">Shop</a></div></nav><main><div class="rq-kicker">Order</div><section class="rq-hero"><h1>Pesanan diterima</h1><p id="intro">Memuatkan pesanan…</p></section><div id="detail" class="rq-panel"></div></main></div>
+<script type="module">
+const id=new URLSearchParams(location.search).get('id');const detail=document.querySelector('#detail'),intro=document.querySelector('#intro');
+if(!id){intro.textContent='ID pesanan tidak ditemui.';detail.innerHTML='<div class="rq-empty">Sila kembali ke Shop.</div>';}else{try{const res=await fetch(`https://api.reqoo.co/orders/${encodeURIComponent(id)}`);const data=await res.json();if(!res.ok)throw new Error(data.error||`HTTP ${res.status}`);const o=data.order;intro.textContent=`No. pesanan: ${o.id}`;detail.innerHTML=`<div><strong>Status bayaran:</strong> ${o.payment_status}</div><div style="margin-top:10px"><strong>Jumlah:</strong> RM${(Number(o.total_minor||0)/100).toFixed(2)}</div><p style="margin-top:20px">Pesanan telah direkodkan. Langkah seterusnya ialah sambungan pembayaran.</p>`;}catch(e){intro.textContent='Pesanan tidak dapat dimuatkan.';detail.innerHTML='<div class="rq-empty">'+e.message+'</div>';}}
+</script></body></html>
