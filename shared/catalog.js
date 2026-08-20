@@ -1,4 +1,4 @@
-export const CATALOG_API = 'https://api.reqoo.co';
+export const CATALOG_API = 'https://reqoo.co/api';
 
 const adminKey = () => sessionStorage.getItem('reqoo_admin_key') || '';
 export const catalogAuth = Object.freeze({
