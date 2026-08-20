@@ -5,7 +5,7 @@ import {
   options,
   productRow,
   replaceImages
-} from '../../../_catalog.js';
+} from '../../_catalog.js';
 
 export async function onRequest(context) {
   const { request, env, params } = context;
