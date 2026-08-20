@@ -1,4 +1,5 @@
 import core from './worker.js';
+import { webhook as whatsappWebhook } from './whatsapp.js';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json; charset=utf-8' };
 const ALLOWED_ORIGINS = new Set([
@@ -41,8 +42,12 @@ export default {
     const url = new URL(request.url);
     const origin = request.headers.get('Origin') || '';
 
+    if (url.pathname === '/whatsapp/webhook') {
+      return whatsappWebhook(request, env, ctx);
+    }
+
     // Customer product detail is public. Draft/hidden products remain protected by core admin routes.
-    const match = url.pathname.match(/^\/products\/([^/]+)$/);
+    const match = url.pathname.match(/^\\/products\\/([^/]+)$/);
     if (request.method === 'GET' && match && env.DB) {
       return publicProduct(env, decodeURIComponent(match[1]), origin);
     }
