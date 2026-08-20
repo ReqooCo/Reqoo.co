@@ -47,7 +47,7 @@ export default {
     }
 
     // Customer product detail is public. Draft/hidden products remain protected by core admin routes.
-    const match = url.pathname.match(/^\\/products\\/([^/]+)$/);
+    const match = url.pathname.match(/^\/products\/([^/]+)$/);
     if (request.method === 'GET' && match && env.DB) {
       return publicProduct(env, decodeURIComponent(match[1]), origin);
     }
