@@ -1,7 +1,8 @@
 <!doctype html>
 <html lang="ms">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Custom · Reqoo.co</title>
 <link rel="stylesheet" href="../shared/reqoo.css">
 <style>
@@ -21,7 +22,7 @@
 <div class="field"><label>Nama</label><input id="name" required placeholder="Nama anda"></div>
 <div class="field"><label>No. telefon</label><input id="phone" required placeholder="01X-XXXXXXX"></div>
 <div class="field"><label>Jenis custom</label><select id="type"><option>Laser Cut</option><option>Laser Engraving</option><option>3D Print</option><option>Acrylic</option><option>Kayu / Wood</option><option>Custom Gift</option><option>Lain-lain</option></select></div>
-<div class="field"><label>Material</label><input id="material" placeholder="Contoh: plywood 3mm, acrylic, PLA"></div>
+<div class="field"><label>Material</label><select id="material"><option value="">Pilih material</option><optgroup label="Laser · Kayu"><option>Plywood 3mm</option><option>Plywood 5.5mm</option><option>MDF 3mm</option><option>MDF 6mm</option><option>Kayu Solid</option><option>Veneer</option></optgroup><optgroup label="Laser · Acrylic"><option>Acrylic 2mm</option><option>Acrylic 3mm</option><option>Acrylic 5mm</option><option>Acrylic Mirror 3mm</option></optgroup><optgroup label="Lain-lain"><option>Cardboard / Paper</option><option>Leather</option><option>Aluminium</option><option>Lain-lain</option></optgroup><optgroup label="3D Print"><option>PLA</option><option>PETG</option><option>TPU</option><option>ABS / ASA</option><option>PLA-CF</option></optgroup></select></div>
 <div class="field"><label>Ukuran</label><input id="size" placeholder="Contoh: 100 × 150 mm"></div>
 <div class="field"><label>Kuantiti</label><input id="qty" type="number" min="1" value="1"></div>
 <div class="field"><label>Tarikh diperlukan</label><input id="date" type="date"></div>
