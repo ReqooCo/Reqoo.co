@@ -11,5 +11,9 @@ database_id = "15123ddd-d63a-4033-912c-51c1f05c11c5"
 binding = "MEDIA"
 bucket_name = "reqoo-media"
 
+[secrets]
+# Fail deployment instead of allowing the production Worker to run without admin authentication.
+required = ["ADMIN_KEY"]
+
 [vars]
-# ADMIN_KEY must be configured as a Worker secret in Cloudflare.
+# ADMIN_KEY is intentionally NOT stored here. It must remain a Cloudflare Worker Secret.
