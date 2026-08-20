@@ -34,6 +34,7 @@ export async function uploadMedia(file) {
 
 export const catalog = Object.freeze({
   list: (publishedOnly = false) => request(`/products${publishedOnly ? '?published=true' : ''}`),
+  get: (id) => request(`/products/${encodeURIComponent(id)}`),
   create: (product) => request('/products', { method: 'POST', body: JSON.stringify(product) }),
   update: (id, product) => request(`/products/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify(product) }),
   remove: (id) => request(`/products/${encodeURIComponent(id)}`, { method: 'DELETE' })
@@ -45,6 +46,7 @@ export function normalizeProduct(input) {
     slug: String(input.slug || input.name || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
     description: String(input.description || '').trim(),
     price: Number(input.price || 0),
+    product_type: String(input.product_type || 'physical'),
     images: Array.isArray(input.images) ? input.images.map(String).map(s => s.trim()).filter(Boolean) : [],
     published: Boolean(input.published),
     sort: Number(input.sort || 0)
