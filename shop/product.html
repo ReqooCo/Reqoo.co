@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="ms">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Produk · Reqoo.co</title><link rel="stylesheet" href="../shared/reqoo.css"></head>
+<body><div class="rq-shell"><nav class="rq-nav"><a class="rq-brand" href="../">REQOO.CO</a><div class="rq-navlinks"><a href="./">Shop</a><a href="../cart/">Cart <span id="cartCount">0</span></a><a href="../admin/">Admin</a></div></nav><main><div id="notice" class="rq-empty">Memuatkan produk…</div><section id="product" hidden></section></main></div>
+<script type="module">
+import { catalog } from '../shared/catalog.js';
+import { cart, money } from '../shared/cart.js';
+const notice=document.querySelector('#notice'), product=document.querySelector('#product'), count=document.querySelector('#cartCount');
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function refreshCount(){count.textContent=cart.count()}
+async function load(){try{const id=new URLSearchParams(location.search).get('id'); if(!id) throw new Error('Produk tidak dipilih.'); const products=await catalog.list(true); const p=(Array.isArray(products)?products:(products.products||[])).find(x=>String(x.id)===String(id)); if(!p) throw new Error('Produk tidak dijumpai.'); const image=(p.images||[])[0]||''; product.innerHTML=`<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:start"><div>${image?`<img src="${esc(image)}" alt="${esc(p.name)}" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:16px">`:''}</div><div><div class="rq-kicker">Produk</div><h1>${esc(p.name)}</h1><p>${esc(p.description||p.short_description||'')}</p><div style="font-size:24px;font-weight:800;margin:20px 0">${money(p.price)}</div><label>Kuanti­ti <input id="qty" type="number" min="1" value="1" style="width:90px"></label><button id="add" style="display:block;margin-top:18px">Tambah ke Cart</button><div id="added" class="notice" style="display:none;margin-top:12px">Produk ditambah ke cart.</div></div></div>`; product.hidden=false; notice.hidden=true; document.querySelector('#add').onclick=()=>{cart.add(p,document.querySelector('#qty').value);refreshCount();document.querySelector('#added').style.display='block'}; }catch(e){notice.textContent=e.message;}}
+refreshCount(); load();
+</script></body></html>
