@@ -3,6 +3,39 @@
 <body><div class="rq-shell"><nav class="rq-nav"><a class="rq-brand" href="../">REQOO.CO</a><div class="rq-navlinks"><a href="../shop/">Shop</a></div></nav><main><div class="rq-kicker">Order</div><section class="rq-hero"><h1>Pesanan diterima</h1><p id="intro">Memuatkan pesanan…</p></section><div id="detail" class="rq-panel"></div></main></div>
 <script type="module">
 const API='https://api.reqoo.co';
-const id=new URLSearchParams(location.search).get('id');const detail=document.querySelector('#detail'),intro=document.querySelector('#intro');
-if(!id){intro.textContent='ID pesanan tidak ditemui.';detail.innerHTML='<div class="rq-empty">Sila kembali ke Shop.</div>';}else{try{const res=await fetch(`${API}/orders/${encodeURIComponent(id)}`);const data=await res.json();if(!res.ok)throw new Error(data.error||`HTTP ${res.status}`);const o=data.order;const c=data.customer;intro.textContent=`No. pesanan: ${o.id}`;detail.innerHTML=`<div><strong>Pelanggan:</strong> ${String(c?.name||'').replace(/[<>]/g,'')}</div><div style="margin-top:10px"><strong>Status bayaran:</strong> ${o.payment_status}</div><div style="margin-top:10px"><strong>Jumlah:</strong> RM${(Number(o.total_minor||0)/100).toFixed(2)}</div><div style="margin-top:20px"><strong>Item</strong>${(data.items||[]).map(i=>`<div style="display:flex;justify-content:space-between;margin-top:8px"><span>${String(i.product_name_snapshot||'').replace(/[<>]/g,'')} × ${i.quantity}</span><span>RM${(Number(i.line_total_minor||0)/100).toFixed(2)}</span></div>`).join('')}</div><p style="margin-top:20px">Pesanan telah direkodkan. Langkah seterusnya ialah sambungan pembayaran.</p>`;}catch(e){intro.textContent='Pesanan tidak dapat dimuatkan.';detail.innerHTML='<div class="rq-empty">'+String(e.message).replace(/[<>]/g,'')+'</div>';}}
+const id=new URLSearchParams(location.search).get('id');
+const detail=document.querySelector('#detail'),intro=document.querySelector('#intro');
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=v=>`RM${(Number(v||0)/100).toFixed(2)}`;
+function paymentButton(status){
+  if(status==='paid') return '<div style="margin-top:24px;padding:14px;border:1px solid #b8d8bf;border-radius:10px;background:#f1faf3"><strong>✓ Bayaran berjaya</strong><div style="margin-top:5px;color:#667">Pesanan anda sedang diproses.</div></div>';
+  return `<div style="margin-top:24px"><button id="pay" type="button" style="width:100%;padding:14px 18px;border:0;border-radius:10px;background:#171717;color:#dfc46f;font-weight:800;font-size:14px;cursor:pointer">Bayar Sekarang · ${status==='failed'?'Cuba Semula':''}</button><p id="paymsg" style="margin:10px 0 0;color:#777;font-size:12px">Anda akan dibawa ke halaman pembayaran Billplz.</p></div>`;
+}
+async function startPayment(){
+  const button=document.querySelector('#pay'),msg=document.querySelector('#paymsg');
+  if(!button)return;
+  button.disabled=true;button.style.opacity='.65';button.textContent='Menyediakan pembayaran…';msg.textContent='Sila tunggu sebentar.';
+  try{
+    const res=await fetch(`${API}/payments/billplz/create/${encodeURIComponent(id)}`,{method:'POST'});
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.error||`HTTP ${res.status}`);
+    if(!data.bill_url)throw new Error('Pautan pembayaran tidak diterima.');
+    location.href=data.bill_url;
+  }catch(e){
+    button.disabled=false;button.style.opacity='1';button.textContent='Bayar Sekarang';msg.textContent='Pembayaran gagal dimulakan: '+e.message;
+  }
+}
+async function load(){
+  if(!id){intro.textContent='ID pesanan tidak ditemui.';detail.innerHTML='<div class="rq-empty">Sila kembali ke Shop.</div>';return;}
+  try{
+    const res=await fetch(`${API}/orders/${encodeURIComponent(id)}`);const data=await res.json();
+    if(!res.ok)throw new Error(data.error||`HTTP ${res.status}`);
+    const o=data.order,c=data.customer;
+    intro.textContent=`No. pesanan: ${o.id}`;
+    const status=String(o.payment_status||'pending');
+    detail.innerHTML=`<div><strong>Pelanggan:</strong> ${esc(c?.name)}</div><div style="margin-top:10px"><strong>Status bayaran:</strong> ${esc(status)}</div><div style="margin-top:10px"><strong>Jumlah:</strong> ${money(o.total_minor)}</div><div style="margin-top:20px"><strong>Item</strong>${(data.items||[]).map(i=>`<div style="display:flex;justify-content:space-between;gap:16px;margin-top:8px"><span>${esc(i.product_name_snapshot)} × ${i.quantity}</span><span>${money(i.line_total_minor)}</span></div>`).join('')}</div>${paymentButton(status)}`;
+    document.querySelector('#pay')?.addEventListener('click',startPayment);
+  }catch(e){intro.textContent='Pesanan tidak dapat dimuatkan.';detail.innerHTML='<div class="rq-empty">'+esc(e.message)+'</div>';}
+}
+load();
 </script></body></html>
