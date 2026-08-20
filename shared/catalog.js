@@ -7,10 +7,21 @@ export const catalogAuth = Object.freeze({
   clear: () => sessionStorage.removeItem('reqoo_admin_key')
 });
 
-async function request(path, options = {}) {
-  const key = adminKey();
+async function publicRequest(path, options = {}) {
   const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
-  if (key) headers['X-Admin-Key'] = key;
+  delete headers['X-Admin-Key'];
+  const res = await fetch(`${CATALOG_API}${path}`, { ...options, headers });
+  const text = await res.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch { data = { error: text || 'Invalid API response' }; }
+  if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+  return data;
+}
+
+async function adminRequest(path, options = {}) {
+  const key = adminKey();
+  if (!key) throw new Error('Admin Key diperlukan untuk tindakan Admin.');
+  const headers = { 'Content-Type': 'application/json', ...(options.headers || {}), 'X-Admin-Key': key };
   const res = await fetch(`${CATALOG_API}${path}`, { ...options, headers });
   const text = await res.text();
   let data = null;
@@ -21,10 +32,15 @@ async function request(path, options = {}) {
 
 export async function uploadMedia(file) {
   if (!(file instanceof File)) throw new Error('Pilih gambar dahulu');
+  const key = adminKey();
+  if (!key) throw new Error('Admin Key diperlukan untuk upload gambar.');
   const form = new FormData();
   form.append('file', file, file.name);
-  const key = adminKey();
-  const res = await fetch(`${CATALOG_API}/media/upload`, { method: 'POST', headers: key ? { 'X-Admin-Key': key } : {}, body: form });
+  const res = await fetch(`${CATALOG_API}/media/upload`, {
+    method: 'POST',
+    headers: { 'X-Admin-Key': key },
+    body: form
+  });
   const text = await res.text();
   let data = null;
   try { data = text ? JSON.parse(text) : null; } catch { data = { error: text || 'Invalid upload response' }; }
@@ -33,11 +49,16 @@ export async function uploadMedia(file) {
 }
 
 export const catalog = Object.freeze({
-  list: (publishedOnly = false) => request(`/products${publishedOnly ? '?published=true' : ''}`),
-  get: (id) => request(`/products/${encodeURIComponent(id)}`),
-  create: (product) => request('/products', { method: 'POST', body: JSON.stringify(product) }),
-  update: (id, product) => request(`/products/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify(product) }),
-  remove: (id) => request(`/products/${encodeURIComponent(id)}`, { method: 'DELETE' })
+  // PUBLIC: customer can browse published products without Admin Key.
+  list: (publishedOnly = false) => publishedOnly
+    ? publicRequest('/products?published=true')
+    : adminRequest('/products'),
+  // PUBLIC: customer product detail must never depend on Admin Key.
+  get: (id) => publicRequest(`/products/${encodeURIComponent(id)}`),
+  // ADMIN ONLY.
+  create: (product) => adminRequest('/products', { method: 'POST', body: JSON.stringify(product) }),
+  update: (id, product) => adminRequest(`/products/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify(product) }),
+  remove: (id) => adminRequest(`/products/${encodeURIComponent(id)}`, { method: 'DELETE' })
 });
 
 export function normalizeProduct(input) {
