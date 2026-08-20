@@ -1,5 +1,3 @@
-const OK = new Response('EVENT_RECEIVED', { status: 200 });
-
 function textResponse(body, status = 200) {
   return new Response(body, { status, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
 }
@@ -80,5 +78,5 @@ export async function webhook(request, env) {
     console.error('WhatsApp event recording failed', error);
   }
 
-  return OK;
+  return textResponse('EVENT_RECEIVED', 200);
 }
