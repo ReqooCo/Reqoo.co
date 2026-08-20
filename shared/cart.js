@@ -15,15 +15,20 @@ function write(items) {
   return items;
 }
 
+function customizationKey(c) {
+  try { return JSON.stringify(c || {}); } catch { return '{}'; }
+}
+
 export const cart = Object.freeze({
   get: () => read(),
   count: () => read().reduce((sum, item) => sum + item.quantity, 0),
   subtotal: () => read().reduce((sum, item) => sum + (Number(item.price) * item.quantity), 0),
   add(product, quantity = 1) {
     const items = read();
-    const qty = Math.max(1, Number(quantity) || 1);
+    const qty = Math.max(1, Math.floor(Number(quantity) || 1));
     const id = String(product.id);
-    const existing = items.find(item => item.id === id);
+    const customization = product.customization || {};
+    const existing = items.find(item => item.id === id && customizationKey(item.customization) === customizationKey(customization));
     if (existing) existing.quantity += qty;
     else items.push({
       id,
@@ -31,7 +36,8 @@ export const cart = Object.freeze({
       slug: String(product.slug || ''),
       price: Number(product.price || 0),
       image: String((product.images || [])[0] || ''),
-      quantity: qty
+      quantity: qty,
+      customization
     });
     return write(items);
   },
