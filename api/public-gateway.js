@@ -42,6 +42,12 @@ export default {
     const url = new URL(request.url);
     const origin = request.headers.get('Origin') || '';
 
+    // admin.reqoo.co is currently attached to this API Worker. Send its root
+    // to the actual Pages admin UI instead of exposing the Worker JSON 404.
+    if (url.hostname === 'admin.reqoo.co' && (url.pathname === '/' || url.pathname === '')) {
+      return Response.redirect('https://reqoo.co/admin/', 302);
+    }
+
     if (url.pathname === '/whatsapp/webhook') {
       return whatsappWebhook(request, env, ctx);
     }
