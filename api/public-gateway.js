@@ -3,6 +3,7 @@ import { webhook as whatsappWebhook } from './whatsapp.js';
 import { pkskAdmin } from './pksk-admin.js';
 import { quotations } from './quotations.js';
 import { manualPayment } from './manual-payment.js';
+import { orderAdmin } from './order-admin.js';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json; charset=utf-8' };
 const ALLOWED_ORIGINS = new Set([
@@ -40,20 +41,13 @@ async function createOrderAndPersistCheckoutFields(request, env, ctx) {
   const payload = await request.json();
   const checkoutAddress = String(payload?.address || '').trim();
   const checkoutNote = String(payload?.note || '').trim();
-  const upstream = new Request(request.url, {
-    method: 'POST',
-    headers: request.headers,
-    body: JSON.stringify(payload)
-  });
+  const upstream = new Request(request.url, { method: 'POST', headers: request.headers, body: JSON.stringify(payload) });
   const result = await core.fetch(upstream, env, ctx);
   if (!result.ok || (!checkoutAddress && !checkoutNote)) return result;
   try {
     const data = await result.clone().json();
     const orderId = data?.order?.id || data?.id || null;
-    if (orderId) {
-      await env.DB.prepare('UPDATE orders SET shipping_address=?, order_note=?, updated_at=? WHERE id=?')
-        .bind(checkoutAddress || null, checkoutNote || null, new Date().toISOString(), orderId).run();
-    }
+    if (orderId) await env.DB.prepare('UPDATE orders SET shipping_address=?, order_note=?, updated_at=? WHERE id=?').bind(checkoutAddress || null, checkoutNote || null, new Date().toISOString(), orderId).run();
   } catch {}
   return result;
 }
@@ -63,6 +57,7 @@ export default {
     const url = new URL(request.url);
     const origin = request.headers.get('Origin') || '';
     if (url.hostname === 'admin.reqoo.co' && (url.pathname === '/' || url.pathname === '')) return Response.redirect('https://reqoo.co/admin/', 302);
+    if (url.pathname.startsWith('/admin-orders/')) return orderAdmin(request, env);
     if (url.pathname.startsWith('/payments/qr/')) return manualPayment(request, env);
     if (url.pathname === '/whatsapp/webhook') return whatsappWebhook(request, env, ctx);
     if (url.pathname.startsWith('/pksk-admin/')) return pkskAdmin(request, env);
