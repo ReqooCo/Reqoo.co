@@ -1,11 +1,31 @@
 export const CATALOG_API = 'https://api.reqoo.co';
 
 const OPTIONS_PREFIX = '__REQOO_OPTIONS_V1__:';
-const adminKey = () => sessionStorage.getItem('reqoo_admin_key') || '';
+
+// Persist the admin key so it does not disappear when the browser/tab session ends.
+// Migrate an existing session key once, then use localStorage as the durable client-side store.
+const adminKey = () => {
+  try {
+    const saved = localStorage.getItem('reqoo_admin_key');
+    if (saved) return saved;
+    const legacy = sessionStorage.getItem('reqoo_admin_key') || '';
+    if (legacy) localStorage.setItem('reqoo_admin_key', legacy);
+    return legacy;
+  } catch { return ''; }
+};
+
 export const catalogAuth = Object.freeze({
   getKey: adminKey,
-  setKey: (key) => sessionStorage.setItem('reqoo_admin_key', String(key || '')),
-  clear: () => sessionStorage.removeItem('reqoo_admin_key')
+  setKey: (key) => {
+    const value = String(key || '');
+    if (!value) return catalogAuth.clear();
+    try { localStorage.setItem('reqoo_admin_key', value); } catch {}
+    try { sessionStorage.setItem('reqoo_admin_key', value); } catch {}
+  },
+  clear: () => {
+    try { localStorage.removeItem('reqoo_admin_key'); } catch {}
+    try { sessionStorage.removeItem('reqoo_admin_key'); } catch {}
+  }
 });
 
 export function encodeProductOptions(options) {
