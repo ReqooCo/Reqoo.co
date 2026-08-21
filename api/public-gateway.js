@@ -22,8 +22,7 @@ function response(data, status, origin) {
 }
 
 async function ensureOrderExtraSchema(env) {
-  // Keep the existing order schema intact while adding the checkout fields
-  // that were already being collected by the storefront.
+  // Checkout already collects these fields; keep them with the order.
   try { await env.DB.prepare('ALTER TABLE orders ADD COLUMN shipping_address TEXT').run(); } catch {}
   try { await env.DB.prepare('ALTER TABLE orders ADD COLUMN order_note TEXT').run(); } catch {}
 }
@@ -42,9 +41,13 @@ async function createOrderAndPersistCheckoutFields(request, env, ctx) {
   const payload = await request.json();
   const checkoutAddress = String(payload?.address || '').trim();
   const checkoutNote = String(payload?.note || '').trim();
-  const upstream = new Request(request, { body: JSON.stringify(payload) });
+  const upstream = new Request(request.url, {
+    method: 'POST',
+    headers: request.headers,
+    body: JSON.stringify(payload)
+  });
   const result = await core.fetch(upstream, env, ctx);
-  if (!result.ok || !checkoutAddress && !checkoutNote) return result;
+  if (!result.ok || (!checkoutAddress && !checkoutNote)) return result;
   try {
     const data = await result.clone().json();
     const orderId = data?.order?.id || data?.id || null;
