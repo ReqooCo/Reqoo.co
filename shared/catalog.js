@@ -38,6 +38,12 @@ export function decodeProductOptions(internalNotes) {
   try { return JSON.parse(decodeURIComponent(escape(atob(raw.slice(OPTIONS_PREFIX.length))))); }
   catch { return []; }
 }
+
+// Compatibility helper for admin builders that already normalize option arrays.
+export function normalizeProductOptions(options) {
+  return Array.isArray(options) ? options : [];
+}
+
 async function publicRequest(path, options = {}) { const headers={ 'Content-Type':'application/json',...(options.headers||{}) }; delete headers['X-Admin-Key']; const res=await fetch(`${CATALOG_API}${path}`,{...options,headers}); const text=await res.text(); let data=null; try{data=text?JSON.parse(text):null}catch{data={error:text||'Invalid API response'}} if(!res.ok)throw new Error(data?.error||`HTTP ${res.status}`); return data; }
 async function adminRequest(path, options = {}) { const key=adminKey(); if(!key)throw new Error('Admin Key diperlukan untuk tindakan Admin.'); const headers={'Content-Type':'application/json',...(options.headers||{}),'X-Admin-Key':key}; const res=await fetch(`${CATALOG_API}${path}`,{...options,headers}); const text=await res.text(); let data=null; try{data=text?JSON.parse(text):null}catch{data={error:text||'Invalid API response'}} if(!res.ok)throw new Error(data?.error||`HTTP ${res.status}`); return data; }
 export async function uploadMedia(file){if(!(file instanceof File))throw new Error('Pilih gambar dahulu');const key=adminKey();if(!key)throw new Error('Admin Key diperlukan untuk upload gambar.');const form=new FormData();form.append('file',file,file.name);const res=await fetch(`${CATALOG_API}/media/upload`,{method:'POST',headers:{'X-Admin-Key':key},body:form});const text=await res.text();let data=null;try{data=text?JSON.parse(text):null}catch{data={error:text||'Invalid upload response'}}if(!res.ok)throw new Error(data?.error||`HTTP ${res.status}`);return data;}
