@@ -2,6 +2,7 @@ import core from './worker.js';
 import { webhook as whatsappWebhook } from './whatsapp.js';
 import { pkskAdmin } from './pksk-admin.js';
 import { quotations } from './quotations.js';
+import { manualPayment } from './manual-payment.js';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json; charset=utf-8' };
 const ALLOWED_ORIGINS = new Set([
@@ -34,6 +35,7 @@ export default {
     const url = new URL(request.url);
     const origin = request.headers.get('Origin') || '';
     if (url.hostname === 'admin.reqoo.co' && (url.pathname === '/' || url.pathname === '')) return Response.redirect('https://reqoo.co/admin/', 302);
+    if (url.pathname.startsWith('/payments/qr/')) return manualPayment(request, env);
     if (url.pathname === '/whatsapp/webhook') return whatsappWebhook(request, env, ctx);
     if (url.pathname.startsWith('/pksk-admin/')) return pkskAdmin(request, env);
     if (url.pathname.startsWith('/quotations')) return quotations(request, env);
