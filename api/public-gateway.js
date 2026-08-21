@@ -21,6 +21,13 @@ function response(data, status, origin) {
   return new Response(JSON.stringify(data), { status, headers });
 }
 
+async function ensureOrderExtraSchema(env) {
+  // Keep the existing order schema intact while adding the checkout fields
+  // that were already being collected by the storefront.
+  try { await env.DB.prepare('ALTER TABLE orders ADD COLUMN shipping_address TEXT').run(); } catch {}
+  try { await env.DB.prepare('ALTER TABLE orders ADD COLUMN order_note TEXT').run(); } catch {}
+}
+
 async function publicProduct(env, id, origin) {
   const product = await env.DB.prepare(
     "SELECT id,sku,name,slug,product_type,fulfillment_type,description,short_description,base_price_minor,sale_price_minor,currency,status,seo_title,seo_description,created_at,updated_at FROM products WHERE id=? AND status='active'"
@@ -28,6 +35,25 @@ async function publicProduct(env, id, origin) {
   if (!product) return response({ error: 'Product not found' }, 404, origin);
   const { results } = await env.DB.prepare('SELECT id,url,alt_text,sort_order,is_cover FROM product_images WHERE product_id=? ORDER BY sort_order ASC').bind(id).all();
   return response({ ...product, price: Number(product.sale_price_minor ?? product.base_price_minor ?? 0) / 100, published: true, images: (results || []).map(x => x.url) }, 200, origin);
+}
+
+async function createOrderAndPersistCheckoutFields(request, env, ctx) {
+  await ensureOrderExtraSchema(env);
+  const payload = await request.json();
+  const checkoutAddress = String(payload?.address || '').trim();
+  const checkoutNote = String(payload?.note || '').trim();
+  const upstream = new Request(request, { body: JSON.stringify(payload) });
+  const result = await core.fetch(upstream, env, ctx);
+  if (!result.ok || !checkoutAddress && !checkoutNote) return result;
+  try {
+    const data = await result.clone().json();
+    const orderId = data?.order?.id || data?.id || null;
+    if (orderId) {
+      await env.DB.prepare('UPDATE orders SET shipping_address=?, order_note=?, updated_at=? WHERE id=?')
+        .bind(checkoutAddress || null, checkoutNote || null, new Date().toISOString(), orderId).run();
+    }
+  } catch {}
+  return result;
 }
 
 export default {
@@ -41,6 +67,7 @@ export default {
     if (url.pathname.startsWith('/quotations')) return quotations(request, env);
     const match = url.pathname.match(/^\/products\/([^/]+)$/);
     if (request.method === 'GET' && match && env.DB) return publicProduct(env, decodeURIComponent(match[1]), origin);
+    if (request.method === 'POST' && url.pathname === '/orders' && env.DB) return createOrderAndPersistCheckoutFields(request, env, ctx);
     return core.fetch(request, env, ctx);
   }
 };
