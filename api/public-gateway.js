@@ -1,5 +1,6 @@
 import core from './worker.js';
 import { webhook as whatsappWebhook } from './whatsapp.js';
+import { pkskAdmin } from './pksk-admin.js';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json; charset=utf-8' };
 const ALLOWED_ORIGINS = new Set([
@@ -42,8 +43,6 @@ export default {
     const url = new URL(request.url);
     const origin = request.headers.get('Origin') || '';
 
-    // admin.reqoo.co is currently attached to this API Worker. Send its root
-    // to the actual Pages admin UI instead of exposing the Worker JSON 404.
     if (url.hostname === 'admin.reqoo.co' && (url.pathname === '/' || url.pathname === '')) {
       return Response.redirect('https://reqoo.co/admin/', 302);
     }
@@ -52,7 +51,10 @@ export default {
       return whatsappWebhook(request, env, ctx);
     }
 
-    // Customer product detail is public. Draft/hidden products remain protected by core admin routes.
+    if (url.pathname.startsWith('/pksk-admin/')) {
+      return pkskAdmin(request, env);
+    }
+
     const match = url.pathname.match(/^\/products\/([^/]+)$/);
     if (request.method === 'GET' && match && env.DB) {
       return publicProduct(env, decodeURIComponent(match[1]), origin);
