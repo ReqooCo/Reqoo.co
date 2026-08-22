@@ -6,6 +6,7 @@ import { manualPayment } from './manual-payment.js';
 import { orderAdmin } from './order-admin.js';
 import { catalog } from './catalog.js';
 import { adminLogin, adminLogout, hasAdminSession } from './admin-session.js';
+import { checkout } from './checkout.js';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json; charset=utf-8' };
 const ALLOWED_ORIGINS = new Set([
@@ -26,7 +27,7 @@ function securityHeaders(headers, origin = '') {
     headers.set('Access-Control-Allow-Credentials', 'true');
   } else headers.set('Access-Control-Allow-Origin', 'null');
   headers.set('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-  headers.set('Access-Control-Allow-Headers', 'Content-Type, X-Admin-Key');
+  headers.set('Access-Control-Allow-Headers', 'Content-Type, Idempotency-Key');
   headers.set('Vary', 'Origin');
 }
 
@@ -70,6 +71,10 @@ export default {
 
     if (url.pathname === '/admin/login') return secureResponse(await adminLogin(request, env), origin);
     if (url.pathname === '/admin/logout') return secureResponse(await adminLogout(), origin);
+    if (url.pathname === '/orders' && request.method === 'POST') {
+      try { return secureResponse(await checkout(request, env), origin); }
+      catch (error) { return response({ ok: false, error: { code: 'CHECKOUT_FAILED', message: String(error?.message || 'Pesanan gagal. Sila cuba lagi.') } }, 400, origin); }
+    }
 
     const sessionValid = await hasAdminSession(request, env);
     const adminPath = url.pathname.startsWith('/admin-orders/') || url.pathname.startsWith('/pksk-admin/') || url.pathname.startsWith('/quotations') || url.pathname.startsWith('/products') || url.pathname.startsWith('/media/');
