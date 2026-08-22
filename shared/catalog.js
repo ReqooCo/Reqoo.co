@@ -3,27 +3,12 @@ export const CATALOG_API = 'https://api.reqoo.co';
 const OPTIONS_PREFIX = '__REQOO_OPTIONS_V1__:';
 const isAdminPage = () => location.pathname === '/admin/' || location.pathname.startsWith('/admin/');
 const adminRoot = () => '/admin/';
-const adminKey = () => {
-  try {
-    const saved = localStorage.getItem('reqoo_admin_key');
-    if (saved) return saved;
-    const legacy = sessionStorage.getItem('reqoo_admin_key') || '';
-    if (legacy) localStorage.setItem('reqoo_admin_key', legacy);
-    return legacy;
-  } catch { return ''; }
-};
 
 export const catalogAuth = Object.freeze({
-  getKey: adminKey,
-  setKey: (key) => {
-    const value = String(key || '').trim();
-    if (!value) return catalogAuth.clear();
-    try { localStorage.setItem('reqoo_admin_key', value); } catch {}
-    try { sessionStorage.setItem('reqoo_admin_key', value); } catch {}
-  },
-  clear: () => {
-    try { localStorage.removeItem('reqoo_admin_key'); } catch {}
-    try { sessionStorage.removeItem('reqoo_admin_key'); } catch {}
+  getKey: () => '',
+  setKey: () => {},
+  clear: async () => {
+    try { await fetch(`${CATALOG_API}/admin/logout`, { method: 'POST', credentials: 'include' }); } catch {}
   }
 });
 
@@ -37,7 +22,6 @@ function centralizeAdminUI() {
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', hideLegacyCredentialFields, { once: true });
   else hideLegacyCredentialFields();
-  if (!adminKey()) location.replace(adminRoot());
 }
 centralizeAdminUI();
 
@@ -51,46 +35,34 @@ export function decodeProductOptions(internalNotes) {
   try { return JSON.parse(decodeURIComponent(escape(atob(raw.slice(OPTIONS_PREFIX.length))))); }
   catch { return []; }
 }
-export function normalizeProductOptions(options) {
-  return Array.isArray(options) ? options : [];
+export function normalizeProductOptions(options) { return Array.isArray(options) ? options : []; }
+
+async function parseResponse(res) {
+  const text = await res.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch { data = { error: text || 'Invalid API response' }; }
+  if (!res.ok) {
+    const message = data?.error?.message || data?.error || `HTTP ${res.status}`;
+    if (res.status === 401 && isAdminPage() && location.pathname !== adminRoot()) location.replace(`${adminRoot()}?error=session`);
+    throw new Error(message);
+  }
+  return data;
 }
 
 async function publicRequest(path, options = {}) {
   const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
   delete headers['X-Admin-Key'];
-  const res = await fetch(`${CATALOG_API}${path}`, { ...options, headers });
-  const text = await res.text();
-  let data = null;
-  try { data = text ? JSON.parse(text) : null; } catch { data = { error: text || 'Invalid API response' }; }
-  if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
-  return data;
+  return parseResponse(await fetch(`${CATALOG_API}${path}`, { ...options, headers, credentials: 'include' }));
 }
 
 async function adminRequest(path, options = {}) {
-  const key = adminKey();
-  if (!key) {
-    if (isAdminPage() && location.pathname !== adminRoot()) location.replace(adminRoot());
-    throw new Error('Admin Key diperlukan. Buka Admin Center.');
-  }
-  const headers = { 'Content-Type': 'application/json', ...(options.headers || {}), 'X-Admin-Key': key };
-  const res = await fetch(`${CATALOG_API}${path}`, { ...options, headers });
-  const text = await res.text();
-  let data = null;
-  try { data = text ? JSON.parse(text) : null; } catch { data = { error: text || 'Invalid API response' }; }
-  if (!res.ok) {
-    if ((res.status === 401 || res.status === 403) && isAdminPage() && location.pathname !== adminRoot()) {
-      catalogAuth.clear();
-      location.replace(`${adminRoot()}?error=wrong`);
-    }
-    throw new Error(data?.error || `HTTP ${res.status}`);
-  }
-  return data;
+  const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+  delete headers['X-Admin-Key'];
+  return parseResponse(await fetch(`${CATALOG_API}${path}`, { ...options, headers, credentials: 'include' }));
 }
 
 function prepareProduct(product) {
   const p = { ...(product || {}) };
-  // Keep the public product type stable. The old client-side remapping of custom→service
-  // and pickup→shipping caused the Shop and Builder to disagree about product identity.
   if (p.product_type === 'custom') p.product_type = 'custom';
   if (p.fulfillment_type === 'pickup') p.fulfillment_type = 'pickup';
   if (p.fulfillment_type === 'service') p.fulfillment_type = 'service';
@@ -102,22 +74,9 @@ function prepareProduct(product) {
 
 export async function uploadMedia(file) {
   if (!(file instanceof File)) throw new Error('Pilih gambar dahulu');
-  const key = adminKey();
-  if (!key) throw new Error('Admin Key diperlukan. Buka Admin Center.');
   const form = new FormData();
   form.append('file', file, file.name);
-  const res = await fetch(`${CATALOG_API}/media/upload`, { method: 'POST', headers: { 'X-Admin-Key': key }, body: form });
-  const text = await res.text();
-  let data = null;
-  try { data = text ? JSON.parse(text) : null; } catch { data = { error: text || 'Invalid API response' }; }
-  if (!res.ok) {
-    if ((res.status === 401 || res.status === 403) && isAdminPage() && location.pathname !== adminRoot()) {
-      catalogAuth.clear();
-      location.replace(`${adminRoot()}?error=wrong`);
-    }
-    throw new Error(data?.error || `HTTP ${res.status}`);
-  }
-  return data;
+  return parseResponse(await fetch(`${CATALOG_API}/media/upload`, { method: 'POST', credentials: 'include', body: form }));
 }
 
 export const catalog = Object.freeze({
