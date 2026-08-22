@@ -4,6 +4,7 @@ import { pkskAdmin } from './pksk-admin.js';
 import { quotations } from './quotations.js';
 import { manualPayment } from './manual-payment.js';
 import { orderAdmin } from './order-admin.js';
+import { catalog } from './catalog.js';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json; charset=utf-8' };
 const ALLOWED_ORIGINS = new Set([
@@ -62,6 +63,7 @@ export default {
     if (url.pathname === '/whatsapp/webhook') return whatsappWebhook(request, env, ctx);
     if (url.pathname.startsWith('/pksk-admin/')) return pkskAdmin(request, env);
     if (url.pathname.startsWith('/quotations')) return quotations(request, env);
+    if (url.pathname === '/products' && (request.method === 'GET' || request.method === 'OPTIONS') && env.DB) return catalog(request, env);
     const match = url.pathname.match(/^\/products\/([^/]+)$/);
     if (request.method === 'GET' && match && env.DB) return publicProduct(env, decodeURIComponent(match[1]), origin);
     if (request.method === 'POST' && url.pathname === '/orders' && env.DB) return createOrderAndPersistCheckoutFields(request, env, ctx);
