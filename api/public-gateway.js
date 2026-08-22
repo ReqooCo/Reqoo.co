@@ -4,6 +4,7 @@ import { quotations } from './quotations.js';
 import { manualPayment } from './manual-payment.js';
 import { orderAdmin } from './order-admin.js';
 import { catalog } from './catalog.js';
+import { whatsappWebhook } from './whatsapp.js';
 import { adminLogin, adminLogout, hasAdminSession } from './admin-session.js';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json; charset=utf-8' };
@@ -44,6 +45,7 @@ export default { async fetch(request, env, ctx) {
   if (url.hostname === 'admin.reqoo.co' && (url.pathname === '/' || url.pathname === '')) return Response.redirect('https://reqoo.co/admin/', 302);
   if (url.pathname.startsWith('/admin-orders/')) return secureResponse(await orderAdmin(adminRequest, env), origin);
   if (url.pathname.startsWith('/payments/qr/')) return secureResponse(await manualPayment(request, env), origin);
+  if (url.pathname === '/whatsapp/webhook') return secureResponse(await whatsappWebhook(request, env, ctx), origin);
   if (url.pathname.startsWith('/pksk-admin/')) return secureResponse(await pkskAdmin(adminRequest, env), origin);
   if (url.pathname.startsWith('/quotations')) return secureResponse(await quotations(adminRequest, env), origin);
   if (url.pathname === '/products' && request.method === 'GET' && env.DB) return secureResponse(await catalog(adminRequest, env), origin);
