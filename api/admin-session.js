@@ -11,8 +11,12 @@ function parseB64url(s) {
   const bin = atob(b64);
   return Uint8Array.from(bin, c => c.charCodeAt(0));
 }
+function adminSecret(env) {
+  return String(env.ADMIN_KEY || '').trim();
+}
 async function key(env) {
-  return crypto.subtle.importKey('raw', new TextEncoder().encode(env.ADMIN_KEY), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign', 'verify']);
+  const secret = adminSecret(env);
+  return crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign', 'verify']);
 }
 async function sign(env, payload) {
   const body = b64url(new TextEncoder().encode(JSON.stringify(payload)));
@@ -22,7 +26,7 @@ async function sign(env, payload) {
 async function verify(env, token) {
   try {
     const [body, signature] = String(token || '').split('.');
-    if (!body || !signature || !env.ADMIN_KEY) return false;
+    if (!body || !signature || !adminSecret(env)) return false;
     const ok = await crypto.subtle.verify('HMAC', await key(env), parseB64url(signature), new TextEncoder().encode(body));
     if (!ok) return false;
     const payload = JSON.parse(new TextDecoder().decode(parseB64url(body)));
@@ -43,7 +47,9 @@ export async function adminLogin(request, env) {
       }
     } catch {}
   }
-  if (!env.ADMIN_KEY || !supplied || supplied !== env.ADMIN_KEY) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+  const expected = adminSecret(env);
+  supplied = String(supplied).trim();
+  if (!expected || !supplied || supplied !== expected) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
   const token = await sign(env, { sub: 'admin', exp: Math.floor(Date.now() / 1000) + TTL_SECONDS });
   return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'Set-Cookie': `${COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${TTL_SECONDS}` } });
 }
