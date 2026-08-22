@@ -22,24 +22,34 @@ async function sign(env, payload) {
 async function verify(env, token) {
   try {
     const [body, signature] = String(token || '').split('.');
-    if (!body || !signature) return false;
+    if (!body || !signature || !env.ADMIN_KEY) return false;
     const ok = await crypto.subtle.verify('HMAC', await key(env), parseB64url(signature), new TextEncoder().encode(body));
     if (!ok) return false;
     const payload = JSON.parse(new TextDecoder().decode(parseB64url(body)));
-    return payload.exp > Math.floor(Date.now() / 1000);
+    return payload.sub === 'admin' && payload.exp > Math.floor(Date.now() / 1000);
   } catch { return false; }
 }
 
 export async function adminLogin(request, env) {
   if (request.method !== 'POST') return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: { 'Content-Type': 'application/json' } });
-  const supplied = request.headers.get('X-Admin-Key');
-  if (!env.ADMIN_KEY || !supplied || supplied !== env.ADMIN_KEY) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
+  let supplied = request.headers.get('X-Admin-Key') || '';
+  if (!supplied) {
+    try {
+      const type = request.headers.get('Content-Type') || '';
+      if (type.includes('application/x-www-form-urlencoded')) {
+        supplied = String((await request.formData()).get('key') || '');
+      } else if (type.includes('application/json')) {
+        supplied = String((await request.json())?.key || '');
+      }
+    } catch {}
+  }
+  if (!env.ADMIN_KEY || !supplied || supplied !== env.ADMIN_KEY) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
   const token = await sign(env, { sub: 'admin', exp: Math.floor(Date.now() / 1000) + TTL_SECONDS });
-  return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'Set-Cookie': `${COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${TTL_SECONDS}` } });
+  return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'Set-Cookie': `${COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${TTL_SECONDS}` } });
 }
 
 export async function adminLogout() {
-  return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'Set-Cookie': `${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0` } });
+  return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'Set-Cookie': `${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0` } });
 }
 
 export async function hasAdminSession(request, env) {
