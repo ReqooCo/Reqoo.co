@@ -14,7 +14,7 @@ function originAllowed(origin) { return !origin || ALLOWED_ORIGINS.has(origin); 
 function securityHeaders(headers, origin = '') {
   headers.set('X-Content-Type-Options', 'nosniff'); headers.set('Referrer-Policy', 'strict-origin-when-cross-origin'); headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
   if (ALLOWED_ORIGINS.has(origin)) { headers.set('Access-Control-Allow-Origin', origin); headers.set('Access-Control-Allow-Credentials', 'true'); } else headers.set('Access-Control-Allow-Origin', 'null');
-  headers.set('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS'); headers.set('Access-Control-Allow-Headers', 'Content-Type, Idempotency-Key'); headers.set('Vary', 'Origin');
+  headers.set('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS'); headers.set('Access-Control-Allow-Headers', 'Content-Type, X-Admin-Key, Idempotency-Key'); headers.set('Vary', 'Origin');
 }
 function response(data, status, origin) { const headers = new Headers(JSON_HEADERS); securityHeaders(headers, origin); headers.set('Cache-Control', 'no-store'); return new Response(JSON.stringify(data), { status, headers }); }
 function secureResponse(result, origin) { const headers = new Headers(result.headers); securityHeaders(headers, origin); if (!headers.has('Cache-Control')) headers.set('Cache-Control', 'no-store'); return new Response(result.body, { status: result.status, statusText: result.statusText, headers }); }
