@@ -111,3 +111,35 @@ export function normalizeProduct(input) {
     seo_description: String(input.seo_description || '').trim()
   });
 }
+
+// Product Builder UX hardening: recover from bfcache/stale DOM and make the save action reliably clickable.
+function hardenProductBuilder() {
+  if (location.pathname !== '/admin/shop/product-builder') return;
+  const run = () => {
+    const save = document.getElementById('save');
+    const notice = document.getElementById('notice');
+    const id = new URLSearchParams(location.search).get('id');
+    if (!save) return;
+    save.style.pointerEvents = 'auto';
+    save.style.position = 'relative';
+    save.style.zIndex = '100';
+    save.style.touchAction = 'manipulation';
+    if (!id && notice && /failed to fetch/i.test(notice.textContent || '')) {
+      notice.textContent = 'Sedia. Isi maklumat produk dan variation, kemudian simpan.';
+      notice.className = 'notice ok';
+    }
+    save.addEventListener('click', () => {
+      const variations = document.querySelector('#variations');
+      const cards = variations?.querySelectorAll('.card') || [];
+      if (!cards.length && notice) {
+        notice.textContent = 'Tambah sekurang-kurangnya satu Variation dan harga dahulu.';
+        notice.className = 'notice err';
+        variations?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, { capture: true });
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run, { once: true });
+  else run();
+  window.addEventListener('pageshow', () => setTimeout(run, 0));
+}
+hardenProductBuilder();
