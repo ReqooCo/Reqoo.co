@@ -4,7 +4,7 @@ import { quotations } from './quotations.js';
 import { manualPayment } from './manual-payment.js';
 import { orderAdmin } from './order-admin.js';
 import { catalog } from './catalog.js';
-import { whatsappWebhook } from './whatsapp.js';
+import { webhook as whatsappWebhook } from './whatsapp.js';
 import { adminLogin, adminLogout, hasAdminSession } from './admin-session.js';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json; charset=utf-8' };
