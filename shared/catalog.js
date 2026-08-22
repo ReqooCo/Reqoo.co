@@ -1,15 +1,14 @@
 export const CATALOG_API = 'https://api.reqoo.co';
 
 const OPTIONS_PREFIX = '__REQOO_OPTIONS_V1__:';
+const META_PREFIX = '__REQOO_PRODUCT_V2__:';
 const isAdminPage = () => location.pathname === '/admin/' || location.pathname.startsWith('/admin/');
 const adminRoot = () => '/admin/';
 
 export const catalogAuth = Object.freeze({
   getKey: () => '',
   setKey: () => {},
-  clear: async () => {
-    try { await fetch(`${CATALOG_API}/admin/logout`, { method: 'POST', credentials: 'include' }); } catch {}
-  }
+  clear: async () => { try { await fetch(`${CATALOG_API}/admin/logout`, { method: 'POST', credentials: 'include' }); } catch {} }
 });
 
 function centralizeAdminUI() {
@@ -25,15 +24,30 @@ function centralizeAdminUI() {
 }
 centralizeAdminUI();
 
+function b64Encode(value) { return btoa(unescape(encodeURIComponent(JSON.stringify(value)))); }
+function b64Decode(value) { return JSON.parse(decodeURIComponent(escape(atob(value)))); }
+
 export function encodeProductOptions(options) {
-  try { return OPTIONS_PREFIX + btoa(unescape(encodeURIComponent(JSON.stringify(options || [])))); }
-  catch { return ''; }
+  try { return OPTIONS_PREFIX + b64Encode(options || []); } catch { return ''; }
 }
 export function decodeProductOptions(internalNotes) {
   const raw = String(internalNotes || '');
+  if (raw.startsWith(META_PREFIX)) {
+    try { const data = b64Decode(raw.slice(META_PREFIX.length)); return Array.isArray(data?.options) ? data.options : []; } catch { return []; }
+  }
   if (!raw.startsWith(OPTIONS_PREFIX)) return [];
-  try { return JSON.parse(decodeURIComponent(escape(atob(raw.slice(OPTIONS_PREFIX.length))))); }
-  catch { return []; }
+  try { return b64Decode(raw.slice(OPTIONS_PREFIX.length)); } catch { return []; }
+}
+export function encodeProductMeta(meta = {}, options = []) {
+  try { return META_PREFIX + b64Encode({ meta, options: Array.isArray(options) ? options : [] }); } catch { return ''; }
+}
+export function decodeProductMeta(internalNotes) {
+  const raw = String(internalNotes || '');
+  if (!raw.startsWith(META_PREFIX)) return { meta: {}, options: decodeProductOptions(raw) };
+  try {
+    const data = b64Decode(raw.slice(META_PREFIX.length));
+    return { meta: data?.meta && typeof data.meta === 'object' ? data.meta : {}, options: Array.isArray(data?.options) ? data.options : [] };
+  } catch { return { meta: {}, options: [] }; }
 }
 export function normalizeProductOptions(options) { return Array.isArray(options) ? options : []; }
 
@@ -54,31 +68,23 @@ async function publicRequest(path, options = {}) {
   delete headers['X-Admin-Key'];
   return parseResponse(await fetch(`${CATALOG_API}${path}`, { ...options, headers, credentials: 'include' }));
 }
-
 async function adminRequest(path, options = {}) {
   const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
   delete headers['X-Admin-Key'];
   return parseResponse(await fetch(`${CATALOG_API}${path}`, { ...options, headers, credentials: 'include' }));
 }
-
 function prepareProduct(product) {
   const p = { ...(product || {}) };
-  if (p.product_type === 'custom') p.product_type = 'custom';
-  if (p.fulfillment_type === 'pickup') p.fulfillment_type = 'pickup';
-  if (p.fulfillment_type === 'service') p.fulfillment_type = 'service';
-  if (p.fulfillment_type === 'digital') p.fulfillment_type = 'digital';
   if (!p.internal_notes && Array.isArray(p.options)) p.internal_notes = encodeProductOptions(p.options);
   delete p.options;
   return p;
 }
-
 export async function uploadMedia(file) {
   if (!(file instanceof File)) throw new Error('Pilih gambar dahulu');
   const form = new FormData();
   form.append('file', file, file.name);
   return parseResponse(await fetch(`${CATALOG_API}/media/upload`, { method: 'POST', credentials: 'include', body: form }));
 }
-
 export const catalog = Object.freeze({
   list: (publishedOnly = false) => publishedOnly ? publicRequest('/products?published=true') : adminRequest('/products'),
   get: id => publicRequest(`/products/${encodeURIComponent(id)}`),
@@ -86,7 +92,6 @@ export const catalog = Object.freeze({
   update: (id, product) => adminRequest(`/products/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify(prepareProduct(product)) }),
   remove: id => adminRequest(`/products/${encodeURIComponent(id)}`, { method: 'DELETE' })
 });
-
 export function normalizeProduct(input) {
   const options = Array.isArray(input.options) ? input.options : [];
   return prepareProduct({
