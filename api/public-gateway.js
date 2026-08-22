@@ -8,7 +8,7 @@ import { whatsappWebhook } from './whatsapp.js';
 import { adminLogin, adminLogout, hasAdminSession } from './admin-session.js';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json; charset=utf-8' };
-const ALLOWED_ORIGINS = new Set(['https://reqoo.co', 'https://www.reqoo.co']);
+const ALLOWED_ORIGINS = new Set(['https://admin.reqoo.co', 'https://shop.reqoo.co', 'https://reqoo.co', 'https://www.reqoo.co']);
 function originAllowed(origin) { return !origin || ALLOWED_ORIGINS.has(origin); }
 function securityHeaders(headers, origin = '') {
   headers.set('X-Content-Type-Options', 'nosniff');
@@ -33,23 +33,44 @@ function secureResponse(result, origin) {
 function withAdminKey(request, env) {
   const headers = new Headers(request.headers); headers.set('X-Admin-Key', env.ADMIN_KEY || ''); return new Request(request, { headers });
 }
+function isAdminCoreRoute(url, request) {
+  if (url.pathname === '/products') return !(request.method === 'GET' && url.searchParams.get('published') === 'true');
+  if (url.pathname === '/custom-requests') return request.method !== 'POST';
+  if (url.pathname === '/orders') return request.method !== 'POST';
+  if (url.pathname.startsWith('/media/')) return !url.pathname.startsWith('/media/products/');
+  return false;
+}
 export default { async fetch(request, env, ctx) {
   const url = new URL(request.url); const origin = request.headers.get('Origin') || '';
   if (!originAllowed(origin)) return response({ error: 'Origin not allowed' }, 403, origin);
   if (request.method === 'OPTIONS') return response({}, 204, origin);
   if (url.pathname === '/admin/login') return secureResponse(await adminLogin(request, env), origin);
   if (url.pathname === '/admin/logout') return secureResponse(await adminLogout(), origin);
-  const sessionValid = await hasAdminSession(request, env);
-  const adminPath = url.pathname.startsWith('/admin-orders/') || url.pathname.startsWith('/pksk-admin/') || url.pathname.startsWith('/quotations') || url.pathname.startsWith('/products') || url.pathname.startsWith('/media/');
-  const adminRequest = sessionValid ? withAdminKey(request, env) : request;
   if (url.hostname === 'admin.reqoo.co' && (url.pathname === '/' || url.pathname === '')) return Response.redirect('https://reqoo.co/admin/', 302);
-  if (url.pathname.startsWith('/admin-orders/')) return secureResponse(await orderAdmin(adminRequest, env), origin);
+
+  const sessionValid = await hasAdminSession(request, env);
+  const adminCoreRoute = isAdminCoreRoute(url, request);
+  const adminRequest = sessionValid ? withAdminKey(request, env) : request;
+
+  if (url.pathname.startsWith('/admin-orders/')) {
+    if (!sessionValid) return response({ ok: false, error: { code: 'ADMIN_AUTH_REQUIRED', message: 'Admin session diperlukan.' } }, 401, origin);
+    return secureResponse(await orderAdmin(adminRequest, env), origin);
+  }
   if (url.pathname.startsWith('/payments/qr/')) return secureResponse(await manualPayment(request, env), origin);
   if (url.pathname === '/whatsapp/webhook') return secureResponse(await whatsappWebhook(request, env, ctx), origin);
-  if (url.pathname.startsWith('/pksk-admin/')) return secureResponse(await pkskAdmin(adminRequest, env), origin);
-  if (url.pathname.startsWith('/quotations')) return secureResponse(await quotations(adminRequest, env), origin);
-  if (url.pathname === '/products' && request.method === 'GET' && env.DB) return secureResponse(await catalog(adminRequest, env), origin);
+  if (url.pathname.startsWith('/pksk-admin/')) {
+    if (!sessionValid) return response({ ok: false, error: { code: 'ADMIN_AUTH_REQUIRED', message: 'Admin session diperlukan.' } }, 401, origin);
+    return secureResponse(await pkskAdmin(adminRequest, env), origin);
+  }
+  if (url.pathname.startsWith('/quotations')) {
+    if (!sessionValid) return response({ ok: false, error: { code: 'ADMIN_AUTH_REQUIRED', message: 'Admin session diperlukan.' } }, 401, origin);
+    return secureResponse(await quotations(adminRequest, env), origin);
+  }
+  if (url.pathname === '/products' && request.method === 'GET' && env.DB) {
+    if (url.searchParams.get('published') !== 'true' && !sessionValid) return response({ ok: false, error: { code: 'ADMIN_AUTH_REQUIRED', message: 'Admin session diperlukan.' } }, 401, origin);
+    return secureResponse(await catalog(adminRequest, env), origin);
+  }
+  if (adminCoreRoute && !sessionValid) return response({ ok: false, error: { code: 'ADMIN_AUTH_REQUIRED', message: 'Admin session diperlukan.' } }, 401, origin);
   if (url.pathname.startsWith('/media/') && sessionValid) return secureResponse(await core.fetch(adminRequest, env, ctx), origin);
-  if (adminPath && !sessionValid) return response({ ok: false, error: { code: 'ADMIN_AUTH_REQUIRED', message: 'Admin session diperlukan.' } }, 401, origin);
   return secureResponse(await core.fetch(request, env, ctx), origin);
 } };
