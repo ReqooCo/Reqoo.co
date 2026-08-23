@@ -44,6 +44,10 @@ function isAdminCoreRoute(url, request) {
   }
   return false;
 }
+function isProductDetail(url) {
+  return /^\/products\/[^/]+$/.test(url.pathname);
+}
+
 export default { async fetch(request, env, ctx) {
   const url = new URL(request.url); const origin = request.headers.get('Origin') || '';
   if (!originAllowed(origin)) return response({ error: 'Origin not allowed' }, 403, origin);
@@ -70,12 +74,23 @@ export default { async fetch(request, env, ctx) {
     return secureResponse(await pkskAdmin(adminRequest, env), origin);
   }
   if (url.pathname.startsWith('/quotations')) {
-    if (!sessionValid) return response({ ok: false, error: { code: 'ADMIN_AUTH_REQUIRED', message: 'Admin session diperlukan.' } }, 401, origin);
-    return secureResponse(await quotations(adminRequest, env), origin);
+    if (!sessionValid && !url.pathname.startsWith('/quotations/shared')) return response({ ok: false, error: { code: 'ADMIN_AUTH_REQUIRED', message: 'Admin session diperlukan.' } }, 401, origin);
+    return secureResponse(await quotations(sessionValid ? adminRequest : request, env), origin);
   }
   if (url.pathname === '/products' && request.method === 'GET' && env.DB) {
     if (url.searchParams.get('published') !== 'true' && !sessionValid) return response({ ok: false, error: { code: 'ADMIN_AUTH_REQUIRED', message: 'Admin session diperlukan.' } }, 401, origin);
     return secureResponse(await catalog(adminRequest, env), origin);
+  }
+  if (isProductDetail(url) && request.method === 'GET' && !sessionValid) {
+    const result = await core.fetch(request, env, ctx);
+    if (!result.ok) return secureResponse(result, origin);
+    try {
+      const data = await result.clone().json();
+      if (!data?.published || data?.status !== 'active') return response({ error: 'Product not found' }, 404, origin);
+    } catch {
+      return response({ error: 'Product not found' }, 404, origin);
+    }
+    return secureResponse(result, origin);
   }
   if (adminCoreRoute && !sessionValid) return response({ ok: false, error: { code: 'ADMIN_AUTH_REQUIRED', message: 'Admin session diperlukan.' } }, 401, origin);
   if (url.pathname.startsWith('/media/') && sessionValid) return secureResponse(await core.fetch(adminRequest, env, ctx), origin);
