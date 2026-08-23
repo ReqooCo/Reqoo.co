@@ -4,6 +4,7 @@ import { quotations } from './quotations.js';
 import { manualPayment } from './manual-payment.js';
 import { orderAdmin } from './order-admin.js';
 import { createOrder } from './order-create.js';
+import { orderPublic } from './order-public.js';
 import { catalog } from './catalog.js';
 import { webhook as whatsappWebhook } from './whatsapp.js';
 import { adminLogin, adminLogout, hasAdminSession } from './admin-session.js';
@@ -32,6 +33,7 @@ function isAdminCoreRoute(url, request) {
   return false;
 }
 function isProductDetail(url) { return /^\/products\/[^/]+$/.test(url.pathname); }
+function isOrderDetail(url) { return /^\/orders\/[^/]+$/.test(url.pathname); }
 
 export default { async fetch(request, env, ctx) {
   const url = new URL(request.url); const origin = request.headers.get('Origin') || '';
@@ -47,6 +49,7 @@ export default { async fetch(request, env, ctx) {
   const adminRequest = sessionValid ? withAdminKey(request,env) : request;
 
   if (url.pathname === '/orders' && request.method === 'POST') return secureResponse(await createOrder(request,env),origin);
+  if (isOrderDetail(url) && request.method === 'GET') return secureResponse(await orderPublic(sessionValid ? adminRequest : request, env), origin);
   if (url.pathname.startsWith('/admin-orders/')) {
     if (!sessionValid) return response({ok:false,error:{code:'ADMIN_AUTH_REQUIRED',message:'Admin session diperlukan.'}},401,origin);
     return secureResponse(await orderAdmin(adminRequest,env),origin);
