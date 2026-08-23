@@ -1,23 +1,30 @@
 <!doctype html>
 <html lang="ms">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Reqoo • SIM / PKSK</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reqoo.co</title>
 <link rel="stylesheet" href="assets/app.css">
-<script>if(location.hostname==='pksk.sim.reqoo.co')location.replace('/pksk/');</script>
+<script>
+const host=location.hostname;
+if(host==='shop.reqoo.co') location.replace('/shop/');
+if(host==='sim.reqoo.co') location.replace('/sim/');
+if(host==='admin.reqoo.co') location.replace('/admin/');
+if(host==='pksk.sim.reqoo.co') location.replace('/sim/pksk/');
+</script>
 </head>
 <body class="landing">
 <main class="shell">
-  <div class="brand">REQOO</div>
+  <nav class="nav"><a class="brand" href="/">REQOO</a><div class="navlinks"><a href="/shop/">Shop</a><a href="/sim/">SIM</a><a href="/admin/">Admin</a></div></nav>
   <section class="hero card">
-    <span class="eyebrow">SIMULATOR</span>
-    <h1>Latihan SIM / PKSK</h1>
-    <p>Versi baharu yang ringkas. Pilih set, jawab, semak markah dan ulang latihan bila-bila masa.</p>
-    <a class="button primary" href="pksk/">Mula PKSK</a>
+    <span class="eyebrow">REQOO.CO</span>
+    <h1>Simple things.<br>Made useful.</h1>
+    <p>Reqoo ialah platform kecil untuk produk, perkhidmatan dan simulator pembelajaran. Kami bina satu demi satu supaya mudah digunakan dan boleh dipercayai.</p>
+    <div class="actions"><a class="button primary" href="/shop/">Masuk Shop</a><a class="button" href="/sim/">Masuk SIM</a></div>
   </section>
   <section class="grid two">
-    <div class="card"><h2>PKSK</h2><p>Set 01–50, Bahagian A, B dan C.</p><a href="pksk/" class="button">Buka simulator</a></div>
-    <div class="card"><h2>SIM</h2><p>Portal utama untuk modul simulator. PKSK ialah modul pertama.</p><a href="pksk/" class="button">Buka PKSK</a></div>
+    <a class="card linkcard" href="/shop/"><span class="eyebrow">SHOP</span><h2>E-commerce</h2><p>Produk, cart dan checkout yang ringkas.</p></a>
+    <a class="card linkcard" href="/sim/"><span class="eyebrow">SIM</span><h2>Simulator</h2><p>Latihan ujian PKSK dengan Set 01–50.</p></a>
   </section>
 </main>
 </body>
