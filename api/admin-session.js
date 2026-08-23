@@ -1,5 +1,6 @@
 const COOKIE = 'reqoo_admin_session';
 const TTL_SECONDS = 60 * 60 * 8;
+const COOKIE_BASE = `${COOKIE}=; Path=/; Domain=.reqoo.co; HttpOnly; Secure; SameSite=Lax`;
 
 function b64url(bytes) {
   let s = '';
@@ -51,11 +52,26 @@ export async function adminLogin(request, env) {
   supplied = String(supplied).trim();
   if (!expected || !supplied || supplied !== expected) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
   const token = await sign(env, { sub: 'admin', exp: Math.floor(Date.now() / 1000) + TTL_SECONDS });
-  return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'Set-Cookie': `${COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${TTL_SECONDS}` } });
+  return new Response(JSON.stringify({ ok: true }), {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-store',
+      'Set-Cookie': `${COOKIE_BASE}; Max-Age=${TTL_SECONDS}`
+        .replace(`${COOKIE}=;`, `${COOKIE}=${token};`)
+    }
+  });
 }
 
 export async function adminLogout() {
-  return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'Set-Cookie': `${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0` } });
+  return new Response(JSON.stringify({ ok: true }), {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-store',
+      'Set-Cookie': `${COOKIE_BASE}; Max-Age=0`
+    }
+  });
 }
 
 export async function hasAdminSession(request, env) {
