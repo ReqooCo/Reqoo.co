@@ -6,18 +6,59 @@ const ALLOWED_ORIGINS = new Set([
   'https://www.reqoo.co'
 ]);
 
-function response(data, status, origin) {
+function response(data, status, origin, publishedOnly = false) {
   const h = new Headers(JSON_HEADERS);
   h.set('Access-Control-Allow-Origin', ALLOWED_ORIGINS.has(origin) ? origin : 'null');
   h.set('Access-Control-Allow-Methods', 'GET,OPTIONS');
   h.set('Access-Control-Allow-Headers', 'Content-Type, X-Admin-Key');
   h.set('Vary', 'Origin');
+  h.set('Cache-Control', publishedOnly ? 'public, max-age=60, s-maxage=300, stale-while-revalidate=600' : 'no-store');
   return new Response(JSON.stringify(data), { status, headers: h });
 }
 
 function isAdmin(request, env) {
   const key = request.headers.get('X-Admin-Key');
   return Boolean(env.ADMIN_KEY && key && key === env.ADMIN_KEY);
+}
+
+function decodeMeta(raw) {
+  const prefix = '__REQOO_PRODUCT_V2__:';
+  const value = String(raw || '');
+  if (!value.startsWith(prefix)) return { meta: {}, options: [] };
+  try {
+    const bytes = atob(value.slice(prefix.length));
+    const json = decodeURIComponent(Array.from(bytes, c => `%${c.charCodeAt(0).toString(16).padStart(2, '0')}`).join(''));
+    const data = JSON.parse(json);
+    return {
+      meta: data?.meta && typeof data.meta === 'object' ? data.meta : {},
+      options: Array.isArray(data?.options) ? data.options : []
+    };
+  } catch {
+    return { meta: {}, options: [] };
+  }
+}
+
+function publicProduct(p, images) {
+  const { meta, options } = decodeMeta(p.internal_notes);
+  return {
+    id: p.id,
+    sku: p.sku,
+    name: p.name,
+    slug: p.slug,
+    product_type: p.product_type,
+    fulfillment_type: p.fulfillment_type,
+    description: p.description,
+    short_description: p.short_description,
+    currency: p.currency,
+    status: p.status,
+    price: Number(p.effective_price_minor ?? 0) / 100,
+    published: p.status === 'active',
+    images: images || [],
+    options,
+    meta,
+    created_at: p.created_at,
+    updated_at: p.updated_at
+  };
 }
 
 export async function catalog(request, env) {
@@ -36,15 +77,14 @@ export async function catalog(request, env) {
   const { results: products } = await env.DB.prepare(`
     SELECT p.id,p.sku,p.name,p.slug,p.product_type,p.fulfillment_type,
       p.description,p.short_description,p.base_price_minor,p.sale_price_minor,
-      p.currency,p.status,p.internal_notes,p.production_instructions,
-      p.seo_title,p.seo_description,p.created_at,p.updated_at,
+      p.currency,p.status,p.internal_notes,p.created_at,p.updated_at,
       CASE WHEN p.sale_price_minor IS NOT NULL THEN p.sale_price_minor ELSE p.base_price_minor END AS effective_price_minor
     FROM products p
     ${where}
     ORDER BY p.updated_at DESC
   `).all();
 
-  if (!products?.length) return response([], 200, origin);
+  if (!products?.length) return response([], 200, origin, publishedOnly);
 
   const ids = products.map(p => p.id);
   const placeholders = ids.map(() => '?').join(',');
@@ -62,22 +102,6 @@ export async function catalog(request, env) {
     byProduct.set(image.product_id, list);
   }
 
-  const output = products.map(p => ({
-    ...p,
-    price: Number(p.effective_price_minor ?? 0) / 100,
-    published: p.status === 'active',
-    images: byProduct.get(p.id) || []
-  }));
-
-  const h = new Headers(JSON_HEADERS);
-  h.set('Access-Control-Allow-Origin', ALLOWED_ORIGINS.has(origin) ? origin : 'null');
-  h.set('Access-Control-Allow-Methods', 'GET,OPTIONS');
-  h.set('Access-Control-Allow-Headers', 'Content-Type, X-Admin-Key');
-  h.set('Vary', 'Origin');
-  if (publishedOnly) {
-    h.set('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
-  } else {
-    h.set('Cache-Control', 'no-store');
-  }
-  return new Response(JSON.stringify(output), { status: 200, headers: h });
+  const output = products.map(p => publicProduct(p, byProduct.get(p.id) || []));
+  return response(output, 200, origin, publishedOnly);
 }
