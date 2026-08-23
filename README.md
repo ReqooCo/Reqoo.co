@@ -31,7 +31,7 @@ Main Admin flow:
 
 Checkout is server-authoritative. The API re-reads active products from D1 and validates variation, add-on and required custom fields before calculating the order total. Browser/localStorage prices are never trusted as the final amount.
 
-Variation values are full unit prices; add-ons are added to the selected variation/base price. The customer product page and server use the same option metadata contract.
+Variation prices are **additions to the base/sale price**; add-ons are also added. The customer product page and server use the same option metadata contract.
 
 ## Database
 
@@ -50,6 +50,7 @@ Apply migrations with Wrangler before deployment. Current production sequence:
 - Admin-only API operations are gated by the HttpOnly Admin session at the gateway.
 - Customer order detail requires the per-order public token.
 - Customer QR payment marking requires the same order token; only Admin can verify payment.
+- Billplz creation is also gated by the order token for customers.
 - Custom uploaded files are private and require an Admin session.
 - Product images remain public because they are customer-facing shop media.
 
