@@ -8,7 +8,8 @@ export default{async fetch(request,env,ctx){const url=new URL(request.url),origi
 const sessionValid=await hasAdminSession(request,env),adminCoreRoute=isAdminCoreRoute(url,request),adminRequest=sessionValid?withAdminKey(request,env):request;
 if(url.pathname==='/orders'&&request.method==='POST')return secureResponse(await createOrder(request,env),origin);
 if(isOrderDetail(url)&&request.method==='GET')return secureResponse(await orderPublic(sessionValid?adminRequest:request,env),origin);
-if((isOrderDetail(url)||isProductDetail(url)||isCustomDetail(url))&&request.method!=='GET'){if(!sessionValid)return response({ok:false,error:{code:'ADMIN_AUTH_REQUIRED',message:'Admin session diperlukan.'}},401,origin);return secureResponse(await core.fetch(adminRequest,env,ctx),origin)}
+if(isCustomDetail(url)){if(!sessionValid)return response({ok:false,error:{code:'ADMIN_AUTH_REQUIRED',message:'Admin session diperlukan.'}},401,origin);return secureResponse(await core.fetch(adminRequest,env,ctx),origin)}
+if((isOrderDetail(url)||isProductDetail(url))&&request.method!=='GET'){if(!sessionValid)return response({ok:false,error:{code:'ADMIN_AUTH_REQUIRED',message:'Admin session diperlukan.'}},401,origin);return secureResponse(await core.fetch(adminRequest,env,ctx),origin)}
 if(url.pathname.startsWith('/admin-orders/')){if(!sessionValid)return response({ok:false,error:{code:'ADMIN_AUTH_REQUIRED',message:'Admin session diperlukan.'}},401,origin);return secureResponse(await orderAdmin(adminRequest,env),origin)}
 if(url.pathname.startsWith('/payments/qr/'))return secureResponse(await manualPayment(sessionValid?adminRequest:request,env),origin);
 if(url.pathname==='/whatsapp/webhook')return secureResponse(await whatsappWebhook(request,env,ctx),origin);
