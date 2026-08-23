@@ -33,9 +33,7 @@ Checkout is server-authoritative. The API re-reads active products from D1 and v
 
 The D1 schema is versioned under `api/migrations/`.
 
-For a new database, apply migrations with Wrangler before deployment. Cloudflare's current D1 workflow supports `wrangler d1 migrations apply` for local and remote databases. citeturn1search0turn1search3
-
-The production baseline includes the core customer, product, order, payment, quotation and PKSK operational tables. Later migrations add checkout fields, quotation conversion idempotency, and checkout idempotency.
+For a new database, apply the migrations with Wrangler before deployment. The production baseline includes the core customer, product, order, payment, quotation and PKSK operational tables. Later migrations add checkout fields, quotation conversion idempotency, and checkout idempotency.
 
 ## Locked content
 
