@@ -1,0 +1,33 @@
+const demoProducts=[
+{id:'demo-1',name:'Keychain Custom',price:12.9,description:'Ukiran nama / logo pada keychain.',image:''},
+{id:'demo-2',name:'Plaque Custom',price:39.9,description:'Plaque hadiah yang boleh ditempah custom.',image:''},
+{id:'demo-3',name:'Acrylic Gift',price:24.9,description:'Hadiah acrylic untuk pelbagai acara.',image:''}
+];
+const CATALOG_KEY='reqoo_catalog_v1',CART_KEY='reqoo_cart_v1';
+let products=JSON.parse(localStorage.getItem(CATALOG_KEY)||'null')||demoProducts;
+let cart=JSON.parse(localStorage.getItem(CART_KEY)||'[]');
+const $=s=>document.querySelector(s),money=n=>'RM'+Number(n||0).toFixed(2);
+function save(){localStorage.setItem(CART_KEY,JSON.stringify(cart));renderCartCount()}
+function render(){
+ $('#products').innerHTML=products.length?products.map(p=>`<article class="card product"><div class="product-img">${p.image?`<img src="${p.image}" alt="" style="max-width:100%;max-height:100%;border-radius:10px">`:'REQOO'}</div><h2>${esc(p.name)}</h2><p class="muted">${esc(p.description||'')}</p><div class="topbar"><span class="price">${money(p.price)}</span><button class="button primary" data-add="${p.id}">Tambah</button></div></article>`).join(''):'<div class="card empty">Belum ada produk.</div>';
+}
+function renderCartCount(){$('#cartCount').textContent=cart.reduce((n,x)=>n+x.qty,0)}
+function renderCheckout(){
+ $('#cartItems').innerHTML=cart.length?cart.map(x=>`<div class="cart-row"><div><b>${esc(x.name)}</b><div class="muted">${money(x.price)} × ${x.qty}</div></div><button class="button small" data-minus="${x.id}">−</button><button class="button small remove" data-remove="${x.id}">Buang</button></div>`).join(''):'<div class="empty">Cart kosong.</div>';
+ $('#cartTotal').textContent=money(cart.reduce((n,x)=>n+x.price*x.qty,0));
+}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+$('#products').addEventListener('click',e=>{const b=e.target.closest('[data-add]');if(!b)return;const p=products.find(x=>x.id===b.dataset.add);const item=cart.find(x=>x.id===p.id);item?item.qty++:cart.push({...p,qty:1});save()});
+$('#cartBtn').onclick=()=>{$('#checkout').classList.remove('hidden');renderCheckout();scrollTo({top:document.body.scrollHeight,behavior:'smooth'})};
+$('#closeCheckout').onclick=()=>$('#checkout').classList.add('hidden');
+$('#cartItems').addEventListener('click',e=>{const minus=e.target.closest('[data-minus]'),remove=e.target.closest('[data-remove]');if(minus){const x=cart.find(i=>i.id===minus.dataset.minus);if(x){x.qty--;if(x.qty<=0)cart=cart.filter(i=>i.id!==x.id)}}if(remove)cart=cart.filter(i=>i.id!==remove.dataset.remove);save();renderCheckout()});
+$('#payment').onchange=e=>$('#qrBox').classList.toggle('hidden',e.target.value!=='qr');
+$('#payBtn').onclick=async()=>{
+ if(!cart.length)return showMsg('Cart masih kosong.');
+ const customer={name:$('#custName').value.trim(),email:$('#custEmail').value.trim(),phone:$('#custPhone').value.trim(),items:cart,total:cart.reduce((n,x)=>n+x.price*x.qty,0)};
+ if(!customer.name)return showMsg('Masukkan nama.');
+ if($('#payment').value==='qr')return showMsg('QR payment dipilih. Masukkan QR AB ART TRADING pada tetapan pembayaran untuk aktifkan bayaran sebenar.');
+ try{const r=await fetch('https://api.reqoo.co/api/create-bill',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(customer)});const j=await r.json();if(!r.ok||!j.url)throw new Error(j.error||'Billplz belum disambung');location.href=j.url}catch(e){showMsg('Billplz belum aktif: '+e.message)}
+};
+function showMsg(t){$('#payMsg').textContent=t;$('#payMsg').classList.remove('hidden')}
+render();renderCartCount();
