@@ -2,5 +2,18 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "reqoo-catalog-api",
   "main": "worker.js",
-  "compatibility_date": "2026-08-23"
+  "compatibility_date": "2026-08-23",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "reqoo-rebuild",
+      "database_id": "15123ddd-d63a-4033-912c-51c1f05c11c5"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "reqoo-product-media"
+    }
+  ]
 }
