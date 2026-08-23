@@ -19,7 +19,7 @@ function securityHeaders(headers, origin = '') {
     headers.set('Access-Control-Allow-Credentials', 'true');
   } else if (origin) headers.set('Access-Control-Allow-Origin', 'null');
   headers.set('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-  headers.set('Access-Control-Allow-Headers', 'Content-Type, X-Admin-Key');
+  headers.set('Access-Control-Allow-Headers', 'Content-Type, X-Admin-Key, Idempotency-Key');
   headers.set('Vary', 'Origin');
 }
 function response(data, status, origin) {
@@ -38,8 +38,6 @@ function isAdminCoreRoute(url, request) {
   if (url.pathname === '/custom-requests') return request.method !== 'POST';
   if (url.pathname === '/orders') return request.method !== 'POST';
   if (url.pathname.startsWith('/media/')) {
-    // Product images are intentionally public so <img> tags on Shop/Admin can load them.
-    // Decode the path first because uploadMedia historically returned /media/products%2F... URLs.
     let mediaPath = url.pathname;
     try { mediaPath = decodeURIComponent(mediaPath); } catch {}
     return !mediaPath.startsWith('/media/products/');
@@ -52,6 +50,7 @@ export default { async fetch(request, env, ctx) {
   if (request.method === 'OPTIONS') return response({}, 204, origin);
   if (url.pathname === '/admin/login') return secureResponse(await adminLogin(request, env), origin);
   if (url.pathname === '/admin/logout') return secureResponse(await adminLogout(), origin);
+  if (url.pathname === '/admin/session') return response({ ok: await hasAdminSession(request, env) }, 200, origin);
   if (url.hostname === 'admin.reqoo.co' && (url.pathname === '/' || url.pathname === '')) return Response.redirect('https://reqoo.co/admin/', 302);
 
   const sessionValid = await hasAdminSession(request, env);
@@ -62,7 +61,9 @@ export default { async fetch(request, env, ctx) {
     if (!sessionValid) return response({ ok: false, error: { code: 'ADMIN_AUTH_REQUIRED', message: 'Admin session diperlukan.' } }, 401, origin);
     return secureResponse(await orderAdmin(adminRequest, env), origin);
   }
-  if (url.pathname.startsWith('/payments/qr/')) return secureResponse(await manualPayment(request, env), origin);
+  if (url.pathname.startsWith('/payments/qr/')) {
+    return secureResponse(await manualPayment(sessionValid ? adminRequest : request, env), origin);
+  }
   if (url.pathname === '/whatsapp/webhook') return secureResponse(await whatsappWebhook(request, env, ctx), origin);
   if (url.pathname.startsWith('/pksk-admin/')) {
     if (!sessionValid) return response({ ok: false, error: { code: 'ADMIN_AUTH_REQUIRED', message: 'Admin session diperlukan.' } }, 401, origin);
