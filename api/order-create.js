@@ -28,7 +28,6 @@ function moneyCents(v) { const n = Number(v); return Number.isFinite(n) && n >= 
 function selectedAddon(addons, opt) {
   return addons.find(a => String(a?.option_id ?? a?.id ?? '') === String(opt.id) || String(a?.label ?? '') === String(opt.label));
 }
-
 function priceProduct(product, item) {
   const options = meta(product.internal_notes).options || [];
   const variation = item.variation && typeof item.variation === 'object' ? item.variation : {};
@@ -46,7 +45,6 @@ function priceProduct(product, item) {
     if (!match) throw new Error(`Pilihan variation tidak sah: ${opt.label}`);
     const cents = moneyCents(match.price);
     if (!Number.isInteger(cents)) throw new Error(`Harga variation tidak sah: ${opt.label}`);
-    // A variation price is the full unit price for that variation, not an addition to base price.
     unit = cents;
   }
 
@@ -106,8 +104,8 @@ export async function createOrder(request, env) {
   if (input.items.length > 50) return json({ error: 'Cart terlalu banyak item' }, 400, origin);
 
   try {
-    const existing = await env.DB.prepare('SELECT id FROM orders WHERE idempotency_key=? LIMIT 1').bind(idempotencyKey).first();
-    if (existing) return json({ order: { id: existing.id }, idempotent: true }, 200, origin);
+    const existing = await env.DB.prepare('SELECT id,public_token,total_minor,payment_status,fulfillment_status FROM orders WHERE idempotency_key=? LIMIT 1').bind(idempotencyKey).first();
+    if (existing) return json({ order: { id: existing.id, public_token: existing.public_token, total_minor: existing.total_minor, payment_status: existing.payment_status, fulfillment_status: existing.fulfillment_status }, idempotent: true }, 200, origin);
   } catch {
     return json({ error: 'Checkout database migration 004 belum digunakan' }, 503, origin);
   }
@@ -140,20 +138,21 @@ export async function createOrder(request, env) {
 
   const customerId = crypto.randomUUID();
   const orderId = crypto.randomUUID();
+  const publicToken = crypto.randomUUID().replaceAll('-', '') + crypto.randomUUID().replaceAll('-', '');
   const now = new Date().toISOString();
   const statements = [
     env.DB.prepare('INSERT INTO customers (id,name,phone,email,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?)').bind(customerId,name,phone,email || null,'active',now,now),
-    env.DB.prepare('INSERT INTO orders (id,customer_id,source,currency,subtotal_minor,discount_minor,shipping_minor,tax_minor,total_minor,payment_status,fulfillment_status,shipping_address,order_note,idempotency_key,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(orderId,customerId,'shop','MYR',subtotal,0,0,0,subtotal,'pending','pending',shippingAddress,orderNote || null,idempotencyKey,now,now),
+    env.DB.prepare('INSERT INTO orders (id,customer_id,source,currency,subtotal_minor,discount_minor,shipping_minor,tax_minor,total_minor,payment_status,fulfillment_status,shipping_address,order_note,idempotency_key,public_token,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(orderId,customerId,'shop','MYR',subtotal,0,0,0,subtotal,'pending','pending',shippingAddress,orderNote || null,idempotencyKey,publicToken,now,now),
     ...lines.map(x => env.DB.prepare('INSERT INTO order_items (id,order_id,product_id,product_name_snapshot,sku_snapshot,variation_snapshot_json,customization_snapshot_json,addons_snapshot_json,unit_price_minor,quantity,line_total_minor,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)').bind(crypto.randomUUID(),orderId,x.product.id,x.product.name,x.product.sku || null,JSON.stringify(x.variation),JSON.stringify(x.customization),JSON.stringify(x.addons),x.unit,x.quantity,x.line,now))
   ];
 
   try {
     await env.DB.batch(statements);
   } catch (error) {
-    const winner = await env.DB.prepare('SELECT id FROM orders WHERE idempotency_key=? LIMIT 1').bind(idempotencyKey).first();
-    if (winner) return json({ order: { id: winner.id }, idempotent: true }, 200, origin);
+    const winner = await env.DB.prepare('SELECT id,public_token,total_minor,payment_status,fulfillment_status FROM orders WHERE idempotency_key=? LIMIT 1').bind(idempotencyKey).first();
+    if (winner) return json({ order: { id: winner.id, public_token: winner.public_token, total_minor: winner.total_minor, payment_status: winner.payment_status, fulfillment_status: winner.fulfillment_status }, idempotent: true }, 200, origin);
     console.error(error);
     return json({ error: 'Pesanan gagal disimpan' }, 500, origin);
   }
-  return json({ order: { id: orderId, total_minor: subtotal, payment_status: 'pending', fulfillment_status: 'pending' }, idempotent: false }, 201, origin);
+  return json({ order: { id: orderId, public_token: publicToken, total_minor: subtotal, payment_status: 'pending', fulfillment_status: 'pending' }, idempotent: false }, 201, origin);
 }
