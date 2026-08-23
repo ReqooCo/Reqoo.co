@@ -6,6 +6,7 @@ const isAdminPage = () => location.pathname === '/admin/' || location.pathname.s
 const adminRoot = () => '/admin/';
 
 export const catalogAuth = Object.freeze({
+  // Kept only as a compatibility shim for old pages. Admin authentication is now HttpOnly session based.
   getKey: () => '',
   setKey: () => {},
   clear: async () => { try { await fetch(`${CATALOG_API}/admin/logout`, { method: 'POST', credentials: 'include' }); } catch {} }
@@ -112,31 +113,22 @@ export function normalizeProduct(input) {
   });
 }
 
-// Product Builder UX hardening: recover from bfcache/stale DOM and make the save action reliably clickable.
+// Product Builder UX hardening. The actual page is product-builder.html.
 function hardenProductBuilder() {
-  if (location.pathname !== '/admin/shop/product-builder') return;
+  const path = location.pathname.replace(/\/+$/, '');
+  if (!['/admin/shop/product-builder', '/admin/shop/product-builder.html'].includes(path)) return;
   const run = () => {
     const save = document.getElementById('save');
     const notice = document.getElementById('notice');
-    const id = new URLSearchParams(location.search).get('id');
     if (!save) return;
     save.style.pointerEvents = 'auto';
     save.style.position = 'relative';
     save.style.zIndex = '100';
     save.style.touchAction = 'manipulation';
-    if (!id && notice && /failed to fetch/i.test(notice.textContent || '')) {
+    if (notice && /failed to fetch/i.test(notice.textContent || '')) {
       notice.textContent = 'Sedia. Isi maklumat produk dan variation, kemudian simpan.';
       notice.className = 'notice ok';
     }
-    save.addEventListener('click', () => {
-      const variations = document.querySelector('#variations');
-      const cards = variations?.querySelectorAll('.card') || [];
-      if (!cards.length && notice) {
-        notice.textContent = 'Tambah sekurang-kurangnya satu Variation dan harga dahulu.';
-        notice.className = 'notice err';
-        variations?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }, { capture: true });
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run, { once: true });
   else run();
