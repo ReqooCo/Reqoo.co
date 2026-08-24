@@ -1,1 +1,21 @@
-<REPLACE>
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reqoo Admin</title>
+<style>body{font-family:Arial,sans-serif;background:#090a0c;color:#eee;margin:0;padding:24px}.hidden{display:none!important}.login{max-width:420px;margin:15vh auto;padding:28px;background:#14161a;border:1px solid #292d35;border-radius:18px}.login h1{margin-top:0}.input{width:100%;box-sizing:border-box;padding:14px;border-radius:10px;border:1px solid #343943;background:#0d0f12;color:#fff;margin:8px 0 14px}.button{padding:12px 18px;border:0;border-radius:10px;background:#f4bd3f;color:#111;font-weight:700;cursor:pointer}.notice{padding:14px;border-radius:10px;background:#1b1e24;margin-bottom:14px}.wrap{max-width:1200px;margin:auto}.side{padding:16px;background:#14161a;border-radius:16px;margin-bottom:20px}.panel{background:#14161a;padding:24px;border-radius:16px}.side-btn{margin-right:8px;padding:10px 14px;background:none;color:#aaa;border:0}.side-btn.active{color:#fff;background:#1d2026;border-radius:8px}</style>
+</head>
+<body>
+<div id="login" class="login">
+<h1>REQOO</h1><p>Admin Center</p>
+<div id="loginMsg" class="notice hidden"></div>
+<label>Admin Key</label><input id="loginKey" class="input" type="password" autocomplete="current-password" placeholder="Masukkan Admin Key">
+<button id="loginBtn" class="button">Masuk Admin</button>
+</div>
+<div id="app" class="wrap hidden">
+<div class="side"><b>REQOO Admin Center</b> <button class="side-btn active" data-tab="products">Shop · Products</button><button class="side-btn" data-tab="documents">Quotation</button><button class="side-btn" data-tab="settings">Settings</button><button id="logout" class="button">Log keluar</button></div>
+<section id="products" class="panel"><h1>Products</h1><button id="newProduct" class="button">+ Add Product</button><div id="productForm" class="hidden"></div><div id="productList"></div></section>
+<section id="documents" class="panel hidden"><h1>Documents</h1><div id="quotationList"></div><div id="invoiceList"></div><div id="receiptList"></div></section>
+<section id="settings" class="panel hidden"><h1>Settings</h1><label>API URL</label><input id="apiUrl" class="input"><label>Admin Key</label><input id="adminKey" class="input" type="password"><button id="saveSettings" class="button">Simpan</button></section>
+</div>
+<script src="admin.js"></script>
+</body></html>
