@@ -99,7 +99,7 @@ export default {async fetch(request,env){
       const b=await request.json();const key=clean(env.BILLPLZ_API_KEY||env.BILLPLZ_SECRET_KEY);const collection=clean(env.BILLPLZ_COLLECTION||env.BILLPLZ_COLLECTION_ID||env.BILLPLZ_COLLECT);const amount=Math.round(Number(b.total_minor||0));
       if(!key||!collection)return json({error:'Billplz secrets belum lengkap.'},503);
       if(amount<=0||!clean(b.email)||!clean(b.name)||!clean(b.phone))return json({error:'Maklumat bayaran tidak lengkap.'},400);
-      const form=new URLSearchParams({collection_id:collection,email:clean(b.email),name:clean(b.name),mobile:clean(b.phone),amount:String(amount),description:'Reqoo Shop Order',callback_url:'https://api.reqoo.co/api/billplz/callback',redirect_url:'https://shop.reqoo.co/?payment=returned'});
+      const form=new URLSearchParams({collection_id:collection,email:clean(b.email),name:clean(b.name),mobile:clean(b.phone),amount:String(amount),description:'Reqoo Shop Order',callback_url:'https://api.reqoo.co/api/billplz/callback',redirect_url:'https://reqoo.co/shop/?payment=returned'});
       const r=await fetch('https://www.billplz.com/api/v3/bills',{method:'POST',headers:{Authorization:'Basic '+btoa(key+':'),'Content-Type':'application/x-www-form-urlencoded'},body:form});
       const j=await r.json();if(!r.ok)return json({error:j.error||j.message||'Billplz error'},r.status);return json({url:j.url,id:j.id});
     }
