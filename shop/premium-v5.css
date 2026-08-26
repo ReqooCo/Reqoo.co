@@ -1,0 +1,43 @@
+/* REQOO PREMIUM V5 — phone-first polish */
+@media(max-width:720px){
+  /* Mobile navigation: never wrap or collide with cart */
+  html body .shop-nav{height:68px!important;min-height:68px!important;padding:0 18px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;box-sizing:border-box!important}
+  html body .shop-nav .shop-logo{font-size:25px!important;white-space:nowrap!important}
+  html body .shop-nav .shop-links{display:none!important}
+  html body .shop-nav .nav-tools{margin-left:auto!important;display:flex!important;align-items:center!important;gap:8px!important}
+  html body .shop-nav .nav-tools .icon-btn{display:none!important}
+  html body .shop-nav .cart-pill{height:42px!important;min-width:108px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;box-sizing:border-box!important}
+
+  /* Checkout becomes a clean full-screen mobile sheet */
+  html body .checkout-panel{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;min-height:0!important;padding:0!important;display:block!important;overflow-y:auto!important;overflow-x:hidden!important;background:rgba(7,6,5,.72)!important}
+  html body .checkout-panel>*{width:100%!important;max-width:none!important;box-sizing:border-box!important;margin-left:0!important;margin-right:0!important}
+  html body .checkout-panel .checkout-head{min-height:0!important;height:auto!important;padding:72px 20px 28px!important;background:linear-gradient(180deg,#0d0c0a,#11100d)!important;border-left:0!important}
+  html body .checkout-panel .checkout-head>div{padding-right:58px!important}
+  html body .checkout-panel .checkout-head h2{font-size:40px!important;line-height:.95!important;margin:8px 0 0!important}
+  html body .checkout-panel #closeCheckout{right:18px!important;top:18px!important;width:44px!important;height:44px!important}
+
+  html body .checkout-panel #cartItems{padding:24px 20px 0!important;background:#faf6ee!important}
+  html body .checkout-panel #cartItems:before{font-size:9px!important;margin-bottom:8px!important}
+  html body .checkout-panel .cart-row{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:12px!important;padding:18px 0!important}
+  html body .checkout-panel .cart-row b{font-size:19px!important}
+  html body .checkout-panel .cart-actions{max-width:150px!important}
+  html body .checkout-panel .mini-btn{height:38px!important;min-width:38px!important;padding:0 10px!important}
+  html body .checkout-panel .checkout-total{width:100%!important;padding:20px!important;background:#faf6ee!important;font-size:25px!important;box-sizing:border-box!important}
+
+  /* Remove the ugly horizontal black separators seen between form fields */
+  html body .checkout-panel>.field,
+  html body .checkout-panel>.field:before,
+  html body .checkout-panel>.field:after{border:0!important;box-shadow:none!important}
+  html body .checkout-panel>.field{padding:0 20px!important;margin:0!important;background:#faf6ee!important}
+  html body .checkout-panel>.field + .field{padding-top:18px!important}
+  html body .checkout-panel>.field label{display:block!important;margin:0 0 8px!important;padding:0!important;color:#4f402c!important;font-size:10px!important;line-height:1.2!important;letter-spacing:.14em!important}
+  html body .checkout-panel .shop-input{display:block!important;width:100%!important;height:54px!important;box-sizing:border-box!important;border:1px solid rgba(95,70,33,.24)!important;border-radius:10px!important;background:#fffaf2!important;padding:0 15px!important;font-size:15px!important}
+
+  html body .checkout-panel .pay-methods{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;width:100%!important}
+  html body .checkout-panel .pay-method{min-height:78px!important;padding:14px!important;border-radius:10px!important;box-sizing:border-box!important}
+  html body .checkout-panel>#qrBox{width:100%!important;padding:20px!important;margin:0!important;background:#faf6ee!important;border:0!important;box-sizing:border-box!important;text-align:center!important}
+  html body .checkout-panel>#qrBox img{display:block!important;width:min(270px,72vw)!important;max-width:270px!important;height:auto!important;margin:8px auto 12px!important;background:#fff!important;border-radius:12px!important;padding:12px!important;box-sizing:border-box!important;box-shadow:0 10px 30px rgba(20,15,8,.12)!important}
+  html body .checkout-panel>#payMsg{width:100%!important;padding:14px 20px!important;margin:0!important;background:#faf6ee!important;box-sizing:border-box!important}
+  html body .checkout-panel>#payBtn{width:100%!important;height:64px!important;margin:0!important;padding:0 20px!important;background:#faf6ee!important;box-sizing:border-box!important;border:0!important}
+  html body .checkout-panel>#payBtn:after{left:20px!important;right:20px!important;top:0!important;height:54px!important;border-radius:8px!important}
+}
