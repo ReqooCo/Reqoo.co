@@ -1,1 +1,79 @@
-<!doctype html><html lang="ms"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reqoo PKSK Simulator</title><style>body{font-family:system-ui;margin:0;background:#f6f6f6;color:#111}.wrap{max-width:900px;margin:auto;padding:24px}.card{background:#fff;border:1px solid #ddd;border-radius:16px;padding:24px;margin:16px 0}a{display:inline-block;padding:12px 18px;background:#111;color:#fff;border-radius:10px;text-decoration:none;margin:6px 6px 0 0}</style></head><body><div class="wrap"><div class="card"><b>REQOO • SIM</b><h1>PKSK Simulator</h1><p>Set 01–50</p><div id="sets"></div></div></div><script>const root=document.getElementById('sets');for(let i=1;i<=50;i++){const a=document.createElement('a');a.href='sets/SET '+(i<=10?'01-10':i<=20?'11-20':i<=30?'21-30':i<=40?'31-40':'41-50')+'/SET '+String(i).padStart(2,'0')+'.json';a.textContent='Set '+String(i).padStart(2,'0');root.appendChild(a)}</script></body></html>
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0a08">
+<title>REQOO · PKSK Simulator</title>
+<link rel="stylesheet" href="exam.css">
+</head>
+<body>
+<div id="app">
+  <header class="exam-top">
+    <div class="brand"><span class="brand-mark">R</span><span>REQOO</span><small>PKSK SIMULATOR</small></div>
+    <div class="top-center"><span id="sectionLabel">BAHAGIAN A</span><span class="dot">•</span><span id="setLabel">SET 01</span></div>
+    <div class="top-right"><div class="timer-wrap"><span class="timer-label">MASA</span><strong id="timer">90:00</strong></div><button id="submitTop" class="gold-btn">Hantar</button></div>
+  </header>
+
+  <main>
+    <section id="startScreen" class="screen start-screen">
+      <div class="start-card">
+        <div class="eyebrow">UJIAN SIMULASI BERKOMPUTER</div>
+        <h1>PKSK<br><em>Simulator.</em></h1>
+        <p>Antaramuka latihan yang direka menyerupai pengalaman menjawab ujian di komputer — soalan, pilihan jawapan, navigasi nombor, penanda dan kiraan masa.</p>
+        <div class="setup-row"><label>SET</label><select id="setSelect"></select></div>
+        <div class="rules"><div><b>01</b><span>Pilih satu jawapan</span></div><div><b>02</b><span>Boleh kembali ke soalan</span></div><div><b>03</b><span>Tanda soalan untuk semakan</span></div></div>
+        <button id="startBtn" class="start-btn">MULA UJIAN <span>→</span></button>
+        <p class="fine">Ini ialah simulator latihan REQOO, bukan sistem rasmi KPM.</p>
+      </div>
+    </section>
+
+    <section id="examScreen" class="screen hidden">
+      <div class="exam-layout">
+        <aside class="question-nav">
+          <div class="nav-head"><div><span class="eyebrow">NAVIGASI</span><h2>Soalan</h2></div><button id="closeNav" class="icon-btn">×</button></div>
+          <div class="nav-summary"><span><i class="legend answered"></i>Dijawab <b id="answeredCount">0</b></span><span><i class="legend flagged"></i>Tanda <b id="flaggedCount">0</b></span></div>
+          <div id="questionGrid" class="question-grid"></div>
+          <div class="nav-bottom"><button id="finishBtn" class="finish-btn">HANTAR JAWAPAN</button></div>
+        </aside>
+
+        <section class="question-area">
+          <div class="mobile-nav"><button id="openNav" class="outline-btn">☰ <span>Soalan</span></button><span id="mobileProgress">1 / 1</span><button id="flagBtnMobile" class="outline-btn">☆</button></div>
+          <div class="question-head">
+            <div><div class="eyebrow" id="questionSection">BAHAGIAN A · EQ</div><div class="question-number">SOALAN <strong id="questionNo">01</strong></div></div>
+            <button id="flagBtn" class="flag-btn"><span id="flagIcon">☆</span> <span id="flagText">TANDA UNTUK SEMAKAN</span></button>
+          </div>
+          <div class="progress-line"><span id="progressBar"></span></div>
+          <article class="question-card">
+            <div id="questionText" class="question-text"></div>
+            <div id="options" class="options"></div>
+          </article>
+          <div class="exam-actions"><button id="prevBtn" class="nav-btn">← <span>Sebelumnya</span></button><button id="nextBtn" class="nav-btn primary">Seterusnya <span>→</span></button></div>
+        </section>
+      </div>
+    </section>
+
+    <section id="writingScreen" class="screen hidden">
+      <div class="writing-layout">
+        <div class="writing-main">
+          <div class="question-head"><div><div class="eyebrow">BAHAGIAN C · ARTIKULASI PENULISAN</div><h2>Pilih satu tajuk</h2></div></div>
+          <div id="writingChoices" class="writing-choices"></div>
+          <div id="writingEditor" class="writing-editor hidden">
+            <div class="selected-title"><span class="eyebrow">TAJUK DIPILIH</span><h2 id="writingTitle"></h2><p id="writingPrompt"></p></div>
+            <textarea id="writingAnswer" placeholder="Taip jawapan kamu di sini…"></textarea>
+            <div class="editor-meta"><span id="wordCount">0 perkataan</span><span>Jawapan disimpan dalam simulator</span></div>
+          </div>
+        </div>
+        <aside class="writing-side"><div class="side-card"><span class="eyebrow">PANDUAN</span><h3>Bahagian C</h3><p>Pilih <b>satu</b> tajuk dan tulis jawapan kamu. Gunakan ruang jawapan seperti medan penulisan komputer.</p><button id="changeWriting" class="outline-btn hidden">PILIH TAJUK LAIN</button></div><button id="submitWriting" class="finish-btn">HANTAR UJIAN</button></aside>
+      </div>
+    </section>
+
+    <section id="resultScreen" class="screen hidden">
+      <div class="result-card"><div class="eyebrow">UJIAN SELESAI</div><h1>Keputusan<br><em>simulasi.</em></h1><div class="score-ring"><strong id="scoreValue">0</strong><span id="scoreMax">/ 0</span></div><div class="result-stats"><div><span>Dijawab</span><b id="resultAnswered">0</b></div><div><span>Ditanda</span><b id="resultFlagged">0</b></div><div><span>Set</span><b id="resultSet">01</b></div></div><p id="resultMessage"></p><div class="result-actions"><button id="reviewBtn" class="outline-btn">SEMAK JAWAPAN</button><button id="restartBtn" class="start-btn">ULANG SET <span>↻</span></button></div></div>
+    </section>
+  </main>
+</div>
+<div id="confirmModal" class="modal hidden"><div class="modal-box"><button id="modalClose" class="modal-close">×</button><div class="eyebrow">SEMAK SEBELUM HANTAR</div><h2>Hantar ujian sekarang?</h2><p id="modalText"></p><div class="modal-actions"><button id="cancelSubmit" class="outline-btn">KEMBALI</button><button id="confirmSubmit" class="start-btn">HANTAR <span>→</span></button></div></div></div>
+<script src="exam.js"></script>
+</body>
+</html>
