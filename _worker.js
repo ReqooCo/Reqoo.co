@@ -14,8 +14,8 @@ export default {
       return new Response('Not Found', { status: 404 });
     }
 
-    // PKSK simulator now lives in the top-level /pksk folder.
-    const target = new URL(`/pksk/${cleanPath}`, url.origin);
+    // PKSK simulator lives under /sim/pksk in the repository.
+    const target = new URL(`/sim/pksk/${cleanPath}`, url.origin);
     target.search = url.search;
 
     return env.ASSETS.fetch(new Request(target.toString(), request));
