@@ -17,7 +17,7 @@ export async function onRequest(context) {
   }
 
   const assetUrl = new URL(request.url);
-  assetUrl.pathname = `/sim/simulator/pksk/${cleanPath}`;
+  assetUrl.pathname = `/sim/pksk/${cleanPath}`;
 
   return context.env.ASSETS.fetch(new Request(assetUrl.toString(), request));
 }
