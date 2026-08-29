@@ -1,4 +1,4 @@
-name: Deploy Reqoo PKSK Router
+name: Deploy Reqoo Worker
 
 on:
   push:
@@ -13,4 +13,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy --config wrangler.toml
+          command: deploy --config wrangler.jsonc
