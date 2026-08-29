@@ -8,19 +8,20 @@ export default {
       return env.ASSETS.fetch(request);
     }
 
-    // Serve the PKSK simulator from its existing repository folder at the
-    // subdomain root, so users do not need to know the internal path.
+    // The Pages custom-domain runtime can expose the root project assets but
+    // may not resolve the nested simulator directory through ASSETS directly.
+    // Proxy the simulator files through the main Reqoo Pages domain instead.
     const pathname = url.pathname === '/' ? '/index.html' : url.pathname;
     const cleanPath = pathname.replace(/^\/+/, '');
 
-    // Only allow normal relative asset/page paths; never allow traversal.
+    // Never allow traversal.
     if (cleanPath.includes('..')) {
       return new Response('Not Found', { status: 404 });
     }
 
-    const assetUrl = new URL(request.url);
-    assetUrl.pathname = `/sim/simulator/pksk/${cleanPath}`;
+    const target = new URL(`/sim/simulator/pksk/${cleanPath}`, 'https://reqoo.co');
+    target.search = url.search;
 
-    return env.ASSETS.fetch(new Request(assetUrl.toString(), request));
+    return fetch(new Request(target.toString(), request));
   }
 };
