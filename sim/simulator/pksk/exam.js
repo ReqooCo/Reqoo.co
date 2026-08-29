@@ -1,0 +1,61 @@
+const DATA_ROOT='sets/';
+const state={set:1,data:null,items:[],index:0,answers:{},flags:{},time:90*60,timer:null,submitted:false,writingIndex:null};
+const $=s=>document.querySelector(s);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+function dataPath(n){const group=n<=10?'01-10':n<=20?'11-20':n<=30?'21-30':n<=40?'31-40':'41-50';return `${DATA_ROOT}SET ${group}/data/set${pad(n)}.json`}
+function save(){try{localStorage.setItem('reqoo_pksk_state',JSON.stringify({set:state.set,answers:state.answers,flags:state.flags,index:state.index,time:state.time}))}catch(e){}}
+function clearSave(){try{localStorage.removeItem('reqoo_pksk_state')}catch(e){}}
+async function loadSet(n,restore=false){
+  const r=await fetch(dataPath(n));
+  if(!r.ok)throw new Error(`HTTP ${r.status}`);
+  state.set=n;state.data=await r.json();state.items=state.data.questions||[];state.index=0;state.answers={};state.flags={};state.time=90*60;state.submitted=false;state.writingIndex=null;
+  if(restore){try{const old=JSON.parse(localStorage.getItem('reqoo_pksk_state')||'null');if(old&&old.set===n){state.answers=old.answers||{};state.flags=old.flags||{};state.index=Math.min(Number(old.index)||0,state.items.length-1);state.time=Math.max(0,Number(old.time)||state.time)}}catch(e){}}
+  $('#setSelect').value=n;$('#setLabel').textContent=`SET ${pad(n)}`;buildGrid();renderQuestion();
+}
+function populateSets(){for(let i=1;i<=50;i++){const o=document.createElement('option');o.value=i;o.textContent=`Set ${pad(i)}`;$('#setSelect').appendChild(o)}}
+function buildGrid(){
+  const grid=$('#questionGrid');grid.innerHTML=state.items.map((q,i)=>`<button class="qnum" data-q="${i}">${pad(i+1)}</button>`).join('');updateGrid();
+}
+function updateGrid(){
+  [...document.querySelectorAll('.qnum')].forEach((b,i)=>{b.className='qnum';if(state.answers[i]!==undefined)b.classList.add('answered');if(state.flags[i])b.classList.add('flagged');if(i===state.index)b.classList.add('current')});
+  const answered=Object.keys(state.answers).length, flagged=Object.keys(state.flags).filter(k=>state.flags[k]).length;
+  $('#answeredCount').textContent=answered;$('#flaggedCount').textContent=flagged;$('#mobileProgress').textContent=`${state.index+1} / ${state.items.length}`;
+}
+function renderQuestion(){
+  if(!state.items.length)return;
+  const q=state.items[state.index],chosen=state.answers[state.index],flag=!!state.flags[state.index];
+  $('#sectionLabel').textContent=q.section||'BAHAGIAN A';$('#questionSection').textContent=`${q.section||''}${q.category?' · '+q.category:''}`;$('#questionNo').textContent=pad(state.index+1);$('#questionText').textContent=q.question||'';
+  $('#options').innerHTML=(q.options||[]).map((o,i)=>`<button class="option ${chosen===i?'selected':''}" data-option="${i}"><span class="option-key">${String.fromCharCode(65+i)}</span><span>${esc(o)}</span></button>`).join('');
+  const pct=Math.round(((state.index+1)/state.items.length)*100);$('#progressBar').style.width=pct+'%';$('#prevBtn').disabled=state.index===0;$('#nextBtn').textContent=state.index===state.items.length-1?'TAMAT BAHAGIAN A / B':'SETERUSNYA →';
+  $('#flagBtn').classList.toggle('active',flag);$('#flagIcon').textContent=flag?'★':'☆';$('#flagText').textContent=flag?'DITANDA UNTUK SEMAKAN':'TANDA UNTUK SEMAKAN';$('#flagBtnMobile').textContent=flag?'★':'☆';$('#flagBtnMobile').classList.toggle('active',flag);updateGrid();save();
+}
+function choose(i){state.answers[state.index]=i;renderQuestion()}
+function toggleFlag(){state.flags[state.index]=!state.flags[state.index];renderQuestion()}
+function next(){if(state.index<state.items.length-1){state.index++;renderQuestion();window.scrollTo({top:0,behavior:'smooth'})}else openConfirm()}
+function prev(){if(state.index>0){state.index--;renderQuestion();window.scrollTo({top:0,behavior:'smooth'})}}
+function startTimer(){clearInterval(state.timer);state.timer=setInterval(()=>{state.time--;renderTimer();save();if(state.time<=0){clearInterval(state.timer);submitExam(true)}},1000);renderTimer()}
+function renderTimer(){const m=Math.floor(state.time/60),s=state.time%60;$('#timer').textContent=`${pad(m)}:${pad(s)}`;$('#timer').style.color=state.time<=300?'#d56a6a':'var(--gold2)'}
+function openConfirm(){const unanswered=state.items.length-Object.keys(state.answers).length;$('#modalText').textContent=unanswered?`Masih ada ${unanswered} soalan yang belum dijawab. Kamu masih boleh kembali untuk menyemaknya.`:'Semua soalan Bahagian A dan B telah dijawab. Teruskan ke Bahagian C.';$('#confirmModal').classList.remove('hidden')}
+function closeConfirm(){$('#confirmModal').classList.add('hidden')}
+function submitExam(force=false){closeConfirm();clearInterval(state.timer);state.submitted=true;$('#examScreen').classList.add('hidden');if(state.data.writing&&state.data.writing.length){showWriting()}else showResult()}
+function showWriting(){
+  $('#writingScreen').classList.remove('hidden');$('#sectionLabel').textContent='BAHAGIAN C';renderWritingChoices();
+}
+function renderWritingChoices(){const list=$('#writingChoices');const ws=state.data.writing||[];list.innerHTML=ws.map((w,i)=>`<button class="writing-choice ${state.writingIndex===i?'selected':''}" data-writing="${i}"><strong>${esc(w.title||`Tajuk ${i+1}`)}</strong><span>${esc(w.prompt||'')}</span></button>`).join('')}
+function chooseWriting(i){state.writingIndex=i;renderWritingChoices();const w=state.data.writing[i];$('#writingTitle').textContent=w.title||`Tajuk ${i+1}`;$('#writingPrompt').textContent=w.prompt||'';$('#writingAnswer').value='';$('#writingEditor').classList.remove('hidden');$('#changeWriting').classList.remove('hidden');countWords()}
+function countWords(){const n=(($('#writingAnswer').value||'').trim().match(/\S+/g)||[]).length;$('#wordCount').textContent=`${n} perkataan`}
+function calculate(){let score=0,max=0;state.items.forEach((q,i)=>{const w=q.weights||[];max+=Math.max(...w,0);if(state.answers[i]!==undefined)score+=Number(w[state.answers[i]]||0)});return {score,max}}
+function showResult(){const r=calculate();$('#resultScreen').classList.remove('hidden');$('#scoreValue').textContent=r.score;$('#scoreMax').textContent=`/ ${r.max}`;$('#resultAnswered').textContent=Object.keys(state.answers).length;$('#resultFlagged').textContent=Object.keys(state.flags).filter(k=>state.flags[k]).length;$('#resultSet').textContent=pad(state.set);$('#resultMessage').textContent='Gunakan keputusan ini sebagai indikator latihan. Untuk penilaian Bahagian C, gunakan rubrik penulisan REQOO.';clearSave()}
+function review(){state.submitted=false;$('#resultScreen').classList.add('hidden');$('#writingScreen').classList.add('hidden');$('#examScreen').classList.remove('hidden');renderQuestion();startTimer()}
+function begin(n){$('#startScreen').classList.add('hidden');$('#examScreen').classList.remove('hidden');loadSet(n).then(startTimer).catch(e=>alert('Gagal memuat set: '+e.message))}
+$('#startBtn').addEventListener('click',()=>begin(Number($('#setSelect').value)));
+$('#setSelect').addEventListener('change',()=>{if(!state.data) return});
+$('#options').addEventListener('click',e=>{const b=e.target.closest('[data-option]');if(b)choose(Number(b.dataset.option))});
+$('#questionGrid').addEventListener('click',e=>{const b=e.target.closest('[data-q]');if(!b)return;state.index=Number(b.dataset.q);renderQuestion();$('#questionNav').classList.remove('open')});
+$('#prevBtn').addEventListener('click',prev);$('#nextBtn').addEventListener('click',next);$('#flagBtn').addEventListener('click',toggleFlag);$('#flagBtnMobile').addEventListener('click',toggleFlag);
+$('#openNav').addEventListener('click',()=>$('.question-nav').classList.add('open'));$('#closeNav').addEventListener('click',()=>$('.question-nav').classList.remove('open'));
+$('#finishBtn').addEventListener('click',openConfirm);$('#submitTop').addEventListener('click',openConfirm);$('#modalClose').addEventListener('click',closeConfirm);$('#cancelSubmit').addEventListener('click',closeConfirm);$('#confirmSubmit').addEventListener('click',()=>submitExam(false));
+$('#writingChoices').addEventListener('click',e=>{const b=e.target.closest('[data-writing]');if(b)chooseWriting(Number(b.dataset.writing))});$('#writingAnswer').addEventListener('input',countWords);$('#changeWriting').addEventListener('click',()=>{$('#writingEditor').classList.add('hidden');$('#changeWriting').classList.add('hidden')});$('#submitWriting').addEventListener('click',()=>showResult());$('#restartBtn').addEventListener('click',()=>{clearSave();$('#resultScreen').classList.add('hidden');$('#startScreen').classList.remove('hidden');});$('#reviewBtn').addEventListener('click',review);
+populateSets();
+(function init(){try{const old=JSON.parse(localStorage.getItem('reqoo_pksk_state')||'null');if(old&&old.set){$('#setSelect').value=old.set}}catch(e){}})();
