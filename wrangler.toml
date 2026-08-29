@@ -1,6 +1,12 @@
-name = "reqoo-catalog-api"
+name = "reqoo-pksk-router"
+main = "_worker.js"
 compatibility_date = "2026-08-29"
-workers_dev = true
+workers_dev = false
 
 [assets]
 directory = "."
+binding = "ASSETS"
+
+[[routes]]
+pattern = "pksk.sim.reqoo.co/*"
+zone_name = "reqoo.co"
