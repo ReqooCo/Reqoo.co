@@ -1,5 +1,5 @@
 const SETS={};
-for(let i=1;i<=50;i++){const group=i<=10?'01-10':i<=20?'11-20':i<=30?'21-30':i<=40?'31-40':'41-50';SETS[i]=`/sim/pksk/simulator/sets/SET ${group}/data/set${String(i).padStart(2,'0')}.json`}
+for(let i=1;i<=50;i++){const group=i<=10?'01-10':i<=20?'11-20':i<=30?'21-30':i<=40?'31-40':'41-50';SETS[i]=`/sim/simulator/pksk/sets/SET ${group}/data/set${String(i).padStart(2,'0')}.json`}
 const $=s=>document.querySelector(s);
 const state={data:null,items:[],index:0,answers:{},score:0,started:false};
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
