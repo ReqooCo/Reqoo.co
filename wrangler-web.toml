@@ -1,0 +1,20 @@
+name = "reqoo-web"
+main = "_web_worker.js"
+compatibility_date = "2026-08-29"
+workers_dev = false
+
+[assets]
+directory = "."
+binding = "ASSETS"
+
+[[routes]]
+pattern = "reqoo.co/*"
+zone_name = "reqoo.co"
+
+[[routes]]
+pattern = "shop.reqoo.co/*"
+zone_name = "reqoo.co"
+
+[[routes]]
+pattern = "pksk.sim.reqoo.co/*"
+zone_name = "reqoo.co"
