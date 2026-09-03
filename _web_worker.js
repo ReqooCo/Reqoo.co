@@ -4,6 +4,11 @@ export default {
     const host = url.hostname.toLowerCase();
 
     if (host === 'pksk.sim.reqoo.co') {
+      if (url.pathname === '/api/pksk') {
+        const apiUrl = new URL('https://api.reqoo.co/api/pksk');
+        apiUrl.search = url.search;
+        return fetch(new Request(apiUrl.toString(), request));
+      }
       const pathname = url.pathname === '/' ? '/index.html' : url.pathname;
       const cleanPath = pathname.replace(/^\/+/, '');
       if (cleanPath.includes('..')) return new Response('Not Found', { status: 404 });
