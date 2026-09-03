@@ -1,0 +1,58 @@
+name: Reqoo Final Integration Gate
+
+on:
+  push:
+    branches: [rebuild/reqoo-final-integration]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Verify core runtime files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f api/worker.js
+          test -f api/wrangler.jsonc
+          test -f _web_worker.js
+          test -f wrangler-web.toml
+          test -f sim/pksk/simulator/index.html
+          test -f sim/pksk/simulator/js/app.js
+          node --check api/worker.js
+          node --check _web_worker.js
+          node --check sim/pksk/simulator/js/app.js
+
+      - name: Validate PKSK question sets without modifying content
+        shell: bash
+        run: |
+          set -euo pipefail
+          count=$(find sim/pksk/simulator/sets -maxdepth 1 -type f -name 'set*.json' | wc -l | tr -d ' ')
+          test "$count" -eq 50
+          for f in sim/pksk/simulator/sets/set*.json; do
+            node -e "JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'))" "$f"
+          done
+          echo "PKSK SET FILES: $count"
+
+      - name: Verify production routing contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'pksk.sim.reqoo.co' wrangler-web.toml
+          grep -q 'shop.reqoo.co' wrangler-web.toml
+          grep -q 'env.ASSETS.fetch' _web_worker.js
+          grep -q 'reqoo-catalog-api' api/wrangler.jsonc
+          grep -q 'reqoo-rebuild' api/wrangler.jsonc
+          grep -q 'reqoo-product-media' api/wrangler.jsonc
+          echo "ROUTING AND BACKEND CONTRACTS VERIFIED"
