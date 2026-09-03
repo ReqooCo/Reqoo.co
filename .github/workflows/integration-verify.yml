@@ -84,7 +84,7 @@ jobs:
           const webCfg = fs.readFileSync('wrangler-web.toml', 'utf8');
           const checks = [
             [worker, "url.pathname === '/api/shop'", 'API worker shop route'],
-            [shopApi, "url.pathname === '/api/shop'", 'shop handler route'],
+            [shopApi, "u.pathname==='/api/shop'", 'shop handler route'],
             [worker, "url.pathname === '/api/sim-admin'", 'API worker admin route'],
             [web, "host === 'shop.reqoo.co'", 'shop host route'],
             [web, "host === 'pksk.sim.reqoo.co'", 'PKSK host route'],
