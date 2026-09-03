@@ -3,12 +3,15 @@ export default {
     const url = new URL(request.url);
     const host = url.hostname.toLowerCase();
 
+    // Keep all application API calls on the canonical API Worker.
+    // This lets admin/shop pages use relative /api/* URLs safely while
+    // keeping static assets on the web Worker.
+    if (url.pathname.startsWith('/api/')) {
+      const apiUrl = new URL(`https://api.reqoo.co${url.pathname}${url.search}`);
+      return fetch(new Request(apiUrl.toString(), request));
+    }
+
     if (host === 'pksk.sim.reqoo.co') {
-      if (url.pathname === '/api/pksk') {
-        const apiUrl = new URL('https://api.reqoo.co/api/pksk');
-        apiUrl.search = url.search;
-        return fetch(new Request(apiUrl.toString(), request));
-      }
       const pathname = url.pathname === '/' ? '/index.html' : url.pathname;
       const cleanPath = pathname.replace(/^\/+/, '');
       if (cleanPath.includes('..')) return new Response('Not Found', { status: 404 });
