@@ -62,19 +62,37 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          grep -q 'api.reqoo.co/\\*' api/wrangler.jsonc
-          grep -q 'wrangler-web.toml' .github/workflows/deploy-final.yml
-          grep -q 'api/wrangler.jsonc' .github/workflows/deploy-final.yml
+          node <<'NODE'
+          const fs = require('fs');
+          const api = fs.readFileSync('api/wrangler.jsonc', 'utf8');
+          const deploy = fs.readFileSync('.github/workflows/deploy-final.yml', 'utf8');
+          if (!api.includes('api.reqoo.co/*')) throw new Error('API route missing');
+          if (!deploy.includes('wrangler-web.toml')) throw new Error('Web deploy missing');
+          if (!deploy.includes('api/wrangler.jsonc')) throw new Error('API deploy missing');
+          NODE
 
       - name: Verify Shop and host routing contract
         shell: bash
         run: |
           set -euo pipefail
-          grep -q "url.pathname === '/api/shop'" api/worker.js
-          grep -q "url.pathname === '/api/shop'" api/shop.js
-          grep -q "url.pathname === '/api/sim-admin'" api/worker.js
-          grep -q "host === 'shop.reqoo.co'" _web_worker.js
-          grep -q "host === 'pksk.sim.reqoo.co'" _web_worker.js
-          grep -q "api/shop" shop/index.html
-          grep -q "shop.reqoo.co" wrangler-web.toml
-          grep -q "pksk.sim.reqoo.co" wrangler-web.toml
+          node <<'NODE'
+          const fs = require('fs');
+          const worker = fs.readFileSync('api/worker.js', 'utf8');
+          const shopApi = fs.readFileSync('api/shop.js', 'utf8');
+          const web = fs.readFileSync('_web_worker.js', 'utf8');
+          const shop = fs.readFileSync('shop/index.html', 'utf8');
+          const webCfg = fs.readFileSync('wrangler-web.toml', 'utf8');
+          const checks = [
+            [worker, "url.pathname === '/api/shop'", 'API worker shop route'],
+            [shopApi, "url.pathname === '/api/shop'", 'shop handler route'],
+            [worker, "url.pathname === '/api/sim-admin'", 'API worker admin route'],
+            [web, "host === 'shop.reqoo.co'", 'shop host route'],
+            [web, "host === 'pksk.sim.reqoo.co'", 'PKSK host route'],
+            [shop, 'api/shop', 'shop API client'],
+            [webCfg, 'shop.reqoo.co', 'shop web route'],
+            [webCfg, 'pksk.sim.reqoo.co', 'PKSK web route']
+          ];
+          for (const [text, needle, label] of checks) {
+            if (!text.includes(needle)) throw new Error(`${label} missing: ${needle}`);
+          }
+          NODE
