@@ -6,6 +6,7 @@ workers_dev = false
 [assets]
 directory = "."
 binding = "ASSETS"
+run_worker_first = true
 
 [[routes]]
 pattern = "reqoo.co/*"
@@ -13,6 +14,10 @@ zone_name = "reqoo.co"
 
 [[routes]]
 pattern = "shop.reqoo.co/*"
+zone_name = "reqoo.co"
+
+[[routes]]
+pattern = "sim.reqoo.co/*"
 zone_name = "reqoo.co"
 
 [[routes]]

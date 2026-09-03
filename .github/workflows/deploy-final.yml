@@ -1,0 +1,61 @@
+name: Deploy Reqoo Final Stack
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Wrangler 4
+        shell: bash
+        run: npm install --no-save wrangler@4.128.0
+
+      - name: Validate final stack
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check api/worker.js
+          node --check api/core-worker.js
+          node --check api/pksk.js
+          node --check _web_worker.js
+          node --check sim/pksk/simulator/js/app.js
+          test -f migrations/0005_pksk_progress.sql
+          test "$(find sim/pksk/simulator/sets -type f -name 'set*.json' | wc -l | tr -d ' ')" -eq 50
+          for f in sim/pksk/simulator/sets/*/data/set*.json; do
+            node -e "JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'))" "$f"
+          done
+
+      - name: Apply D1 migrations
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: d1 migrations apply reqoo-rebuild --remote --config api/wrangler.jsonc
+
+      - name: Deploy API Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --config api/wrangler.jsonc
+
+      - name: Deploy Web Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --config wrangler-web.toml
