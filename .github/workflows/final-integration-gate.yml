@@ -25,14 +25,22 @@ jobs:
         run: |
           set -euo pipefail
           test -f api/worker.js
+          test -f api/core.js
+          test -f api/shop.js
+          test -f api/admin-compat.js
           test -f api/core-worker.js
           test -f api/pksk.js
           test -f api/wrangler.jsonc
           test -f _web_worker.js
           test -f wrangler-web.toml
+          test -f sim/index.html
+          test -f sim/pksk/index.html
           test -f sim/pksk/simulator/index.html
           test -f sim/pksk/simulator/js/app.js
           node --check api/worker.js
+          node --check api/core.js
+          node --check api/shop.js
+          node --check api/admin-compat.js
           node --check api/core-worker.js
           node --check api/pksk.js
           node --check _web_worker.js
@@ -55,10 +63,13 @@ jobs:
           set -euo pipefail
           grep -q 'pksk.sim.reqoo.co' wrangler-web.toml
           grep -q 'shop.reqoo.co' wrangler-web.toml
+          grep -q 'sim.reqoo.co' wrangler-web.toml
           grep -q 'env.ASSETS.fetch' _web_worker.js
           grep -q 'reqoo-catalog-api' api/wrangler.jsonc
           grep -q 'reqoo-rebuild' api/wrangler.jsonc
           grep -q 'reqoo-product-media' api/wrangler.jsonc
           grep -q "'/api/pksk'" api/worker.js
+          grep -q "'/api/core'" api/worker.js
+          grep -q "'/api/shop'" api/worker.js
           grep -q 'pksk_progress' api/pksk.js
           echo "ROUTING AND BACKEND CONTRACTS VERIFIED"
