@@ -1,0 +1,94 @@
+name: Verify Reconciled Final Stack
+
+on:
+  push:
+    branches: [reconcile/main-final-stack]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Verify backend and runtime files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f api/worker.js
+          test -f api/core-worker.js
+          test -f api/core.js
+          test -f api/shop.js
+          test -f api/pksk.js
+          test -f api/admin-compat.js
+          test -f api/wrangler.jsonc
+          test -f wrangler-web.toml
+          test -f _web_worker.js
+          node --check api/worker.js
+          node --check api/core-worker.js
+          node --check api/core.js
+          node --check api/shop.js
+          node --check api/pksk.js
+          node --check api/admin-compat.js
+          node --check _web_worker.js
+          node --check functions/api/product-image.js
+
+      - name: Verify migrations and PKSK sets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f migrations/0001_reqoo_core.sql
+          test -f migrations/0002_access_grants.sql
+          test -f migrations/0003_fulfillment_compat.sql
+          test -f migrations/0004_shop_catalog.sql
+          test -f migrations/0005_pksk_progress.sql
+          test -f migrations/0006_shop_operations.sql
+          test -f migrations/0007_shop_hero.sql
+          count=$(find sim/pksk/simulator/sets -type f -name 'set*.json' | wc -l | tr -d ' ')
+          test "$count" -eq 50
+          while IFS= read -r f; do
+            node -e "JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'))" "$f"
+          done < <(find sim/pksk/simulator/sets -type f -name 'set*.json' | sort)
+
+      - name: Verify deployment and host routing
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('fs');
+          const apiCfg = fs.readFileSync('api/wrangler.jsonc', 'utf8');
+          const webCfg = fs.readFileSync('wrangler-web.toml', 'utf8');
+          const deploy = fs.readFileSync('.github/workflows/deploy-final.yml', 'utf8');
+          const worker = fs.readFileSync('api/worker.js', 'utf8');
+          const web = fs.readFileSync('_web_worker.js', 'utf8');
+          const shop = fs.readFileSync('shop/index.html', 'utf8');
+          const checks = [
+            [apiCfg, 'api.reqoo.co/*', 'API route'],
+            [webCfg, 'reqoo.co/*', 'landing route'],
+            [webCfg, 'shop.reqoo.co/*', 'shop route'],
+            [webCfg, 'sim.reqoo.co/*', 'SIM route'],
+            [webCfg, 'pksk.sim.reqoo.co/*', 'PKSK route'],
+            [deploy, 'api/wrangler.jsonc', 'API deployment'],
+            [deploy, 'wrangler-web.toml', 'web deployment'],
+            [worker, "url.pathname === '/api/shop'", 'API shop router'],
+            [worker, "url.pathname === '/api/pksk'", 'API PKSK router'],
+            [web, "host === 'shop.reqoo.co'", 'web shop router'],
+            [web, "host === 'sim.reqoo.co'", 'web SIM router'],
+            [web, "host === 'pksk.sim.reqoo.co'", 'web PKSK router'],
+            [shop, 'api/shop', 'shop API client']
+          ];
+          for (const [text, needle, label] of checks) {
+            if (!text.includes(needle)) throw new Error(`${label} missing: ${needle}`);
+          }
+          NODE
