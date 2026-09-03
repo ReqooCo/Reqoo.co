@@ -4,6 +4,12 @@
   "main": "worker.js",
   "compatibility_date": "2026-08-23",
   "keep_vars": true,
+  "routes": [
+    {
+      "pattern": "api.reqoo.co/*",
+      "zone_name": "reqoo.co"
+    }
+  ],
   "d1_databases": [
     {
       "binding": "DB",
