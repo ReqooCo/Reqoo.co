@@ -1,0 +1,88 @@
+name: Reqoo Final Integration Gate
+
+on:
+  push:
+    branches: [rebuild/reqoo-final-integration]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Verify core runtime files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f api/worker.js
+          test -f api/core.js
+          test -f api/shop.js
+          test -f api/hero.js
+          test -f api/admin-compat.js
+          test -f api/core-worker.js
+          test -f api/pksk.js
+          test -f api/wrangler.jsonc
+          test -f _web_worker.js
+          test -f wrangler-web.toml
+          test -f sim/index.html
+          test -f sim/pksk/index.html
+          test -f sim/pksk/simulator/index.html
+          test -f sim/pksk/simulator/js/app.js
+          node --check api/worker.js
+          node --check api/core.js
+          node --check api/shop.js
+          node --check api/hero.js
+          node --check api/admin-compat.js
+          node --check api/core-worker.js
+          node --check api/pksk.js
+          node --check functions/api/shop-admin.js
+          node --check _web_worker.js
+          node --check sim/pksk/simulator/js/app.js
+
+      - name: Validate PKSK question sets without modifying content
+        shell: bash
+        run: |
+          set -euo pipefail
+          count=$(find sim/pksk/simulator/sets -type f -name 'set*.json' | wc -l | tr -d ' ')
+          test "$count" -eq 50
+          for f in sim/pksk/simulator/sets/*/data/set*.json; do
+            node -e "JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'))" "$f"
+          done
+          echo "PKSK SET FILES: $count"
+
+      - name: Verify production routing and shop contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'pksk.sim.reqoo.co' wrangler-web.toml
+          grep -q 'shop.reqoo.co' wrangler-web.toml
+          grep -q 'sim.reqoo.co' wrangler-web.toml
+          grep -q 'env.ASSETS.fetch' _web_worker.js
+          grep -q 'reqoo-catalog-api' api/wrangler.jsonc
+          grep -q 'reqoo-rebuild' api/wrangler.jsonc
+          grep -q 'reqoo-product-media' api/wrangler.jsonc
+          grep -q "'/api/pksk'" api/worker.js
+          grep -q "'/api/core'" api/worker.js
+          grep -q "'/api/shop'" api/worker.js
+          grep -q "'/api/shop-hero'" api/worker.js
+          grep -q 'pksk_progress' api/pksk.js
+          grep -q 'shop_hero_url' api/hero.js
+          grep -q 'run_worker_first = true' wrangler-web.toml
+          test -f migrations/0006_shop_operations.sql
+          test -f migrations/0007_shop_hero.sql
+          grep -q 'product_variations' functions/api/shop-admin.js
+          grep -q 'product_images' functions/api/shop-admin.js
+          grep -q 'order_no' functions/api/shop-admin.js
+          grep -q 'shipping_methods' functions/api/shop-admin.js
+          grep -q 'promo_price_minor' functions/api/shop-admin.js
+          echo "ROUTING, PKSK, SHOP, AND HERO CONTRACTS VERIFIED"

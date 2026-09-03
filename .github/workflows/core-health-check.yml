@@ -1,0 +1,55 @@
+name: REQOO Core Health Check
+
+on:
+  push:
+    branches:
+      - rebuild/v1-foundation
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify health endpoint source
+        run: |
+          set -euo pipefail
+          test -f functions/api/health-v1.js
+          grep -q "CORE_DB_BINDING_MISSING" functions/api/health-v1.js
+          grep -q "CORE_SCHEMA_NOT_READY" functions/api/health-v1.js
+          grep -q "schema: 'ready'" functions/api/health-v1.js
+          echo "REQOO CORE HEALTH SOURCE VERIFIED"
+
+      - name: Verify customer core source
+        run: |
+          set -euo pipefail
+          test -f functions/api/customer-v1.js
+          grep -q "CUSTOMER_NAME_REQUIRED" functions/api/customer-v1.js
+          grep -q "CUSTOMER_CONTACT_REQUIRED" functions/api/customer-v1.js
+          grep -q "customer.created" functions/api/customer-v1.js
+          grep -q "customer.resolved" functions/api/customer-v1.js
+          echo "REQOO CUSTOMER CORE SOURCE VERIFIED"
+
+      - name: Verify rebuild D1 binding
+        run: |
+          set -euo pipefail
+          test -f wrangler.toml
+          grep -q 'name = "reqoo-rebuild"' wrangler.toml
+          grep -q 'binding = "DB"' wrangler.toml
+          grep -Eq 'database_id = "[0-9a-f-]{36}"' wrangler.toml
+          echo "REQOO REBUILD D1 BINDING VERIFIED"
+
+      - name: Verify order core contract
+        run: |
+          set -euo pipefail
+          test -f functions/api/order-v1.js
+          grep -q "IDEMPOTENCY_KEY_REQUIRED" functions/api/order-v1.js
+          grep -q "ORDER_ITEMS_REQUIRED" functions/api/order-v1.js
+          grep -q "PRODUCT_NOT_FOUND_OR_INACTIVE" functions/api/order-v1.js
+          grep -q "VARIATION_NOT_FOUND_OR_INACTIVE" functions/api/order-v1.js
+          echo "ORDER CORE CONTRACT VERIFIED"

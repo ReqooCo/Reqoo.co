@@ -1,0 +1,18 @@
+{
+  "set": 1,
+  "section": "B",
+  "range": "B01-B10",
+  "status": "CANDIDATE",
+  "items": [
+    {"id":"B01","domain":"IQ","question":"Lengkapkan turutan nombor berikut: 3, 6, 12, 24, ...","options":["36","42","48","54"],"answer":2,"family":"number_sequence","reasoning":"setiap nombor didarab 2"},
+    {"id":"B02","domain":"IQ","question":"Sebuah kotak mempunyai beberapa pen. Jika 4 pen ditambah, jumlahnya menjadi 17 batang. Berapakah bilangan pen pada asalnya?","options":["11","12","13","14"],"answer":2,"family":"reverse_operation","reasoning":"17 tolak 4"},
+    {"id":"B03","domain":"Bahasa Melayu","question":"Pilih ayat yang menggunakan perkataan 'ringan' dengan betul.","options":["Beg itu ringan untuk dibawa oleh adik.","Dia ringan hati selepas mengangkat meja itu.","Rumah itu ringan kerana diperbuat daripada batu.","Air sungai menjadi ringan selepas hujan lebat."],"answer":0,"family":"word_usage","reasoning":"makna literal yang tepat"},
+    {"id":"B04","domain":"Bahasa Melayu","question":"Pilih perkataan yang paling sesuai untuk melengkapkan ayat: Faris tetap hadir ke latihan bola sepak _____ hujan turun dengan lebat.","options":["kerana","walaupun","supaya","sehingga"],"answer":1,"family":"conjunction","reasoning":"hubungan pertentangan"},
+    {"id":"B05","domain":"Bahasa Inggeris","question":"Mira has finished her homework, so she _____ watch television now.","options":["can","must","shouldn't","couldn't"],"answer":0,"family":"modal_usage","reasoning":"permission/ability in present context"},
+    {"id":"B06","domain":"Bahasa Inggeris","question":"Choose the sentence that is grammatically correct.","options":["The boys was playing outside.","The boys were playing outside.","The boys is playing outside.","The boys be playing outside."],"answer":1,"family":"subject_verb_agreement","reasoning":"plural subject takes were"},
+    {"id":"B07","domain":"Matematik","question":"Sebuah kedai memberi diskaun 20% untuk sebuah beg yang berharga RM75. Berapakah harga beg itu selepas diskaun?","options":["RM55","RM60","RM62","RM65"],"answer":1,"family":"percentage_discount","reasoning":"20% of 75 = 15; 75 - 15 = 60","difficulty":"higher_reasoning"},
+    {"id":"B08","domain":"Matematik","question":"Aina mempunyai 3/4 liter jus. Dia menuang 1/3 daripada jumlah jus itu ke dalam sebuah gelas. Berapakah isipadu jus yang tinggal?","options":["1/4 L","1/2 L","2/3 L","3/4 L"],"answer":1,"family":"fraction_of_quantity","reasoning":"1/3 x 3/4 = 1/4; 3/4 - 1/4 = 1/2","difficulty":"higher_reasoning"},
+    {"id":"B09","domain":"Sains","question":"Dua anak pokok yang sama jenis diletakkan di tempat berbeza. Anak pokok P mendapat cahaya matahari yang cukup, manakala anak pokok Q diletakkan di tempat gelap. Apakah pemerhatian yang paling munasabah selepas beberapa hari?","options":["P lebih sihat berbanding Q.","Q menghasilkan lebih banyak daun hijau.","P tidak memerlukan air.","Q tumbuh lebih cepat kerana tiada cahaya."],"answer":0,"family":"plant_growth","reasoning":"cahaya diperlukan untuk fotosintesis"},
+    {"id":"B10","domain":"Teknologi","question":"Amir menerima mesej daripada nombor yang tidak dikenali yang meminta kata laluan akaunnya. Apakah tindakan paling selamat?","options":["Memberikan kata laluan supaya urusan cepat selesai.","Menghantar gambar skrin akaun kepada pengirim.","Tidak memberikan maklumat dan melaporkan mesej tersebut.","Membalas mesej dengan nombor kad pengenalan."],"answer":2,"family":"digital_safety","reasoning":"do not disclose credentials; report suspicious request"}
+  ]
+}

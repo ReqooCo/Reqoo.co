@@ -1,0 +1,30 @@
+/* Reqoo Play — landscape game presentation */
+html,body,#app{width:100%;height:100%;overflow:hidden}
+body{background:#58cfff}
+.game{width:100vw;height:100svh;min-height:100svh;aspect-ratio:16/9}
+/* Keep the game visually horizontal on phones; browser orientation is not forced. */
+@media (orientation:portrait) and (max-width:900px){
+  .game{width:100vw;height:100svh;min-height:100svh}
+  .world{min-width:100vw}
+  .top{padding:10px 14px}
+  .side-nav{left:8px;top:23%;gap:6px}
+  .side{width:54px;height:54px;border-radius:16px;font-size:24px}
+  .side small{font-size:8px}
+  .title-plaque{top:7%;min-width:250px;width:42vw}
+  .hero-cat{left:53%;bottom:22%;transform:translateX(-45%) scale(.72);transform-origin:bottom center}
+  .learn-bubble{left:10%;bottom:13%;width:270px;font-size:14px}
+  .action-dock{bottom:3%;max-width:70%;overflow:hidden}
+  .action-card{min-width:100px;width:100px;height:82px}
+  .parent-teaser{display:none}
+  .round{bottom:7%;width:50px;height:50px;font-size:44px}
+}
+@media (min-width:901px){
+  .game{min-height:100svh}
+  .hero-cat{transform:translateX(-48%) scale(1.08);transform-origin:bottom center}
+  .action-dock{gap:12px}
+  .action-card{width:145px;height:112px}
+}
+/* Optional fullscreen-like hint for touch devices */
+@media (pointer:coarse){
+  button{user-select:none}
+}

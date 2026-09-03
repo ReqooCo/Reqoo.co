@@ -1,0 +1,24 @@
+name: REQOO Document Core Check
+on:
+  push:
+    branches: [rebuild/v1-foundation]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  document:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 24}
+      - run: node --check functions/api/document-v1.js
+      - name: Contract checks
+        run: |
+          set -euo pipefail
+          test -f functions/api/document-v1.js
+          grep -q 'INVALID_DOCUMENT_TYPE' functions/api/document-v1.js
+          grep -q 'document.updated' functions/api/document-v1.js
+          grep -q 'documents' migrations/0001_reqoo_core.sql
+          grep -q 'document_items' migrations/0001_reqoo_core.sql
+          echo 'REQOO DOCUMENT CORE SOURCE VERIFIED'
