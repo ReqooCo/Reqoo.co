@@ -62,6 +62,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          grep -q 'api.reqoo.co/\*\*' api/wrangler.jsonc
+          grep -q 'api.reqoo.co/\*' api/wrangler.jsonc
           grep -q 'wrangler-web.toml' .github/workflows/deploy-final.yml
           grep -q 'api/wrangler.jsonc' .github/workflows/deploy-final.yml
