@@ -20,6 +20,10 @@ jobs:
         with:
           node-version: 22
 
+      - name: Install Wrangler 4
+        shell: bash
+        run: npm install --no-save wrangler@4.128.0
+
       - name: Validate final stack
         shell: bash
         run: |
