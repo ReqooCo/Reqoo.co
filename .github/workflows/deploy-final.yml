@@ -35,6 +35,13 @@ jobs:
             node -e "JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'))" "$f"
           done
 
+      - name: Apply D1 migrations
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: d1 migrations apply reqoo-rebuild --remote --config api/wrangler.jsonc
+
       - name: Deploy API Worker
         uses: cloudflare/wrangler-action@v3
         with:
