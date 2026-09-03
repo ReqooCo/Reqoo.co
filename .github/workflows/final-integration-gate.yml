@@ -27,6 +27,7 @@ jobs:
           test -f api/worker.js
           test -f api/core.js
           test -f api/shop.js
+          test -f api/hero.js
           test -f api/admin-compat.js
           test -f api/core-worker.js
           test -f api/pksk.js
@@ -40,6 +41,7 @@ jobs:
           node --check api/worker.js
           node --check api/core.js
           node --check api/shop.js
+          node --check api/hero.js
           node --check api/admin-compat.js
           node --check api/core-worker.js
           node --check api/pksk.js
@@ -72,11 +74,15 @@ jobs:
           grep -q "'/api/pksk'" api/worker.js
           grep -q "'/api/core'" api/worker.js
           grep -q "'/api/shop'" api/worker.js
+          grep -q "'/api/shop-hero'" api/worker.js
           grep -q 'pksk_progress' api/pksk.js
+          grep -q 'shop_hero_url' api/hero.js
+          grep -q 'run_worker_first = true' wrangler-web.toml
           test -f migrations/0006_shop_operations.sql
+          test -f migrations/0007_shop_hero.sql
           grep -q 'product_variations' functions/api/shop-admin.js
           grep -q 'product_images' functions/api/shop-admin.js
           grep -q 'order_no' functions/api/shop-admin.js
           grep -q 'shipping_methods' functions/api/shop-admin.js
           grep -q 'promo_price_minor' functions/api/shop-admin.js
-          echo "ROUTING, PKSK, AND SHOP CONTRACTS VERIFIED"
+          echo "ROUTING, PKSK, SHOP, AND HERO CONTRACTS VERIFIED"
