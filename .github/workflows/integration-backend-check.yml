@@ -13,9 +13,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Check Worker syntax
+      - name: Check consolidated Workers
         run: |
           node --check api/worker.js
+          node --check api/core-worker.js
+          node --check api/pksk.js
           node --check _web_worker.js
       - name: Check Pages API modules
         shell: bash
@@ -24,3 +26,12 @@ jobs:
           while IFS= read -r -d '' f; do
             node --check "$f"
           done < <(find functions/api -type f -name '*.js' -print0)
+      - name: Check PKSK bank
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f migrations/0005_pksk_progress.sql
+          test "$(find sim/pksk/simulator/sets -type f -name 'set*.json' | wc -l | tr -d ' ')" -eq 50
+          for f in sim/pksk/simulator/sets/*/data/set*.json; do
+            node -e "JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'))" "$f"
+          done
