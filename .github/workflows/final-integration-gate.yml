@@ -43,6 +43,7 @@ jobs:
           node --check api/admin-compat.js
           node --check api/core-worker.js
           node --check api/pksk.js
+          node --check functions/api/shop-admin.js
           node --check _web_worker.js
           node --check sim/pksk/simulator/js/app.js
 
@@ -57,7 +58,7 @@ jobs:
           done
           echo "PKSK SET FILES: $count"
 
-      - name: Verify production routing contracts
+      - name: Verify production routing and shop contracts
         shell: bash
         run: |
           set -euo pipefail
@@ -72,4 +73,10 @@ jobs:
           grep -q "'/api/core'" api/worker.js
           grep -q "'/api/shop'" api/worker.js
           grep -q 'pksk_progress' api/pksk.js
-          echo "ROUTING AND BACKEND CONTRACTS VERIFIED"
+          test -f migrations/0006_shop_operations.sql
+          grep -q 'product_variations' functions/api/shop-admin.js
+          grep -q 'product_images' functions/api/shop-admin.js
+          grep -q 'order_no' functions/api/shop-admin.js
+          grep -q 'shipping_methods' functions/api/shop-admin.js
+          grep -q 'promo_price_minor' functions/api/shop-admin.js
+          echo "ROUTING, PKSK, AND SHOP CONTRACTS VERIFIED"
