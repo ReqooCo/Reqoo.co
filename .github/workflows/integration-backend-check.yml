@@ -18,6 +18,8 @@ jobs:
           node --check api/worker.js
           node --check api/core-worker.js
           node --check api/pksk.js
+          node --check api/shop.js
+          node --check api/admin-compat.js
           node --check _web_worker.js
       - name: Check Pages API modules
         shell: bash
