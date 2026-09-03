@@ -2,7 +2,7 @@ name: Deploy Reqoo Final Stack
 
 on:
   push:
-    branches: [main]
+    branches: [main, rebuild/reqoo-final-integration]
   workflow_dispatch:
 
 permissions:
