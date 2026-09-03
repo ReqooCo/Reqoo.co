@@ -1,0 +1,26 @@
+name: Integration Backend Check
+
+on:
+  push:
+    branches: [rebuild/reqoo-final-integration]
+  workflow_dispatch:
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check Worker syntax
+        run: |
+          node --check api/worker.js
+          node --check _web_worker.js
+      - name: Check Pages API modules
+        shell: bash
+        run: |
+          set -e
+          while IFS= read -r -d '' f; do
+            node --check "$f"
+          done < <(find functions/api -type f -name '*.js' -print0)
