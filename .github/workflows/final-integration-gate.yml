@@ -25,12 +25,16 @@ jobs:
         run: |
           set -euo pipefail
           test -f api/worker.js
+          test -f api/core-worker.js
+          test -f api/pksk.js
           test -f api/wrangler.jsonc
           test -f _web_worker.js
           test -f wrangler-web.toml
           test -f sim/pksk/simulator/index.html
           test -f sim/pksk/simulator/js/app.js
           node --check api/worker.js
+          node --check api/core-worker.js
+          node --check api/pksk.js
           node --check _web_worker.js
           node --check sim/pksk/simulator/js/app.js
 
@@ -38,9 +42,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          count=$(find sim/pksk/simulator/sets -maxdepth 1 -type f -name 'set*.json' | wc -l | tr -d ' ')
+          count=$(find sim/pksk/simulator/sets -type f -name 'set*.json' | wc -l | tr -d ' ')
           test "$count" -eq 50
-          for f in sim/pksk/simulator/sets/set*.json; do
+          for f in sim/pksk/simulator/sets/*/data/set*.json; do
             node -e "JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'))" "$f"
           done
           echo "PKSK SET FILES: $count"
@@ -55,4 +59,6 @@ jobs:
           grep -q 'reqoo-catalog-api' api/wrangler.jsonc
           grep -q 'reqoo-rebuild' api/wrangler.jsonc
           grep -q 'reqoo-product-media' api/wrangler.jsonc
+          grep -q "'/api/pksk'" api/worker.js
+          grep -q 'pksk_progress' api/pksk.js
           echo "ROUTING AND BACKEND CONTRACTS VERIFIED"
