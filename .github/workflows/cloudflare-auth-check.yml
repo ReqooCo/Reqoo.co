@@ -26,10 +26,11 @@ jobs:
         run: |
           set -euo pipefail
           token="$RAW_CF_TOKEN"
+          token="$(printf '%s' "$token" | tr -d '\r\n' | sed -E 's/^Authorization:[[:space:]]*//I')"
           token="${token#Bearer }"
           token="${token#bearer }"
           token="${token#\"}"
           token="${token%\"}"
-          token="$(printf '%s' "$token" | tr -d '\r\n')"
+          token="$(printf '%s' "$token" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
           test -n "$token"
           CLOUDFLARE_API_TOKEN="$token" CLOUDFLARE_ACCOUNT_ID="$CF_ACCOUNT_ID" npx --no-install wrangler whoami
