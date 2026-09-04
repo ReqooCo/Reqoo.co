@@ -5,11 +5,43 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Validate final runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in api/*.js functions/api/*.js; do
+            echo "CHECKING $f"
+            node --check "$f"
+          done
+          node --check _web_worker.js
+          node --check sim/pksk/simulator/js/app.js
+          test -f api/worker.js
+          test -f api/wrangler.jsonc
+          test -f wrangler-web.toml
+          test -f _web_worker.js
+          test -f shop/index.html
+          test -f shop/hero-runtime.js
+          test -f sim/pksk/simulator/index.html
+          test "$(find sim/pksk/simulator/sets -type f -name 'set*.json' | wc -l | tr -d ' ')" -eq 50
+          for f in sim/pksk/simulator/sets/*/data/set*.json; do
+            node -e "JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'))" "$f"
+          done
+
+      - name: Apply D1 migrations
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: d1 migrations apply reqoo-rebuild --remote --config api/wrangler.jsonc
 
       - name: Deploy API Worker
         uses: cloudflare/wrangler-action@v3
