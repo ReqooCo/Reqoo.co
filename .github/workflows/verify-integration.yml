@@ -46,16 +46,12 @@ jobs:
       - name: Validate PKSK set JSON
         run: |
           set -e
-          count=$(find sim/pksk/simulator/sets -maxdepth 1 -type f -name 'set*.json' | wc -l)
-          test "$count" -eq 50
-          node <<'NODE'
-          const fs = require('fs');
-          const path = require('path');
-          const dir = 'sim/pksk/simulator/sets';
-          const files = fs.readdirSync(dir).filter(x => /^set\d+\.json$/.test(x)).sort();
-          for (const file of files) JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'));
-          console.log(`Validated ${files.length} PKSK set JSON files.`);
-          NODE
+          mapfile -t files < <(find sim/pksk/simulator/sets -type f -name 'set*.json' | sort)
+          test "${#files[@]}" -eq 50
+          for f in "${files[@]}"; do
+            node -e "JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'))" "$f"
+          done
+          echo "Validated ${#files[@]} PKSK set JSON files."
 
       - name: Verify Shop hero wiring
         run: |
