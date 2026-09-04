@@ -1,5 +1,5 @@
 import { onRequest as handleCore } from '../functions/api/core.js';
-import { onRequest as handleSimAdmin } from '../functions/api/sim-admin.js';
+import { onRequest as handleSimAdmin } from './sim-admin.js';
 import { onRequest as handleShopAdmin } from './shop-admin.js';
 import { onRequest as handleProductImage } from '../functions/api/product-image.js';
 import { handle as handleShop } from './shop-runtime.js';
