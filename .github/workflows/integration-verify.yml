@@ -25,36 +25,28 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          for file in api/*.js functions/api/*.js; do
+            echo "CHECKING $file"
+            node --check "$file" || { echo "SYNTAX_FAILED=$file"; exit 1; }
+          done
           test -f api/worker.js
-          test -f api/core-worker.js
-          test -f api/core.js
           test -f api/shop.js
           test -f api/pksk.js
-          test -f api/admin-compat.js
+          test -f api/hero.js
+          test -f api/shop-admin.js
+          test -f api/sim-admin.js
+          test -f api/shop-runtime.js
           test -f api/wrangler.jsonc
           test -f wrangler-web.toml
           test -f _web_worker.js
-          node --check api/worker.js
-          node --check api/core-worker.js
-          node --check api/core.js
-          node --check api/shop.js
-          node --check api/pksk.js
-          node --check api/admin-compat.js
-          node --check _web_worker.js
-          node --check functions/api/core.js
-          node --check functions/api/product-image.js
 
       - name: Verify migrations and PKSK sets
         shell: bash
         run: |
           set -euo pipefail
-          test -f migrations/0001_reqoo_core.sql
-          test -f migrations/0002_access_grants.sql
-          test -f migrations/0003_fulfillment_compat.sql
-          test -f migrations/0004_shop_catalog.sql
-          test -f migrations/0005_pksk_progress.sql
-          test -f migrations/0006_shop_operations.sql
-          test -f migrations/0007_shop_hero.sql
+          for f in migrations/0001_reqoo_core.sql migrations/0002_access_grants.sql migrations/0003_fulfillment_compat.sql migrations/0004_shop_catalog.sql migrations/0005_pksk_progress.sql migrations/0006_shop_operations.sql migrations/0007_shop_hero.sql; do
+            test -f "$f"
+          done
           count=$(find sim/pksk/simulator/sets -type f -name 'set*.json' | wc -l | tr -d ' ')
           test "$count" -eq 50
           while IFS= read -r f; do
