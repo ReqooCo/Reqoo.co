@@ -1,7 +1,27 @@
+const API_ORIGIN = 'https://api.reqoo.co';
+
+async function proxyApi(request, url) {
+  const target = new URL(`${API_ORIGIN}${url.pathname}${url.search}`);
+  const init = {
+    method: request.method,
+    headers: request.headers,
+    redirect: 'follow'
+  };
+  if (request.method !== 'GET' && request.method !== 'HEAD') init.body = request.body;
+  return fetch(new Request(target.toString(), init));
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const host = url.hostname.toLowerCase();
+
+    // All application API calls are served by the canonical API Worker.
+    // Keeping this proxy here makes /api/* work consistently on reqoo.co,
+    // shop.reqoo.co, sim.reqoo.co and pksk.sim.reqoo.co.
+    if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
+      return proxyApi(request, url);
+    }
 
     if (host === 'pksk.sim.reqoo.co') {
       const pathname = url.pathname === '/' ? '/index.html' : url.pathname;
