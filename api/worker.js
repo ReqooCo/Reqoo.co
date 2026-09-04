@@ -2,16 +2,25 @@ import { onRequest as handleCore } from '../functions/api/core.js';
 import { onRequest as handleSimAdmin } from './sim-admin.js';
 import { onRequest as handleShopAdmin } from './shop-admin.js';
 import { onRequest as handleProductImage } from '../functions/api/product-image.js';
+import { onRequest as handleInvoice } from '../functions/api/invoice-v1.js';
+import { onRequest as handleLicense } from '../functions/api/license-v1.js';
 import { handle as handleShop } from './shop-runtime.js';
 import { handle as handlePksk } from './pksk.js';
 import { handle as handleHero } from './hero.js';
 
 function withAdminEnv(env) {
+  const admin = env.REQOO_ADMIN_TOKEN || env.ADMIN_KEY || env.SHOP_ADMIN_TOKEN || '';
   return {
     ...env,
-    REQOO_ADMIN_TOKEN: env.REQOO_ADMIN_TOKEN || env.ADMIN_KEY || '',
-    SHOP_ADMIN_TOKEN: env.SHOP_ADMIN_TOKEN || env.REQOO_ADMIN_TOKEN || env.ADMIN_KEY || '',
-    PKSK_ADMIN_TOKEN: env.PKSK_ADMIN_TOKEN || env.REQOO_ADMIN_TOKEN || env.ADMIN_KEY || ''
+    SHOP_DB: env.DB,
+    PR00FS: env.MEDIA,
+    REQOO_ADMIN_TOKEN: admin,
+    SHOP_ADMIN_TOKEN: env.SHOP_ADMIN_TOKEN || admin,
+    PKSK_ADMIN_TOKEN: env.PKSK_ADMIN_TOKEN || admin,
+    ADMIN_API_KEY: env.ADMIN_API_KEY || admin,
+    BILLPLZ_API_KEY: env.BILLPLZ_API_KEY || env.BILLPLZ_KEY || '',
+    BILLPLZ_COLLECTION_ID: env.BILLPLZ_COLLECTION_ID || '',
+    BILLPLZ_X_SIGNATURE: env.BILLPLZ_X_SIGNATURE || env.BILLPLZ_X_SIGNATURE_KEY || ''
   };
 }
 
@@ -28,6 +37,8 @@ export default {
     if (path === '/api/sim-admin') return handleSimAdmin({ request, env: bridgedEnv });
     if (path === '/api/shop-admin') return handleShopAdmin({ request, env: bridgedEnv });
     if (path === '/api/product-image') return handleProductImage({ request, env: bridgedEnv, ctx });
+    if (path === '/api/invoice-v1' || path.startsWith('/api/invoice-v1/')) return handleInvoice({ request, env: bridgedEnv });
+    if (path === '/api/license-v1' || path.startsWith('/api/license-v1/')) return handleLicense({ request, env: bridgedEnv });
 
     if (path === '/api/health') {
       return new Response(JSON.stringify({ ok: !!env.DB, service: 'reqoo-api', db: !!env.DB, media: !!env.MEDIA }), {
