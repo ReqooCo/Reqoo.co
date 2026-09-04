@@ -1,0 +1,20 @@
+name: Backend Syntax Gate
+
+on:
+  push:
+    branches: [rebuild/reqoo-final-integration]
+  workflow_dispatch:
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check backend JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in api/*.js functions/api/*.js; do
+            node --check "$file"
+          done
+          echo "BACKEND_SYNTAX_OK"
