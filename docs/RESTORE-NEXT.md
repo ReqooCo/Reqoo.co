@@ -1,0 +1,1 @@
+Restore the original SHOP landing before any further SHOP UI work. Baseline blob: fc09ce2ef861e903d6c22f667d8f969e989c145c.

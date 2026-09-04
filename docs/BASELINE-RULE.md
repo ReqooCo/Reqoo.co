@@ -1,0 +1,1 @@
+Existing SHOP and SIM are the source of truth. Future changes must be additive and preserve existing customer-visible functionality.

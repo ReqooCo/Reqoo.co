@@ -1,0 +1,236 @@
+const BILLPLZ_BASE = 'https://www.billplz.com/api/v3';
+const PRICE = 35;
+const MAX_DEVICES = 3;
+const ACCESS_URL = 'https://pksk.sim.reqoo.co/access/';
+
+export async function onRequest({ request, env }) {
+  if (request.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: cors() });
+  }
+  try {
+    const d = await input(request);
+    const a = String(d.action || '');
+    if (a === 'create') return json(await createBill(d, env));
+    if (a === 'status') return json(await status(d, env));
+    if (a === 'callback') return callback(d, env);
+    if (a === 'redirect') return redirect(d, env);
+    return json({ ok: false, error: 'Action tidak dikenali' }, 400);
+  } catch (e) {
+    return json({ ok: false, error: String(e?.message || e) }, 500);
+  }
+}
+
+async function input(r) {
+  const u = new URL(r.url);
+  const q = Object.fromEntries(u.searchParams.entries());
+  if (r.method === 'GET') return q;
+  const t = (r.headers.get('content-type') || '').toLowerCase();
+  if (t.includes('application/json')) return { ...q, ...await r.json() };
+  const b = await r.text();
+  if (b) {
+    try { return { ...q, ...JSON.parse(b) }; } catch {}
+    try { return { ...q, ...Object.fromEntries(new URLSearchParams(b).entries()) }; } catch {}
+  }
+  return q;
+}
+
+function cors() {
+  return {
+    'access-control-allow-origin': '*',
+    'access-control-allow-methods': 'GET,POST,OPTIONS',
+    'access-control-allow-headers': 'Content-Type',
+    'cache-control': 'no-store'
+  };
+}
+
+function json(x, s = 200) {
+  return new Response(JSON.stringify(x), {
+    status: s,
+    headers: { 'content-type': 'application/json;charset=UTF-8', ...cors() }
+  });
+}
+
+function basic(k) { return 'Basic ' + btoa(`${k}:`); }
+function cents(n) { return Math.round(Number(n || 0) * 100); }
+
+function phone(v) {
+  let p = String(v || '').replace(/\D/g, '');
+  if (p.startsWith('00')) p = p.slice(2);
+  if (p.startsWith('0')) p = '60' + p.slice(1);
+  if (p && !p.startsWith('60')) p = '60' + p;
+  return p;
+}
+
+function cleanCode(v) { return String(v || '').trim().toUpperCase(); }
+function makeOrder() { return 'PKSK-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 7).toUpperCase(); }
+
+function genCode() {
+  const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const a = new Uint8Array(10);
+  crypto.getRandomValues(a);
+  let x = '';
+  for (const n of a) x += c[n % c.length];
+  return `PKSK-${x.slice(0, 5)}-${x.slice(5)}`;
+}
+
+async function uniqueCode(env) {
+  for (let i = 0; i < 10; i++) {
+    const c = genCode();
+    const r = await env.DB.prepare('SELECT id FROM licenses WHERE access_code=?').bind(c).first();
+    if (!r) return c;
+  }
+  throw Error('Gagal menjana Access Code unik');
+}
+
+async function referralInfo(code, env) {
+  const ref = cleanCode(code);
+  if (!ref) return null;
+  if (!(await tableExists(env, 'sim_referral_agents'))) return null;
+  const r = await env.DB.prepare("SELECT referral_code,commission,status FROM sim_referral_agents WHERE referral_code=? AND lower(status)='active' LIMIT 1").bind(ref).first();
+  if (!r) throw Error('Referral Code tidak sah atau tidak aktif.');
+  return { code: String(r.referral_code), commission: Number(r.commission || 5) };
+}
+
+async function tableExists(env, name) {
+  const r = await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?").bind(name).first();
+  return !!r;
+}
+
+async function ensureReferralEvents(env) {
+  if (await tableExists(env, 'sim_referral_events')) return;
+  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS sim_referral_events (id TEXT PRIMARY KEY, referral_code TEXT NOT NULL, phone TEXT NOT NULL, order_id TEXT, amount INTEGER NOT NULL DEFAULT 0, commission INTEGER NOT NULL DEFAULT 0, status TEXT NOT NULL DEFAULT 'pending', created_at TEXT NOT NULL)`).run();
+  await env.DB.prepare('CREATE INDEX IF NOT EXISTS idx_sim_referral_events_code ON sim_referral_events(referral_code)').run();
+  await env.DB.prepare('CREATE INDEX IF NOT EXISTS idx_sim_referral_events_order ON sim_referral_events(order_id)').run();
+}
+
+async function attachReferral(orderNo, p, ref, env) {
+  if (!ref) return;
+  await ensureReferralEvents(env);
+  const existing = await env.DB.prepare('SELECT id FROM sim_referral_events WHERE order_id=? LIMIT 1').bind(orderNo).first();
+  if (existing) return;
+  await env.DB.prepare('INSERT INTO sim_referral_events (id,referral_code,phone,order_id,amount,commission,status,created_at) VALUES (?,?,?,?,?,?,?,?)')
+    .bind(`evt_${crypto.randomUUID()}`, ref.code, p, orderNo, PRICE, ref.commission, 'pending', new Date().toISOString())
+    .run();
+}
+
+async function settleReferral(orderId, env) {
+  if (!(await tableExists(env, 'sim_referral_events'))) return;
+  await env.DB.prepare("UPDATE sim_referral_events SET status='paid' WHERE order_id=? AND lower(status)='pending'").bind(orderId).run();
+}
+
+async function createBill(d, env) {
+  if (!env.DB) return { ok: false, error: 'DB binding belum tersedia' };
+  if (!env.BILLPLZ_API_KEY || !env.BILLPLZ_COLLECTION_ID) return { ok: false, error: 'Billplz belum dikonfigurasi dalam Cloudflare Secrets/Variables' };
+  const name = String(d.name || '').trim();
+  const p = phone(d.phone);
+  const email = String(d.email || '').trim();
+  const orderNo = String(d.orderNo || makeOrder()).trim();
+  if (!name || !p) return { ok: false, error: 'Nama dan WhatsApp diperlukan' };
+  const ref = await referralInfo(d.referralCode || d.ref, env);
+  const old = await env.DB.prepare('SELECT * FROM orders WHERE id=?').bind(orderNo).first();
+  if (old?.payment_status === 'paid') {
+    await settleReferral(orderNo, env);
+    return { ok: true, orderNo, status: 'paid', accessCode: await issueLicense(old, env) };
+  }
+  if (old?.payment_ref?.startsWith('billplz:')) {
+    if (ref) await attachReferral(orderNo, p, ref, env);
+    return { ok: true, orderNo, status: old.payment_status || 'pending', billId: old.payment_ref.slice(8) };
+  }
+  const now = new Date().toISOString();
+  if (!old) {
+    await env.DB.prepare(`INSERT INTO orders (id,customer_name,phone,email,amount,payment_status,payment_ref,created_at,paid_at) VALUES (?,?,?,?,?,'pending',NULL,?,NULL)`).bind(orderNo, name, p, email, PRICE, now).run();
+  }
+  if (ref) await attachReferral(orderNo, p, ref, env);
+  const q = new URLSearchParams({
+    collection_id: String(env.BILLPLZ_COLLECTION_ID),
+    description: `REQOO SIM PKSK 50 ${orderNo}`.slice(0, 200),
+    name: name.slice(0, 255),
+    amount: String(cents(PRICE)),
+    callback_url: 'https://pksk.sim.reqoo.co/api/sim-payment?action=callback',
+    redirect_url: 'https://pksk.sim.reqoo.co/api/sim-payment?action=redirect',
+    reference_1_label: 'Order',
+    reference_1: orderNo,
+    deliver: 'false'
+  });
+  if (email) q.set('email', email); else q.set('mobile', p);
+  const r = await fetch(`${BILLPLZ_BASE}/bills`, {
+    method: 'POST',
+    headers: { Authorization: basic(String(env.BILLPLZ_API_KEY)), 'content-type': 'application/x-www-form-urlencoded' },
+    body: q.toString()
+  });
+  const txt = await r.text();
+  let bp;
+  try { bp = JSON.parse(txt); } catch { bp = { error: txt }; }
+  if (!r.ok || !bp?.id || !bp?.url) return { ok: false, error: 'Billplz gagal mencipta bill', detail: bp?.error || bp?.message || 'Unknown error' };
+  await env.DB.prepare("UPDATE orders SET payment_ref=?,payment_status='pending' WHERE id=?").bind(`billplz:${bp.id}`, orderNo).run();
+  return { ok: true, orderNo, status: 'pending', amount: PRICE, billId: String(bp.id), billUrl: String(bp.url) };
+}
+
+async function status(d, env) {
+  const o = String(d.orderNo || '').trim();
+  if (!o) return { ok: false, error: 'Order diperlukan' };
+  const r = await env.DB.prepare('SELECT * FROM orders WHERE id=?').bind(o).first();
+  if (!r) return { ok: true, found: false };
+  const l = await env.DB.prepare('SELECT * FROM licenses WHERE order_id=?').bind(o).first();
+  return { ok: true, found: true, orderNo: o, status: r.payment_status || 'pending', accessCode: l?.access_code || '', accessUrl: l?.access_code ? ACCESS_URL : '' };
+}
+
+async function signature(d, key) {
+  const s = String(d.x_signature || '').toLowerCase();
+  if (!s || !key) return false;
+  const src = Object.keys(d).filter(k => k !== 'x_signature').sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })).map(k => `${k}${d[k] ?? ''}`).join('|');
+  const k = await crypto.subtle.importKey('raw', new TextEncoder().encode(String(key)), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = new Uint8Array(await crypto.subtle.sign('HMAC', k, new TextEncoder().encode(src)));
+  let h = '';
+  for (const b of sig) h += b.toString(16).padStart(2, '0');
+  if (h.length !== s.length) return false;
+  let x = 0;
+  for (let i = 0; i < h.length; i++) x |= h.charCodeAt(i) ^ s.charCodeAt(i);
+  return x === 0;
+}
+
+async function callback(d, env) {
+  if (!env.DB || !env.BILLPLZ_X_SIGNATURE) return new Response('Configuration missing', { status: 500 });
+  if (!await signature(d, env.BILLPLZ_X_SIGNATURE)) return new Response('Invalid signature', { status: 401 });
+  const id = String(d.id || '').trim();
+  if (!id) return new Response('Missing bill id', { status: 400 });
+  const o = await env.DB.prepare('SELECT * FROM orders WHERE payment_ref=? LIMIT 1').bind(`billplz:${id}`).first();
+  if (!o) return new Response('OK');
+  const paid = String(d.paid || '').toLowerCase() === 'true';
+  const state = String(d.state || '').toLowerCase();
+  if (!paid || state !== 'paid') return new Response('OK');
+  if (Number(d.amount || 0) !== cents(o.amount || PRICE)) return new Response('Amount mismatch', { status: 400 });
+  if (Number(d.paid_amount || 0) && Number(d.paid_amount) < cents(o.amount || PRICE)) return new Response('Amount mismatch', { status: 400 });
+  if (String(o.payment_status || '').toLowerCase() === 'paid') {
+    await issueLicense(o, env);
+    await settleReferral(o.id, env);
+    return new Response('OK');
+  }
+  const now = new Date().toISOString();
+  await env.DB.prepare("UPDATE orders SET payment_status='paid',paid_at=? WHERE id=? AND LOWER(TRIM(payment_status))!='paid'").bind(now, o.id).run();
+  await issueLicense({ ...o, payment_status: 'paid' }, env);
+  await settleReferral(o.id, env);
+  return new Response('OK');
+}
+
+async function issueLicense(o, env) {
+  const e = await env.DB.prepare('SELECT * FROM licenses WHERE order_id=?').bind(o.id).first();
+  if (e?.access_code) {
+    if (Number(e.max_devices || 0) !== MAX_DEVICES) await env.DB.prepare('UPDATE licenses SET max_devices=? WHERE id=?').bind(MAX_DEVICES, e.id).run();
+    return e.access_code;
+  }
+  const code = await uniqueCode(env);
+  const now = new Date().toISOString();
+  await env.DB.prepare(`INSERT INTO licenses (id,order_id,access_code,status,max_devices,created_at,activated_at,expires_at) VALUES (?,?,?,?,?,?,?,NULL)`).bind('lic_' + crypto.randomUUID(), o.id, code, 'active', MAX_DEVICES, now, now).run();
+  return code;
+}
+
+async function redirect(d, env) {
+  const id = String(d['billplz[id]'] || d.id || '').trim();
+  let o = null;
+  if (env.DB && id) o = await env.DB.prepare('SELECT id,payment_status FROM orders WHERE payment_ref=? LIMIT 1').bind(`billplz:${id}`).first();
+  const u = new URL('https://pksk.sim.reqoo.co/payment/');
+  u.searchParams.set('payment', o?.payment_status === 'paid' ? 'success' : 'pending');
+  if (o?.id) u.searchParams.set('order', o.id);
+  return new Response(null, { status: 302, headers: { Location: u.toString(), 'cache-control': 'no-store' } });
+}

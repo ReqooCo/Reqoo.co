@@ -1,0 +1,64 @@
+name: REQOO Core Health Smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - rebuild/v1-foundation
+
+permissions:
+  contents: read
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install Wrangler
+        run: npm install --global wrangler@latest
+
+      - name: Static check Pages Functions
+        run: |
+          set -euo pipefail
+          find functions -type f -name '*.js' -print0 | xargs -0 -n1 node --check
+
+      - name: Prepare local D1 schema
+        run: |
+          set -euo pipefail
+          wrangler d1 migrations apply reqoo-rebuild --local --persist-to=/tmp/reqoo-d1
+
+      - name: Start local Pages runtime with local D1
+        run: |
+          set -euo pipefail
+          rm -f /tmp/health.json /tmp/reqoo-pages.log /tmp/reqoo-pages.pid
+          wrangler pages dev . --d1 DB=15123ddd-d63a-4033-912c-51c1f05c11c5 --compatibility-date=2026-08-19 --ip=127.0.0.1 --port=8788 --persist-to=/tmp/reqoo-d1 > /tmp/reqoo-pages.log 2>&1 &
+          echo $! > /tmp/reqoo-pages.pid
+          for i in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:8788/api/health-v1 > /tmp/health.json; then
+              break
+            fi
+            sleep 2
+          done
+          echo '--- Wrangler log ---'
+          cat /tmp/reqoo-pages.log || true
+          echo '--- Health response ---'
+          cat /tmp/health.json 2>/dev/null || true
+          test -s /tmp/health.json || { echo "Health endpoint did not respond"; exit 1; }
+
+      - name: Assert core health
+        run: |
+          set -euo pipefail
+          jq -e '.ok == true and .status == "ok" and .db == "connected" and .schema == "ready" and (.trace_id | length > 0)' /tmp/health.json
+          echo "REQOO CORE HEALTH VERIFIED: Pages Functions build and D1 schema are ready."
+
+      - name: Stop local runtime
+        if: always()
+        run: |
+          if [ -f /tmp/reqoo-pages.pid ]; then kill "$(cat /tmp/reqoo-pages.pid)" || true; fi
