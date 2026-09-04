@@ -41,7 +41,7 @@ jobs:
       - name: Validate PKSK questions unchanged from V2 baseline
         run: |
           set -e
-          git diff --exit-code pksk-v2...HEAD -- sim/pksk
+          git diff --exit-code origin/rebuild/pksk-v2...HEAD -- sim/pksk
 
       - name: Validate PKSK set JSON
         run: |
