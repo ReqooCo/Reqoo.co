@@ -2,7 +2,9 @@ name: Verify Final Integration
 
 on:
   push:
-    branches: [rebuild/reqoo-final-integration]
+    branches:
+      - rebuild/reqoo-final-integration
+      - rebuild/backend-reconciled
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -85,14 +87,15 @@ jobs:
           const shop = fs.readFileSync('shop/index.html', 'utf8');
           const webCfg = fs.readFileSync('wrangler-web.toml', 'utf8');
           const checks = [
-            [worker, "url.pathname === '/api/shop'", 'API worker shop route'],
+            [worker, "path === '/api/shop'", 'API worker shop route'],
             [shopApi, "u.pathname==='/api/shop'", 'shop handler route'],
-            [worker, "url.pathname === '/api/sim-admin'", 'API worker admin route'],
+            [worker, "path === '/api/sim-admin'", 'API worker admin route'],
             [web, "host === 'shop.reqoo.co'", 'shop host route'],
             [web, "host === 'pksk.sim.reqoo.co'", 'PKSK host route'],
             [shop, 'api/shop', 'shop API client'],
             [webCfg, 'shop.reqoo.co', 'shop web route'],
-            [webCfg, 'pksk.sim.reqoo.co', 'PKSK web route']
+            [webCfg, 'pksk.sim.reqoo.co', 'PKSK web route'],
+            [webCfg, 'sim.reqoo.co', 'SIM web route']
           ];
           for (const [text, needle, label] of checks) {
             if (!text.includes(needle)) throw new Error(`${label} missing: ${needle}`);
