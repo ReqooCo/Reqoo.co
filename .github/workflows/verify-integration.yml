@@ -1,0 +1,77 @@
+name: Verify Reqoo Integration
+
+on:
+  push:
+    branches: [rebuild/reqoo-final-integration]
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate JavaScript syntax
+        run: |
+          set -e
+          for f in _web_worker.js api/*.js functions/api/*.js shop/*.js sim/pksk/simulator/js/*.js; do
+            [ -f "$f" ] && node --check "$f"
+          done
+
+      - name: Validate required runtime files
+        run: |
+          set -e
+          test -f api/worker.js
+          test -f api/shop.js
+          test -f api/shop-runtime.js
+          test -f api/shop-admin.js
+          test -f api/hero.js
+          test -f api/pksk.js
+          test -f _web_worker.js
+          test -f wrangler-web.toml
+          test -f api/wrangler.jsonc
+          test -f shop/index.html
+          test -f shop/hero-runtime.js
+          test -f shop/hero-settings.html
+          test -f sim/pksk/simulator/index.html
+          test -f sim/pksk/simulator/js/app.js
+
+      - name: Validate PKSK questions unchanged from V2 baseline
+        run: |
+          set -e
+          git diff --exit-code pksk-v2...HEAD -- sim/pksk
+
+      - name: Validate PKSK set JSON
+        run: |
+          set -e
+          count=$(find sim/pksk/simulator/sets -maxdepth 1 -type f -name 'set*.json' | wc -l)
+          test "$count" -eq 50
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const dir = 'sim/pksk/simulator/sets';
+          const files = fs.readdirSync(dir).filter(x => /^set\d+\.json$/.test(x)).sort();
+          for (const file of files) JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'));
+          console.log(`Validated ${files.length} PKSK set JSON files.`);
+          NODE
+
+      - name: Verify Shop hero wiring
+        run: |
+          set -e
+          grep -q "api/shop-hero" shop/hero-runtime.js
+          grep -q "hero-runtime.js" _web_worker.js
+          grep -q "api/product-image" shop/hero-settings.html
+          grep -q "api/shop-hero" shop/hero-settings.html
+
+      - name: Verify deployment configs
+        run: |
+          set -e
+          grep -q 'api.reqoo.co/\*' api/wrangler.jsonc
+          grep -q 'reqoo.co/\*' wrangler-web.toml
+          grep -q 'shop.reqoo.co/\*' wrangler-web.toml
+          grep -q 'sim.reqoo.co/\*' wrangler-web.toml
+          grep -q 'pksk.sim.reqoo.co/\*' wrangler-web.toml
+          grep -q 'deploy --config api/wrangler.jsonc' .github/workflows/deploy.yml
+          grep -q 'deploy --config wrangler-web.toml' .github/workflows/deploy.yml
