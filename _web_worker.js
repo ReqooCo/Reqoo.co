@@ -23,6 +23,17 @@ function assetRequest(pathname, request) {
   return new Request(target.toString(), init);
 }
 
+function pkskAssetPath(pathname) {
+  // The PKSK subdomain exposes sim/pksk as its public root.
+  // Support both clean routes (/payment-v2/) and legacy /pksk/... links.
+  let path = pathname || '/';
+  if (path === '/' || path === '/pksk' || path === '/pksk/') return '/sim/pksk/index.html';
+  if (/^\/pksk\//i.test(path)) path = path.slice('/pksk'.length) || '/';
+  path = `/sim/pksk${path}`;
+  if (path.endsWith('/')) path += 'index.html';
+  return path;
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -30,11 +41,10 @@ export default {
     if (url.pathname === '/api' || url.pathname.startsWith('/api/')) return proxyApi(request, url);
 
     if (host === 'pksk.sim.reqoo.co') {
-      const pathname = url.pathname === '/' ? '/sim/pksk/simulator/index.html' : `/sim/pksk/simulator${url.pathname}`;
+      const pathname = pkskAssetPath(url.pathname);
       const cleanPath = pathname.replace(/^\/+/, '');
       if (cleanPath.includes('..')) return new Response('Not Found', { status: 404 });
       const response = await env.ASSETS.fetch(assetRequest(`/${cleanPath}`, request));
-      if (response.status === 404) return new Response('PKSK Simulator asset not found', { status: 404 });
       return response;
     }
 
