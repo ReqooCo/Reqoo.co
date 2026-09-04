@@ -25,11 +25,15 @@ function assetRequest(pathname, request) {
 
 async function adminPkskV2(request, env) {
   const response = await env.ASSETS.fetch(assetRequest('/admin/sim-v2.html', request));
+  const type = response.headers.get('content-type') || '';
+  const source = type.toLowerCase().includes('text/html') ? await response.text() : null;
+  const body = source === null ? response.body : source.replace(/API='\/api\/sim-admin'/g, "API='https://api.reqoo.co/api/sim-admin'");
   const headers = new Headers(response.headers);
   headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
   headers.set('pragma', 'no-cache');
   headers.set('x-reqoo-admin-route', 'pksk-v2');
-  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+  headers.set('x-reqoo-api-route', 'direct');
+  return new Response(body, { status: response.status, statusText: response.statusText, headers });
 }
 
 function pkskAssetPath(pathname) {
