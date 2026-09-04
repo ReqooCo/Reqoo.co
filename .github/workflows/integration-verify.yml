@@ -3,6 +3,8 @@ name: Verify Final Integration
 on:
   push:
     branches: [rebuild/reqoo-final-integration]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
