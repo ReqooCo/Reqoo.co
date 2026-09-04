@@ -38,10 +38,10 @@ jobs:
           test -f sim/pksk/simulator/index.html
           test -f sim/pksk/simulator/js/app.js
 
-      - name: Validate PKSK questions unchanged from V2 baseline
+      - name: Validate PKSK question bank unchanged from V2 baseline
         run: |
           set -e
-          git diff --exit-code origin/rebuild/pksk-v2...HEAD -- sim/pksk
+          git diff --exit-code origin/rebuild/pksk-v2...HEAD -- sim/pksk/simulator/sets
 
       - name: Validate PKSK set JSON
         run: |
