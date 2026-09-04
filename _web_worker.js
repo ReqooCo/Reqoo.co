@@ -23,6 +23,15 @@ function assetRequest(pathname, request) {
   return new Request(target.toString(), init);
 }
 
+async function adminOverview(request, env) {
+  const response = await env.ASSETS.fetch(assetRequest('/admin/index.html', request));
+  const headers = new Headers(response.headers);
+  headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
+  headers.set('pragma', 'no-cache');
+  headers.set('x-reqoo-admin-route', 'overview');
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+}
+
 async function adminPkskV2(request, env) {
   const response = await env.ASSETS.fetch(assetRequest('/admin/sim-v2.html', request));
   const type = response.headers.get('content-type') || '';
@@ -51,9 +60,10 @@ export default {
     const host = url.hostname.toLowerCase();
     if (url.pathname === '/api' || url.pathname.startsWith('/api/')) return proxyApi(request, url);
 
-    // admin.reqoo.co is a dedicated PKSK admin host. Its root and admin aliases
-    // must all land on the V2 dashboard instead of the public Reqoo homepage.
-    if (host === 'admin.reqoo.co' && (url.pathname === '/' || /^\/admin\/?$/i.test(url.pathname) || /^\/admin\/sim-v2\.html$/i.test(url.pathname) || /^\/sim\/pksk\/admin\/?$/i.test(url.pathname))) return adminPkskV2(request, env);
+    // admin.reqoo.co is the overall REQOO control centre at root.
+    // PKSK keeps its dedicated admin at /sim/pksk/admin/.
+    if (host === 'admin.reqoo.co' && (url.pathname === '/' || /^\/admin\/?$/i.test(url.pathname))) return adminOverview(request, env);
+    if (host === 'admin.reqoo.co' && (/^\/admin\/sim-v2\.html$/i.test(url.pathname) || /^\/sim\/pksk\/admin\/?$/i.test(url.pathname))) return adminPkskV2(request, env);
 
     if (host === 'pksk.sim.reqoo.co') {
       const pathname = pkskAssetPath(url.pathname);
