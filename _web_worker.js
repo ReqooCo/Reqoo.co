@@ -15,6 +15,19 @@ async function injectShopRuntime(response) {
   return new Response(html.replace('</body>', '<script src="/shop/hero-runtime.js?v=1"></script></body>'), response);
 }
 
+async function injectAdminUI(response) {
+  const type = response.headers.get('content-type') || '';
+  if (!type.toLowerCase().includes('text/html')) return response;
+  const html = await response.text();
+  if (html.includes('/admin/reqoo-admin-universal.css')) return new Response(html, response);
+  const body = html.replace('</head>', '<link rel="stylesheet" href="/admin/reqoo-admin-universal.css?v=2"></head>');
+  const headers = new Headers(response.headers);
+  headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
+  headers.set('pragma', 'no-cache');
+  headers.set('x-reqoo-admin-ui', 'universal-v2');
+  return new Response(body, { status: response.status, statusText: response.statusText, headers });
+}
+
 function assetRequest(pathname, request) {
   const target = new URL(pathname, 'https://reqoo.co');
   target.search = new URL(request.url).search;
@@ -25,11 +38,7 @@ function assetRequest(pathname, request) {
 
 async function adminOverview(request, env) {
   const response = await env.ASSETS.fetch(assetRequest('/admin/index.html', request));
-  const headers = new Headers(response.headers);
-  headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
-  headers.set('pragma', 'no-cache');
-  headers.set('x-reqoo-admin-route', 'overview');
-  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+  return injectAdminUI(response);
 }
 
 async function adminPkskV2(request, env) {
@@ -64,6 +73,10 @@ export default {
     // PKSK keeps its dedicated admin at /sim/pksk/admin/.
     if (host === 'admin.reqoo.co' && (url.pathname === '/' || /^\/admin\/?$/i.test(url.pathname))) return adminOverview(request, env);
     if (host === 'admin.reqoo.co' && (/^\/admin\/sim-v2\.html$/i.test(url.pathname) || /^\/sim\/pksk\/admin\/?$/i.test(url.pathname))) return adminPkskV2(request, env);
+    if (host === 'admin.reqoo.co' && (/^\/admin\/settings\.html$/i.test(url.pathname) || /^\/shop\/admin\.html$/i.test(url.pathname))) {
+      const response = await env.ASSETS.fetch(assetRequest(url.pathname, request));
+      return injectAdminUI(response);
+    }
 
     if (host === 'pksk.sim.reqoo.co') {
       const pathname = pkskAssetPath(url.pathname);
