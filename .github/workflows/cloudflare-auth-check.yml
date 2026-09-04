@@ -1,0 +1,35 @@
+name: Cloudflare Auth Check
+
+on:
+  push:
+    branches: [repair/deploy-auth-validation]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  auth:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Wrangler
+        run: npm install --no-save wrangler@4.128.0
+      - name: Validate token formatting and authentication
+        shell: bash
+        env:
+          RAW_CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          token="$RAW_CF_TOKEN"
+          token="${token#Bearer }"
+          token="${token#bearer }"
+          token="${token#\"}"
+          token="${token%\"}"
+          token="$(printf '%s' "$token" | tr -d '\r\n')"
+          test -n "$token"
+          CLOUDFLARE_API_TOKEN="$token" CLOUDFLARE_ACCOUNT_ID="$CF_ACCOUNT_ID" npx --no-install wrangler whoami
