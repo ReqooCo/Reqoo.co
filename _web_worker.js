@@ -26,14 +26,13 @@ function assetRequest(pathname, request) {
 async function adminPkskV2(request, env) {
   const response = await env.ASSETS.fetch(assetRequest('/admin/sim-v2.html', request));
   const headers = new Headers(response.headers);
-  headers.set('cache-control', 'no-store, no-cache, must-revalidate');
+  headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
+  headers.set('pragma', 'no-cache');
   headers.set('x-reqoo-admin-route', 'pksk-v2');
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
 
 function pkskAssetPath(pathname) {
-  // The PKSK subdomain exposes sim/pksk as its public root.
-  // Support both clean routes (/payment-v2/) and legacy /pksk/... links.
   let path = pathname || '/';
   if (path === '/' || path === '/pksk' || path === '/pksk/') return '/sim/pksk/index.html';
   if (/^\/pksk\//i.test(path)) path = path.slice('/pksk'.length) || '/';
@@ -48,7 +47,7 @@ export default {
     const host = url.hostname.toLowerCase();
     if (url.pathname === '/api' || url.pathname.startsWith('/api/')) return proxyApi(request, url);
 
-    if (host === 'admin.reqoo.co' && /^\/sim\/pksk\/admin\/?$/i.test(url.pathname)) return adminPkskV2(request, env);
+    if (host === 'admin.reqoo.co' && (/^\/sim\/pksk\/admin\/?$/i.test(url.pathname) || /^\/admin\/sim-v2\.html$/i.test(url.pathname))) return adminPkskV2(request, env);
 
     if (host === 'pksk.sim.reqoo.co') {
       const pathname = pkskAssetPath(url.pathname);
