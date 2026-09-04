@@ -2,7 +2,7 @@ import { onRequest as handleCore } from '../functions/api/core.js';
 import { onRequest as handleSimAdmin } from '../functions/api/sim-admin.js';
 import { onRequest as handleShopAdmin } from './shop-admin.js';
 import { onRequest as handleProductImage } from '../functions/api/product-image.js';
-import { handle as handleShop } from './shop.js';
+import { handle as handleShop } from './shop-runtime.js';
 import { handle as handlePksk } from './pksk.js';
 import { handle as handleHero } from './hero.js';
 
