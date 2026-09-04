@@ -10,9 +10,24 @@ import { handle as handlePksk } from './pksk.js';
 import { handle as handleHero } from './hero.js';
 
 function withAdminEnv(env) {
+  // Cloudflare bindings must be explicitly preserved when building a bridged env.
+  // Spreading env alone can omit runtime bindings such as D1/R2.
+  const out = { ...env };
+  out.DB = env.DB;
+  out.MEDIA = env.MEDIA;
+  out.SHOP_DB = env.DB;
+  out.PR00FS = env.MEDIA;
   const admin = env.REQOO_ADMIN_TOKEN || env.ADMIN_KEY || env.SHOP_ADMIN_TOKEN || '';
-  return {...env,SHOP_DB:env.DB,PR00FS:env.MEDIA,REQOO_ADMIN_TOKEN:admin,SHOP_ADMIN_TOKEN:env.SHOP_ADMIN_TOKEN||admin,PKSK_ADMIN_TOKEN:env.PKSK_ADMIN_TOKEN||admin,ADMIN_API_KEY:env.ADMIN_API_KEY||admin,BILLPLZ_API_KEY:env.BILLPLZ_API_KEY||env.BILLPLZ_KEY||'',BILLPLZ_COLLECTION_ID:env.BILLPLZ_COLLECTION_ID||'',BILLPLZ_X_SIGNATURE_KEY:env.BILLPLZ_X_SIGNATURE_KEY||env.BILLPLZ_X_SIGNATURE||''};
+  out.REQOO_ADMIN_TOKEN = admin;
+  out.SHOP_ADMIN_TOKEN = env.SHOP_ADMIN_TOKEN || admin;
+  out.PKSK_ADMIN_TOKEN = env.PKSK_ADMIN_TOKEN || admin;
+  out.ADMIN_API_KEY = env.ADMIN_API_KEY || admin;
+  out.BILLPLZ_API_KEY = env.BILLPLZ_API_KEY || env.BILLPLZ_KEY || '';
+  out.BILLPLZ_COLLECTION_ID = env.BILLPLZ_COLLECTION_ID || '';
+  out.BILLPLZ_X_SIGNATURE_KEY = env.BILLPLZ_X_SIGNATURE_KEY || env.BILLPLZ_X_SIGNATURE || '';
+  return out;
 }
+
 async function shopAdminCompat(request,env){
   if(request.method!=='POST')return handleShopAdmin({request,env});
   try{const d=await request.clone().json();if(String(d.action)==='status'&&String(d.status||'').toLowerCase()==='completed')d.status='fulfilled';return handleShopAdmin({request:new Request(request.url,{method:'POST',headers:request.headers,body:JSON.stringify(d)}),env})}catch{return handleShopAdmin({request,env})}
