@@ -21,6 +21,16 @@ export default {
       return env.ASSETS.fetch(new Request(new URL(`/${cleanPath}`, url.origin), request));
     }
 
+    if (host === 'sim.reqoo.co') {
+      let pathname = url.pathname;
+      if (pathname === '/' || pathname === '') pathname = '/sim/index.html';
+      else if (/^\/pksk\/?$/i.test(pathname)) pathname = '/sim/pksk/index.html';
+      else if (/^\/pksk\//i.test(pathname)) pathname = `/sim${pathname}`;
+      const cleanPath = pathname.replace(/^\/+/, '');
+      if (cleanPath.includes('..')) return new Response('Not Found', { status: 404 });
+      return env.ASSETS.fetch(new Request(new URL(`/${cleanPath}`, url.origin), request));
+    }
+
     return env.ASSETS.fetch(request);
   }
 };
