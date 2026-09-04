@@ -1,23 +1,15 @@
-name: Deploy Reqoo Web + API
+name: Deploy Reqoo Final
 
 on:
   push:
-    branches:
-      - main
-
-permissions:
-  contents: read
-
-concurrency:
-  group: reqoo-production-deploy
-  cancel-in-progress: false
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Deploy API Worker
         uses: cloudflare/wrangler-action@v3
