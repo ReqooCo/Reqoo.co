@@ -2,7 +2,7 @@ name: Backend Syntax Gate
 
 on:
   push:
-    branches: [rebuild/reqoo-final-integration]
+    branches: [main, rebuild/reqoo-final-integration]
   workflow_dispatch:
 
 jobs:
