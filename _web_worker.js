@@ -51,7 +51,9 @@ export default {
     const host = url.hostname.toLowerCase();
     if (url.pathname === '/api' || url.pathname.startsWith('/api/')) return proxyApi(request, url);
 
-    if (host === 'admin.reqoo.co' && (/^\/sim\/pksk\/admin\/?$/i.test(url.pathname) || /^\/admin\/sim-v2\.html$/i.test(url.pathname))) return adminPkskV2(request, env);
+    // admin.reqoo.co is a dedicated PKSK admin host. Its root and admin aliases
+    // must all land on the V2 dashboard instead of the public Reqoo homepage.
+    if (host === 'admin.reqoo.co' && (url.pathname === '/' || /^\/admin\/?$/i.test(url.pathname) || /^\/admin\/sim-v2\.html$/i.test(url.pathname) || /^\/sim\/pksk\/admin\/?$/i.test(url.pathname))) return adminPkskV2(request, env);
 
     if (host === 'pksk.sim.reqoo.co') {
       const pathname = pkskAssetPath(url.pathname);
