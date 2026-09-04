@@ -6,6 +6,9 @@ workers_dev = false
 [assets]
 directory = "."
 binding = "ASSETS"
+# The same Worker serves multiple hostnames; run it first so / on each
+# subdomain is routed by hostname instead of being served as root index.html.
+run_worker_first = ["/*"]
 
 [[routes]]
 pattern = "reqoo.co/*"
