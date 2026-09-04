@@ -9,7 +9,7 @@ const ALLOWED = new Map([
 const CORS = {
   'access-control-allow-origin': '*',
   'access-control-allow-methods': 'GET,POST,DELETE,OPTIONS',
-  'access-control-allow-headers': 'Content-Type,X-Reqoo-Admin-Token,X-Trace-Id',
+  'access-control-allow-headers': 'Content-Type,X-Reqoo-Admin-Token,X-Admin-Token,X-Admin-Key,X-Trace-Id',
   'cache-control': 'no-store'
 };
 
@@ -19,7 +19,7 @@ export async function onRequest(context) {
 
   try {
     if (!env.MEDIA) return json({ ok: false, error: 'MEDIA R2 binding belum tersedia' }, 503);
-    const adminToken = request.headers.get('X-Reqoo-Admin-Token') || '';
+    const adminToken = request.headers.get('X-Reqoo-Admin-Token') || request.headers.get('X-Admin-Token') || request.headers.get('X-Admin-Key') || '';
     if (request.method !== 'GET') requireAdmin(adminToken, env);
 
     if (request.method === 'POST') return await upload(request, env);
@@ -33,7 +33,7 @@ export async function onRequest(context) {
 }
 
 function requireAdmin(supplied, env) {
-  const expected = String(env.REQOO_ADMIN_TOKEN || '');
+  const expected = String(env.REQOO_ADMIN_TOKEN || env.ADMIN_KEY || env.SHOP_ADMIN_TOKEN || '');
   if (!expected || supplied !== expected) {
     const e = new Error('Unauthorized');
     e.code = 'UNAUTHORIZED';
