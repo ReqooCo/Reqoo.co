@@ -4,7 +4,7 @@ import { onRequest as handleShopAdmin } from './shop-admin.js';
 import { onRequest as handleProductImage } from '../functions/api/product-image.js';
 import { onRequest as handleInvoice } from '../functions/api/invoice-v1.js';
 import { onRequest as handleLicense } from '../functions/api/license-v1.js';
-import { handle as handleShop } from './shop-runtime.js';
+import { onRequest as handleShop } from './shop-v2.js';
 import { handle as handlePksk } from './pksk.js';
 import { handle as handleHero } from './hero.js';
 
@@ -29,7 +29,6 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
     const bridgedEnv = withAdminEnv(env);
-
     if (path === '/api/shop' || path === '/api/billplz') return handleShop(request, bridgedEnv);
     if (path === '/api/pksk') return handlePksk(request, bridgedEnv);
     if (path === '/api/shop-hero') return handleHero(request, bridgedEnv);
@@ -39,17 +38,7 @@ export default {
     if (path === '/api/product-image') return handleProductImage({ request, env: bridgedEnv, ctx });
     if (path === '/api/invoice-v1' || path.startsWith('/api/invoice-v1/')) return handleInvoice({ request, env: bridgedEnv });
     if (path === '/api/license-v1' || path.startsWith('/api/license-v1/')) return handleLicense({ request, env: bridgedEnv });
-
-    if (path === '/api/health') {
-      return new Response(JSON.stringify({ ok: !!env.DB, service: 'reqoo-api', db: !!env.DB, media: !!env.MEDIA }), {
-        status: env.DB ? 200 : 503,
-        headers: { 'content-type': 'application/json; charset=UTF-8', 'cache-control': 'no-store', 'access-control-allow-origin': '*' }
-      });
-    }
-
-    return new Response(JSON.stringify({ ok: false, error: 'Not found' }), {
-      status: 404,
-      headers: { 'content-type': 'application/json; charset=UTF-8', 'cache-control': 'no-store', 'access-control-allow-origin': '*' }
-    });
+    if (path === '/api/health') return new Response(JSON.stringify({ok:!!env.DB,service:'reqoo-api',db:!!env.DB,media:!!env.MEDIA}),{status:env.DB?200:503,headers:{'content-type':'application/json; charset=UTF-8','cache-control':'no-store','access-control-allow-origin':'*'}});
+    return new Response(JSON.stringify({ok:false,error:'Not found'}),{status:404,headers:{'content-type':'application/json; charset=UTF-8','cache-control':'no-store','access-control-allow-origin':'*'}});
   }
 };
