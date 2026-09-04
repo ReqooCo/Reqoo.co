@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - rebuild/reqoo-final-integration
-      - rebuild/backend-reconciled
-  pull_request:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -28,34 +25,28 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          for file in api/*.js functions/api/*.js; do
+            echo "CHECKING $file"
+            node --check "$file" || { echo "SYNTAX_FAILED=$file"; exit 1; }
+          done
           test -f api/worker.js
-          test -f api/core-worker.js
-          test -f api/core.js
           test -f api/shop.js
           test -f api/pksk.js
-          test -f api/admin-compat.js
+          test -f api/hero.js
+          test -f api/shop-admin.js
+          test -f api/sim-admin.js
+          test -f api/shop-runtime.js
           test -f api/wrangler.jsonc
           test -f wrangler-web.toml
           test -f _web_worker.js
-          node --check api/worker.js
-          node --check api/core-worker.js
-          node --check api/core.js
-          node --check api/shop.js
-          node --check api/pksk.js
-          node --check api/admin-compat.js
-          node --check _web_worker.js
-          node --check functions/api/core.js
-          node --check functions/api/product-image.js
 
       - name: Verify migrations and PKSK sets
         shell: bash
         run: |
           set -euo pipefail
-          test -f migrations/0001_reqoo_core.sql
-          test -f migrations/0002_access_grants.sql
-          test -f migrations/0003_fulfillment_compat.sql
-          test -f migrations/0004_shop_catalog.sql
-          test -f migrations/0005_pksk_progress.sql
+          for f in migrations/0001_reqoo_core.sql migrations/0002_access_grants.sql migrations/0003_fulfillment_compat.sql migrations/0004_shop_catalog.sql migrations/0005_pksk_progress.sql migrations/0006_shop_operations.sql migrations/0007_shop_hero.sql; do
+            test -f "$f"
+          done
           count=$(find sim/pksk/simulator/sets -type f -name 'set*.json' | wc -l | tr -d ' ')
           test "$count" -eq 50
           while IFS= read -r f; do
@@ -69,10 +60,13 @@ jobs:
           node <<'NODE'
           const fs = require('fs');
           const api = fs.readFileSync('api/wrangler.jsonc', 'utf8');
-          const deploy = fs.readFileSync('.github/workflows/deploy-final.yml', 'utf8');
-          if (!api.includes('api.reqoo.co/*')) throw new Error('API route missing');
-          if (!deploy.includes('wrangler-web.toml')) throw new Error('Web deploy missing');
-          if (!deploy.includes('api/wrangler.jsonc')) throw new Error('API deploy missing');
+          const web = fs.readFileSync('wrangler-web.toml', 'utf8');
+          if (!api.includes('reqoo-catalog-api')) throw new Error('API worker name missing');
+          if (!api.includes('reqoo-rebuild')) throw new Error('D1 binding missing');
+          if (!api.includes('reqoo-product-media')) throw new Error('R2 binding missing');
+          for (const host of ['reqoo.co','shop.reqoo.co','sim.reqoo.co','pksk.sim.reqoo.co']) {
+            if (!web.includes(host)) throw new Error(`Web route missing: ${host}`);
+          }
           NODE
 
       - name: Verify Shop and host routing contract
@@ -92,6 +86,7 @@ jobs:
             [worker, "path === '/api/sim-admin'", 'API worker admin route'],
             [web, "host === 'shop.reqoo.co'", 'shop host route'],
             [web, "host === 'pksk.sim.reqoo.co'", 'PKSK host route'],
+            [web, "host === 'sim.reqoo.co'", 'SIM host route'],
             [shop, 'api/shop', 'shop API client'],
             [webCfg, 'shop.reqoo.co', 'shop web route'],
             [webCfg, 'pksk.sim.reqoo.co', 'PKSK web route'],

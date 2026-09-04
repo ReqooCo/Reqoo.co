@@ -2,7 +2,7 @@
 
 ## PKSK V2
 
-PKSK simulator and student dashboard now use the V2 backend at `/api/pksk-v2`.
+PKSK simulator and student dashboard now use the V2 backend exposed at `/api/pksk`.
 
 - Single canonical PKSK API for access, device registration, progress and dashboard.
 - JSON `POST` only for client/server communication.

@@ -2,9 +2,7 @@ name: Backend Syntax Gate
 
 on:
   push:
-    branches:
-      - rebuild/reqoo-final-integration
-      - rebuild/backend-reconciled
+    branches: [main, rebuild/reqoo-final-integration]
   workflow_dispatch:
 
 jobs:
@@ -17,6 +15,7 @@ jobs:
         run: |
           set -euo pipefail
           for file in api/*.js functions/api/*.js; do
-            node --check "$file"
+            echo "CHECKING $file"
+            node --check "$file" || { echo "SYNTAX_FAILED=$file"; exit 1; }
           done
           echo "BACKEND_SYNTAX_OK"
