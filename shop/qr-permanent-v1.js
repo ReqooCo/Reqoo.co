@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const QR='/shop/maybank-qr.jpg';
+const QR='https://raw.githubusercontent.com/ReqooCo/Reqoo.co/main/shop/maybank-qr.jpg?v=1';
 const ACCOUNT='Ab Art Trading';
 const INSTRUCTIONS='Scan QR dan pastikan jumlah bayaran sama seperti jumlah order.';
 const originalFetch=window.fetch.bind(window);
