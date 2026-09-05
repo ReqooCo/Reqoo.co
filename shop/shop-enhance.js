@@ -1,41 +1,20 @@
 (()=>{
-  'use strict';
-  const API='/api/shop';
-  let products=[];
-  const money=n=>'RM'+Number(n||0).toFixed(2);
-  const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-  const imageUrl=u=>{u=String(u||'').trim();if(!u)return '';if(/^https?:\/\//i.test(u)||u.startsWith('/'))return u;return new URL(u.replace(/^\.\//,''),location.href).href};
-  async function load(){try{const r=await fetch(API+'?action=listProducts&_='+Date.now(),{cache:'no-store'}),j=await r.json();if(j.ok&&Array.isArray(j.products))products=j.products}catch(e){console.warn('REQOO Shop enhance:',e)}}
-  async function media(action,id){try{const r=await fetch('/api/shop-media?action='+action+'&productId='+encodeURIComponent(id)+'&_='+Date.now(),{cache:'no-store'}),j=await r.json();return j.ok?j:(action==='variantImages'?{variants:j.variants||[]}:{images:j.images||[]})}catch(e){return action==='variantImages'?{variants:[]}:{images:[]}}}
-  function findProduct(modal){
-    const title=[...modal.querySelectorAll('h1,h2,h3,h4')].map(x=>(x.textContent||'').trim()).find(Boolean)||'';
-    return products.find(p=>String(p.name||'').trim().toLowerCase()===title.toLowerCase())||products.find(p=>title.toLowerCase().includes(String(p.name||'').toLowerCase()))||null;
-  }
-  function addUI(modal,p,vars,imgs){
-    if(modal.querySelector('.reqoo-v2')) return;
-    const box=modal.querySelector('.box')||modal;
-    const oldChoice=box.querySelector('.choice');
-    const oldSummary=box.querySelector('.summary');
-    if(oldChoice) oldChoice.style.display='none';
-    const ui=document.createElement('div');ui.className='reqoo-v2';
-    ui.innerHTML='<label>Pilihan / variasi</label><select class="reqoo-v2-select"></select><div class="reqoo-v2-price">Harga seunit: <b>—</b></div><div class="reqoo-v2-gallery"></div>';
-    const anchor=oldChoice||oldSummary||box.querySelector('label');
-    if(anchor?.parentNode)anchor.parentNode.insertBefore(ui,anchor.nextSibling);else box.appendChild(ui);
-    const sel=ui.querySelector('select'),price=ui.querySelector('b'),gallery=ui.querySelector('.reqoo-v2-gallery');
-    const fixed=vars.filter(v=>Number(v.price||0)>0);
-    const use=fixed.length?vars:(Number(p.basePrice||0)>0?[{name:'Standard',price:Number(p.basePrice)}]:vars);
-    sel.innerHTML=use.map((v,i)=>'<option value="'+i+'">'+esc(v.name||'Standard')+' — '+(Number(v.price||0)>0?money(v.price):'Quotation')+'</option>').join('');
-    function refresh(){const v=use[Number(sel.value)||0]||use[0]||{name:'Quotation',price:0};price.textContent=Number(v.price||0)>0?money(v.price):'Quotation';modal.dataset.reqooVariant=v.name||'Quotation';const main=box.querySelector('.two>div:first-child img');if(main&&v.image)main.src=imageUrl(v.image);if(gallery.children.length)gallery.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.src===(v.image||'')));}
-    sel.onchange=refresh;
-    if(imgs.length>1){gallery.innerHTML=imgs.map((u,i)=>'<button type="button" data-src="'+esc(imageUrl(u))+'" style="padding:0;border:1px solid #444;background:#080808;border-radius:8px;overflow:hidden;margin:6px 6px 0 0;width:64px;height:64px"><img src="'+esc(imageUrl(u))+'" style="width:64px;height:64px;object-fit:cover"></button>').join('');gallery.querySelectorAll('button').forEach(b=>b.onclick=()=>{const m=box.querySelector('.two>div:first-child img');if(m)m.src=b.dataset.src;gallery.querySelectorAll('button').forEach(x=>x.classList.remove('active'));b.classList.add('active')})}
-    refresh();
-  }
-  async function enhance(modal){if(!modal?.classList.contains('open')||modal.dataset.reqooEnhancing)return;modal.dataset.reqooEnhancing='1';await load();const p=findProduct(modal);if(!p){delete modal.dataset.reqooEnhancing;return}const vr=await media('variantImages',p.id),im=await media('listImages',p.id);const vars=(vr.variants||[]).map(v=>({name:v.name,price:Number(v.price||0),image:v.image||''}));const imgs=(im.images||[]).map(x=>x.url||x.image||x).filter(Boolean);addUI(modal,p,vars,imgs);delete modal.dataset.reqooEnhancing}
-  function watch(){
-    const mo=new MutationObserver(()=>document.querySelectorAll('.modal.open').forEach(enhance));
-    mo.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
-    document.querySelectorAll('.modal.open').forEach(enhance);
-  }
-  function start(){load();watch();}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+'use strict';
+const API='/api/shop';
+const MEDIA='/api/shop-media';
+const money=n=>'RM'+Number(n||0).toFixed(2);
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+const img=u=>{u=String(u||'').trim();if(!u)return '';if(/^https?:\/\//i.test(u)||u.startsWith('/'))return u;return new URL(u.replace(/^\.\//,''),location.href).href};
+let products=[];
+async function getProducts(){try{const r=await fetch(API+'?action=listProducts&_='+Date.now(),{cache:'no-store'}),j=await r.json();if(j.ok&&Array.isArray(j.products))products=j.products;return products}catch(e){return []}}
+async function media(action,id){try{const r=await fetch(MEDIA+'?action='+action+'&productId='+encodeURIComponent(id)+'&_='+Date.now(),{cache:'no-store'}),j=await r.json();return j.ok?j:{}}catch(e){return {}}}
+function setText(el,text){if(el)el.textContent=text}
+function fixPaymentCopy(){document.querySelectorAll('body *').forEach(el=>{if(el.children.length)return;const t=(el.textContent||'').trim();if(!t)return;let n=t.replace(/Checkout terus dengan Billplz — pembayaran selamat dan mudah\./i,'Checkout terus dengan QR — pembayaran mudah dan pantas.').replace(/Billplz Secure Payment/gi,'QR Secure Payment');if(n!==t)el.textContent=n})}
+function gallery(modal,urls){const box=modal.querySelector('.box'),main=box?.querySelector('.two>div:first-child');if(!box||!main||!urls.length)return;let g=box.querySelector('.reqoo-gallery');if(!g){g=document.createElement('div');g.className='reqoo-gallery';g.style.cssText='display:flex;gap:7px;flex-wrap:wrap;margin-top:10px';main.appendChild(g)}g.innerHTML=urls.map((u,i)=>'<button type="button" data-src="'+esc(img(u))+'" style="padding:0;border:1px solid #444;background:#080808;border-radius:8px;overflow:hidden;width:58px;height:58px"><img src="'+esc(img(u))+'" style="width:58px;height:58px;object-fit:cover"></button>').join('');const mainImg=main.querySelector('img');g.querySelectorAll('button').forEach(b=>b.onclick=()=>{if(mainImg)mainImg.src=b.dataset.src;g.querySelectorAll('button').forEach(x=>x.style.borderColor='#444');b.style.borderColor='#d9b45e'});if(mainImg)mainImg.src=img(urls[0]);}
+async function enhance(id){const modal=document.getElementById('modal');if(!modal?.classList.contains('open'))return;const p=products.find(x=>String(x.id)===String(id));if(!p)return;const sel=modal.querySelector('#variant'),unit=modal.querySelector('#unitPrice'),total=modal.querySelector('#lineTotal'),qty=modal.querySelector('#qt');const vars=Array.isArray(p.variants)?p.variants.map(v=>Array.isArray(v)?{id:'',name:v[0],price:Number(v[1]||0),image:v[2]||''}:v).filter(v=>v&&String(v.name||'').trim()):[];const use=vars.length?vars:(Number(p.basePrice||0)>0?[{name:'Standard',price:Number(p.basePrice)}]:[{name:'Quotation',price:0}]);if(sel){sel.innerHTML=use.map((v,i)=>'<option value="'+i+'">'+esc(v.name)+' — '+(Number(v.price)>0?money(v.price):'Quotation')+'</option>').join('');const refresh=()=>{const v=use[Math.max(0,Number(sel.value)||0)]||use[0];setText(unit,Number(v?.price)>0?money(v.price):'Quotation');setText(total,Number(v?.price)>0?money(Number(v.price)*Math.max(1,Number(qty?.value)||1)):'Quotation');if(v?.image){const m=modal.querySelector('.two>div:first-child img');if(m)m.src=img(v.image)}};sel.onchange=refresh;qty?.addEventListener('input',refresh);refresh()}
+const vr=await media('variantImages',id),im=await media('listImages',id);const variantImgs=(vr.variants||[]).map(v=>v.image).filter(Boolean),images=(im.images||[]).map(x=>x.url||x.image||x).filter(Boolean);gallery(modal,[...new Set(images.length?images:variantImgs)]);
+}
+function hook(){fixPaymentCopy();const original=window.custom;if(typeof original==='function'&&!original.__reqooWrapped){const wrapped=function(id){const r=original.apply(this,arguments);setTimeout(()=>enhance(id),0);setTimeout(()=>enhance(id),150);setTimeout(()=>enhance(id),600);return r};wrapped.__reqooWrapped=true;window.custom=wrapped}const mo=new MutationObserver(()=>{const m=document.getElementById('modal');if(m?.classList.contains('open')){const title=m.querySelector('#mTitle')?.textContent?.trim();const p=products.find(x=>String(x.name||'').trim().toLowerCase()===String(title||'').toLowerCase());if(p)enhance(p.id)}});mo.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});}
+async function start(){await getProducts();hook();setInterval(fixPaymentCopy,3000)}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
