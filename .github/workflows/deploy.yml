@@ -32,7 +32,6 @@ jobs:
           test -f wrangler-web.toml
           test -f _web_worker.js
           test -f shop/index.html
-          test -f shop/hero-runtime.js
           test -f sim/pksk/simulator/index.html
           test "$(find sim/pksk/simulator/sets -type f -name 'set*.json' | wc -l | tr -d ' ')" -eq 50
           for f in sim/pksk/simulator/sets/*/data/set*.json; do
