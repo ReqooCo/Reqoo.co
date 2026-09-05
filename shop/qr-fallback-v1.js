@@ -4,6 +4,12 @@ const FALLBACK='/shop/maybank-qr.jpg';
 function guard(root=document){root.querySelectorAll('img.qr,#qrPreview img').forEach(img=>{
   if(img.dataset.reqooQrFallback==='1')return;
   img.dataset.reqooQrFallback='1';
+  const src=String(img.getAttribute('src')||'');
+  if(/maybank-qr-premium\.svg(?:\?|$)/i.test(src)){
+    img.dataset.reqooQrFallbackApplied='1';
+    img.src=FALLBACK;
+    return;
+  }
   img.addEventListener('error',()=>{
     if(img.dataset.reqooQrFallbackApplied==='1')return;
     img.dataset.reqooQrFallbackApplied='1';
