@@ -2,15 +2,41 @@
   const API='/api/shop';
   const nativeFetch=window.fetch.bind(window);
   const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  const fileData=file=>new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file)});
 
   // Keep the existing Shop UI and checkout. Only switch the payment method.
   window.fetch=async function(input,init){
     const url=typeof input==='string'?input:(input&&input.url)||'';
     const method=(init&&init.method)||(input&&input.method)||'GET';
     if(method.toUpperCase()==='POST' && /\/api\/shop(?:\?|$)/.test(url) && init && typeof init.body==='string'){
-      try{const d=JSON.parse(init.body);if(d&&d.action==='createOrder'){d.payment=d.total?'manual_qr':'quotation';init={...init,body:JSON.stringify(d)}}}catch(_){}
+      try{
+        const d=JSON.parse(init.body);
+        if(d&&d.action==='createOrder'){
+          d.payment=d.total?'manual_qr':'quotation';
+          const file=document.getElementById('receiptFile')?.files?.[0];
+          if(file){
+            if(file.size>5*1024*1024) throw new Error('Resit terlalu besar. Maksimum 5MB.');
+            if(!['image/png','image/jpeg','image/webp','application/pdf'].includes(file.type)) throw new Error('Format resit tidak disokong.');
+            d.receipt={name:file.name,type:file.type,data:await fileData(file)};
+          }else if(Number(d.total||0)>0){
+            throw new Error('Sila upload bukti pembayaran QR dahulu.');
+          }
+          init={...init,body:JSON.stringify(d)};
+        }
+      }catch(e){
+        if(e instanceof Error && /Resit|Format resit|bukti pembayaran/.test(e.message)) throw e;
+      }
     }
     return nativeFetch(input,init);
+  };
+
+  window.previewReceipt=async function(ev){
+    const file=ev?.target?.files?.[0], name=document.getElementById('receiptName'), preview=document.getElementById('receiptPreview');
+    if(!file)return;
+    if(file.size>5*1024*1024){if(name)name.textContent='Fail terlalu besar — maksimum 5MB';if(preview)preview.innerHTML='';ev.target.value='';return}
+    if(name)name.textContent=`${file.name} — ${(file.size/1024/1024).toFixed(2)}MB`;
+    if(preview && file.type.startsWith('image/')){const u=URL.createObjectURL(file);preview.innerHTML=`<img src="${u}" alt="Bukti pembayaran" style="max-width:100%;max-height:180px;border-radius:10px;margin-top:8px">`}
+    else if(preview)preview.innerHTML='<div class="muted" style="margin-top:8px">PDF akan dihantar bersama order.</div>';
   };
 
   async function applyQR(){
