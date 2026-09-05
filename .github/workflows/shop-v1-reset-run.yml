@@ -18,7 +18,15 @@ jobs:
           if [ ! -f shop/shop-core-v12.js ]; then echo 'Shop V1 source already reset'; exit 0; fi
           python - <<'PY'
           from pathlib import Path
-          p=Path('tools/shop-v1-reset.py')
+          root=Path('.')
+          for rel in ['shop/shop-enhance.js','shop/shop-core-v7.js','.github/workflows/shop-v1-reset-run.yml']:
+              p=root/rel
+              if p.exists(): p.unlink()
+          p=root/'.github/workflows/deploy.yml'
+          s=p.read_text()
+          s=s.replace('test -f shop/shop-core-v12.js','test -f shop/shop-core-v1.js')
+          p.write_text(s)
+          p=root/'tools/shop-v1-reset.py'
           lines=p.read_text().splitlines()
           for i,line in enumerate(lines):
               if line.startswith('payment_re = re.compile'):
