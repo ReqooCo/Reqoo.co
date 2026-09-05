@@ -17,12 +17,19 @@ export async function onRequest({request,env}){
    const rows=(await env.DB.prepare('SELECT id,url,alt_text,sort_order,is_cover FROM product_images WHERE product_id=? ORDER BY is_cover DESC,sort_order,id').bind(pid).all()).results||[];
    return J({ok:true,images:rows.map(x=>({id:x.id,url:x.url,alt:x.alt_text||'',sortOrder:Number(x.sort_order||0),cover:!!x.is_cover}))});
   }
+  if(a==='variantImages'){
+   if(!pid)return J({ok:false,error:'productId diperlukan'},400);
+   const p=await env.DB.prepare("SELECT id,status FROM products WHERE id=? LIMIT 1").bind(pid).first();
+   if(!p||p.status!=='active')return J({ok:false,error:'Produk tidak dijumpai'},404);
+   const rows=(await env.DB.prepare("SELECT id,name,price_minor,sale_price_minor,image_url,status FROM product_variations WHERE product_id=? AND status='active' ORDER BY created_at,name").bind(pid).all()).results||[];
+   return J({ok:true,variants:rows.map(x=>({id:x.id,name:x.name,price:Number(x.sale_price_minor??x.price_minor??0)/100,image:x.image_url||''}))});
+  }
   if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);
   if(a==='saveImages'){
    if(!pid||!Array.isArray(d.images))return J({ok:false,error:'productId/images diperlukan'},400);
    const p=await env.DB.prepare('SELECT id FROM products WHERE id=? LIMIT 1').bind(pid).first();if(!p)return J({ok:false,error:'Produk tidak dijumpai'},404);
    const images=d.images.map(x=>S(typeof x==='string'?x:x?.url)).filter(Boolean).slice(0,12);
-   await env.DB.prepare('DELETE FROM product_images WHERE product_id=?').bind(pid).run();
+   await e.DB.prepare('DELETE FROM product_images WHERE product_id=?').bind(pid).run();
    const t=NOW();let i=0;for(const url of images){await env.DB.prepare('INSERT INTO product_images(id,product_id,url,alt_text,sort_order,is_cover,created_at) VALUES(?,?,?,?,?,?,?)').bind(ID('img'),pid,S(d.altText)||'',i,i===0?1:0,t).run();i++}
    return J({ok:true,productId:pid,count:images.length});
   }
