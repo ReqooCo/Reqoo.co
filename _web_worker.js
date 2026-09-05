@@ -12,105 +12,18 @@ async function injectShopRuntime(response, force = false) {
   if (!type.toLowerCase().includes('text/html')) return response;
   const html = await response.text();
   if (!force && !html.includes('heroProduct')) return new Response(html, response);
-  const cleaned = html
-    .replace(/<script[^>]+src=["']\/shop\/hero-runtime\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi, '')
-    .replace(/<script[^>]+src=["']\/shop\/shop-enhance\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi, '');
-  const body = cleaned.replace('</body>', '<script src="/shop/hero-runtime.js?v=5"></script><script src="/shop/shop-enhance.js?v=1"></script></body>');
-  const headers = new Headers(response.headers);
-  headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
-  headers.set('pragma', 'no-cache');
-  headers.set('x-reqoo-shop-runtime', 'qr-v5-gallery-v1');
-  return new Response(body, { status: response.status, statusText: response.statusText, headers });
+  const cleaned = html.replace(/<script[^>]+src=["']\/shop\/hero-runtime\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi, '').replace(/<script[^>]+src=["']\/shop\/shop-enhance\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi, '');
+  const body = cleaned.replace('</body>', '<script src="/shop/hero-runtime.js?v=5"></script><script src="/shop/shop-enhance.js?v=2"></script></body>');
+  const headers = new Headers(response.headers);headers.set('cache-control','no-store, no-cache, must-revalidate, max-age=0');headers.set('pragma','no-cache');headers.set('x-reqoo-shop-runtime','qr-v5-gallery-v2');
+  return new Response(body,{status:response.status,statusText:response.statusText,headers});
 }
 
 async function injectAdminUI(response, shopAdmin = false) {
-  const type = response.headers.get('content-type') || '';
-  if (!type.toLowerCase().includes('text/html')) return response;
-  const html = await response.text();
-  let body = html;
-  if (!body.includes('/admin/reqoo-admin-universal.css')) body = body.replace('</head>', '<link rel="stylesheet" href="/admin/reqoo-admin-universal.css?v=2"></head>');
-  if (shopAdmin) {
-    body = body.replace(/<script[^>]+src=["']\/shop\/admin-enhance\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi, '');
-    body = body.replace('</body>', '<script src="/shop/admin-enhance.js?v=1"></script></body>');
-  }
-  const headers = new Headers(response.headers);
-  headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
-  headers.set('pragma', 'no-cache');
-  headers.set('x-reqoo-admin-ui', shopAdmin ? 'universal-v2-shop-gallery-v1' : 'universal-v2');
-  return new Response(body, { status: response.status, statusText: response.statusText, headers });
+  const type=response.headers.get('content-type')||'';if(!type.toLowerCase().includes('text/html'))return response;const html=await response.text();let body=html;if(!body.includes('/admin/reqoo-admin-universal.css'))body=body.replace('</head>','<link rel="stylesheet" href="/admin/reqoo-admin-universal.css?v=2"></head>');if(shopAdmin){body=body.replace(/<script[^>]+src=["']\/shop\/admin-enhance\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi,'');body=body.replace('</body>','<script src="/shop/admin-enhance.js?v=2"></script></body>')}const headers=new Headers(response.headers);headers.set('cache-control','no-store, no-cache, must-revalidate, max-age=0');headers.set('pragma','no-cache');headers.set('x-reqoo-admin-ui',shopAdmin?'universal-v2-shop-gallery-v2':'universal-v2');return new Response(body,{status:response.status,statusText:response.statusText,headers});
 }
 
-function assetRequest(pathname, request) {
-  const target = new URL(pathname, 'https://reqoo.co');
-  target.search = new URL(request.url).search;
-  const init = { method: request.method, headers: request.headers, redirect: 'follow' };
-  if (request.method !== 'GET' && request.method !== 'HEAD') init.body = request.body;
-  return new Request(target.toString(), init);
-}
-
-async function adminOverview(request, env) {
-  const response = await env.ASSETS.fetch(assetRequest('/admin/index.html', request));
-  return injectAdminUI(response);
-}
-
-async function adminPkskV2(request, env) {
-  const response = await env.ASSETS.fetch(assetRequest('/admin/sim-v2.html', request));
-  const type = response.headers.get('content-type') || '';
-  const source = type.toLowerCase().includes('text/html') ? await response.text() : null;
-  if (source === null) return response;
-  const body = source.replace(/API='\/api\/sim-admin'/g, "API='https://api.reqoo.co/api/sim-admin'");
-  const headers = new Headers(response.headers);
-  headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
-  headers.set('pragma', 'no-cache');
-  headers.set('x-reqoo-admin-route', 'pksk-v2');
-  headers.set('x-reqoo-api-route', 'direct');
-  return injectAdminUI(new Response(body, { status: response.status, statusText: response.statusText, headers }));
-}
-
-function pkskAssetPath(pathname) {
-  let path = pathname || '/';
-  if (path === '/' || path === '/pksk' || path === '/pksk/') return '/sim/pksk/index.html';
-  if (/^\/pksk\//i.test(path)) path = path.slice('/pksk'.length) || '/';
-  path = `/sim/pksk${path}`;
-  if (path.endsWith('/')) path += 'index.html';
-  return path;
-}
-
-export default {
-  async fetch(request, env) {
-    const url = new URL(request.url);
-    const host = url.hostname.toLowerCase();
-    if (url.pathname === '/api' || url.pathname.startsWith('/api/')) return proxyApi(request, url);
-    if (host === 'admin.reqoo.co' && (url.pathname === '/' || /^\/admin\/?$/i.test(url.pathname))) return adminOverview(request, env);
-    if (host === 'admin.reqoo.co' && (/^\/admin\/sim-v2\.html$/i.test(url.pathname) || /^\/sim\/pksk\/admin\/?$/i.test(url.pathname))) return adminPkskV2(request, env);
-    if (host === 'admin.reqoo.co' && (/^\/admin\/settings\.html$/i.test(url.pathname) || /^\/shop\/admin\.html$/i.test(url.pathname))) {
-      const response = await env.ASSETS.fetch(assetRequest(url.pathname, request));
-      return injectAdminUI(response, /^\/shop\/admin\.html$/i.test(url.pathname));
-    }
-    if (host === 'pksk.sim.reqoo.co') {
-      const pathname = pkskAssetPath(url.pathname);
-      const cleanPath = pathname.replace(/^\/+/, '');
-      if (cleanPath.includes('..')) return new Response('Not Found', { status: 404 });
-      const response = await env.ASSETS.fetch(assetRequest(`/${cleanPath}`, request));
-      return response;
-    }
-    if (host === 'shop.reqoo.co') {
-      const pathname = url.pathname === '/' ? '/shop/index.html' : `/shop${url.pathname}`;
-      const cleanPath = pathname.replace(/^\/+/, '');
-      if (cleanPath.includes('..')) return new Response('Not Found', { status: 404 });
-      const response = await env.ASSETS.fetch(assetRequest(`/${cleanPath}`, request));
-      return injectShopRuntime(response, true);
-    }
-    if (host === 'sim.reqoo.co') {
-      let pathname = url.pathname;
-      if (pathname === '/' || pathname === '') pathname = '/sim/index.html';
-      else if (/^\/pksk\/?$/i.test(pathname)) pathname = '/sim/pksk/index.html';
-      else if (/^\/pksk\//i.test(pathname)) pathname = `/sim${pathname}`;
-      const cleanPath = pathname.replace(/^\/+/, '');
-      if (cleanPath.includes('..')) return new Response('Not Found', { status: 404 });
-      return env.ASSETS.fetch(assetRequest(`/${cleanPath}`, request));
-    }
-    const response = await env.ASSETS.fetch(request);
-    return injectShopRuntime(response);
-  }
-};
+function assetRequest(pathname,request){const target=new URL(pathname,'https://reqoo.co');target.search=new URL(request.url).search;const init={method:request.method,headers:request.headers,redirect:'follow'};if(request.method!=='GET'&&request.method!=='HEAD')init.body=request.body;return new Request(target.toString(),init)}
+async function adminOverview(request,env){const response=await env.ASSETS.fetch(assetRequest('/admin/index.html',request));return injectAdminUI(response)}
+async function adminPkskV2(request,env){const response=await env.ASSETS.fetch(assetRequest('/admin/sim-v2.html',request));const type=response.headers.get('content-type')||'';const source=type.toLowerCase().includes('text/html')?await response.text():null;if(source===null)return response;const body=source.replace(/API='\/api\/sim-admin'/g,"API='https://api.reqoo.co/api/sim-admin'");const headers=new Headers(response.headers);headers.set('cache-control','no-store, no-cache, must-revalidate, max-age=0');headers.set('pragma','no-cache');headers.set('x-reqoo-admin-route','pksk-v2');headers.set('x-reqoo-api-route','direct');return injectAdminUI(new Response(body,{status:response.status,statusText:response.statusText,headers}))}
+function pkskAssetPath(pathname){let path=pathname||'/';if(path==='/'||path==='/pksk'||path==='/pksk/')return'/sim/pksk/index.html';if(/^\/pksk\//i.test(path))path=path.slice('/pksk'.length)||'/';path=`/sim/pksk${path}`;if(path.endsWith('/'))path+='index.html';return path}
+export default{async fetch(request,env){const url=new URL(request.url),host=url.hostname.toLowerCase();if(url.pathname==='/api'||url.pathname.startsWith('/api/'))return proxyApi(request,url);if(host==='admin.reqoo.co'&&(url.pathname==='/'||/^\/admin\/?$/i.test(url.pathname)))return adminOverview(request,env);if(host==='admin.reqoo.co'&&(/^\/admin\/sim-v2\.html$/i.test(url.pathname)||/^\/sim\/pksk\/admin\/?$/i.test(url.pathname)))return adminPkskV2(request,env);if(host==='admin.reqoo.co'&&(/^\/admin\/settings\.html$/i.test(url.pathname)||/^\/shop\/admin\.html$/i.test(url.pathname))){const response=await env.ASSETS.fetch(assetRequest(url.pathname,request));return injectAdminUI(response,/^\/shop\/admin\.html$/i.test(url.pathname))}if(host==='pksk.sim.reqoo.co'){const pathname=pkskAssetPath(url.pathname),cleanPath=pathname.replace(/^\/+/, '');if(cleanPath.includes('..'))return new Response('Not Found',{status:404});return env.ASSETS.fetch(assetRequest(`/${cleanPath}`,request))}if(host==='shop.reqoo.co'){const pathname=url.pathname==='/'?'/shop/index.html':`/shop${url.pathname}`,cleanPath=pathname.replace(/^\/+/, '');if(cleanPath.includes('..'))return new Response('Not Found',{status:404});const response=await env.ASSETS.fetch(assetRequest(`/${cleanPath}`,request));return injectShopRuntime(response,true)}if(host==='sim.reqoo.co'){let pathname=url.pathname;if(pathname==='/'||pathname==='')pathname='/sim/index.html';else if(/^\/pksk\/?$/i.test(pathname))pathname='/sim/pksk/index.html';else if(/^\/pksk\//i.test(pathname))pathname=`/sim${pathname}`;const cleanPath=pathname.replace(/^\/+/, '');if(cleanPath.includes('..'))return new Response('Not Found',{status:404});return env.ASSETS.fetch(assetRequest(`/${cleanPath}`,request))}const response=await env.ASSETS.fetch(request);return injectShopRuntime(response)}};
