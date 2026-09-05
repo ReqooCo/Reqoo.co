@@ -35,13 +35,13 @@ async function syncVariants(d,env,pid,t,base){
     const match=(x.id&&byId.get(S(x.id)))||byName.get(name.toLowerCase());
     const pm=x.priceMinor!=null?Number(x.priceMinor):Math.round(Number(x.price||0)*100);
     const sm=x.salePriceMinor==null?(x.salePrice==null?null:Math.round(Number(x.salePrice)*100)):Number(x.salePriceMinor);
-    const stock=x.stock==null||x.stock===''?null:Number(x.stock),img=S(x.imageUrl||x.image);
+    const stock=x.stock==null||x.stock===''?null:Number(x.stock),stockTracking=stock!==null?1:0,img=S(x.imageUrl||x.image);
     if(match){
       seen.add(match.id);
-      await env.DB.prepare('UPDATE product_variations SET sku=?,name=?,attributes_json=?,price_minor=?,sale_price_minor=?,stock_qty=?,stock_tracking=?,image_url=?,status=?,updated_at=? WHERE id=? AND product_id=?').bind(S(x.sku)||null,name,JSON.stringify(x.attributes||{}),pm,sm,stock,x.stockTracking?1:0,img||null,x.active===false?'hidden':'active',t,match.id,pid).run();
+      await env.DB.prepare('UPDATE product_variations SET sku=?,name=?,attributes_json=?,price_minor=?,sale_price_minor=?,stock_qty=?,stock_tracking=?,image_url=?,status=?,updated_at=? WHERE id=? AND product_id=?').bind(S(x.sku)||null,name,JSON.stringify(x.attributes||{}),pm,sm,stock,stockTracking,img||null,x.active===false?'hidden':'active',t,match.id,pid).run();
     }else{
       const vid=ID('var');seen.add(vid);
-      await env.DB.prepare('INSERT INTO product_variations(id,product_id,sku,name,attributes_json,price_minor,sale_price_minor,stock_qty,stock_tracking,image_url,status,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(vid,pid,S(x.sku)||null,name,JSON.stringify(x.attributes||{}),pm,sm,stock,x.stockTracking?1:0,img||null,x.active===false?'hidden':'active',t,t).run();
+      await env.DB.prepare('INSERT INTO product_variations(id,product_id,sku,name,attributes_json,price_minor,sale_price_minor,stock_qty,stock_tracking,image_url,status,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(vid,pid,S(x.sku)||null,name,JSON.stringify(x.attributes||{}),pm,sm,stock,stockTracking,img||null,x.active===false?'hidden':'active',t,t).run();
     }
   }
   for(const x of existing)if(!seen.has(x.id))await env.DB.prepare("UPDATE product_variations SET status='hidden',updated_at=? WHERE id=? AND product_id=?").bind(t,x.id,pid).run();
