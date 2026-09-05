@@ -19,6 +19,13 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           root=Path('.')
+          for rel in ['shop/shop-enhance.js','shop/shop-core-v7.js','.github/workflows/shop-v1-reset-run.yml','.github/workflows/shop-v1-source-reset.yml']:
+              p=root/rel
+              if p.exists(): p.unlink()
+          p=root/'.github/workflows/deploy.yml'
+          s=p.read_text()
+          s=s.replace('test -f shop/shop-core-v12.js','test -f shop/shop-core-v1.js')
+          p.write_text(s)
           p=root/'tools/shop-v1-reset.py'
           lines=p.read_text().splitlines()
           for i,line in enumerate(lines):
