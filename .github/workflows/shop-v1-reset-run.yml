@@ -16,6 +16,16 @@ jobs:
       - name: Apply source reset
         run: |
           if [ ! -f shop/shop-core-v12.js ]; then echo 'Shop V1 source already reset'; exit 0; fi
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('tools/shop-v1-reset.py')
+          s=p.read_text()
+          old='payment_re = re.compile(r"try\\{payment=await api\\(API\\+\\'\\\\?action=paymentConfig.*?catch\\(e\\)\\{.*?return\\}", re.S)'
+          new='payment_re = re.compile(r"try\\{payment=await api\\(API\\+\\'\\?action=paymentConfig.*?catch\\(e\\)\\{.*?return\\}", re.S)'
+          if old not in s:
+              raise SystemExit('Reset-script regex marker not found')
+          p.write_text(s.replace(old,new,1))
+          PY
           python tools/shop-v1-reset.py
           node --check shop/shop-core-v1.js
           node --check _web_worker.js
