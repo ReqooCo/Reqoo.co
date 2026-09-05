@@ -37,6 +37,15 @@ jobs:
           p.write_text('\n'.join(lines)+'\n')
           PY
           python tools/shop-v1-reset.py
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('shop/shop-core-v1.js')
+          s=p.read_text()
+          marker='</div>`modal.querySelector(\'#receiptFile\')'
+          if marker not in s:
+              raise SystemExit('Checkout template terminator marker not found')
+          p.write_text(s.replace(marker,'</div>`;modal.querySelector(\'#receiptFile\')',1))
+          PY
           node --check shop/shop-core-v1.js
           node --check _web_worker.js
           node --check api/shop-flow-v2.js
