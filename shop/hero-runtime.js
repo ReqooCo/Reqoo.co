@@ -1,7 +1,7 @@
 (() => {
   const API='/api/shop';
   const nativeFetch=window.fetch.bind(window);
-  const SHOP_QR='/shop/maybank-qr-premium.svg';
+  const SHOP_QR='/shop/maybank-qr-ab-art-trading.svg?v=1';
   const SHOP_ACCOUNT='Ab Art Trading';
   const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
   const fileData=file=>new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file)});
