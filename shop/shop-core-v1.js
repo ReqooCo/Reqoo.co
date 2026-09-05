@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const API='/api/shop',MEDIA='/api/shop-media',CART_KEY='reqoo_shop_cart_v4',QR='/shop/maybank-qr.jpg',PAYMENT_ACCOUNT='Ab Art Trading',PAYMENT_INSTRUCTIONS='Scan QR dan pastikan jumlah bayaran sama seperti jumlah order.';
+const API='/api/shop',MEDIA='/api/shop-media',CART_KEY='reqoo_shop_cart_v4',QR='/shop/assets/maybank-qr.jpeg',PAYMENT_ACCOUNT='Ab Art Trading',PAYMENT_INSTRUCTIONS='Scan QR dan pastikan jumlah bayaran sama seperti jumlah order.';
 const money=n=>'RM'+Number(n||0).toFixed(2);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const img=u=>{u=String(u||'').trim();if(!u)return '';if(/^https?:\/\//i.test(u)||u.startsWith('/'))return u;try{return new URL(u.replace(/^\.\//,''),location.href).href}catch{return ''}};
