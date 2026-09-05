@@ -1,30 +1,26 @@
-# REQOO SHOP
+# REQOO.CO Shop
 
-Target public host: `https://shop.reqoo.co/`
+Canonical customer shop: `shop.reqoo.co`
 
-## Migration
-The existing `/shop/` customer experience remains during migration. New backend work uses `/functions/api/shop.js` and the shared `platform_orders` model.
+## Flow
 
-## Order contract
-`POST /api/shop` with JSON:
+1. Admin tambah/edit produk di `admin.reqoo.co` → **Shop**.
+2. Produk aktif terus muncul di Shop.
+3. Pelanggan pilih variasi, teks/artwork dan kuantiti.
+4. Checkout memuatkan QR payment daripada **Payment & Shipping** dalam Shop Admin.
+5. Pelanggan upload bukti pembayaran.
+6. Order + bukti pembayaran masuk ke Admin untuk pengesahan.
 
-```json
-{
-  "action":"createOrder",
-  "productType":"SHOP",
-  "customerName":"Customer",
-  "phone":"60123456789",
-  "email":"customer@example.com",
-  "amount":199,
-  "referralCode":"REF-ABC",
-  "items":[{"sku":"PLAQUE-01","name":"Plaque","qty":1,"unitPrice":199}]
-}
-```
+## Sumber canonical
 
-The API creates a server-side order reference. Payment is intentionally separated from order creation; Billplz will be attached after the order is persisted.
+- Customer UI: `shop/index.html` + `shop/shop-core-v12.js`
+- Shop Admin UI: `shop/admin.html`
+- Public Shop API: `api/shop-flow-v2.js`
+- Admin Shop API: `api/shop-admin-flow-v2.js` melalui `api/shop-admin-flow-v4.js`
+- Product media: `api/shop-media.js` + `functions/api/product-image.js`
+- Database: D1 `reqoo-rebuild`
+- Product/order artwork dan receipt: R2 `reqoo-product-media`
 
-## Rules
-- Never trust a frontend payment-success flag.
-- Recalculate totals server-side when product catalog is migrated.
-- Keep uploaded artwork out of D1; use R2/object storage.
-- Preserve legacy `/shop/` until the new hostname is verified.
+Harga checkout sentiasa disahkan semula di server. Frontend tidak menjadi sumber harga yang dipercayai.
+
+PKSK/SIM menggunakan route dan fail berasingan dan tidak menjadi sebahagian daripada Shop flow.
