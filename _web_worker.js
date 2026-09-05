@@ -12,7 +12,7 @@ async function injectShopRuntime(response) {
   if (!type.toLowerCase().includes('text/html')) return response;
   const html = await response.text();
   if (!html.includes('heroProduct') || html.includes('/shop/hero-runtime.js')) return new Response(html, response);
-  return new Response(html.replace('</body>', '<script src="/shop/hero-runtime.js?v=1"></script></body>'), response);
+  return new Response(html.replace('</body>', '<script src="/shop/hero-runtime.js?v=2"></script></body>'), response);
 }
 
 async function injectAdminUI(response) {
