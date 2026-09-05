@@ -1,4 +1,4 @@
-import { onRequest as legacy } from './shop-admin-flow-v2.js';
+import { onRequest as legacy } from './shop-admin-flow-v5.js';
 const C={'access-control-allow-origin':'*','access-control-allow-methods':'GET,POST,OPTIONS','access-control-allow-headers':'Content-Type,X-Admin-Token','cache-control':'no-store'};
 const S=v=>String(v??'').trim(),ID=p=>`${p}_${crypto.randomUUID()}`,NOW=()=>new Date().toISOString();const J=(x,s=200)=>new Response(JSON.stringify(x),{status:s,headers:{'content-type':'application/json;charset=UTF-8',...C}});
 function dbody(r){return r.method==='GET'?Promise.resolve(Object.fromEntries(new URL(r.url).searchParams)):r.clone().json().catch(()=>({}))}
