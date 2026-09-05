@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const FALLBACK='/shop/maybank-qr-premium.svg';
+const FALLBACK='/shop/maybank-qr.jpg';
 function guard(root=document){root.querySelectorAll('img.qr,#qrPreview img').forEach(img=>{
   if(img.dataset.reqooQrFallback==='1')return;
   img.dataset.reqooQrFallback='1';
