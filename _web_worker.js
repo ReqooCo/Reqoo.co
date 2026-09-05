@@ -12,7 +12,12 @@ async function injectShopRuntime(response) {
   if (!type.toLowerCase().includes('text/html')) return response;
   const html = await response.text();
   if (!html.includes('heroProduct') || html.includes('/shop/hero-runtime.js')) return new Response(html, response);
-  return new Response(html.replace('</body>', '<script src="/shop/hero-runtime.js?v=2"></script></body>'), response);
+  const body = html.replace('</body>', '<script src="/shop/hero-runtime.js?v=3"></script></body>');
+  const headers = new Headers(response.headers);
+  headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
+  headers.set('pragma', 'no-cache');
+  headers.set('x-reqoo-shop-runtime', 'qr-v3');
+  return new Response(body, { status: response.status, statusText: response.statusText, headers });
 }
 
 async function injectAdminUI(response) {
@@ -104,6 +109,11 @@ export default {
       if (cleanPath.includes('..')) return new Response('Not Found', { status: 404 });
       return env.ASSETS.fetch(assetRequest(`/${cleanPath}`, request));
     }
-    return env.ASSETS.fetch(request);
+
+    // reqoo.co itself serves the current Shop. Make sure the QR checkout
+    // runtime is injected here too; previously it was only injected on
+    // shop.reqoo.co, leaving reqoo.co on the legacy Billplz checkout.
+    const response = await env.ASSETS.fetch(request);
+    return injectShopRuntime(response);
   }
 };
