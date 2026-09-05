@@ -11,12 +11,13 @@ async function injectShopRuntime(response) {
   const type = response.headers.get('content-type') || '';
   if (!type.toLowerCase().includes('text/html')) return response;
   const html = await response.text();
-  if (!html.includes('heroProduct') || html.includes('/shop/hero-runtime.js')) return new Response(html, response);
-  const body = html.replace('</body>', '<script src="/shop/hero-runtime.js?v=3"></script></body>');
+  if (!html.includes('heroProduct')) return new Response(html, response);
+  const cleaned = html.replace(/<script[^>]+src=["']\/shop\/hero-runtime\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi, '');
+  const body = cleaned.replace('</body>', '<script src="/shop/hero-runtime.js?v=4"></script></body>');
   const headers = new Headers(response.headers);
   headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
   headers.set('pragma', 'no-cache');
-  headers.set('x-reqoo-shop-runtime', 'qr-v3');
+  headers.set('x-reqoo-shop-runtime', 'qr-v4');
   return new Response(body, { status: response.status, statusText: response.statusText, headers });
 }
 
@@ -111,8 +112,7 @@ export default {
     }
 
     // reqoo.co itself serves the current Shop. Make sure the QR checkout
-    // runtime is injected here too; previously it was only injected on
-    // shop.reqoo.co, leaving reqoo.co on the legacy Billplz checkout.
+    // runtime is injected here too.
     const response = await env.ASSETS.fetch(request);
     return injectShopRuntime(response);
   }
