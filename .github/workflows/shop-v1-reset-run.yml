@@ -19,12 +19,14 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           p=Path('tools/shop-v1-reset.py')
-          s=p.read_text()
-          old='payment_re = re.compile(r"try\\{payment=await api\\(API\\+\\'\\\\?action=paymentConfig.*?catch\\(e\\)\\{.*?return\\}", re.S)'
-          new='payment_re = re.compile(r"try\\{payment=await api\\(API\\+\\'\\?action=paymentConfig.*?catch\\(e\\)\\{.*?return\\}", re.S)'
-          if old not in s:
+          lines=p.read_text().splitlines()
+          for i,line in enumerate(lines):
+              if line.startswith('payment_re = re.compile'):
+                  lines[i]=r'''payment_re = re.compile(r"try\{payment=await api\(API\+'\?action=paymentConfig.*?catch\(e\)\{.*?return\}", re.S)'''
+                  break
+          else:
               raise SystemExit('Reset-script regex marker not found')
-          p.write_text(s.replace(old,new,1))
+          p.write_text('\n'.join(lines)+'\n')
           PY
           python tools/shop-v1-reset.py
           node --check shop/shop-core-v1.js
