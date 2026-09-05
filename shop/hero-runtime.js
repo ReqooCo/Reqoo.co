@@ -1,10 +1,13 @@
 (() => {
   const API='/api/shop';
   const nativeFetch=window.fetch.bind(window);
+  const SHOP_QR='/shop/maybank-qr-premium.svg';
+  const SHOP_ACCOUNT='Ab Art Trading';
   const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
   const fileData=file=>new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file)});
 
-  // Preserve the existing Shop UI. Only make payment consistently QR-based.
+  // Preserve the existing Shop UI. Payment is embedded directly in checkout,
+  // following the same simple QR -> proof upload flow used by PKSK.
   window.fetch=async function(input,init){
     const url=typeof input==='string'?input:(input&&input.url)||'';
     const method=(init&&init.method)||(input&&input.method)||'GET';
@@ -39,20 +42,13 @@
     else if(preview)preview.innerHTML='<div class="muted" style="margin-top:8px">PDF akan dihantar bersama order.</div>';
   };
 
-  async function applyQR(){
+  function applyQR(){
     const box=document.querySelector('#checkoutBody .paybox');
     if(!box||box.dataset.reqooQr==='1')return;
     box.dataset.reqooQr='1';
-    try{
-      const r=await nativeFetch(API+'?action=paymentConfig&_='+Date.now(),{cache:'no-store'});
-      const j=await r.json();
-      const qr=String(j?.qrUrl||'').trim();
-      box.innerHTML=`<h3>Bayaran QR</h3>${qr?`<img src="${esc(qr)}" alt="QR Payment" style="width:min(260px,80%);background:#fff;border-radius:12px;padding:8px;max-height:300px;object-fit:contain">`:'<div style="padding:18px;border:1px dashed #705d32;border-radius:12px;color:#aaa">QR pembayaran belum ditetapkan.<br>Sila tetapkan di Shop Admin.</div>'}<p class="muted">${esc(j?.accountName||'Pembayaran REQOO.CO')}</p><p class="muted">${esc(j?.instructions||'Buat pembayaran melalui QR, kemudian upload bukti pembayaran.')}</p><label style="text-align:left">Bukti pembayaran</label><input id="receiptFile" type="file" accept="image/png,image/jpeg,image/webp,application/pdf" onchange="previewReceipt(event)"><div id="receiptName" class="muted" style="text-align:left">PNG / JPG / WEBP / PDF — maksimum 5MB</div><div id="receiptPreview" class="receiptPreview"></div>`;
-      const btn=document.querySelector('#checkoutBody .wa');
-      if(btn)btn.textContent='Hantar Order & Bukti Pembayaran';
-    }catch(_){
-      box.innerHTML='<h3>Bayaran QR</h3><p class="muted">Tidak dapat memuatkan tetapan QR. Sila refresh.</p><label style="text-align:left">Bukti pembayaran</label><input id="receiptFile" type="file" accept="image/png,image/jpeg,image/webp,application/pdf" onchange="previewReceipt(event)"><div id="receiptName" class="muted" style="text-align:left">PNG / JPG / WEBP / PDF — maksimum 5MB</div><div id="receiptPreview" class="receiptPreview"></div>';
-    }
+    box.innerHTML=`<h3>Bayaran QR</h3><p class="muted" style="margin:4px 0 10px">Scan QR di bawah untuk membuat pembayaran.</p><img src="${SHOP_QR}" alt="QR Payment Maybank" style="display:block;width:min(280px,86%);margin:0 auto;background:#fff;border-radius:12px;padding:8px;max-height:320px;object-fit:contain"><p style="font-weight:700;margin:10px 0 2px">${SHOP_ACCOUNT}</p><p class="muted" style="margin:0 0 10px">Sila pastikan jumlah bayaran sama seperti jumlah order.</p><label style="text-align:left">Bukti pembayaran</label><input id="receiptFile" type="file" accept="image/png,image/jpeg,image/webp,application/pdf" onchange="previewReceipt(event)"><div id="receiptName" class="muted" style="text-align:left">PNG / JPG / WEBP / PDF — maksimum 5MB</div><div id="receiptPreview" class="receiptPreview"></div>`;
+    const btn=document.querySelector('#checkoutBody .wa');
+    if(btn)btn.textContent='Hantar Order & Bukti Pembayaran';
   }
 
   function patchCheckout(){setTimeout(applyQR,0)}
