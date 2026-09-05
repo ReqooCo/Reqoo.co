@@ -13,6 +13,10 @@
       }
     } catch (_) {}
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', loadHero, { once: true });
-  else loadHero();
+  function loadQRRuntime() {
+    if (document.querySelector('script[data-reqoo-qr]')) return;
+    const s=document.createElement('script');s.src='/shop/qr-runtime.js?v=2';s.dataset.reqooQr='1';document.head.appendChild(s);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => { loadHero(); loadQRRuntime(); }, { once: true });
+  else { loadHero(); loadQRRuntime(); }
 })();
