@@ -7,17 +7,17 @@ async function proxyApi(request, url) {
   return fetch(new Request(target.toString(), init));
 }
 
-async function injectShopRuntime(response) {
+async function injectShopRuntime(response, force = false) {
   const type = response.headers.get('content-type') || '';
   if (!type.toLowerCase().includes('text/html')) return response;
   const html = await response.text();
-  if (!html.includes('heroProduct')) return new Response(html, response);
+  if (!force && !html.includes('heroProduct')) return new Response(html, response);
   const cleaned = html.replace(/<script[^>]+src=["']\/shop\/hero-runtime\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi, '');
-  const body = cleaned.replace('</body>', '<script src="/shop/hero-runtime.js?v=4"></script></body>');
+  const body = cleaned.replace('</body>', '<script src="/shop/hero-runtime.js?v=5"></script></body>');
   const headers = new Headers(response.headers);
   headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
   headers.set('pragma', 'no-cache');
-  headers.set('x-reqoo-shop-runtime', 'qr-v4');
+  headers.set('x-reqoo-shop-runtime', 'qr-v5');
   return new Response(body, { status: response.status, statusText: response.statusText, headers });
 }
 
@@ -75,16 +75,12 @@ export default {
     const url = new URL(request.url);
     const host = url.hostname.toLowerCase();
     if (url.pathname === '/api' || url.pathname.startsWith('/api/')) return proxyApi(request, url);
-
-    // admin.reqoo.co is the overall REQOO control centre at root.
-    // PKSK keeps its dedicated admin at /sim/pksk/admin/.
     if (host === 'admin.reqoo.co' && (url.pathname === '/' || /^\/admin\/?$/i.test(url.pathname))) return adminOverview(request, env);
     if (host === 'admin.reqoo.co' && (/^\/admin\/sim-v2\.html$/i.test(url.pathname) || /^\/sim\/pksk\/admin\/?$/i.test(url.pathname))) return adminPkskV2(request, env);
     if (host === 'admin.reqoo.co' && (/^\/admin\/settings\.html$/i.test(url.pathname) || /^\/shop\/admin\.html$/i.test(url.pathname))) {
       const response = await env.ASSETS.fetch(assetRequest(url.pathname, request));
       return injectAdminUI(response);
     }
-
     if (host === 'pksk.sim.reqoo.co') {
       const pathname = pkskAssetPath(url.pathname);
       const cleanPath = pathname.replace(/^\/+/, '');
@@ -92,15 +88,13 @@ export default {
       const response = await env.ASSETS.fetch(assetRequest(`/${cleanPath}`, request));
       return response;
     }
-
     if (host === 'shop.reqoo.co') {
       const pathname = url.pathname === '/' ? '/shop/index.html' : `/shop${url.pathname}`;
       const cleanPath = pathname.replace(/^\/+/, '');
       if (cleanPath.includes('..')) return new Response('Not Found', { status: 404 });
       const response = await env.ASSETS.fetch(assetRequest(`/${cleanPath}`, request));
-      return injectShopRuntime(response);
+      return injectShopRuntime(response, true);
     }
-
     if (host === 'sim.reqoo.co') {
       let pathname = url.pathname;
       if (pathname === '/' || pathname === '') pathname = '/sim/index.html';
@@ -110,9 +104,6 @@ export default {
       if (cleanPath.includes('..')) return new Response('Not Found', { status: 404 });
       return env.ASSETS.fetch(assetRequest(`/${cleanPath}`, request));
     }
-
-    // reqoo.co itself serves the current Shop. Make sure the QR checkout
-    // runtime is injected here too.
     const response = await env.ASSETS.fetch(request);
     return injectShopRuntime(response);
   }
