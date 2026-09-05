@@ -75,14 +75,12 @@ export default {
     const url = new URL(request.url);
     const host = url.hostname.toLowerCase();
     if (url.pathname === '/api' || url.pathname.startsWith('/api/')) return proxyApi(request, url);
-
     if (host === 'admin.reqoo.co' && (url.pathname === '/' || /^\/admin\/?$/i.test(url.pathname))) return adminOverview(request, env);
     if (host === 'admin.reqoo.co' && (/^\/admin\/sim-v2\.html$/i.test(url.pathname) || /^\/sim\/pksk\/admin\/?$/i.test(url.pathname))) return adminPkskV2(request, env);
     if (host === 'admin.reqoo.co' && (/^\/admin\/settings\.html$/i.test(url.pathname) || /^\/shop\/admin\.html$/i.test(url.pathname))) {
       const response = await env.ASSETS.fetch(assetRequest(url.pathname, request));
       return injectAdminUI(response);
     }
-
     if (host === 'pksk.sim.reqoo.co') {
       const pathname = pkskAssetPath(url.pathname);
       const cleanPath = pathname.replace(/^\/+/, '');
@@ -90,7 +88,6 @@ export default {
       const response = await env.ASSETS.fetch(assetRequest(`/${cleanPath}`, request));
       return response;
     }
-
     if (host === 'shop.reqoo.co') {
       const pathname = url.pathname === '/' ? '/shop/index.html' : `/shop${url.pathname}`;
       const cleanPath = pathname.replace(/^\/+/, '');
@@ -98,7 +95,6 @@ export default {
       const response = await env.ASSETS.fetch(assetRequest(`/${cleanPath}`, request));
       return injectShopRuntime(response, true);
     }
-
     if (host === 'sim.reqoo.co') {
       let pathname = url.pathname;
       if (pathname === '/' || pathname === '') pathname = '/sim/index.html';
@@ -108,7 +104,6 @@ export default {
       if (cleanPath.includes('..')) return new Response('Not Found', { status: 404 });
       return env.ASSETS.fetch(assetRequest(`/${cleanPath}`, request));
     }
-
     const response = await env.ASSETS.fetch(request);
     return injectShopRuntime(response);
   }
