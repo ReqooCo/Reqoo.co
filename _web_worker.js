@@ -7,17 +7,17 @@ async function proxyApi(request, url) {
   return fetch(new Request(target.toString(), init));
 }
 
-async function injectShopRuntime(response) {
+async function injectShopRuntime(response, force = false) {
   const type = response.headers.get('content-type') || '';
   if (!type.toLowerCase().includes('text/html')) return response;
   const html = await response.text();
-  if (!html.includes('heroProduct')) return new Response(html, response);
+  if (!force && !html.includes('heroProduct')) return new Response(html, response);
   const cleaned = html.replace(/<script[^>]+src=["']\/shop\/hero-runtime\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi, '');
-  const body = cleaned.replace('</body>', '<script src="/shop/hero-runtime.js?v=4"></script></body>');
+  const body = cleaned.replace('</body>', '<script src="/shop/hero-runtime.js?v=5"></script></body>');
   const headers = new Headers(response.headers);
   headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
   headers.set('pragma', 'no-cache');
-  headers.set('x-reqoo-shop-runtime', 'qr-v4');
+  headers.set('x-reqoo-shop-runtime', 'qr-v5');
   return new Response(body, { status: response.status, statusText: response.statusText, headers });
 }
 
@@ -98,7 +98,7 @@ export default {
       const cleanPath = pathname.replace(/^\/+/, '');
       if (cleanPath.includes('..')) return new Response('Not Found', { status: 404 });
       const response = await env.ASSETS.fetch(assetRequest(`/${cleanPath}`, request));
-      return injectShopRuntime(response);
+      return injectShopRuntime(response, true);
     }
 
     if (host === 'sim.reqoo.co') {
