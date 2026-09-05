@@ -13,8 +13,8 @@ async function injectShopRuntime(response, force = false) {
   const html = await response.text();
   if (!force && !html.includes('heroProduct')) return new Response(html, response);
   const cleaned = html.replace(/<script[^>]+src=["']\/shop\/hero-runtime\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi, '').replace(/<script[^>]+src=["']\/shop\/shop-enhance\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi, '');
-  const body = cleaned.replace('</body>', '<script src="/shop/hero-runtime.js?v=5"></script><script src="/shop/shop-enhance.js?v=3"></script></body>');
-  const headers = new Headers(response.headers);headers.set('cache-control','no-store, no-cache, must-revalidate, max-age=0');headers.set('pragma','no-cache');headers.set('x-reqoo-shop-runtime','qr-v5-gallery-v3');
+  const body = cleaned.replace('</body>', '<script src="/shop/hero-runtime.js?v=5"></script><script src="/shop/shop-enhance.js?v=4"></script></body>');
+  const headers = new Headers(response.headers);headers.set('cache-control','no-store, no-cache, must-revalidate, max-age=0');headers.set('pragma','no-cache');headers.set('x-reqoo-shop-runtime','qr-v5-gallery-v4');
   return new Response(body,{status:response.status,statusText:response.statusText,headers});
 }
 
