@@ -12,25 +12,31 @@ async function injectShopRuntime(response, force = false) {
   if (!type.toLowerCase().includes('text/html')) return response;
   const html = await response.text();
   if (!force && !html.includes('heroProduct')) return new Response(html, response);
-  const cleaned = html.replace(/<script[^>]+src=["']\/shop\/hero-runtime\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi, '');
-  const body = cleaned.replace('</body>', '<script src="/shop/hero-runtime.js?v=5"></script></body>');
+  const cleaned = html
+    .replace(/<script[^>]+src=["']\/shop\/hero-runtime\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi, '')
+    .replace(/<script[^>]+src=["']\/shop\/shop-enhance\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi, '');
+  const body = cleaned.replace('</body>', '<script src="/shop/hero-runtime.js?v=5"></script><script src="/shop/shop-enhance.js?v=1"></script></body>');
   const headers = new Headers(response.headers);
   headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
   headers.set('pragma', 'no-cache');
-  headers.set('x-reqoo-shop-runtime', 'qr-v5');
+  headers.set('x-reqoo-shop-runtime', 'qr-v5-gallery-v1');
   return new Response(body, { status: response.status, statusText: response.statusText, headers });
 }
 
-async function injectAdminUI(response) {
+async function injectAdminUI(response, shopAdmin = false) {
   const type = response.headers.get('content-type') || '';
   if (!type.toLowerCase().includes('text/html')) return response;
   const html = await response.text();
-  if (html.includes('/admin/reqoo-admin-universal.css')) return new Response(html, response);
-  const body = html.replace('</head>', '<link rel="stylesheet" href="/admin/reqoo-admin-universal.css?v=2"></head>');
+  let body = html;
+  if (!body.includes('/admin/reqoo-admin-universal.css')) body = body.replace('</head>', '<link rel="stylesheet" href="/admin/reqoo-admin-universal.css?v=2"></head>');
+  if (shopAdmin) {
+    body = body.replace(/<script[^>]+src=["']\/shop\/admin-enhance\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi, '');
+    body = body.replace('</body>', '<script src="/shop/admin-enhance.js?v=1"></script></body>');
+  }
   const headers = new Headers(response.headers);
   headers.set('cache-control', 'no-store, no-cache, must-revalidate, max-age=0');
   headers.set('pragma', 'no-cache');
-  headers.set('x-reqoo-admin-ui', 'universal-v2');
+  headers.set('x-reqoo-admin-ui', shopAdmin ? 'universal-v2-shop-gallery-v1' : 'universal-v2');
   return new Response(body, { status: response.status, statusText: response.statusText, headers });
 }
 
@@ -79,7 +85,7 @@ export default {
     if (host === 'admin.reqoo.co' && (/^\/admin\/sim-v2\.html$/i.test(url.pathname) || /^\/sim\/pksk\/admin\/?$/i.test(url.pathname))) return adminPkskV2(request, env);
     if (host === 'admin.reqoo.co' && (/^\/admin\/settings\.html$/i.test(url.pathname) || /^\/shop\/admin\.html$/i.test(url.pathname))) {
       const response = await env.ASSETS.fetch(assetRequest(url.pathname, request));
-      return injectAdminUI(response);
+      return injectAdminUI(response, /^\/shop\/admin\.html$/i.test(url.pathname));
     }
     if (host === 'pksk.sim.reqoo.co') {
       const pathname = pkskAssetPath(url.pathname);
