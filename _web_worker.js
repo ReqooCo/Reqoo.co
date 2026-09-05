@@ -76,8 +76,6 @@ export default {
     const host = url.hostname.toLowerCase();
     if (url.pathname === '/api' || url.pathname.startsWith('/api/')) return proxyApi(request, url);
 
-    // admin.reqoo.co is the overall REQOO control centre at root.
-    // PKSK keeps its dedicated admin at /sim/pksk/admin/.
     if (host === 'admin.reqoo.co' && (url.pathname === '/' || /^\/admin\/?$/i.test(url.pathname))) return adminOverview(request, env);
     if (host === 'admin.reqoo.co' && (/^\/admin\/sim-v2\.html$/i.test(url.pathname) || /^\/sim\/pksk\/admin\/?$/i.test(url.pathname))) return adminPkskV2(request, env);
     if (host === 'admin.reqoo.co' && (/^\/admin\/settings\.html$/i.test(url.pathname) || /^\/shop\/admin\.html$/i.test(url.pathname))) {
@@ -111,8 +109,6 @@ export default {
       return env.ASSETS.fetch(assetRequest(`/${cleanPath}`, request));
     }
 
-    // reqoo.co itself serves the current Shop. Make sure the QR checkout
-    // runtime is injected here too.
     const response = await env.ASSETS.fetch(request);
     return injectShopRuntime(response);
   }
