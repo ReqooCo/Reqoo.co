@@ -1,4 +1,4 @@
-const C={'access-control-allow-origin':'*','access-control-allow-methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type,X-Admin-Token','cache-control':'no-store'};
+const C={'access-control-allow-origin':'*','access-control-allow-methods':'GET,POST,OPTIONS','access-control-allow-headers':'Content-Type,X-Admin-Token','cache-control':'no-store'};
 const S=v=>String(v??'').trim();const ID=p=>`${p}_${crypto.randomUUID()}`;const NOW=()=>new Date().toISOString();
 const R=(x,s=200,h={})=>new Response(JSON.stringify(x),{status:s,headers:{'content-type':'application/json;charset=UTF-8',...C,...h}});
 async function body(r){const u=new URL(r.url),q=Object.fromEntries(u.searchParams.entries());if(r.method==='GET')return q;const t=(r.headers.get('content-type')||'').toLowerCase();if(t.includes('json'))return{...q,...await r.json()};return q}
