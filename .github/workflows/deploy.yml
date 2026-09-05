@@ -32,7 +32,7 @@ jobs:
           test -f wrangler-web.toml
           test -f _web_worker.js
           test -f shop/index.html
-          test -f shop/shop-core-v12.js
+          test -f shop/shop-core-v1.js
           test -f shop/admin.html
           test -f sim/pksk/simulator/index.html
           test "$(find sim/pksk/simulator/sets -type f -name 'set*.json' | wc -l | tr -d ' ')" -eq 50
