@@ -47,13 +47,40 @@ async function syncVariants(d,env,pid,t,base){
   for(const x of existing)if(!seen.has(x.id))await env.DB.prepare("UPDATE product_variations SET status='hidden',updated_at=? WHERE id=? AND product_id=?").bind(t,x.id,pid).run();
 }
 
+async function listImages(d,env){
+  const productId=S(d.productId);
+  if(!productId)return J({ok:false,error:'Product id diperlukan'},400);
+  const rows=(await env.DB.prepare('SELECT id,product_id,url,alt_text,sort_order,is_cover,created_at FROM product_images WHERE product_id=? ORDER BY is_cover DESC,sort_order,id').bind(productId).all()).results||[];
+  return J({ok:true,images:rows.map(x=>({id:x.id,productId:x.product_id,url:x.url,alt:x.alt_text||'',sortOrder:Number(x.sort_order||0),cover:!!x.is_cover,createdAt:x.created_at,key:imageKey(x.url)}))});
+}
+
+async function saveImages(d,env){
+  const productId=S(d.productId),images=Array.isArray(d.images)?d.images.map(S).filter(Boolean):[];
+  if(!productId)return J({ok:false,error:'Product id diperlukan'},400);
+  const product=await env.DB.prepare('SELECT id,name FROM products WHERE id=?').bind(productId).first();
+  if(!product)return J({ok:false,error:'Produk tidak dijumpai'},404);
+  const t=NOW();
+  await env.DB.prepare('DELETE FROM product_images WHERE product_id=?').bind(productId).run();
+  for(let i=0;i<images.length;i++){
+    await env.DB.prepare('INSERT INTO product_images(id,product_id,url,alt_text,sort_order,is_cover,created_at) VALUES(?,?,?,?,?,?,?)').bind(ID('img'),productId,images[i],product.name,i,i===0?1:0,t).run();
+  }
+  return listImages({productId},env);
+}
+
+function imageKey(url){try{return new URL(url,'https://api.reqoo.co').searchParams.get('key')||url}catch{return url}}
+
 export async function onRequest({request,env}){
   if(request.method==='OPTIONS')return new Response(null,{status:204,headers:C});
   const data=await body(request);
-  if(S(data.action)==='saveProduct'){
+  const action=S(data.action);
+  if(['saveProduct','saveImages','listImages'].includes(action)){
     if(!env.DB)return J({ok:false,error:'D1 binding DB tidak dijumpai'},503);
     if(!auth(request,env,data))return J({ok:false,error:'Unauthorized'},401);
-    try{return await saveProduct(data,env)}catch(e){console.error(e);return J({ok:false,error:e?.message||String(e)},500)}
+    try{
+      if(action==='saveProduct')return await saveProduct(data,env);
+      if(action==='listImages')return await listImages(data,env);
+      return await saveImages(data,env);
+    }catch(e){console.error(e);return J({ok:false,error:e?.message||String(e)},500)}
   }
   return legacy({request,env});
 }
