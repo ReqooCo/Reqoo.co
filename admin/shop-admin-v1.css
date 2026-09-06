@@ -88,46 +88,86 @@ header{box-shadow:0 4px 18px rgba(23,35,58,.05)}
 .empty{border:1px dashed #d9d1c3;padding:24px}
 .empty strong{font-weight:900;color:var(--shop-ink)}
 
+/* V4 Premium: visual-only refinement. No API, database, payment or order behaviour changes. */
+:root{--shop-surface:#fffdfa;--shop-surface-2:#f8f6f1;--shop-line:#e6e0d6;--shop-shadow:0 16px 45px rgba(23,35,58,.065)}
+body:has(#app){font-size:13px}
+header{background:rgba(255,253,250,.88);backdrop-filter:saturate(140%) blur(16px);border-bottom-color:rgba(215,208,196,.72)}
+.nav{gap:14px}
+.brand{display:flex;align-items:baseline;gap:5px;font-weight:950;letter-spacing:2.5px}
+.brand span{font-weight:950}
+.brand small{opacity:.72}
+.topActions .btn{border-radius:10px;box-shadow:0 3px 10px rgba(23,35,58,.035)}
+.topActions .gold{background:linear-gradient(180deg,#fffdf8,#f8f0df)}
+.pageHead{padding-top:18px}
+.pageHead h1{font-size:36px;font-weight:950;letter-spacing:-1.1px}
+.pageHead p{color:#7a8494;font-size:12px}
+.tabs{margin-top:22px;border:1px solid #e3ddd2;box-shadow:0 5px 18px rgba(23,35,58,.035)}
+.tabs .tab{font-weight:850;color:#6c7788;border-radius:11px}
+.tabs .tab.active{color:var(--shop-ink);background:linear-gradient(180deg,#fff,#faf8f3);box-shadow:0 4px 13px rgba(23,35,58,.09),inset 0 0 0 1px #eee8de}
+.productsPanel{border-color:rgba(223,216,205,.9);box-shadow:var(--shop-shadow)}
+.sectionHead{padding:2px 2px 4px}
+.sectionHead h2{font-size:19px;font-weight:950;letter-spacing:-.35px}
+.searchBox input{height:42px;border-color:#ddd7cd;box-shadow:inset 0 1px 2px rgba(23,35,58,.025);transition:.16s ease}
+.searchBox input:hover{border-color:#cfc7ba}
+.searchBox input:focus{background:#fffdfa}
+.stats{gap:14px;margin-bottom:14px}
+.stat{border-color:#e4ded4;background:linear-gradient(145deg,#fffdfa,#faf8f3);box-shadow:0 12px 32px rgba(23,35,58,.055)}
+.stat small{letter-spacing:1.15px;color:#7c8797}
+.stat b{font-size:29px;letter-spacing:-.7px}
+.stat:after{background:#efe5d0;opacity:.45}
+.productCard{border-radius:18px;border-color:#e4ded5;background:#fffdfa;box-shadow:0 9px 25px rgba(23,35,58,.045)}
+.productCard:hover{transform:translateY(-3px);box-shadow:0 20px 44px rgba(23,35,58,.105);border-color:#d7c8aa}
+.productCard img{background:#f3f1ec}
+.productBody{padding:16px}
+.productCard .productBody h3{font-size:15.5px;letter-spacing:-.2px}
+.productCard .productPrice{font-size:18px}
+.productCard .productActions .btn{min-height:39px;border-radius:10px}
+.productCard .productActions .btn:first-child{background:#17233a;border-color:#17233a;color:#fff}
+.productCard .productActions .btn:nth-child(2){background:#fffdf8;border-color:#d9c8a5;color:#73591e}
+.ordersTable{border-radius:15px;border-color:#e2dcd2;background:#fffdfa;overflow:auto}
+.orderRow{grid-template-columns:125px 1.55fr 105px 110px 145px 75px}
+.orderRow>div{padding:13px 12px}
+.orderRow.orderHead{background:#f5f2ec;text-transform:uppercase;letter-spacing:.45px;font-size:9px}
+.orderRow:not(.orderHead):hover{background:#fcfaf5}
+.status{border:1px solid transparent;padding:5px 9px;font-size:8.5px;letter-spacing:.3px}
+.pending{background:#fff6e6;border-color:#f0dfbb;color:#98600b}
+.paid{background:#edf8f1;border-color:#cfe7d7;color:#24663c}
+.processing{background:#eef4ff;border-color:#d4e0f5;color:#315ea8}
+.failed{background:#fff1ef;border-color:#f0d0cb;color:#ae3025}
+.empty{margin:4px;border-color:#ded6c8;background:linear-gradient(180deg,#fffdfa,#faf8f4)}
+.addBar{background:rgba(255,253,250,.9);border-top-color:rgba(218,211,201,.9)}
+.addBar button{border-radius:14px;font-weight:900;letter-spacing:.1px;background:linear-gradient(180deg,#1d2940,#17233a)}
+.modal{background:rgba(18,25,38,.62);backdrop-filter:blur(5px)}
+.modalBox{border-color:#ded7cb;box-shadow:0 30px 90px rgba(16,24,40,.28)}
+.modalHead h2{font-weight:950;letter-spacing:-.5px}
+.modalClose{transition:.15s ease}
+.modalClose:hover{transform:rotate(4deg);background:#e8eaee}
+.subsection{border-color:#ece6dd}
+#productModal .subsection h3:before{box-shadow:inset 0 0 0 1px rgba(114,86,27,.08)}
+.notice{box-shadow:inset 0 0 0 1px rgba(255,255,255,.55)}
+.savebar{border-color:#e1d8c5;box-shadow:0 -10px 25px rgba(23,35,58,.06)}
+.savebar .btn.primary{box-shadow:0 7px 18px rgba(23,35,58,.14)}
+.variantRow{background:#fcfbf8;border-color:#e5dfd6}
+.mediaCard{background:#fffdfa;border-color:#e2dcd2}
+.toast{box-shadow:0 16px 35px rgba(16,24,40,.2);border:1px solid rgba(255,255,255,.08)}
+
 @media(max-width:850px){
-  .productsGrid{grid-template-columns:1fr 1fr}
-  .stats{grid-template-columns:1fr 1fr}
-  .grid2,.detailGrid{grid-template-columns:1fr}
+  .pageHead h1{font-size:32px}
+  .stats{gap:10px}
 }
 @media(max-width:560px){
-  .nav{min-height:58px}
-  .brand{font-size:16px;letter-spacing:2px}
-  .brand small{font-size:8px}
-  .app{padding-bottom:96px}
-  .pageHead h1{font-size:26px}
-  .tabs{display:flex;width:100%;gap:4px;margin-bottom:10px}
-  .tabs .tab{min-width:0;flex:1;padding:10px 8px}
-  .productsPanel{border-radius:16px}
-  .productCard{border-radius:16px}
-  .productBody{padding:13px;min-height:150px}
-  .productBody .muted{min-height:34px}
-  .productActions{gap:6px}
-  .productActions .btn{font-size:10px;padding:8px 5px;min-height:36px}
-  .productCard .productPrice{font-size:16px}
-  .stats{gap:8px}
-  .stat{padding:13px;border-radius:15px}
-  .stat small{font-size:8px;letter-spacing:.7px}
-  .stat b{font-size:22px}
-  .sectionHead{align-items:stretch}
-  .searchBox{min-width:100%}
-  .orderRow>div{padding:10px}
-  .orderRow.orderHead{position:static}
-  .modalHead{top:-18px}
-  .modalBox{border:0}
-  .modalActions{bottom:-18px}
-  .savebar{margin-left:-2px;margin-right:-2px}
-  .uploadRow{display:grid;grid-template-columns:1fr}
-  .uploadRow .btn{width:100%}
-  .mediaGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
-  #productModal .subsection{padding:14px 0 16px}
-  #productModal .subsection h3:before{width:23px;height:23px}
-  .productCard .productActions{grid-template-columns:1.2fr 1fr}
+  .nav{min-height:60px}
+  .brand{font-size:15px;letter-spacing:2px}
+  .pageHead{padding-top:12px}
+  .pageHead h1{font-size:27px;letter-spacing:-.8px}
+  .tabs{margin-top:16px}
+  .productsPanel{border-radius:17px;box-shadow:0 9px 28px rgba(23,35,58,.055)}
+  .stat{border-radius:14px}
+  .productCard{box-shadow:0 7px 20px rgba(23,35,58,.045)}
+  .orderRow>div{padding:11px 10px}
+  .modalBox{box-shadow:0 -15px 60px rgba(16,24,40,.22)}
 }
 
 @media(prefers-reduced-motion:reduce){
-  .productCard,.mediaCard,.iconBtn,.field input,.field select,.field textarea{transition:none}
+  .productCard,.mediaCard,.iconBtn,.field input,.field select,.field textarea,.modalClose{transition:none}
 }
