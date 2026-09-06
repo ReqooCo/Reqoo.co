@@ -1,7 +1,7 @@
 import { onRequest as handleCore } from '../functions/api/core.js';
 import { onRequest as handleSimAdmin } from './sim-admin.js';
-import { onRequest as handleShopFlow } from './shop-flow-v3.js';
-import { onRequest as handleShopAdminFlow } from './shop-admin-flow-v4.js';
+import { onRequest as handleShopFlow } from './shop-v1.js';
+import { onRequest as handleShopAdminFlow } from './shop-admin-v1.js';
 import { onRequest as handleShopMedia } from './shop-media.js';
 import { onRequest as handleProductImage } from '../functions/api/product-image.js';
 import { onRequest as handleInvoice } from '../functions/api/invoice-v1.js';
