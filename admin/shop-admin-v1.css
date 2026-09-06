@@ -1,4 +1,4 @@
-/* REQOO Shop Admin UI V1 — presentation only. No API or data behaviour changes. */
+/* REQOO Shop Admin UI V2 — presentation only. No API or data behaviour changes. */
 :root{--shop-accent:#b88a2d;--shop-ink:#17233a;--shop-border:#e3ded5}
 body:has(#app){background:radial-gradient(circle at 20% -10%,#fffdf7 0,#f7f5f0 38%,#f1efe9 100%)}
 header{box-shadow:0 4px 18px rgba(23,35,58,.05)}
@@ -30,6 +30,40 @@ header{box-shadow:0 4px 18px rgba(23,35,58,.05)}
 .savebar{position:sticky;bottom:0;z-index:3;background:rgba(252,250,243,.96);backdrop-filter:blur(10px);box-shadow:0 -8px 20px rgba(23,35,58,.05)}
 .addBar{box-shadow:0 -8px 22px rgba(23,35,58,.08)}
 .addBar button{box-shadow:0 7px 18px rgba(23,35,58,.12)}
+
+/* V2: clearer information hierarchy and safer touch targets. */
+.productBody{min-height:156px;display:flex;flex-direction:column}
+.productBody h3{line-height:1.25}
+.productBody .muted{min-height:38px}
+.productPrice{letter-spacing:-.2px}
+.productActions{margin-top:auto;padding-top:12px}
+.productActions .btn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{vertical-align:middle}
+.orderRow{background:#fffdfa}
+.orderRow.orderHead{background:#f6f4ef;color:#526075;position:sticky;top:0;z-index:1}
+.status{min-width:72px;text-align:center}
+.ordersTable{box-shadow:inset 0 0 0 1px rgba(23,35,58,.015)}
+.empty{background:#fffdfa;border-radius:12px}
+.field label{letter-spacing:.35px}
+.field input,.field select,.field textarea{transition:border-color .15s ease,box-shadow .15s ease,background .15s ease}
+.field input::placeholder,.field textarea::placeholder{color:#a0a8b4}
+.variantRow{align-items:center}
+.variantRow input:focus{border-color:var(--shop-accent);box-shadow:0 0 0 3px rgba(184,138,45,.10);outline:none}
+.iconBtn{transition:background .15s ease,border-color .15s ease}
+.iconBtn:hover{background:#fff5f3;border-color:#d99b94}
+.uploadRow .btn{min-height:40px}
+.mediaCard{transition:transform .15s ease,box-shadow .15s ease}
+.mediaCard:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(23,35,58,.08)}
+.mediaCard img{aspect-ratio:1.2;height:auto}
+.coverTag{margin-bottom:2px}
+.modalActions{position:sticky;bottom:-22px;padding:12px 0 2px;background:linear-gradient(180deg,rgba(255,253,250,.88),#fffdfa 35%);z-index:2}
+.modalActions .btn{min-height:42px}
+
+@media(max-width:850px){
+  .productsGrid{grid-template-columns:1fr 1fr}
+  .stats{grid-template-columns:1fr 1fr}
+  .grid2,.detailGrid{grid-template-columns:1fr}
+}
 @media(max-width:560px){
   .nav{min-height:58px}
   .brand{font-size:16px;letter-spacing:2px}
@@ -40,9 +74,10 @@ header{box-shadow:0 4px 18px rgba(23,35,58,.05)}
   .tabs .tab{min-width:0;flex:1;padding:10px 8px}
   .productsPanel{border-radius:16px}
   .productCard{border-radius:16px}
-  .productBody{padding:13px}
+  .productBody{padding:13px;min-height:150px}
+  .productBody .muted{min-height:34px}
   .productActions{gap:6px}
-  .productActions .btn{font-size:10px;padding:8px 5px}
+  .productActions .btn{font-size:10px;padding:8px 5px;min-height:36px}
   .stats{gap:8px}
   .stat{padding:13px;border-radius:15px}
   .stat small{font-size:8px;letter-spacing:.7px}
@@ -50,7 +85,16 @@ header{box-shadow:0 4px 18px rgba(23,35,58,.05)}
   .sectionHead{align-items:stretch}
   .searchBox{min-width:100%}
   .orderRow>div{padding:10px}
+  .orderRow.orderHead{position:static}
   .modalHead{top:-18px}
   .modalBox{border:0}
+  .modalActions{bottom:-18px}
   .savebar{margin-left:-2px;margin-right:-2px}
+  .uploadRow{display:grid;grid-template-columns:1fr}
+  .uploadRow .btn{width:100%}
+  .mediaGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .productCard,.mediaCard,.iconBtn,.field input,.field select,.field textarea{transition:none}
 }
