@@ -12,7 +12,3 @@ PKSK simulator and student dashboard now use the V2 backend exposed at `/api/pks
 - Legacy PKSK API files and legacy PKSK generator/audit workflows have been removed.
 
 The public site and shop routes remain separate from the PKSK V2 runtime.
-
-## Shop Admin
-
-Shop Admin uses the same authenticated admin session as the main admin portal.
