@@ -67,19 +67,38 @@ async function saveImages(d,env){
   return listImages({productId},env);
 }
 
+async function deleteProduct(d,env){
+  const productId=S(d.id);
+  if(!productId)return J({ok:false,error:'Product id diperlukan'},400);
+  const product=await env.DB.prepare('SELECT id,name FROM products WHERE id=?').bind(productId).first();
+  if(!product)return J({ok:false,error:'Produk tidak dijumpai'},404);
+  const orderItems=Number((await env.DB.prepare('SELECT COUNT(*) n FROM order_items WHERE product_id=?').bind(productId).first())?.n||0);
+  const grants=Number((await env.DB.prepare('SELECT COUNT(*) n FROM access_grants WHERE product_id=?').bind(productId).first())?.n||0);
+  if(orderItems||grants)return J({ok:false,error:'Produk ini sudah mempunyai rekod transaksi atau akses. Gunakan Hide untuk menyembunyikannya tanpa memadam sejarah.'},409);
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM product_images WHERE product_id=?').bind(productId),
+    env.DB.prepare('DELETE FROM product_variations WHERE product_id=?').bind(productId),
+    env.DB.prepare('DELETE FROM product_custom_fields WHERE product_id=?').bind(productId),
+    env.DB.prepare('DELETE FROM product_addons WHERE product_id=?').bind(productId),
+    env.DB.prepare('DELETE FROM products WHERE id=?').bind(productId)
+  ]);
+  return J({ok:true,deleted:true});
+}
+
 function imageKey(url){try{return new URL(url,'https://api.reqoo.co').searchParams.get('key')||url}catch{return url}}
 
 export async function onRequest({request,env}){
   if(request.method==='OPTIONS')return new Response(null,{status:204,headers:C});
   const data=await body(request);
   const action=S(data.action);
-  if(['saveProduct','saveImages','listImages'].includes(action)){
+  if(['saveProduct','saveImages','listImages','deleteProduct'].includes(action)){
     if(!env.DB)return J({ok:false,error:'D1 binding DB tidak dijumpai'},503);
     if(!auth(request,env,data))return J({ok:false,error:'Unauthorized'},401);
     try{
       if(action==='saveProduct')return await saveProduct(data,env);
       if(action==='listImages')return await listImages(data,env);
-      return await saveImages(data,env);
+      if(action==='saveImages')return await saveImages(data,env);
+      return await deleteProduct(data,env);
     }catch(e){console.error(e);return J({ok:false,error:e?.message||String(e)},500)}
   }
   return legacy({request,env});
