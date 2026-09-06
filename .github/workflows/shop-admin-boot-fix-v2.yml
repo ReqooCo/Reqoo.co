@@ -1,0 +1,35 @@
+name: Shop Admin boot fix v2
+on:
+  push:
+    branches: [main]
+    paths:
+      - shop/admin.html
+      - .github/workflows/shop-admin-boot-fix-v2.yml
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add canonical Shop Admin boot
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('shop/admin.html')
+          s=p.read_text(encoding='utf-8')
+          marker='<!-- REQOO_SHOP_ADMIN_BOOT_V2 -->'
+          if marker not in s:
+              boot='''\n<script>\n(()=>{\n  const token=localStorage.getItem('reqoo_admin_token')||'';\n  if(!token){location.replace('/admin/?return='+encodeURIComponent(location.pathname+location.search));return;}\n  const start=async()=>{\n    try{\n      if(typeof showApp==='function')showApp();\n      if(typeof loadAll==='function')await loadAll();\n    }catch(e){\n      console.error('REQOO Shop Admin:',e);\n      localStorage.removeItem('reqoo_admin_token');\n      location.replace('/admin/?return='+encodeURIComponent(location.pathname+location.search));\n    }\n  };\n  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();\n})();\n</script>\n<!-- REQOO_SHOP_ADMIN_BOOT_V2 -->\n'''
+              i=s.lower().rfind('</body>')
+              if i<0: raise SystemExit('No </body> in shop/admin.html')
+              s=s[:i]+boot+s[i:]
+          p.write_text(s,encoding='utf-8')
+      - name: Commit source fix
+        run: |
+          git config user.name 'REQOO Bot'
+          git config user.email 'actions@reqoo.co'
+          git add shop/admin.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'fix: boot Shop Admin from shared admin session'
+          git push
