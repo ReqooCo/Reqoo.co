@@ -1,0 +1,37 @@
+name: Shop Admin single login fix
+on:
+  push:
+    branches: [main]
+    paths:
+      - shop/admin.html
+      - .github/workflows/shop-admin-single-login-fix.yml
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix Shop Admin session boot
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('shop/admin.html')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace("localStorage.getItem('reqoo_shop_admin_token')||''", "localStorage.getItem('reqoo_admin_token')||''", 1)
+          s=s.replace("localStorage.removeItem('reqoo_shop_admin_token');token='';showLogin();", "localStorage.removeItem('reqoo_admin_token');localStorage.removeItem('reqoo_shop_admin_token');token='';showLogin();", 1)
+          s=s.replace("localStorage.setItem('reqoo_shop_admin_token',token);showApp();await loadAll()", "localStorage.setItem('reqoo_admin_token',token);showApp();await loadAll()", 1)
+          old="if(token){showApp();loadAll().catch(()=>showLogin())}else showLogin();"
+          new="if(token){showApp();loadAll().catch(e=>{console.error('REQOO Shop Admin:',e);showLogin()})}else{const r=location.pathname+location.search;location.replace('/admin/?return='+encodeURIComponent(r))}"
+          if old not in s:
+              raise SystemExit('Shop Admin boot pattern not found')
+          s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8')
+      - name: Commit source fix
+        run: |
+          git config user.name 'REQOO Bot'
+          git config user.email 'actions@reqoo.co'
+          git add shop/admin.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'fix: restore Shop Admin boot with shared admin session'
+          git push
