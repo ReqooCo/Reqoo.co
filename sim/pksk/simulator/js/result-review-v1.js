@@ -1,0 +1,100 @@
+/* REQOO PKSK — Result / Review V1
+   Additive layer. Does not alter the canonical scoring, save, access or dashboard logic.
+*/
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+const license=()=>String(localStorage.getItem('reqoo_pksk_license')||'').trim().toUpperCase();
+const state=()=>{try{return JSON.parse(localStorage.getItem(`reqoo:pksk:${license()}:set:${pad(Number(localStorage.getItem('pksk-selected-set')||1))}`)||'null')}catch(_){return null}};
+const groupPath=n=>{const start=Math.floor((n-1)/10)*10+1;return`SET ${pad(start)}-${pad(start+9)}`};
+let data=null,enhanced=false;
+
+async function loadSet(){
+  const n=clamp(Number(localStorage.getItem('pksk-selected-set')||1),1,50);
+  try{
+    const r=await fetch(`sets/${encodeURIComponent(groupPath(n))}/data/set${pad(n)}.json`,{cache:'no-store'});
+    if(!r.ok)return null;
+    const d=await r.json();
+    return Array.isArray(d.questions)?d:null;
+  }catch(_){return null}
+}
+function correctIndex(q){
+  if(Number.isInteger(Number(q?.answerIndex)))return Number(q.answerIndex);
+  if(Number.isInteger(Number(q?.answer)))return Number(q.answer);
+  if(Array.isArray(q?.weights)&&q.weights.length)return q.weights.reduce((b,v,i)=>Number(v)>Number(q.weights[b]??-Infinity)?i:b,0);
+  return null;
+}
+function optionText(q,i){return Array.isArray(q?.options)&&q.options[i]!=null?String(q.options[i]):'—';}
+function answerLetter(i){return Number.isInteger(Number(i))&&i>=0?String.fromCharCode(65+Number(i)):'—';}
+function getField(q,names){for(const n of names){if(q&&typeof q[n]==='string'&&q[n].trim())return q[n].trim()}return''}
+function cleanText(s){return String(s||'').replace(/\s+/g,' ').trim()}
+function isMath(q){return /matematik|math/i.test(String(q?.category||'')+' '+String(q?.contentDomain||''))||/[0-9]\s*[+×x÷\-\/=]/.test(String(q?.question||''));}
+function isScience(q){return /sains|science/i.test(String(q?.category||'')+' '+String(q?.contentDomain||''));}
+function genericWhy(q,correct,student){
+  const supplied=getField(q,['explanation','rationale','reason','why','answerExplanation','feedback']);
+  if(supplied)return supplied;
+  if(student===undefined||student===null||student==='')return `Anda tidak memilih jawapan. Jawapan yang betul ialah ${answerLetter(correct)}. ${optionText(q,correct)}`;
+  if(isMath(q))return `Jawapan anda ${answerLetter(student)} tidak sepadan dengan jawapan yang betul. Untuk soalan Matematik, kenal pasti maklumat yang diberi, tentukan operasi atau formula yang diperlukan, kira langkah demi langkah, kemudian semak semula unit dan nilai akhir. Jawapan yang betul ialah ${answerLetter(correct)}: ${optionText(q,correct)}`;
+  if(isScience(q))return `Jawapan anda ${answerLetter(student)} tidak sepadan dengan konsep yang diuji. Kembali kepada fakta/prinsip dalam soalan, tapis pilihan yang bercanggah dengan prinsip tersebut dan pilih pilihan yang menerangkan hubungan sebab-akibat dengan tepat. Jawapan yang betul ialah ${answerLetter(correct)}: ${optionText(q,correct)}`;
+  return `Jawapan anda ${answerLetter(student)} tidak sepadan dengan jawapan yang ditetapkan. Baca kata kunci soalan, kenal pasti perkara yang sebenarnya diminta dan bandingkan setiap pilihan dengan kehendak soalan. Jawapan yang betul ialah ${answerLetter(correct)}: ${optionText(q,correct)}`;
+}
+function genericSteps(q,correct){
+  const supplied=getField(q,['solution','steps','working','method','caraKira','caraFikir','explanationSteps']);
+  if(supplied)return supplied;
+  if(isMath(q))return `1. Kenal pasti semua nilai/maklumat yang diberi.\n2. Tentukan apa yang perlu dicari.\n3. Pilih operasi atau formula yang sesuai.\n4. Kira satu langkah pada satu masa.\n5. Semak jawapan akhir dan bandingkan dengan pilihan jawapan.\n\nJawapan akhir: ${answerLetter(correct)} — ${optionText(q,correct)}`;
+  if(isScience(q))return `1. Kenal pasti konsep utama dalam soalan.\n2. Senaraikan fakta yang diberi.\n3. Bandingkan setiap pilihan dengan konsep tersebut.\n4. Gugurkan pilihan yang bercanggah.\n5. Pilih jawapan yang paling tepat dan boleh disokong oleh fakta.\n\nJawapan akhir: ${answerLetter(correct)} — ${optionText(q,correct)}`;
+  return `1. Baca soalan hingga habis.\n2. Gariskan kata kunci dan kehendak soalan.\n3. Nilai setiap pilihan berdasarkan maklumat yang diberi.\n4. Gugurkan pilihan yang tidak relevan atau bercanggah.\n5. Pilih jawapan yang paling tepat.\n\nJawapan akhir: ${answerLetter(correct)} — ${optionText(q,correct)}`;
+}
+function renderB(){
+  const host=$('reviewB'); if(!host||!data)return;
+  const st=state()||{},answers=st.answers||{};
+  const qs=data.questions.filter(q=>q.section==='BAHAGIAN B');
+  const wrong=qs.filter(q=>{const c=correctIndex(q);return c!==null&&Number(answers[q.id])!==c});
+  const correct=qs.length-wrong.length;
+  host.innerHTML=`<div class="rr-head"><div><b>${correct}/${qs.length} betul</b><span> • ${wrong.length} perlu diperbaiki</span></div><div class="rr-note">Buka setiap soalan untuk lihat jawapan dan penerangan.</div></div>`+
+    `<div class="rr-list">${qs.map((q,i)=>{
+      const c=correctIndex(q),a=answers[q.id],ok=c!==null&&Number(a)===c;
+      const status=ok?'BETUL':'PERLU SEMAK';
+      const why=genericWhy(q,c,a),steps=genericSteps(q,c);
+      return `<details class="rr-item ${ok?'is-correct':'is-wrong'}" ${!ok?'open':''}><summary><span class="rr-num">B${i+1}</span><span class="rr-q">${esc(cleanText(q.question))}</span><span class="rr-status">${ok?'✓':'✗'} ${status}</span></summary><div class="rr-body"><div class="rr-grid"><div><small>JAWAPAN ANDA</small><p class="${ok?'good':'bad'}">${a===undefined?'Tidak dijawab':answerLetter(a)+'. '+esc(optionText(q,a))}</p></div><div><small>JAWAPAN BETUL</small><p class="good">${answerLetter(c)}. ${esc(optionText(q,c))}</p></div></div>${ok?`<div class="rr-success">✓ Betul. Teruskan dengan strategi yang sama.</div>`:`<div class="rr-box"><b>Kenapa jawapan ini salah?</b><p>${esc(why)}</p></div>`}<div class="rr-box"><b>💡 Cara fikir / cara kira</b><p>${esc(steps).replace(/\n/g,'<br>')}</p></div></div></details>`;
+    }).join('')}</div>`;
+}
+function wordCount(t){const s=String(t||'').trim();return s?s.split(/\s+/).filter(Boolean).length:0}
+function analyzeC(){
+  const st=state()||{},text=String(st.essay||'').trim(),topics=Array.isArray(data?.writing)?data.writing:[],topic=topics[Number(st.selectedTopic)||0]||{},words=wordCount(text),paras=text?text.split(/\n\s*\n/).filter(Boolean).length:0;
+  const sentences=text.split(/[.!?]+/).map(x=>x.trim()).filter(Boolean),issues=[];
+  if(words<100)issues.push(`Jawapan masih ${100-words} patah perkataan di bawah minimum 100.`);
+  if(paras<2)issues.push('Struktur perenggan boleh diperkemaskan supaya isi lebih tersusun.');
+  if(!/\b(contohnya|sebagai contoh|misalnya|contoh)\b/i.test(text))issues.push('Tiada contoh yang jelas dikesan. Tambah contoh yang relevan untuk menguatkan isi.');
+  if(!/\b(kesimpulannya|sebagai kesimpulan|akhir kata|ringkasnya)\b/i.test(text))issues.push('Kesimpulan belum dikesan. Tambah penutup ringkas jika sesuai dengan tajuk.');
+  if(/\b(yg|dgn|x|tak|nak|kat|ni|tu)\b/i.test(text))issues.push('Ada singkatan bahasa mesej; gunakan bahasa Melayu baku.');
+  const connectors=(text.match(/\b(selain itu|seterusnya|oleh itu|namun|akhir sekali|kesimpulannya|pada pendapat saya)\b/gi)||[]).length;
+  const examples=(text.match(/\b(contohnya|sebagai contoh|misalnya|contoh)\b/gi)||[]).length;
+  const source=(String(topic.title||'')+' '+String(topic.prompt||'')).toLowerCase().match(/[a-zA-ZÀ-ÿ]{4,}/g)||[];
+  const essay=new Set((text.toLowerCase().match(/[a-zA-ZÀ-ÿ]{4,}/g)||[])),terms=[...new Set(source)],matched=terms.filter(w=>essay.has(w));
+  const coverage=terms.length?Math.round(matched.length/terms.length*100):0;
+  let score=0;if(words>=100)score+=35;if(words>=150)score+=10;if(paras>=2)score+=15;if(paras>=3)score+=10;if(/[.!?]/.test(text))score+=10;if(/[A-Za-zÀ-ÿ]/.test(text))score+=20;
+  return{topic,words,paras,sentences:sentences.length,issues,connectors,examples,coverage,score:Math.min(100,score)};
+}
+function renderC(){
+  const host=$('cAnalysis');if(!host||!data)return;const a=analyzeC(),text=String(state()?.essay||'').trim();
+  const strengths=[];if(a.words>=100)strengths.push('Memenuhi minimum 100 patah perkataan.');if(a.paras>=2)strengths.push('Jawapan mempunyai struktur perenggan.');if(a.examples)strengths.push(`Contoh dikesan (${a.examples}).`);if(a.connectors)strengths.push(`Penanda wacana dikesan (${a.connectors}).`);if(a.coverage>=50)strengths.push(`Liputan kata kunci tajuk baik (${a.coverage}%).`);
+  if(!strengths.length)strengths.push('Jawapan telah direkodkan dan boleh diperbaiki berdasarkan cadangan di bawah.');
+  const improve=a.issues.length?a.issues:['Tambah huraian yang lebih spesifik, contoh yang relevan dan kesimpulan yang kemas.'];
+  host.innerHTML=`<div class="c-review-v1"><div class="rr-cards"><div><small>SKOR LATIHAN</small><strong>${a.score}/100</strong></div><div><small>PERKATAAN</small><strong>${a.words}</strong><span>${a.words>=100?'✓ Minimum dicapai':'Belum 100'}</span></div><div><small>PERENGGAN</small><strong>${a.paras}</strong></div><div><small>LIPUTAN TAJUK</small><strong>${a.coverage}%</strong></div></div><div class="rr-box"><small>TAJUK DIPILIH</small><b>${esc(topic.title||'—')}</b><p>${esc(topic.prompt||'')}</p></div><div class="rr-box"><b>Jawapan anda</b><p class="essay-preview">${esc(text||'Tiada jawapan direkodkan.')}</p></div><div class="rr-two"><div class="rr-box"><b>✓ Kekuatan</b><ul>${strengths.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div><div class="rr-box"><b>⚠ Perlu diperbaiki</b><ul>${improve.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div><div class="rr-box"><b>💡 Cara improve</b><ol><li>Pastikan setiap isi menjawab terus kehendak tajuk.</li><li>Huraikan sebab atau kesan, bukan sekadar menyenaraikan isi.</li><li>Berikan contoh khusus untuk sekurang-kurangnya satu isi utama.</li><li>Gunakan penanda wacana dan perenggan yang jelas.</li><li>Akhiri dengan kesimpulan yang merumuskan pendirian atau cadangan.</li></ol></div><div class="rr-box"><b>Contoh rangka jawapan lebih baik</b><p><b>Pendahuluan:</b> Nyatakan pendirian dan fokus tajuk.<br><b>Isi 1:</b> Isi + huraian + contoh.<br><b>Isi 2:</b> Isi + huraian + contoh/kesan.<br><b>Isi 3:</b> Cadangan atau pengajaran yang relevan.<br><b>Kesimpulan:</b> Rumuskan pendirian dan harapan.</p></div></div>`;
+}
+function enhance(){
+  const result=$('result');if(!result||result.classList.contains('hidden')||enhanced)return;
+  enhanced=true;
+  Promise.resolve(loadSet()).then(d=>{data=d;if(!data)return;renderB();renderC();});
+}
+function watch(){
+  const result=$('result');if(!result)return;
+  const obs=new MutationObserver(enhance);obs.observe(result,{attributes:true,attributeFilter:['class']});
+  if(!result.classList.contains('hidden'))enhance();
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watch,{once:true});else watch();
+})();
