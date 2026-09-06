@@ -1,0 +1,27 @@
+name: Shop QR display fix
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix QR display in canonical Shop source
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('shop/shop-core-v1.js')
+          s=p.read_text()
+          old='src="${esc(qr)}" alt="QR pembayaran"'
+          new='src="${esc(qr)}?v=2" alt="QR pembayaran" style="display:block;width:min(260px,80vw);height:auto;max-width:260px;max-height:none;object-fit:contain;image-rendering:auto"'
+          if old not in s:
+              raise SystemExit('QR source pattern not found')
+          p.write_text(s.replace(old,new,1))
+          PY
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add shop/shop-core-v1.js
+          git commit -m "fix: constrain Shop QR to source resolution" || exit 0
+          git push
