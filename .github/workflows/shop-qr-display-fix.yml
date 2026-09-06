@@ -1,6 +1,9 @@
 name: Shop QR display fix
 on:
-  workflow_dispatch:
+  push:
+    paths:
+      - shop/shop-core-v1.js
+      - .github/workflows/shop-qr-display-fix.yml
 permissions:
   contents: write
 jobs:
