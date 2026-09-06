@@ -59,6 +59,35 @@ header{box-shadow:0 4px 18px rgba(23,35,58,.05)}
 .modalActions{position:sticky;bottom:-22px;padding:12px 0 2px;background:linear-gradient(180deg,rgba(255,253,250,.88),#fffdfa 35%);z-index:2}
 .modalActions .btn{min-height:42px}
 
+/* V3: product workflow polish — presentation only. */
+.productCard{overflow:hidden;border-color:#e7e1d7}
+.productCard .productBody{gap:5px}
+.productCard .productBody h3{font-size:15px;font-weight:850;margin:0;color:var(--shop-ink)}
+.productCard .productPrice{font-size:17px;font-weight:900;color:var(--shop-ink);margin-top:2px}
+.productCard .productBody .muted{font-size:11px;line-height:1.45;color:#69758a}
+.productCard .badge{font-size:9px;font-weight:900;letter-spacing:.35px;padding:4px 7px;border-radius:999px}
+.productCard .badge.active{background:#edf7ef;color:#28633a;border:1px solid #cfe7d4}
+.productCard .badge.hidden{background:#f1f2f4;color:#626b78;border:1px solid #dde0e5}
+.productCard .productActions{display:grid;grid-template-columns:1.35fr 1fr;gap:7px}
+.productCard .productActions .btn{border-radius:10px;font-weight:800}
+.productCard .productActions .btn:first-child{box-shadow:0 5px 12px rgba(23,35,58,.08)}
+
+#productModal .subsection{position:relative;padding:16px 0 18px;border-bottom:1px solid #eee9e1}
+#productModal .subsection:last-of-type{border-bottom:0}
+#productModal .subsection h3{display:flex;align-items:center;gap:9px;margin-bottom:12px;font-weight:900;color:var(--shop-ink)}
+#productModal .subsection h3:before{counter-increment:shop-step;content:counter(shop-step);display:grid;place-items:center;width:25px;height:25px;border-radius:8px;background:#f1e8d5;color:#72561b;font-size:11px;font-weight:950}
+#productModal .modalBox{counter-reset:shop-step}
+#productModal .field input,#productModal .field select,#productModal .field textarea{background:#fffefa}
+#pActive{font-weight:800}
+#productModal .mediaCard{border:1px solid #e5dfd5;background:#fffdfa;border-radius:12px;overflow:hidden}
+#productModal .mediaCard .coverTag{font-size:9px;font-weight:900;letter-spacing:.4px}
+#productModal .savebar{border-top:1px solid #e8e1d6}
+#productModal .savebar .btn{min-height:44px;font-weight:900}
+#productModal .modalActions{border-top:1px solid rgba(232,225,214,.8)}
+
+.empty{border:1px dashed #d9d1c3;padding:24px}
+.empty strong{font-weight:900;color:var(--shop-ink)}
+
 @media(max-width:850px){
   .productsGrid{grid-template-columns:1fr 1fr}
   .stats{grid-template-columns:1fr 1fr}
@@ -78,6 +107,7 @@ header{box-shadow:0 4px 18px rgba(23,35,58,.05)}
   .productBody .muted{min-height:34px}
   .productActions{gap:6px}
   .productActions .btn{font-size:10px;padding:8px 5px;min-height:36px}
+  .productCard .productPrice{font-size:16px}
   .stats{gap:8px}
   .stat{padding:13px;border-radius:15px}
   .stat small{font-size:8px;letter-spacing:.7px}
@@ -93,6 +123,9 @@ header{box-shadow:0 4px 18px rgba(23,35,58,.05)}
   .uploadRow{display:grid;grid-template-columns:1fr}
   .uploadRow .btn{width:100%}
   .mediaGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #productModal .subsection{padding:14px 0 16px}
+  #productModal .subsection h3:before{width:23px;height:23px}
+  .productCard .productActions{grid-template-columns:1.2fr 1fr}
 }
 
 @media(prefers-reduced-motion:reduce){
