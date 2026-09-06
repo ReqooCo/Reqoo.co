@@ -21,7 +21,10 @@ function rewrite(){
     if(isBuyText(text)||/^\.\/shop\/?$/i.test(a.getAttribute('href')||'')){
       a.href=href;
       if(/buat tempahan/i.test(text))a.textContent='Beli Sekarang';
-      else if(/lihat & tempah/i.test(text))a.textContent='Lihat Produk';
+      else if(/lihat & tempah/i.test(text)){
+        const more=a.querySelector('.more');
+        if(more)more.textContent='Lihat Produk';
+      }
     }
   });
   const primary=[...document.querySelectorAll('.actions a')].find(a=>/Beli Sekarang|Buat Tempahan/i.test(a.textContent||''));
