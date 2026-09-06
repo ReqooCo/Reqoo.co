@@ -36,4 +36,23 @@ function renderShipping(a){$('shipList').innerHTML=a.map(x=>`<div class="notice"
 async function saveShipping(){const name=$('shipName').value.trim(),price=Number($('shipPrice').value||0),b=$('saveShipBtn');if(!name){$('shipStatus').textContent='✕ Nama diperlukan';return}b.disabled=true;$('shipStatus').textContent='⏳ Menyimpan…';try{await api('saveShipping',{name,price,active:true});$('shipName').value='';$('shipPrice').value='';$('shipStatus').textContent='✓ Shipping ditambah';$('shipStatus').className='saveStatus ok';await loadAll()}catch(e){$('shipStatus').textContent='✕ Gagal simpan';$('shipStatus').className='saveStatus err';toast(e.message,'err')}finally{b.disabled=false}}
 $('loginBtn').onclick=login;$('token').onkeydown=e=>{if(e.key==='Enter')login()};$('refreshBtn').onclick=()=>loadAll().catch(e=>toast(e.message,'err'));$('orderSearch').oninput=renderOrders;$('orderClose').onclick=()=>$('orderModal').classList.remove('open');$('orderModal').onclick=e=>{if(e.target.id==='orderModal')$('orderModal').classList.remove('open')};document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));$('productForm').onsubmit=saveProduct;$('clearProductBtn').onclick=resetProduct;$('newProductBtn').onclick=resetProduct;$('addVariantBtn').onclick=()=>addVariantRow();$('saveShipBtn').onclick=saveShipping;
 if(token){showApp();loadAll().catch(e=>{console.error('REQOO Shop Admin:',e);showLogin()})}else{const r=location.pathname+location.search;location.replace('/admin/?return='+encodeURIComponent(r))}
-</script></body></html>
+</script>
+<script>
+(()=>{
+  const token=localStorage.getItem('reqoo_admin_token')||'';
+  if(!token){location.replace('/admin/?return='+encodeURIComponent(location.pathname+location.search));return;}
+  const start=async()=>{
+    try{
+      if(typeof showApp==='function')showApp();
+      if(typeof loadAll==='function')await loadAll();
+    }catch(e){
+      console.error('REQOO Shop Admin:',e);
+      localStorage.removeItem('reqoo_admin_token');
+      location.replace('/admin/?return='+encodeURIComponent(location.pathname+location.search));
+    }
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+})();
+</script>
+<!-- REQOO_SHOP_ADMIN_BOOT_V2 -->
+</body></html>
