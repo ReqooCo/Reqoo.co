@@ -1,12 +1,12 @@
 import fs from 'node:fs';import assert from 'node:assert/strict';
 const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8');
-const runtime=fs.readFileSync(new URL('../shop/admin-production-queue-v3.js',import.meta.url),'utf8');
+const runtime=fs.readFileSync(new URL('../shop/admin-production-queue-safe-v1.js',import.meta.url),'utf8');
 const api=fs.readFileSync(new URL('../api/shop-admin-flow-v16.js',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../admin/shop-production-queue-v2.css',import.meta.url),'utf8');
-assert.match(worker,/shop-production-queue-v2\.css\?v=1/);assert.match(worker,/admin-production-queue-v3\.js\?v=1/);assert.doesNotMatch(worker,/admin-production-queue-v2\.js\?v=1/);
-assert.match(runtime,/productionDashboard/);assert.doesNotMatch(runtime,/listOrders/);assert.doesNotMatch(runtime,/listProductionMeta/);assert.match(runtime,/FRESH_MS=45000/);assert.match(runtime,/90000/);
+assert.match(worker,/shop-production-queue-v2\.css\?v=1/);assert.match(worker,/admin-production-queue-safe-v1\.js\?v=1/);assert.doesNotMatch(worker,/admin-production-queue-v3\.js/);assert.doesNotMatch(worker,/admin-production-queue-v2\.js\?v=1/);
+assert.match(runtime,/listOrders/);assert.match(runtime,/listProductionMeta/);assert.doesNotMatch(runtime,/MutationObserver/);assert.doesNotMatch(runtime,/setInterval/);assert.doesNotMatch(runtime,/addEventListener\('focus'/);
 assert.match(runtime,/saveProductionMeta/);assert.match(runtime,/dueDate/);assert.match(runtime,/priority/);assert.match(runtime,/assignedTo/);assert.match(runtime,/internalNote/);assert.match(runtime,/Due Hari Ini/);assert.match(runtime,/Overdue/);
-assert.match(runtime,/verifyPayment/);assert.match(runtime,/status:'processing'/);assert.match(runtime,/status:'fulfilled'/);assert.match(runtime,/Buka Semula/);assert.match(runtime,/confirm\(a\.confirm\)/);
-assert.match(api,/productionDashboard/);assert.match(api,/LEFT JOIN shop_production_meta/);assert.match(api,/LIMIT 200/);assert.match(api,/shop-admin-flow-v15\.js/);
+assert.match(runtime,/verifyPayment/);assert.match(runtime,/status/);assert.match(runtime,/processing/);assert.match(runtime,/fulfilled/);assert.match(runtime,/confirm\(/);
+assert.match(api,/productionDashboard/);assert.match(api,/shop-admin-flow-v15\.js/);
 assert.match(css,/\.rqPlanner/);assert.match(css,/\.rqPriority-urgent/);assert.match(css,/\.rqDue-overdue/);
-console.log('PASS: Production queue uses one consolidated request, freshness guard and guarded status workflow.');
+console.log('PASS: Production queue uses loop-free runtime with manual refresh and guarded status workflow.');
