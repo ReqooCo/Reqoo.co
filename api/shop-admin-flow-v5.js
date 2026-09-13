@@ -10,14 +10,15 @@ function auth(request,env,data){const supplied=S(request.headers.get('X-Admin-To
 async function body(request){if(request.method==='GET')return Object.fromEntries(new URL(request.url).searchParams);try{return await request.json()}catch{return {}}}
 
 async function saveProduct(d,env){
-  const pid=S(d.id)||ID('prd'),t=NOW(),old=await env.DB.prepare('SELECT * FROM products WHERE id=?').bind(pid).first(),name=S(d.name);
+  const pid=S(d.id)||ID('prd'),t=NOW(),old=await env.DB.prepare('SELECT * FROM products WHERE id=?').bind(pid).first();
+  const name=S(d.name??old?.name);
   if(!name)return J({ok:false,error:'Nama produk diperlukan'},400);
   const type=S(d.productType||old?.product_type||'physical'),ful=S(d.fulfillmentType||old?.fulfillment_type||'physical_shipping');
-  const status=d.active===false?'hidden':S(d.status||old?.status||'active');
-  const base=d.basePriceMinor!=null?Number(d.basePriceMinor):Math.round(Number(d.basePrice||0)*100);
-  const category=S(d.category||old?.category||'');
+  const status=d.active===false?'hidden':d.active===true?'active':S(d.status||old?.status||'active');
+  const base=d.basePriceMinor!=null?Number(d.basePriceMinor):d.basePrice!=null?Math.round(Number(d.basePrice||0)*100):Number(old?.base_price_minor||0);
+  const category=S(d.category??old?.category??'');
   if(old){
-    await env.DB.prepare('UPDATE products SET sku=?,name=?,slug=?,product_type=?,fulfillment_type=?,description=?,short_description=?,base_price_minor=?,sale_price_minor=?,currency=?,status=?,category=?,updated_at=? WHERE id=?').bind(S(d.sku||old.sku)||null,name,S(d.slug??old.slug)||null,type,ful,S(d.description??old.description)||null,S(d.shortDescription??old.short_description)||null,base,d.salePriceMinor==null?(old?.sale_price_minor??null):Number(d.salePriceMinor),S(d.currency||old.currency||'MYR'),status,category,t,pid).run();
+    await env.DB.prepare('UPDATE products SET sku=?,name=?,slug=?,product_type=?,fulfillment_type=?,description=?,short_description=?,base_price_minor=?,sale_price_minor=?,currency=?,status=?,category=?,updated_at=? WHERE id=?').bind(S(d.sku??old.sku)||null,name,S(d.slug??old.slug)||null,type,ful,S(d.description??old.description)||null,S(d.shortDescription??old.short_description)||null,base,d.salePriceMinor==null?(old?.sale_price_minor??null):Number(d.salePriceMinor),S(d.currency||old.currency||'MYR'),status,category,t,pid).run();
   }else{
     await env.DB.prepare('INSERT INTO products(id,sku,name,slug,product_type,fulfillment_type,description,short_description,base_price_minor,sale_price_minor,currency,status,category,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(pid,S(d.sku)||null,name,S(d.slug)||null,type,ful,S(d.description),S(d.shortDescription||d.desc),base,d.salePriceMinor==null?null:Number(d.salePriceMinor),S(d.currency||'MYR'),status,category,t,t).run();
   }
