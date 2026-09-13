@@ -57,6 +57,7 @@ jobs:
           node tests/shop-inventory-ux.mjs
           node tests/shop-customer-account-ux.mjs
           node tests/shop-admin-fulfillment-ux.mjs
+          node tests/shop-admin-whatsapp-status.mjs
       - run: npm install --no-save --no-package-lock jsdom@30.0.1
       - name: Run Shop DOM regression
         run: node tests/shop-ui.cjs
