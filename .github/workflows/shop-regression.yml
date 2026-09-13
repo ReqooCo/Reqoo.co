@@ -1,7 +1,7 @@
 name: Shop regression
 on:
   pull_request:
-    paths: ['_web_worker.js', 'shop/shop-core-v1.js', 'tests/shop-*', '.github/workflows/shop-regression.yml']
+    paths: ['_web_worker.js', 'shop/shop-core-v1.js', 'shop/index.html', 'shop/shop-premium.css', 'api/shop-flow-v3.js', 'tests/shop-*', '.github/workflows/shop-regression.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -14,4 +14,6 @@ jobs:
         with:
           node-version: 24
       - run: node --check _web_worker.js && node --check shop/shop-core-v1.js
-      - run: node tests/shop-routing.mjs && node tests/shop-quantity-unit.cjs
+      - run: node tests/shop-routing.mjs && node tests/shop-quantity-unit.cjs && node tests/shop-quote.mjs
+      - run: npm install --no-save --no-package-lock jsdom@30.0.1
+      - run: node tests/shop-ui.cjs

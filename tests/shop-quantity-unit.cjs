@@ -1,16 +1,12 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
-const elements=new Map();
-function element(id){if(!elements.has(id))elements.set(id,{value:id==='#detailQty'?'1':'',textContent:'',style:{},dataset:{},files:[],classList:{add(){},remove(){},contains(){return true}},addEventListener(type,fn){this[type]=fn},removeAttribute(key){delete this[key]},querySelector:element,querySelectorAll(){return []}});return elements.get(id)}
-const context={document:{documentElement:{},readyState:'loading',getElementById:element,querySelectorAll:()=>[],addEventListener(){}},MutationObserver:class{observe(){}disconnect(){}},setTimeout(){},location:{href:'https://shop.reqoo.co/'},URL,console};
+const context={document:{readyState:'loading',addEventListener(){}},URL,location:{href:'https://shop.reqoo.co/'},console,localStorage:{getItem:()=>JSON.stringify([{productId:'p',variantId:'v',q:2,unitPrice:10},{productId:'p',variantId:'v',q:3,unitPrice:10},{productId:'bad',q:1,unitPrice:'oops'}])}};
 vm.createContext(context);
-let source=fs.readFileSync('shop/shop-core-v1.js','utf8');
-source=source.replace('function boot(){','globalThis.setup=p=>{products=[p];openProduct(p.id)};function boot(){');
-vm.runInContext(source,context);
-context.setup({id:'p',name:'Tumbler',category:'Gift',image:'/product.jpg',variants:[{name:'Sold',price:10,stock:0},{name:'Blue',price:20,stock:3,image:'/blue.jpg'},{name:'Plain',price:5,stock:null}]});
-assert.match(element('modal').innerHTML,/value="1" selected/);
-assert.equal(element('#detailPrice').textContent,'RM20.00');
-const qty=element('#detailQty');
-for(const [input,quantity,total] of [['99','3','RM60.00'],['2.5','2','RM40.00'],['0','1','RM20.00'],['Infinity','1','RM20.00']]){qty.value=input;qty.oninput();assert.equal(qty.value,quantity);assert.equal(element('#detailTotal').textContent,total)}
-element('#variantSelect').change({target:{value:'2'}});
-assert.equal(qty.max,undefined);assert.equal(element('#detailImage').src,'/product.jpg');
-console.log('PASS: selects stocked variant, clamps quantity, totals match, rejects fractions/nonfinite values and resets image/max on variation change.');
+let source=fs.readFileSync('shop/shop-core-v1.js','utf8').replace('function boot(){','globalThis.test={quantity,normalize,usedStock,restore,available,fileError,img};function boot(){');vm.runInContext(source,context);
+const t=context.test;
+for(const [input,expected] of [[99,99],[2.5,2],[0,1],[-2,1],[Infinity,1],['bad',1],[1000,999]])assert.equal(t.quantity(input),expected);
+assert.equal(t.available({stock:0}),false);assert.equal(t.available({stock:''}),true);assert.equal(t.available({stock:null}),true);
+t.restore();assert.equal(t.usedStock('p','v',''),5);assert.equal(t.usedStock('p','v','',0),3);
+assert.equal(t.img('javascript:alert(1)'), '');
+assert.match(t.fileError({type:'text/html',size:1}),/Format/);assert.match(t.fileError({type:'image/png',size:3*1024*1024}),/2MB/);
+assert.equal(t.fileError({type:'application/pdf',size:10},true),'');
+console.log('PASS: integer bounds, stock semantics, aggregate cart quantity, unsafe URL and upload validation.');
