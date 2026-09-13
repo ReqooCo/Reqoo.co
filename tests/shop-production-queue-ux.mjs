@@ -1,0 +1,15 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8');
+const runtime=fs.readFileSync(new URL('../shop/admin-production-queue-v1.js',import.meta.url),'utf8');
+const css=fs.readFileSync(new URL('../admin/shop-production-queue-v1.css',import.meta.url),'utf8');
+assert.match(worker,/shop-production-queue-v1\.css/,'production queue stylesheet must be injected');
+assert.match(worker,/admin-production-queue-v1\.js/,'production queue runtime must be injected');
+assert.match(runtime,/action=listOrders/,'queue must load current admin orders');
+assert.match(runtime,/processing/,'queue must represent processing orders');
+assert.match(runtime,/fulfilled/,'queue must represent fulfilled orders');
+assert.match(runtime,/Menunggu Bayaran/,'queue must show pending-payment bucket');
+assert.match(runtime,/Production Queue|PRODUCTION QUEUE/,'queue heading must be present');
+assert.match(css,/\.rqQueueStats/,'queue status grid must be styled');
+assert.match(css,/\.rqQueueItem/,'queue items must be styled');
+console.log('PASS: Shop Admin production queue is wired and guarded.');
