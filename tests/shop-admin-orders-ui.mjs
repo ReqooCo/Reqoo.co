@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const worker=fs.readFileSync('_web_worker.js','utf8');
+const css=fs.readFileSync('admin/shop-orders-premium-v1.css','utf8');
+assert.match(worker,/shop-orders-premium-v1\.css\?v=1/,'Shop Admin must load premium order stylesheet');
+assert.match(css,/#orders \.orderRow:not\(\.orderHead\)/,'orders stylesheet must target order rows');
+assert.match(css,/@media\(max-width:700px\)/,'orders stylesheet must include mobile layout');
+assert.match(css,/#orderModal \.modalActions/,'order modal actions must receive mobile-safe styling');
+assert.match(css,/Klik mana-mana order untuk semak bayaran, status dan dokumen/,'orders screen must explain the workflow');
+console.log('PASS: Shop Admin order management polish is wired and guarded.');

@@ -1,0 +1,56 @@
+/* REQOO Shop Admin Orders V1 — presentation only. */
+#orders .stats{margin-top:4px}
+#orders .productsPanel{padding:20px}
+#orders .sectionHead{align-items:flex-end}
+#orders .sectionHead:after{content:"Klik mana-mana order untuk semak bayaran, status dan dokumen.";display:block;width:100%;font-size:11px;color:#7a8494;margin-top:3px}
+#orders .ordersTable{background:#fffdfa}
+#orders .orderRow:not(.orderHead){transition:background .14s ease,box-shadow .14s ease}
+#orders .orderRow:not(.orderHead):hover{background:#fffaf1;box-shadow:inset 3px 0 0 #b88a2d}
+#orders .orderRow:not(.orderHead)>div:first-child{font-weight:900;color:#17233a}
+#orders .orderRow:not(.orderHead)>div:nth-child(2){font-weight:750}
+#orders .orderRow:not(.orderHead)>div:nth-child(3){font-variant-numeric:tabular-nums;font-weight:850}
+#orders .status{font-weight:950}
+#orderModal .modalBox{width:min(900px,100%)}
+#orderModal .detailGrid{gap:12px}
+#orderModal .detailCard{background:linear-gradient(180deg,#fff,#fbfaf7);border-color:#e3ddd3;padding:14px;border-radius:14px}
+#orderModal .detailCard small{letter-spacing:.65px;text-transform:uppercase;color:#7d8795}
+#orderModal .detailCard b{font-size:14px;line-height:1.35;color:#17233a}
+#orderModal .itemList{border-color:#e2dcd2;border-radius:14px;background:#fff}
+#orderModal .item{padding:13px 12px;align-items:center}
+#orderModal .receiptBox{background:#f7f5f0;border-color:#ded7cb;border-radius:14px;padding:12px}
+#orderModal .modalActions{gap:9px;padding-top:14px}
+#orderModal .modalActions .btn{min-height:44px;border-radius:11px;font-weight:900}
+#orderModal .modalActions .primary{background:#17233a;color:#fff;border-color:#17233a;box-shadow:0 7px 18px rgba(23,35,58,.14)}
+#orderModal .modalActions .danger{background:#fff7f6}
+
+@media(max-width:700px){
+  #orders .productsPanel{padding:14px}
+  #orders .sectionHead{display:block}
+  #orders .searchBox{margin-top:12px;min-width:0;width:100%}
+  #orders .searchBox input{height:46px;font-size:16px}
+  #orders .ordersTable{border:0;background:transparent;overflow:visible}
+  #orders .orderHead{display:none}
+  #orders .orderRow:not(.orderHead){display:grid;grid-template-columns:1fr auto;min-width:0;margin:0 0 10px;border:1px solid #e3ddd3;border-radius:16px;background:#fffdfa;box-shadow:0 8px 22px rgba(23,35,58,.045);overflow:hidden;padding:4px 0}
+  #orders .orderRow:not(.orderHead)>div{padding:6px 12px;font-size:11px;border:0;min-width:0}
+  #orders .orderRow:not(.orderHead)>div:nth-child(1){grid-column:1/2;font-size:12px;padding-top:11px}
+  #orders .orderRow:not(.orderHead)>div:nth-child(2){grid-column:1/2;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #orders .orderRow:not(.orderHead)>div:nth-child(3){grid-column:2/3;grid-row:1/2;text-align:right;padding-top:11px}
+  #orders .orderRow:not(.orderHead)>div:nth-child(4){grid-column:2/3;grid-row:2/3;text-align:right}
+  #orders .orderRow:not(.orderHead)>div:nth-child(5){grid-column:1/3;padding-top:8px}
+  #orders .orderRow:not(.orderHead)>div:nth-child(6){grid-column:1/3;padding:7px 12px 11px}
+  #orders .orderRow:not(.orderHead)>div:nth-child(6) .btn,#orders .orderRow:not(.orderHead)>div:nth-child(6) button{width:100%;min-height:40px;border-radius:10px}
+  #orders .status{min-width:0}
+  #orderModal .modalBox{max-height:95dvh}
+  #orderModal .detailGrid{grid-template-columns:1fr 1fr;gap:8px}
+  #orderModal .detailCard{padding:11px;border-radius:12px}
+  #orderModal .detailCard b{font-size:12px}
+  #orderModal .item{grid-template-columns:1fr 44px 76px;font-size:10px;padding:10px}
+  #orderModal .modalActions{display:grid;grid-template-columns:1fr 1fr;position:sticky;bottom:-18px;margin:12px -15px -18px;padding:12px 15px calc(18px + env(safe-area-inset-bottom));background:rgba(255,253,250,.97);backdrop-filter:blur(14px);border-top:1px solid #e6e0d6}
+  #orderModal .modalActions .btn{width:100%;min-height:48px}
+}
+
+@media(max-width:390px){
+  #orderModal .detailGrid{grid-template-columns:1fr}
+}
+
+@media(prefers-reduced-motion:reduce){#orders .orderRow:not(.orderHead){transition:none}}
