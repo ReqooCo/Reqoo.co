@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-store">
+<title>REQOO.CO — Documents</title>
+<link rel="stylesheet" href="/admin/documents-v1.css?v=1">
+</head>
+<body>
+<main class="wrap rqDocsApp">
+  <section class="rqDocsHead">
+    <div>
+      <div class="rqDocsEyebrow">BUSINESS DOCUMENTS</div>
+      <h1>Documents</h1>
+      <p>Quotation, invoice dan receipt daripada order Reqoo dalam satu tempat.</p>
+    </div>
+    <button class="btn" id="refreshDocs" type="button">↻ Refresh</button>
+  </section>
+
+  <section class="rqDocsStats">
+    <article class="rqDocsStat"><span>ORDERS</span><strong id="docOrders">—</strong></article>
+    <article class="rqDocsStat"><span>PAID</span><strong id="docPaid">—</strong></article>
+    <article class="rqDocsStat"><span>PENDING</span><strong id="docPending">—</strong></article>
+    <article class="rqDocsStat"><span>DOCUMENT TYPES</span><strong>3</strong></article>
+  </section>
+
+  <section class="rqDocsPanel">
+    <div class="rqDocsPanelHead">
+      <div><h2>Pilih order</h2><p>Generate dokumen terus daripada data order sedia ada.</p></div>
+      <input id="docSearch" class="rqDocsSearch" placeholder="Cari order, nama atau WhatsApp">
+    </div>
+    <div id="docState" class="rqDocsState">Memuatkan order…</div>
+    <div id="docList" class="rqDocsList"></div>
+  </section>
+</main>
+
+<div class="rqDocsModal" id="docModal" aria-hidden="true">
+  <div class="rqDocsModalBox">
+    <div class="rqDocsModalHead">
+      <div><div class="rqDocsEyebrow">DOCUMENT PREVIEW</div><h2 id="docModalTitle">Dokumen</h2></div>
+      <button id="docClose" class="rqDocsClose" type="button" aria-label="Tutup">×</button>
+    </div>
+    <div id="docPreview" class="rqDocsPreview"></div>
+    <div class="rqDocsActions">
+      <button id="docPrint" class="btn primary" type="button">Print / Save PDF</button>
+      <button id="docCloseBottom" class="btn" type="button">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<script src="/admin/documents-v1.js?v=1"></script>
+</body>
+</html>
