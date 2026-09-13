@@ -1,0 +1,41 @@
+name: PKSK visual regression
+
+on:
+  pull_request:
+    paths:
+      - 'sim/pksk/simulator/**'
+      - 'scripts/audit_pksk_visuals.py'
+      - 'scripts/test_pksk_visual_renderer.js'
+      - '.github/workflows/pksk-visual-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  visual-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Check simulator JavaScript syntax
+        run: |
+          node --check sim/pksk/simulator/js/visual-renderer.js
+          node --check sim/pksk/simulator/js/app.js
+
+      - name: Audit structured visual data
+        run: python scripts/audit_pksk_visuals.py
+
+      - name: Smoke-test visual renderer
+        run: node scripts/test_pksk_visual_renderer.js
