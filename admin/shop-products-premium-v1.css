@@ -1,0 +1,67 @@
+/* REQOO Shop Admin Products V1 — presentation only. */
+#products .productsPanel{padding:20px}
+#products .sectionHead{align-items:flex-end}
+#products .sectionHead:after{content:"Tambah, susun dan kemas kini produk sebelum dipaparkan di Shop.";display:block;width:100%;font-size:11px;color:#7a8494;margin-top:3px}
+#products .productsGrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+#products .productCard{border-radius:18px;overflow:hidden;background:#fffdfa;border:1px solid #e4ded5;box-shadow:0 10px 28px rgba(23,35,58,.05)}
+#products .productCard img{aspect-ratio:1.35;object-fit:cover;background:#f2f0eb}
+#products .productBody{padding:16px;min-height:170px;display:flex;flex-direction:column}
+#products .productBody h3{font-size:16px;line-height:1.25;letter-spacing:-.25px;margin-bottom:7px}
+#products .productPrice{font-size:20px;letter-spacing:-.35px;margin-top:8px}
+#products .productBody .muted{color:#738093;line-height:1.45}
+#products .productActions{margin-top:auto;padding-top:14px;grid-template-columns:1.25fr 1fr 1fr;gap:7px}
+#products .productActions .btn{min-height:40px;border-radius:10px;font-weight:850}
+#products .productActions .btn:first-child{background:#17233a;color:#fff;border-color:#17233a}
+#products .productActions .btn:not(:first-child){background:#fffdf8}
+#productModal .modalBox{width:min(920px,100%)}
+#productModal .notice{margin-bottom:6px}
+#productModal .subsection{padding:18px 0}
+#productModal .subsection h3{font-size:16px}
+#productModal .grid2{gap:12px 14px}
+#productModal .field{margin-bottom:12px}
+#productModal .field label{font-size:10px;letter-spacing:.45px;text-transform:uppercase}
+#productModal .field input,#productModal .field select,#productModal .field textarea{min-height:44px;background:#fffefa;border-color:#ddd7cd}
+#productModal .variantRow{grid-template-columns:minmax(0,1.35fr) minmax(100px,.7fr) minmax(100px,.7fr) 44px;align-items:center;background:#fcfbf8}
+#productModal .variantRow:before{content:"VARIASI";grid-column:1/-1;font-size:9px;font-weight:950;letter-spacing:1px;color:#8a94a2;margin-bottom:-2px}
+#productModal #addVariantBtn{min-height:42px;border-style:dashed;background:#fffdf8}
+#productModal .mediaGrid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+#productModal .mediaCard{border-radius:14px;box-shadow:0 6px 18px rgba(23,35,58,.04)}
+#productModal .mediaCard img{aspect-ratio:1.25;height:auto}
+#productModal .uploadRow{padding:12px;border:1px dashed #d7cfbf;border-radius:13px;background:#fbf8f1}
+#productModal .uploadRow .btn{min-height:42px}
+#productModal .savebar{position:sticky;bottom:-22px;margin:18px -22px -22px;padding:13px 22px calc(13px + env(safe-area-inset-bottom));border-radius:0;background:rgba(255,253,250,.97);backdrop-filter:blur(14px);border-left:0;border-right:0;border-bottom:0}
+#productModal .savebar .btn.primary{min-height:46px;padding-inline:22px}
+
+@media(max-width:900px){
+  #products .productsGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+@media(max-width:560px){
+  #products .productsPanel{padding:14px}
+  #products .sectionHead:after{font-size:10px;line-height:1.5}
+  #products .productsGrid{grid-template-columns:1fr;gap:12px}
+  #products .productCard{display:grid;grid-template-columns:112px minmax(0,1fr);border-radius:16px}
+  #products .productCard img{width:112px;height:100%;min-height:150px;aspect-ratio:auto}
+  #products .productBody{min-height:150px;padding:13px}
+  #products .productBody h3{font-size:15px}
+  #products .productPrice{font-size:18px}
+  #products .productActions{grid-template-columns:1fr 1fr;gap:7px}
+  #products .productActions .btn:first-child{grid-column:1/-1}
+  #productModal .modalBox{max-height:96dvh}
+  #productModal .grid2{grid-template-columns:1fr}
+  #productModal .field input,#productModal .field select,#productModal .field textarea{font-size:16px;min-height:48px}
+  #productModal .variantRow{grid-template-columns:1fr 1fr;gap:8px}
+  #productModal .variantRow:before{grid-column:1/-1}
+  #productModal .variantRow .iconBtn{grid-column:1/-1;width:100%}
+  #productModal .mediaGrid{grid-template-columns:1fr 1fr}
+  #productModal .savebar{margin-left:-15px;margin-right:-15px;margin-bottom:calc(-18px - env(safe-area-inset-bottom));padding-left:15px;padding-right:15px}
+  #productModal .savebar .btn{flex:1;min-width:140px}
+}
+
+@media(max-width:380px){
+  #products .productCard{grid-template-columns:96px minmax(0,1fr)}
+  #products .productCard img{width:96px}
+  #productModal .mediaGrid{grid-template-columns:1fr}
+}
+
+@media(prefers-reduced-motion:reduce){#products .productCard{transition:none}}
