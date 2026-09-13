@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-store">
 <title>REQOO.CO — Documents</title>
-<link rel="stylesheet" href="/admin/documents-v1.css?v=1">
+<link rel="stylesheet" href="/admin/documents-v2.css?v=1">
 </head>
 <body>
 <main class="wrap rqDocsApp">
@@ -13,42 +13,63 @@
     <div>
       <div class="rqDocsEyebrow">BUSINESS DOCUMENTS</div>
       <h1>Documents</h1>
-      <p>Quotation, invoice dan receipt daripada order Reqoo dalam satu tempat.</p>
+      <p>Quotation, Invoice, Official Receipt dan Delivery Order dengan nombor rasmi dan rekod tersimpan.</p>
     </div>
-    <button class="btn" id="refreshDocs" type="button">↻ Refresh</button>
+    <div class="rqDocsTopActions"><button class="btn" id="toggleSettings" type="button">⚙ Company Details</button><button class="btn" id="refreshDocs" type="button">↻ Refresh</button></div>
+  </section>
+
+  <section class="rqDocsPanel rqDocsSettings" id="docsSettings">
+    <div class="rqDocsPanelHead"><div><h2>Company Details</h2><p>Maklumat ini akan disimpan sebagai snapshot pada setiap dokumen baru.</p></div></div>
+    <div class="rqDocsSettingsGrid">
+      <div class="rqDocsField"><label>COMPANY / BRAND NAME</label><input id="sCompany" placeholder="REQOO.CO"></div>
+      <div class="rqDocsField"><label>REGISTRATION NO.</label><input id="sReg" placeholder="No. pendaftaran syarikat"></div>
+      <div class="rqDocsField full"><label>ADDRESS</label><textarea id="sAddress" placeholder="Alamat perniagaan"></textarea></div>
+      <div class="rqDocsField"><label>PHONE</label><input id="sPhone" placeholder="0123456789"></div>
+      <div class="rqDocsField"><label>EMAIL</label><input id="sEmail" type="email" placeholder="hello@reqoo.co"></div>
+      <div class="rqDocsField full"><label>PAYMENT / BANK DETAILS</label><textarea id="sBank" placeholder="Nama bank, nama akaun, nombor akaun atau arahan bayaran"></textarea></div>
+      <div class="rqDocsField"><label>QUOTATION VALIDITY (DAYS)</label><input id="sQuoteDays" type="number" min="0" max="365" value="7"></div>
+      <div class="rqDocsField"><label>INVOICE DUE (DAYS)</label><input id="sInvoiceDays" type="number" min="0" max="365" value="14"></div>
+    </div>
+    <div class="rqDocsSettingsActions"><button class="btn primary" id="saveSettings" type="button">Save Company Details</button></div>
   </section>
 
   <section class="rqDocsStats">
     <article class="rqDocsStat"><span>ORDERS</span><strong id="docOrders">—</strong></article>
-    <article class="rqDocsStat"><span>PAID</span><strong id="docPaid">—</strong></article>
-    <article class="rqDocsStat"><span>PENDING</span><strong id="docPending">—</strong></article>
-    <article class="rqDocsStat"><span>DOCUMENT TYPES</span><strong>3</strong></article>
+    <article class="rqDocsStat"><span>SAVED DOCUMENTS</span><strong id="docSaved">—</strong></article>
+    <article class="rqDocsStat"><span>PAID ORDERS</span><strong id="docPaid">—</strong></article>
+    <article class="rqDocsStat"><span>DOCUMENT TYPES</span><strong>4</strong></article>
   </section>
 
   <section class="rqDocsPanel">
     <div class="rqDocsPanelHead">
-      <div><h2>Pilih order</h2><p>Generate dokumen terus daripada data order sedia ada.</p></div>
+      <div><h2>Pilih order</h2><p>Dokumen dijana sekali dengan nombor rasmi. Buka semula dari Document History bila-bila masa.</p></div>
       <input id="docSearch" class="rqDocsSearch" placeholder="Cari order, nama atau WhatsApp">
     </div>
     <div id="docState" class="rqDocsState">Memuatkan order…</div>
     <div id="docList" class="rqDocsList"></div>
+  </section>
+
+  <section class="rqDocsPanel rqDocsHistory">
+    <div class="rqDocsPanelHead"><div><h2>Document History</h2><p>Rekod Quotation, Invoice, Receipt dan Delivery Order yang telah dijana.</p></div></div>
+    <div id="docHistory" class="rqDocsHistoryList"></div>
   </section>
 </main>
 
 <div class="rqDocsModal" id="docModal" aria-hidden="true">
   <div class="rqDocsModalBox">
     <div class="rqDocsModalHead">
-      <div><div class="rqDocsEyebrow">DOCUMENT PREVIEW</div><h2 id="docModalTitle">Dokumen</h2></div>
+      <div><div class="rqDocsEyebrow">OFFICIAL DOCUMENT</div><h2 id="docModalTitle">Dokumen</h2></div>
       <button id="docClose" class="rqDocsClose" type="button" aria-label="Tutup">×</button>
     </div>
     <div id="docPreview" class="rqDocsPreview"></div>
     <div class="rqDocsActions">
+      <button id="docWhatsapp" class="btn whatsapp" type="button">WhatsApp Customer</button>
       <button id="docPrint" class="btn primary" type="button">Print / Save PDF</button>
       <button id="docCloseBottom" class="btn" type="button">Tutup</button>
     </div>
   </div>
 </div>
-
-<script src="/admin/documents-v1.js?v=1"></script>
+<div id="docsToast" class="rqDocsToast"></div>
+<script src="/admin/documents-v2.js?v=1"></script>
 </body>
 </html>
