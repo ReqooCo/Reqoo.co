@@ -1,0 +1,1 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';const w=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8');assert.ok(w.includes('shop-admin-safe-mode-v1'));assert.ok(w.includes('return injectShopAdminSafe(response)'));console.log('PASS');
