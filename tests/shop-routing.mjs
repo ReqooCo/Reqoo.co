@@ -11,5 +11,7 @@ const html='<!doctype html><html><head><title>REQOO.CO — Shop</title></head><b
 const rendered=await worker.fetch(new Request('https://shop.reqoo.co/'),{ASSETS:{fetch:async()=>new Response(html,{headers:{'content-type':'text/html;charset=UTF-8'}})}});
 const body=await rendered.text();
 assert.match(body,/\/shop\/shop-mobile-premium-v1\.css\?v=1/,'public Shop must load premium mobile stylesheet');
-assert.equal((body.match(/shop-mobile-premium-v1\.css/g)||[]).length,1,'premium stylesheet must be injected once');
-console.log('PASS: Shop home, prefixed runtime, canonical payment QR, premium mobile CSS and relative assets route correctly.');
+assert.match(body,/\/shop\/shop-desktop-premium-v1\.css\?v=1/,'public Shop must load premium desktop stylesheet');
+assert.equal((body.match(/shop-mobile-premium-v1\.css/g)||[]).length,1,'premium mobile stylesheet must be injected once');
+assert.equal((body.match(/shop-desktop-premium-v1\.css/g)||[]).length,1,'premium desktop stylesheet must be injected once');
+console.log('PASS: Shop home, prefixed runtime, canonical payment QR, premium mobile/desktop CSS and relative assets route correctly.');
