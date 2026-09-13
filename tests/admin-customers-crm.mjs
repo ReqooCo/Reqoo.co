@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const html=fs.readFileSync(new URL('../admin/customers.html',import.meta.url),'utf8');
+const js=fs.readFileSync(new URL('../admin/customers-v1.js',import.meta.url),'utf8');
+const css=fs.readFileSync(new URL('../admin/customers-v1.css',import.meta.url),'utf8');
+const shell=fs.readFileSync(new URL('../admin/admin-shell-v2.js',import.meta.url),'utf8');
+const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8');
+assert.match(html,/CUSTOMER CRM/);assert.match(html,/REPEAT BUYERS/);assert.match(html,/PAID REVENUE/);
+assert.match(js,/listCustomers/);assert.match(js,/listOrders/);assert.match(js,/WhatsApp Customer/);assert.match(js,/PAID VALUE/);
+assert.match(css,/\.rqCustomerDrawer/);assert.match(css,/@media\(max-width:600px\)/);
+assert.match(shell,/Customers/);assert.match(shell,/\/admin\/customers\.html/);
+assert.match(worker,/settings\|documents\|customers/);assert.match(worker,/admin-shell-v2\.js\?v=3/);
+console.log('PASS: premium Customers CRM aggregates customer value and order history without mutation.');
