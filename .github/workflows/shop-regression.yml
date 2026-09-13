@@ -20,6 +20,7 @@ on:
       - 'admin/admin-shell-v*.css'
       - 'admin/admin-shell-v*.js'
       - 'admin/admin-theme-v*.css'
+      - 'admin/documents*'
       - 'api/shop-flow-v*.js'
       - 'api/shop-admin-flow-v*.js'
       - 'api/worker.js'
@@ -41,6 +42,7 @@ jobs:
         run: |
           node --check _web_worker.js
           node --check admin/admin-shell-v2.js
+          node --check admin/documents-v1.js
           node --check shop/shop-core-v1.js
           node --check shop/shop-inventory-v1.js
           node --check shop/admin-inventory-v1.js
@@ -74,6 +76,7 @@ jobs:
           node tests/shop-order-production-detail.mjs
           node tests/admin-premium-shell.mjs
           node tests/admin-premium-theme-v3.mjs
+          node tests/admin-documents-pack.mjs
       - run: npm install --no-save --no-package-lock jsdom@30.0.1
       - name: Run Shop DOM regression
         run: node tests/shop-ui.cjs
