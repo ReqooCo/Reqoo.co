@@ -1,13 +1,14 @@
 import fs from 'node:fs';import assert from 'node:assert/strict';
 const api=fs.readFileSync(new URL('../api/shop-admin-flow-v12.js',import.meta.url),'utf8');
+const v14=fs.readFileSync(new URL('../api/shop-admin-flow-v14.js',import.meta.url),'utf8');
 const worker=fs.readFileSync(new URL('../api/worker.js',import.meta.url),'utf8');
 const web=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8');
 const html=fs.readFileSync(new URL('../admin/documents.html',import.meta.url),'utf8');
 const ui=fs.readFileSync(new URL('../admin/documents-v2.js',import.meta.url),'utf8');
 const publicUi=fs.readFileSync(new URL('../admin/document-public-v1.js',import.meta.url),'utf8');
-assert.match(worker,/shop-admin-flow-v13\.js/,'API worker must route Shop Admin through v13 while preserving v12 Documents');
+assert.match(worker,/shop-admin-flow-v14\.js/,'API worker must route Shop Admin through v14');assert.match(v14,/shop-admin-flow-v13\.js/,'v14 must preserve v13 -> v12 Documents chain');
 assert.match(api,/reqoo_document_sequences/);assert.match(api,/reqoo_documents/);assert.match(api,/delivery_order/);assert.match(api,/Receipt hanya boleh dikeluarkan selepas bayaran disahkan/);assert.match(api,/QT.*INV.*RC.*DO|PREFIX=/s);assert.match(api,/publicDocument/);assert.match(api,/share_token/);assert.ok(api.indexOf("if(action==='publicDocument')")<api.indexOf("if(['createDocument'"));
 assert.match(html,/Document History/);assert.match(html,/Company Details/);assert.match(html,/Delivery Order/);assert.match(html,/documents-v2\.js\?v=1/);
 assert.match(ui,/createDocument/);assert.match(ui,/listDocuments/);assert.match(ui,/saveDocumentSettings/);assert.match(ui,/wa\.me/);assert.match(ui,/\/d\//);
 assert.match(web,/document-public\.html/);assert.match(web,/\/d\\\//);assert.match(publicUi,/publicDocument/);assert.match(publicUi,/window\.print/);
-console.log('PASS: Documents V2 persistence, numbering, guarded receipt, history, settings and secure share wiring are present.');
+console.log('PASS: Documents V2 remains preserved behind v14.');
