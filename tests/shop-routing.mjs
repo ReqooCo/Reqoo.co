@@ -7,4 +7,9 @@ for(const [path,expected] of [['/','/shop/index.html'],['/shop/shop-core-v1.js?v
  await worker.fetch(new Request('https://shop.reqoo.co'+path),{ASSETS:{fetch:async req=>{actual=new URL(req.url).pathname+new URL(req.url).search;return new Response('asset',{headers:{'content-type':'text/plain'}})}}});
  assert.equal(actual,expected);
 }
-console.log('PASS: Shop home, prefixed runtime, canonical payment QR and relative assets route correctly.');
+const html='<!doctype html><html><head><title>REQOO.CO — Shop</title></head><body><div id="heroProduct"></div></body></html>';
+const rendered=await worker.fetch(new Request('https://shop.reqoo.co/'),{ASSETS:{fetch:async()=>new Response(html,{headers:{'content-type':'text/html;charset=UTF-8'}})}});
+const body=await rendered.text();
+assert.match(body,/\/shop\/shop-mobile-premium-v1\.css\?v=1/,'public Shop must load premium mobile stylesheet');
+assert.equal((body.match(/shop-mobile-premium-v1\.css/g)||[]).length,1,'premium stylesheet must be injected once');
+console.log('PASS: Shop home, prefixed runtime, canonical payment QR, premium mobile CSS and relative assets route correctly.');
