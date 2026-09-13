@@ -1,0 +1,35 @@
+// DOM integration test (jsdom). No browser, network or production orders.
+const {JSDOM}=require('jsdom');
+const fs=require('node:fs'),assert=require('node:assert/strict');
+(async()=>{
+const dom=new JSDOM(fs.readFileSync('shop/index.html','utf8'),{url:'https://shop.reqoo.co/',runScripts:'outside-only',pretendToBeVisual:true});
+const w=dom.window,d=w.document;w.HTMLElement.prototype.scrollIntoView=function(){};
+const products=[{id:'p',name:'Plaque',category:'Hadiah',image:'/product.jpg',variants:[{id:'sold',name:'Sold',price:10,stock:0},{id:'v',name:'A4',price:20,stock:3,image:'/blue.jpg'},{id:'unlimited',name:'A3',price:30,stock:null}]}];
+let orders=[],requests=[],quoteFailure=false;
+w.fetch=async(url,init)=>{const data=init?.body?JSON.parse(init.body):{};requests.push(data);let body={ok:true};if(url.includes('listProducts'))body.products=products;else if(url.includes('getShipping'))body.shipping=[{id:'pickup',name:'Ambil sendiri',price:0},{id:'delivery',name:'Penghantaran',price:8}];else if(data.action==='quoteOrder'){if(quoteFailure)return {ok:false,json:async()=>({ok:false,error:'Stok tidak mencukupi'})};body.items=data.items.map(x=>({...x,lineTotalMinor:x.qty*2000,unitPriceMinor:2000}));body.shippingMinor=data.shippingId==='delivery'?800:0;body.totalMinor=body.items.reduce((n,x)=>n+x.lineTotalMinor,0)+body.shippingMinor}else if(data.action==='createOrder'){orders.push(data);body.orderRef='TEST-ORDER';body.amount=data.expectedTotalMinor/100}return {ok:true,json:async()=>body}};
+w.eval(fs.readFileSync('shop/shop-core-v1.js','utf8'));
+const flush=async()=>{for(let i=0;i<5;i++)await new Promise(r=>setTimeout(r,5))};
+const input=(id,value)=>{d.getElementById(id).value=value;d.getElementById(id).dispatchEvent(new w.Event('input',{bubbles:true}))};
+const change=(id,value)=>{d.getElementById(id).value=value;d.getElementById(id).dispatchEvent(new w.Event('change',{bubbles:true}))};
+await flush();assert.equal(d.querySelectorAll('.productCard').length,1);
+d.querySelector('[data-product]').click();await flush();assert.equal(d.getElementById('variantSelect').value,'1');assert.equal(d.activeElement.getAttribute('aria-label'),'Tutup produk');
+input('detailQty','99');assert.equal(d.getElementById('detailQty').value,'3');assert.equal(d.getElementById('detailTotal').textContent,'RM60.00');
+input('detailQty','2.5');assert.equal(d.getElementById('detailQty').value,'2');
+change('variantSelect','2');assert.equal(d.getElementById('detailImage').src,'https://shop.reqoo.co/product.jpg');change('variantSelect','1');
+d.getElementById('addToCart').click();await flush();assert.equal(d.querySelectorAll('.cartItem').length,1);assert.equal(d.getElementById('drawer').getAttribute('aria-modal'),'true');
+d.querySelector('[data-delta="1"]').click();assert.equal(d.querySelector('.cartQuantity span').textContent,'3');d.querySelector('[data-delta="1"]').click();assert.match(d.querySelector('#drawer [data-status]').textContent,/stok/);
+d.getElementById('checkoutBtn').click();await flush();assert.equal(d.getElementById('reviewPayment').disabled,false);
+d.getElementById('reviewPayment').click();assert.match(d.getElementById('checkoutStatus').textContent,/nama/);
+input('coName','Test Buyer');input('coPhone','0123456789');input('coEmail','bad');d.getElementById('reviewPayment').click();assert.match(d.getElementById('checkoutStatus').textContent,/email/);input('coEmail','test@example.com');input('coAddress','Test address');
+change('coShipping','delivery');await flush();assert.match(d.getElementById('checkoutSummary').textContent,/RM68.00/);
+d.getElementById('checkoutClose').click();assert.equal(d.querySelector('main').inert,false);
+d.getElementById('cartButton').click();d.getElementById('checkoutBtn').click();await flush();assert.equal(d.getElementById('coName').value,'Test Buyer');assert.equal(d.getElementById('coShipping').value,'delivery');
+d.getElementById('reviewPayment').click();assert.equal(d.getElementById('paymentBox').hidden,false);
+d.getElementById('submitOrder').click();assert.match(d.getElementById('checkoutStatus').textContent,/bukti/);
+const receipt=d.getElementById('receiptFile');Object.defineProperty(receipt,'files',{value:[new w.File(['test receipt'],'receipt.png',{type:'image/png'})]});receipt.dispatchEvent(new w.Event('change'));
+d.getElementById('submitOrder').click();d.getElementById('submitOrder').click();await flush();assert.equal(orders.length,1);assert.equal(orders[0].shippingId,'delivery');assert.equal(orders[0].expectedTotalMinor,6800);assert.equal(orders[0].items[0].qty,3);assert.equal(d.querySelector('.orderRef').textContent,'TEST-ORDER');assert.equal(JSON.parse(w.localStorage.getItem('reqoo_shop_cart_v4')).length,0);
+d.getElementById('doneCheckout').click();d.querySelector('[data-product]').click();d.getElementById('addToCart').click();await flush();quoteFailure=true;d.getElementById('checkoutBtn').click();await flush();assert.equal(d.getElementById('reviewPayment').disabled,true);assert.match(d.getElementById('checkoutStatus').textContent,/Stok/);
+d.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert.equal(d.body.classList.contains('dialog-open'),false);
+assert(requests.some(x=>x.action==='quoteOrder'));
+dom.window.close();console.log('PASS: product → cart → quote → shipping → validation → receipt → success; draft recovery, stock limits, duplicate-click guard, API failure and Escape/focus handling.');
+})().catch(e=>{console.error(e);process.exitCode=1});

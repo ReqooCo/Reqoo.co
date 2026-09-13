@@ -6,8 +6,8 @@ Canonical customer shop: `shop.reqoo.co`
 
 1. Admin tambah/edit produk di `admin.reqoo.co` → **Shop**.
 2. Produk aktif terus muncul di Shop.
-3. Pelanggan pilih variasi, teks/artwork dan kuantiti.
-4. Checkout menggunakan QR tetap **Ab Art Trading**.
+3. Pelanggan pilih variasi, teks/artwork dan kuantiti; kuantiti boleh diubah dalam cart.
+4. Checkout menyemak harga/stok melalui `quoteOrder` dan pilihan penerimaan admin sebelum memaparkan QR tetap **Ab Art Trading**.
 5. Pelanggan upload bukti pembayaran.
 6. Order + bukti pembayaran masuk ke Admin untuk pengesahan.
 
@@ -24,3 +24,5 @@ Canonical customer shop: `shop.reqoo.co`
 Harga checkout sentiasa disahkan semula di server. Frontend tidak menjadi sumber harga yang dipercayai.
 
 PKSK/SIM menggunakan route dan fail berasingan dan tidak menjadi sebahagian daripada Shop flow.
+
+Customer presentation: `shop/shop-premium.css`. Checkout contact details remain in memory within the current page session. Run Node tests in `tests/shop-*`; DOM test requires `jsdom@30.0.1`.
