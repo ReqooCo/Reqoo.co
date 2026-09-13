@@ -1,0 +1,30 @@
+name: Shop Admin Safe Mode
+on:
+  pull_request:
+    paths:
+      - '_web_worker.js'
+      - 'admin/**'
+      - 'shop/**'
+      - 'tests/shop-admin-safe-mode.mjs'
+      - 'tests/admin-premium-shell.mjs'
+      - '.github/workflows/shop-admin-safe-mode.yml'
+  push:
+    branches: [main]
+    paths:
+      - '_web_worker.js'
+      - 'admin/**'
+      - 'shop/**'
+      - 'tests/shop-admin-safe-mode.mjs'
+      - 'tests/admin-premium-shell.mjs'
+      - '.github/workflows/shop-admin-safe-mode.yml'
+jobs:
+  safe-mode:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check _web_worker.js
+      - run: node tests/admin-premium-shell.mjs
+      - run: node tests/shop-admin-safe-mode.mjs
