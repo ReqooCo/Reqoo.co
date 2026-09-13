@@ -1,0 +1,14 @@
+name: Shop Admin Safe Route Simple
+on: [pull_request]
+jobs:
+  route:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check _web_worker.js
+      - run: node tests/shop-admin-safe-mode-route2.mjs
+      - run: node tests/shop-admin-safe-mode.mjs
+      - run: node tests/admin-premium-shell.mjs
