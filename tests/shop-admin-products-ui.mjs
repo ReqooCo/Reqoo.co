@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const worker=fs.readFileSync('_web_worker.js','utf8');
+const css=fs.readFileSync('admin/shop-products-premium-v1.css','utf8');
+assert.match(worker,/shop-products-premium-v1\.css\?v=1/,'Shop Admin must load premium product stylesheet');
+assert.match(css,/#products \.productsGrid/,'product grid must be styled');
+assert.match(css,/#productModal \.variantRow/,'variation editor must be styled');
+assert.match(css,/#productModal \.mediaGrid/,'product media grid must be styled');
+assert.match(css,/#productModal \.savebar/,'sticky save area must be styled');
+assert.match(css,/@media\(max-width:560px\)/,'product management must include mobile layout');
+console.log('PASS: Shop Admin product management polish is wired and guarded.');
