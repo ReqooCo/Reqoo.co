@@ -20,6 +20,7 @@ on:
       - 'admin/admin-shell-v*.css'
       - 'admin/admin-shell-v*.js'
       - 'admin/admin-theme-v*.css'
+      - 'admin/overview*'
       - 'admin/documents*'
       - 'admin/document-public*'
       - 'admin/customers*'
@@ -46,6 +47,7 @@ jobs:
         run: |
           node --check _web_worker.js
           node --check admin/admin-shell-v2.js
+          node --check admin/overview-v2.js
           node --check admin/documents-v1.js
           node --check admin/documents-v2.js
           node --check admin/document-public-v1.js
@@ -85,6 +87,7 @@ jobs:
           node tests/shop-order-production-detail.mjs
           node tests/admin-premium-shell.mjs
           node tests/admin-premium-theme-v3.mjs
+          node tests/admin-overview-v2.mjs
           node tests/admin-documents-pack.mjs
           node tests/admin-documents-v2.mjs
           node tests/admin-customers-crm.mjs
