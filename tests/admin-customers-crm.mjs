@@ -9,5 +9,5 @@ assert.match(html,/CUSTOMER CRM/);assert.match(html,/REPEAT BUYERS/);assert.matc
 assert.match(js,/listCustomers/);assert.match(js,/listOrders/);assert.match(js,/WhatsApp Customer/);assert.match(js,/PAID VALUE/);
 assert.match(css,/\.rqCustomerDrawer/);assert.match(css,/@media\(max-width:600px\)/);
 assert.match(shell,/Customers/);assert.match(shell,/\/admin\/customers\.html/);
-assert.match(worker,/settings\|documents\|customers/);assert.match(worker,/admin-shell-v2\.js\?v=4/);
+assert.match(worker,/settings\|documents\|customers/);assert.match(worker,/admin-shell-v2\.js\?v=5/);
 console.log('PASS: premium Customers CRM aggregates customer value and order history without mutation.');

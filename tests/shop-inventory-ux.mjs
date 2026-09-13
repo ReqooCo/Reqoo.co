@@ -5,7 +5,7 @@ const publicJs=fs.readFileSync(new URL('../shop/shop-inventory-v1.js',import.met
 const adminJs=fs.readFileSync(new URL('../shop/admin-inventory-v2.js',import.meta.url),'utf8');
 const v14=fs.readFileSync(new URL('../api/shop-admin-flow-v14.js',import.meta.url),'utf8');
 const v15=fs.readFileSync(new URL('../api/shop-admin-flow-v15.js',import.meta.url),'utf8');
-assert.match(worker,/admin-inventory-v2\.js\?v=2/,'Shop Admin must inject V2 inventory directly');
+assert.match(worker,/admin-inventory-v2\.js\?v=3/,'Shop Admin must inject V2 inventory directly');
 assert.doesNotMatch(worker,/admin-inventory-v1\.js/,'legacy inventory loader must not be injected');
 assert.match(worker,/shop-inventory-v2\.css\?v=2/);
 assert.match(publicJs,/Kuantiti maksimum ikut stok tersedia telah dicapai/);assert.match(publicJs,/STOK HABIS/);assert.match(publicJs,/STOK RENDAH/);

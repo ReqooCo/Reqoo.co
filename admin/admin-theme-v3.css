@@ -9,3 +9,32 @@ body.rq-admin-shell{--rq-bg:#f7f7f5;--rq-surface:#ffffff;--rq-surface-soft:#fafa
 @media(max-width:1100px){body.rq-admin-shell{padding-left:220px!important}.rqAdminSide{width:220px}.rq-admin-shell #app>header{left:220px!important}}
 @media(max-width:900px){body.rq-admin-shell{padding-left:0!important;padding-bottom:78px!important}.rqAdminSide{display:none}.rq-admin-shell #app>header{left:0!important}.rqAdminMobile{position:fixed;display:grid;grid-template-columns:repeat(5,1fr);left:10px;right:10px;bottom:10px;z-index:950;background:rgba(255,255,255,.96);border:1px solid #deded9;border-radius:16px;padding:5px;backdrop-filter:blur(16px);box-shadow:0 14px 45px rgba(0,0,0,.14)}.rqAdminMobile a{text-decoration:none;color:#777c84;text-align:center;padding:7px 2px;border-radius:11px;font-size:8px;font-weight:750}.rqAdminMobile a span{display:block;font-size:16px;margin-bottom:2px}.rqAdminMobile a.active{background:#f0f0ed;color:#25272b}.rqAdminContext{margin-top:4px}.rqAdminContextBadge{display:none}.rq-admin-shell .app{padding-top:14px!important}.rq-admin-shell .modalBox{border-radius:18px 18px 0 0!important}.rq-admin-shell .stats{grid-template-columns:repeat(2,1fr)!important}}
 @media(max-width:560px){.rq-admin-shell .wrap{width:min(100% - 18px,1480px)!important}.rq-admin-shell .pageHead h1{font-size:23px!important}.rq-admin-shell .rqAdminContext h2{font-size:16px!important}.rq-admin-shell .tabs{width:100%!important}.rq-admin-shell .tabs .tab{flex:1!important;min-width:0!important}.rq-admin-shell .stat{min-height:88px!important;padding:13px!important}.rq-admin-shell .stat b,.rq-admin-shell .value{font-size:21px!important}.rq-admin-shell .productsPanel{padding:12px!important}.rq-admin-shell .hero h1{font-size:23px!important}.rq-admin-shell .module-grid{grid-template-columns:1fr!important}.rq-admin-shell .module{min-height:118px!important}}
+
+/* Admin Centre refinements: isolate navigation from legacy universal nav rules. */
+body.rq-admin-shell{backdrop-filter:none!important;box-shadow:none!important}
+body.rq-admin-shell .rqAdminSide{overflow-y:auto;overscroll-behavior:contain}
+body.rq-admin-shell .rqAdminSide .rqAdminNav{background:transparent!important;box-shadow:none!important;backdrop-filter:none!important;border:0!important}
+body.rq-admin-shell .rqAdminNav a{color:#c4c7cd!important;font-size:12px;min-height:44px}
+body.rq-admin-shell .rqAdminNav a.active{color:#fff!important;background:#2a2a28!important}
+body.rq-admin-shell .rqAdminGroupTitle{color:#969aa3;font-size:10px}
+body.rq-admin-shell :is(a,button,input,select,textarea):focus-visible{outline:3px solid #b28b3d!important;outline-offset:3px}
+body.rq-admin-shell button:disabled{cursor:wait!important;transform:none!important;opacity:.6}
+body.rq-admin-shell .modal{z-index:1200!important}
+body.rq-admin-shell .toast{z-index:1300!important}
+body.rq-admin-shell [hidden]{display:none!important}
+body[data-admin-workspace="orders"] #rqProductionQueue{display:none!important}
+body[data-admin-workspace="production"] #orders>.stats,body[data-admin-workspace="production"] #orders>.productsPanel{display:none!important}
+body.rq-admin-shell .rqAdminMore{display:none}
+body.rq-admin-shell .rqDashEmpty{min-height:110px}
+body.rq-admin-shell .rqDashFoot{font-size:12px}
+@media(max-width:900px){
+ body.rq-admin-shell .rqAdminMobile{background:#191b20!important;box-shadow:0 8px 30px #0003!important;padding-bottom:max(6px,env(safe-area-inset-bottom));border-color:#333!important}
+ body.rq-admin-shell .rqAdminMobile :is(a,button){display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:46px;color:#c4c7cd!important;background:transparent!important;border:0!important;box-shadow:none!important;font-size:10px!important;padding:5px 1px!important}
+ body.rq-admin-shell .rqAdminMobile .active{background:#303239!important;color:#f2d68d!important}
+ body.rq-admin-shell .rqAdminMobile .rqAdminIcon{margin:0}
+ body.rq-admin-shell .rqAdminMore:not([hidden]){display:grid;position:fixed;bottom:calc(76px + env(safe-area-inset-bottom));left:12px;right:12px;z-index:960;background:#202227!important;border:1px solid #3d4047;border-radius:16px;padding:8px;box-shadow:0 12px 30px #0003!important}
+ body.rq-admin-shell .rqAdminMore a{display:flex;gap:12px;align-items:center;padding:13px;color:#f1f1f1!important;text-decoration:none;border-radius:9px}
+ body.rq-admin-shell .rqAdminMore a.active{background:#34363a}
+ body.rq-admin-shell .addBar{bottom:calc(76px + env(safe-area-inset-bottom))!important}
+}
+@media(prefers-reduced-motion:reduce){body.rq-admin-shell *,body.rq-admin-shell *:before{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
