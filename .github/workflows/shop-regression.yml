@@ -39,6 +39,7 @@ jobs:
           node tests/shop-customer-auth.mjs
           node tests/shop-admin-orders-ui.mjs
           node tests/shop-admin-products-ui.mjs
+          node tests/shop-product-toggle-safety.mjs
       - run: npm install --no-save --no-package-lock jsdom@30.0.1
       - name: Run Shop DOM regression
         run: node tests/shop-ui.cjs
