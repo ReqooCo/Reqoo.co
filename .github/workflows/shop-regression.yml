@@ -5,8 +5,9 @@ on:
       - '_web_worker.js'
       - 'shop/shop-core-v1.js'
       - 'shop/index.html'
+      - 'shop/account.html'
       - 'shop/shop-premium.css'
-      - 'api/shop-flow-v3.js'
+      - 'api/shop-flow-v*.js'
       - 'api/shop-admin-flow-v*.js'
       - 'api/worker.js'
       - 'tests/shop-*'
@@ -26,14 +27,15 @@ jobs:
         run: |
           node --check _web_worker.js
           node --check shop/shop-core-v1.js
-          for file in api/shop-flow-v3.js api/shop-admin-flow-v*.js api/worker.js; do node --check "$file"; done
+          for file in api/shop-flow-v*.js api/shop-admin-flow-v*.js api/worker.js; do node --check "$file"; done
       - name: Run Shop backend and routing regressions
         run: |
           node tests/shop-routing.mjs
           node tests/shop-quantity-unit.cjs
           node tests/shop-quote.mjs
-          node tests/shop-reject-stock-restore.mjs
+          node tests/shop-reject-stock-restore.test.mjs
           node tests/shop-status-stock-safety.mjs
+          node tests/shop-customer-auth.mjs
       - run: npm install --no-save --no-package-lock jsdom@30.0.1
       - name: Run Shop DOM regression
         run: node tests/shop-ui.cjs
