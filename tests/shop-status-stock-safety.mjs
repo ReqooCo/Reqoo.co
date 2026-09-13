@@ -9,6 +9,9 @@ assert.match(flow,/payment_status\)\.toLowerCase\(\)==='paid'/,'paid orders must
 
 const v8=fs.readFileSync(new URL('../api/shop-admin-flow-v8.js',import.meta.url),'utf8');
 assert.match(v8,/shop-admin-flow-v7\.js/,'v8 must preserve v7 status and stock safety');
+const v9=fs.readFileSync(new URL('../api/shop-admin-flow-v9.js',import.meta.url),'utf8');
+assert.match(v9,/shop-admin-flow-v8\.js/,'v9 must preserve the v8 gallery and v7 stock safety chain');
+assert.match(v9,/status==='processing'\|\|status==='fulfilled'/,'v9 must handle production fulfillment transitions before legacy body parsing');
 const worker=fs.readFileSync(new URL('../api/worker.js',import.meta.url),'utf8');
-assert.match(worker,/shop-admin-flow-v8\.js/,'worker must route Shop admin through v8 while retaining v7 safety');
+assert.match(worker,/shop-admin-flow-v9\.js/,'worker must route Shop admin through v9 while retaining prior safety layers');
 console.log('shop status stock safety regression: ok');
