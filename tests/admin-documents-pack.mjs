@@ -4,7 +4,7 @@ const js=fs.readFileSync(new URL('../admin/documents-v1.js',import.meta.url),'ut
 const shell=fs.readFileSync(new URL('../admin/admin-shell-v2.js',import.meta.url),'utf8');
 const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8');
 assert.match(html,/quotation/i);assert.match(html,/invoice/i);assert.match(html,/receipt/i);
-assert.match(js,/listOrders/);assert.match(js,/getOrder/);assert.match(js,/Receipt hanya boleh dikeluarkan selepas bayaran disahkan/);assert.match(js,/window\.print/);
+assert.match(js,/listOrders/);assert.match(js,/getOrder/);assert.match(js,/Receipt hanya boleh dikeluarkan selepas bayaran disahkan/);assert.match(js,/w\.print\(\)/);
 assert.match(shell,/Documents/);assert.match(shell,/\/admin\/documents\.html/);
 assert.match(worker,/settings\|documents/);assert.match(worker,/admin-shell-v2\.js\?v=2/);
 console.log('PASS: Admin Documents V1 is wired with guarded order-based document previews.');
