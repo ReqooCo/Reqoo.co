@@ -1,0 +1,10 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const js=fs.readFileSync(new URL('../shop/admin-fulfillment-v1.js',import.meta.url),'utf8');
+assert.match(js,/WhatsApp Status Proses/,'processing WhatsApp action must exist');
+assert.match(js,/WhatsApp Order Siap/,'fulfilled WhatsApp action must exist');
+assert.match(js,/wa\.me\//,'WhatsApp deep link must be generated');
+assert.match(js,/reqoo\.co\/shop\/account\.html/,'customer status link must be included in message');
+assert.match(js,/status==='fulfilled'/,'fulfilled notification must use status-specific copy');
+assert.match(js,/customerPhone/,'customer phone must be derived from the authenticated admin order detail');
+console.log('PASS: admin status-specific WhatsApp notification actions are wired.');
