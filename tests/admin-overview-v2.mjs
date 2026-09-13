@@ -1,9 +1,12 @@
 import fs from 'node:fs';import assert from 'node:assert/strict';
 const js=fs.readFileSync(new URL('../admin/overview-v2.js',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../admin/overview-v2.css',import.meta.url),'utf8');
+const api=fs.readFileSync(new URL('../api/shop-admin-flow-v15.js',import.meta.url),'utf8');
 const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8');
-assert.match(js,/listOrders/);assert.match(js,/listProductionMeta/);assert.match(js,/PAID REVENUE/);assert.match(js,/PENDING PAYMENT/);assert.match(js,/DUE TODAY/);assert.match(js,/OVERDUE/);assert.match(js,/REPEAT CUSTOMERS/);assert.match(js,/Revenue hanya payment PAID/);
-assert.match(js,/\/admin\/finance\.html/);assert.match(js,/\/admin\/customers\.html/);assert.match(js,/\/admin\/documents\.html/);assert.match(js,/\/shop\/admin\.html#production/);
+const html=fs.readFileSync(new URL('../admin/index.html',import.meta.url),'utf8');
+assert.match(js,/dashboardSummary/);assert.doesNotMatch(js,/listOrders/);assert.doesNotMatch(js,/listProductionMeta/);assert.match(js,/FRESH_MS=30000/);assert.match(js,/PAID REVENUE/);assert.match(js,/PENDING PAYMENT/);assert.match(js,/DUE TODAY/);assert.match(js,/OVERDUE/);assert.match(js,/REPEAT CUSTOMERS/);assert.match(js,/Revenue hanya payment PAID/);
+assert.match(api,/dashboardSummary/);assert.match(api,/LIMIT 8/);assert.match(api,/shop_production_meta/);assert.match(api,/payment_status='paid'/);
+assert.doesNotMatch(html,/function loadOrders/,'legacy Overview order loader must be removed');assert.doesNotMatch(html,/Latest Orders/,'legacy duplicate dashboard must be removed');
 assert.match(css,/\.rqKpis/);assert.match(css,/\.rqDashGrid/);assert.match(css,/@media\(max-width:780px\)/);
-assert.match(worker,/overview-v2\.css\?v=1/);assert.match(worker,/overview-v2\.js\?v=1/);assert.match(worker,/REQOO Admin — Control Centre/);
-console.log('PASS: Overview V2 combines actionable Orders, Production, Finance and customer signals without mutations.');
+assert.match(worker,/overview-v2\.css\?v=2/);assert.match(worker,/overview-v2\.js\?v=2/);assert.match(worker,/REQOO Admin — Control Centre/);
+console.log('PASS: Overview uses one consolidated summary request and removes duplicate legacy loading.');

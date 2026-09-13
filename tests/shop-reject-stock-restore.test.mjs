@@ -9,6 +9,7 @@ const v10=fs.readFileSync(new URL('../api/shop-admin-flow-v10.js',import.meta.ur
 const v11=fs.readFileSync(new URL('../api/shop-admin-flow-v11.js',import.meta.url),'utf8');assert.match(v11,/shop-admin-flow-v10\.js/);
 const v12=fs.readFileSync(new URL('../api/shop-admin-flow-v12.js',import.meta.url),'utf8');assert.match(v12,/shop-admin-flow-v11\.js/);
 const v13=fs.readFileSync(new URL('../api/shop-admin-flow-v13.js',import.meta.url),'utf8');assert.match(v13,/shop-admin-flow-v12\.js/);
-const v14=fs.readFileSync(new URL('../api/shop-admin-flow-v14.js',import.meta.url),'utf8');assert.match(v14,/shop-admin-flow-v13\.js/,'v14 must preserve the complete stock-safe v13 chain');
-const worker=fs.readFileSync(new URL('../api/worker.js',import.meta.url),'utf8');assert.match(worker,/shop-admin-flow-v14\.js/,'worker must route admin requests through latest stock-safe v14 flow');
+const v14=fs.readFileSync(new URL('../api/shop-admin-flow-v14.js',import.meta.url),'utf8');assert.match(v14,/shop-admin-flow-v13\.js/);
+const v15=fs.readFileSync(new URL('../api/shop-admin-flow-v15.js',import.meta.url),'utf8');assert.match(v15,/shop-admin-flow-v14\.js/,'v15 must preserve the complete stock-safe v14 chain');
+const worker=fs.readFileSync(new URL('../api/worker.js',import.meta.url),'utf8');assert.match(worker,/shop-admin-flow-v15\.js/,'worker must route admin requests through latest stock-safe v15 flow');
 console.log('shop rejected-payment stock restoration regression: ok');
