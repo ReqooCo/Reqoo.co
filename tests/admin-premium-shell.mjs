@@ -6,8 +6,8 @@ const css=fs.readFileSync(new URL('../admin/admin-shell-v2.css',import.meta.url)
 assert.match(worker,/admin-shell-v2\.css\?v=1/,'premium Admin shell CSS must be injected');
 assert.match(worker,/admin-shell-v2\.js\?v=5/,'premium Admin shell runtime v5 must be injected');
 assert.match(worker,/x-reqoo-admin-ui/,'Admin response must advertise UI runtime');
-assert.match(worker,/assetRequest\('\/shop\/admin\.html',request\)\)\;return injectAdminUI\(response\)/,'Shop Admin must use the unified Admin UI injector');
-assert.match(worker,/admin-production-queue-safe-v1\.js\?v=1/,'Shop Admin must retain the loop-free Production runtime');
+assert.match(worker,/assetRequest\('\/shop\/admin\.html',request\)\)\;return injectShopAdminSafe\(response\)/,'Shop Admin must remain isolated in safe mode');
+assert.match(worker,/shop-admin-safe-mode-v1/,'Shop Admin safe mode marker must remain active');
 assert.match(shell,/Overview/,'shell must expose Overview');
 assert.match(shell,/Orders/,'shell must expose Orders');
 assert.match(shell,/Production/,'shell must expose Production');
@@ -22,4 +22,4 @@ assert.match(css,/\.rqAdminSide/,'desktop navigation must use an Admin sidebar')
 assert.match(css,/\.rqAdminMobile/,'mobile navigation must use a compact dock');
 assert.match(css,/repeat\(6,1fr\)/,'mobile dock must expose six primary Admin destinations');
 assert.match(css,/@media\(max-width:900px\)/,'Admin shell must be responsive');
-console.log('PASS: premium Admin shell navigation and Shop workspace routing are unified.');
+console.log('PASS: premium Admin shell stays isolated from Shop Admin safe mode.');
