@@ -7,6 +7,8 @@ on:
       - 'shop/index.html'
       - 'shop/account.html'
       - 'shop/shop-premium.css'
+      - 'shop/admin-whatsapp-docs-v1.js'
+      - 'admin/shop-*.css'
       - 'api/shop-flow-v*.js'
       - 'api/shop-admin-flow-v*.js'
       - 'api/worker.js'
@@ -27,6 +29,7 @@ jobs:
         run: |
           node --check _web_worker.js
           node --check shop/shop-core-v1.js
+          node --check shop/admin-whatsapp-docs-v1.js
           for file in api/shop-flow-v*.js api/shop-admin-flow-v*.js api/worker.js; do node --check "$file"; done
       - name: Run Shop backend and routing regressions
         run: |
@@ -36,6 +39,7 @@ jobs:
           node tests/shop-reject-stock-restore.test.mjs
           node tests/shop-status-stock-safety.mjs
           node tests/shop-customer-auth.mjs
+          node tests/shop-admin-orders-ui.mjs
       - run: npm install --no-save --no-package-lock jsdom@30.0.1
       - name: Run Shop DOM regression
         run: node tests/shop-ui.cjs
