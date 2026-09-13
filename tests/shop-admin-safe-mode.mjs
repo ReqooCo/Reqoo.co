@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8');
+assert.match(worker,/async function injectShopAdminSafe\(/,'safe Shop Admin injector must exist');
+const safe=worker.match(/async function injectShopAdminSafe\([\s\S]*?\nfunction assetRequest/)?.[0]||'';
+assert.ok(safe,'safe Shop Admin injector must be readable');
+assert.doesNotMatch(safe,/admin-shell-v2\.js/,'safe mode must not inject Admin shell runtime');
+assert.doesNotMatch(safe,/admin-production-queue-safe-v1\.js/,'safe mode must not inject Production enhancement runtime');
+assert.doesNotMatch(safe,/admin-inventory-v2\.js/,'safe mode must not inject Inventory V2 runtime');
+assert.match(safe,/shop-admin-safe-mode-v1/,'safe mode response marker must be set');
+console.log('PASS: Shop Admin safe mode stays isolated from enhancement runtimes.');
