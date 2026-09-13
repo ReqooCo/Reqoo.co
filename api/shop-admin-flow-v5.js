@@ -34,9 +34,10 @@ async function syncVariants(d,env,pid,t,base){
   for(const raw of rows){
     const x=Array.isArray(raw)?{name:raw[0],price:raw[1]}:raw||{},name=S(x.name)||'Standard';
     const match=(x.id&&byId.get(S(x.id)))||byName.get(name.toLowerCase());
-    const pm=x.priceMinor!=null?Number(x.priceMinor):Math.round(Number(x.price||0)*100);
+    const explicitPrice=x.priceMinor!=null?Number(x.priceMinor):Math.round(Number(x.price||0)*100);
+    const pm=Number.isFinite(explicitPrice)&&explicitPrice>0?explicitPrice:Number(base||0);
     const sm=x.salePriceMinor==null?(x.salePrice==null?null:Math.round(Number(x.salePrice)*100)):Number(x.salePriceMinor);
-    const stock=x.stock==null||x.stock===''?null:Number(x.stock),stockTracking=stock!==null?1:0,img=S(x.imageUrl||x.image);
+    const rawStock=x.stock==null||x.stock===''?null:Number(x.stock),stock=rawStock===null?null:Math.max(0,Math.floor(Number.isFinite(rawStock)?rawStock:0)),stockTracking=stock!==null?1:0,img=S(x.imageUrl||x.image);
     if(match){
       seen.add(match.id);
       await env.DB.prepare('UPDATE product_variations SET sku=?,name=?,attributes_json=?,price_minor=?,sale_price_minor=?,stock_qty=?,stock_tracking=?,image_url=?,status=?,updated_at=? WHERE id=? AND product_id=?').bind(S(x.sku)||null,name,JSON.stringify(x.attributes||{}),pm,sm,stock,stockTracking,img||null,x.active===false?'hidden':'active',t,match.id,pid).run();
