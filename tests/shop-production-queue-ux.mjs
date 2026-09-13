@@ -3,10 +3,11 @@ const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8'
 const runtime=fs.readFileSync(new URL('../shop/admin-production-queue-v3.js',import.meta.url),'utf8');
 const api=fs.readFileSync(new URL('../api/shop-admin-flow-v16.js',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../admin/shop-production-queue-v2.css',import.meta.url),'utf8');
-assert.match(worker,/shop-production-queue-v2\.css\?v=1/);assert.match(worker,/admin-production-queue-v3\.js\?v=1/);assert.doesNotMatch(worker,/admin-production-queue-v2\.js\?v=1/);
+assert.match(worker,/shop-production-queue-v2\.css\?v=1/);assert.match(worker,/admin-production-queue-v3\.js\?v=2/);assert.doesNotMatch(worker,/admin-production-queue-v2\.js\?v=1/);
 assert.match(runtime,/productionDashboard/);assert.doesNotMatch(runtime,/listOrders/);assert.doesNotMatch(runtime,/listProductionMeta/);assert.match(runtime,/FRESH_MS=45000/);assert.match(runtime,/90000/);
+assert.match(runtime,/box\.addEventListener\('click',handleQueueClick\)/);assert.match(runtime,/function handleQueueClick/);assert.match(runtime,/closest\('\[data-rq-plan\]'\)/);assert.match(runtime,/closest\('\[data-rq-open\]'\)/);assert.match(runtime,/closest\('\[data-rq-action\]'\)/);assert.match(runtime,/closest\('\[data-rq-filter\]'\)/);
 assert.match(runtime,/saveProductionMeta/);assert.match(runtime,/dueDate/);assert.match(runtime,/priority/);assert.match(runtime,/assignedTo/);assert.match(runtime,/internalNote/);assert.match(runtime,/Due Hari Ini/);assert.match(runtime,/Overdue/);
 assert.match(runtime,/verifyPayment/);assert.match(runtime,/status:'processing'/);assert.match(runtime,/status:'fulfilled'/);assert.match(runtime,/Buka Semula/);assert.match(runtime,/confirm\(a\.confirm\)/);
 assert.match(api,/productionDashboard/);assert.match(api,/LEFT JOIN shop_production_meta/);assert.match(api,/LIMIT 200/);assert.match(api,/shop-admin-flow-v15\.js/);
 assert.match(css,/\.rqPlanner/);assert.match(css,/\.rqPriority-urgent/);assert.match(css,/\.rqDue-overdue/);
-console.log('PASS: Production queue uses one consolidated request, freshness guard and guarded status workflow.');
+console.log('PASS: Production queue uses consolidated data and delegated controls that survive rerenders.');
