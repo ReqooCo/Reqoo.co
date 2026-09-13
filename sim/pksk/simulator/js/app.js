@@ -37,7 +37,7 @@ function countdown(callback){const box=$('count');if(!box){callback();return}box
 function startAB(){phase='ab';qStarted=Date.now();abStartedAt=abStartedAt||Date.now();show('exam');renderQ();renderTimer();clearInterval(interval);interval=setInterval(()=>{timer=Math.max(0,timer-1);renderTimer();if(timer<=0){clearInterval(interval);finishAB(true)}else if(timer%30===0)saveProgress()},1000)}
 function renderTimer(){const m=Math.floor(timer/60),s=timer%60;if($('timer'))$('timer').textContent=pad(m)+':'+pad(s)}
 function saveTime(){if(qStarted){times[qidx]=(times[qidx]||0)+(Date.now()-qStarted);qStarted=Date.now();saveLocal()}}
-function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]))}
+function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function renderQuestionVisual(value){if(!value)return '';const legacySrc=name=>`sets/${encodeURIComponent(groupPath())}/assets/visuals/${encodeURIComponent(name)}`;if(window.PKSKVisual?.render)return window.PKSKVisual.render(value,legacySrc);return typeof value==='string'?`<div class="question-visual"><img src="${legacySrc(value)}" alt="Rajah soalan"></div>`:''}
 function answer(i){if(phase!=='ab')return;answers[qs[qidx].id]=i;saveTime();renderQ()}
 function gotoQ(i){if(!qs[i])return;saveTime();qidx=i;renderQ()}
