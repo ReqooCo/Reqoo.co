@@ -23,6 +23,7 @@ on:
       - 'admin/documents*'
       - 'admin/document-public*'
       - 'admin/customers*'
+      - 'admin/finance*'
       - 'api/shop-flow-v*.js'
       - 'api/shop-admin-flow-v*.js'
       - 'api/worker.js'
@@ -49,6 +50,7 @@ jobs:
           node --check admin/documents-v2.js
           node --check admin/document-public-v1.js
           node --check admin/customers-v1.js
+          node --check admin/finance-v1.js
           node --check shop/shop-core-v1.js
           node --check shop/shop-inventory-v1.js
           node --check shop/admin-inventory-v1.js
@@ -85,6 +87,7 @@ jobs:
           node tests/admin-documents-pack.mjs
           node tests/admin-documents-v2.mjs
           node tests/admin-customers-crm.mjs
+          node tests/admin-finance-dashboard.mjs
       - run: npm install --no-save --no-package-lock jsdom@30.0.1
       - name: Run Shop DOM regression
         run: node tests/shop-ui.cjs
