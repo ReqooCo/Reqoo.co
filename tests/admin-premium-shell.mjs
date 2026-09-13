@@ -4,7 +4,7 @@ const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8'
 const shell=fs.readFileSync(new URL('../admin/admin-shell-v2.js',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../admin/admin-shell-v2.css',import.meta.url),'utf8');
 assert.match(worker,/admin-shell-v2\.css\?v=1/,'premium Admin shell CSS must be injected');
-assert.match(worker,/admin-shell-v2\.js\?v=3/,'premium Admin shell runtime v3 must be injected');
+assert.match(worker,/admin-shell-v2\.js\?v=4/,'premium Admin shell runtime v4 must be injected');
 assert.match(worker,/x-reqoo-admin-ui/,'Admin response must advertise UI runtime');
 assert.match(shell,/Overview/,'shell must expose Overview');
 assert.match(shell,/Orders/,'shell must expose Orders');
@@ -12,6 +12,7 @@ assert.match(shell,/Production/,'shell must expose Production');
 assert.match(shell,/Products/,'shell must expose Products');
 assert.match(shell,/Customers/,'shell must expose Customers');
 assert.match(shell,/Documents/,'shell must expose Documents');
+assert.match(shell,/Finance/,'shell must expose Finance');
 assert.match(shell,/PKSK/,'shell must preserve PKSK navigation');
 assert.match(shell,/Settings/,'shell must expose Settings');
 assert.match(shell,/location\.hash/,'Shop sections must be hash-addressable');
