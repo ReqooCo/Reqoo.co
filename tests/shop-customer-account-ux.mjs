@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8');
+assert.match(worker,/account-premium-v1\.css/,'account premium stylesheet must be injected');
+assert.match(worker,/account-premium-v1\.js/,'account premium runtime must be injected');
+assert.match(worker,/postpurchase-v1\.js/,'public Shop must include post-purchase account CTA runtime');
+const account=fs.readFileSync(new URL('../shop/account-premium-v1.js',import.meta.url),'utf8');
+assert.match(account,/action=getOrder/,'account runtime must fetch authenticated order detail');
+assert.match(account,/X-Reqoo-Customer-Token/,'order detail must use customer session token');
+assert.match(account,/WhatsApp REQOO/,'after-sales WhatsApp action must be present');
+assert.match(account,/Semakan bayaran/,'payment pending state must be represented');
+assert.match(account,/Sedang diproses/,'processing state must be represented');
+console.log('PASS: customer account after-sales UX wiring is present and authenticated.');
