@@ -3,9 +3,45 @@ const C={'access-control-allow-origin':'*','access-control-allow-methods':'GET,P
 const S=v=>String(v??'').trim(),ID=p=>`${p}_${crypto.randomUUID()}`,NOW=()=>new Date().toISOString();const J=(x,s=200)=>new Response(JSON.stringify(x),{status:s,headers:{'content-type':'application/json;charset=UTF-8',...C}});
 function dbody(r){return r.method==='GET'?Promise.resolve(Object.fromEntries(new URL(r.url).searchParams)):r.clone().json().catch(()=>({}))}
 function auth(r,e,d){const t=S(r.headers.get('X-Admin-Token')||d.token);return!!t&&t===S(e.REQOO_ADMIN_TOKEN||e.SHOP_ADMIN_TOKEN||e.ADMIN_KEY)}
-async function verify(request,data,e,reject=false){if(!auth(request,e,data))return J({ok:false,error:'Unauthorized'},401);try{const key=S(data.orderId||data.orderRef||data.orderNo),o=await e.DB.prepare('SELECT * FROM orders WHERE id=? OR order_no=? LIMIT 1').bind(key,key).first();if(!o)return J({ok:false,error:'Order tidak dijumpai'},404);const t=NOW(),p=await e.DB.prepare('SELECT * FROM payments WHERE order_id=? ORDER BY created_at DESC LIMIT 1').bind(o.id).first();if(reject){await e.DB.prepare("UPDATE orders SET payment_status='failed',updated_at=? WHERE id=?").bind(t,o.id).run();if(p)await e.DB.prepare("UPDATE payments SET status='failed',updated_at=? WHERE id=?").bind(t,p.id).run();try{await event(e,o.id,'payment.rejected',{reason:S(data.reason),at:t})}catch(err){console.error('REQOO verify audit rejected:',err)}return J({ok:true,status:'FAILED'})}if(o.payment_status==='paid')return J({ok:true,status:'PAID',already:true});await e.DB.prepare("UPDATE orders SET payment_status='paid',fulfillment_status='processing',updated_at=? WHERE id=?").bind(t,o.id).run();if(p)await e.DB.prepare("UPDATE payments SET status='paid',paid_at=?,updated_at=? WHERE id=?").bind(t,t,p.id).run();try{await makeDocs(e,o)}catch(err){console.error('REQOO verify documents:',err)}try{await event(e,o.id,'payment.verified',{paymentId:p?.id||null,verifiedAt:t});await event(e,o.id,'order.processing',{})}catch(err){console.error('REQOO verify audit:',err)}return J({ok:true,status:'PAID'})}catch(err){console.error('REQOO verifyPayment:',err);return J({ok:false,error:err?.message||String(err)},500)}}
+async function verify(request,data,e,reject=false){
+  if(!auth(request,e,data))return J({ok:false,error:'Unauthorized'},401);
+  if(!e.DB)return J({ok:false,error:'Database tidak tersedia'},503);
+  try{
+    const key=S(data.orderId||data.orderRef||data.orderNo);
+    const o=await e.DB.prepare('SELECT * FROM orders WHERE id=? OR order_no=? LIMIT 1').bind(key,key).first();
+    if(!o)return J({ok:false,error:'Order tidak dijumpai'},404);
+    // Rejections are handled by v6, including stock restoration.
+    if(reject)return J({ok:false,error:'Gunakan aliran penolakan bayaran semasa'},409);
+    if(['failed','cancelled','refunded'].includes(o.payment_status)||o.fulfillment_status==='cancelled')return J({ok:false,error:'Order dibatalkan atau bayaran ditolak. Jangan sahkan semula order ini.'},409);
+    const p=await e.DB.prepare('SELECT * FROM payments WHERE order_id=? ORDER BY created_at DESC LIMIT 1').bind(o.id).first();
+    if(!p)return J({ok:false,error:'Rekod bayaran tidak dijumpai. Semak order sebelum pengesahan.'},409);
+    const t=NOW();
+    // D1 batch rolls back both writes together. Retrying also repairs older split states.
+    await e.DB.batch([
+      e.DB.prepare("UPDATE orders SET payment_status='paid',fulfillment_status=CASE WHEN payment_status='paid' THEN fulfillment_status ELSE 'processing' END,updated_at=? WHERE id=? AND payment_status NOT IN ('failed','cancelled','refunded') AND fulfillment_status!='cancelled'").bind(t,o.id),
+      e.DB.prepare("UPDATE payments SET status='paid',paid_at=COALESCE(paid_at,?),updated_at=? WHERE id=? AND EXISTS(SELECT 1 FROM orders WHERE id=? AND payment_status='paid' AND fulfillment_status!='cancelled')").bind(t,t,p.id,o.id)
+    ]);
+    const fresh=await e.DB.prepare('SELECT * FROM orders WHERE id=? OR order_no=? LIMIT 1').bind(o.id,o.id).first();
+    if(fresh?.payment_status!=='paid'||fresh.fulfillment_status==='cancelled')return J({ok:false,error:'Status order telah berubah. Muat semula sebelum mencuba lagi.'},409);
+    let documentsPending=false;
+    try{await makeDocs(e,fresh)}catch(err){documentsPending=true;console.error('REQOO verify documents:',err)}
+    if(o.payment_status!=='paid'||p.status!=='paid')try{await event(e,o.id,'payment.verified',{paymentId:p.id,verifiedAt:t});}catch(err){console.error('REQOO verify audit:',err)}
+    return J({ok:true,status:'PAID',already:o.payment_status==='paid',documentsPending});
+  }catch(err){console.error('REQOO verifyPayment:',err);return J({ok:false,error:'Bayaran belum dapat disahkan. Sila cuba semula.'},500)}
+}
 async function event(e,oid,type,meta){return e.DB.prepare('INSERT INTO activity_events(id,order_id,event_type,trace_id,metadata_json,created_at) VALUES(?,?,?,?,?,?)').bind(ID('evt'),oid,type,oid,JSON.stringify(meta),NOW()).run()}
-async function makeDocs(e,o){const it=(await e.DB.prepare('SELECT * FROM order_items WHERE order_id=?').bind(o.id).all()).results||[];for(const type of ['invoice','receipt']){if(await e.DB.prepare("SELECT id FROM documents WHERE order_id=? AND type=? AND status!='void' LIMIT 1").bind(o.id,type).first())continue;const t=NOW(),doc=ID('doc'),num=`${type==='invoice'?'INV':'RCT'}-${new Date().getUTCFullYear()}-${crypto.randomUUID().slice(0,8).toUpperCase()}`;await e.DB.prepare('INSERT INTO documents(id,type,number,customer_id,order_id,status,currency,subtotal_minor,discount_minor,tax_minor,total_minor,issued_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(doc,type,num,o.customer_id,o.id,'paid',o.currency,o.subtotal_minor,o.discount_minor,o.tax_minor,o.total_minor,t,t,t).run();for(const x of it)await e.DB.prepare('INSERT INTO document_items(id,document_id,product_id,description,quantity,unit_price_minor,line_total_minor,snapshot_json) VALUES(?,?,?,?,?,?,?,?)').bind(ID('dit'),doc,x.product_id,x.product_name_snapshot,x.quantity,x.unit_price_minor,x.line_total_minor,x.variation_snapshot_json).run()}}
+async function makeDocs(e,o){
+ const it=(await e.DB.prepare('SELECT * FROM order_items WHERE order_id=?').bind(o.id).all()).results||[];
+ for(const type of ['invoice','receipt']){
+  const existing=await e.DB.prepare("SELECT id FROM documents WHERE order_id=? AND type=? AND status!='void' LIMIT 1").bind(o.id,type).first();
+  if(existing){const count=await e.DB.prepare('SELECT COUNT(*) n FROM document_items WHERE document_id=?').bind(existing.id).first();if(Number(count?.n)>0)continue;}
+  const t=NOW(),doc=existing?.id||`doc_${type}_${o.id}`,num=`${type==='invoice'?'INV':'RCT'}-${new Date().getUTCFullYear()}-${crypto.randomUUID().slice(0,8).toUpperCase()}`,stmts=[];
+  if(!existing)stmts.push(e.DB.prepare('INSERT INTO documents(id,type,number,customer_id,order_id,status,currency,subtotal_minor,discount_minor,tax_minor,total_minor,issued_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(doc,type,num,o.customer_id,o.id,'paid',o.currency,o.subtotal_minor,o.discount_minor,o.tax_minor,o.total_minor,t,t,t));
+  const rows=it.length?it:[{product_id:null,product_name_snapshot:`Order ${o.order_no||o.id}`,quantity:1,unit_price_minor:o.total_minor,line_total_minor:o.total_minor,variation_snapshot_json:'{}'}];
+  rows.forEach((x,i)=>stmts.push(e.DB.prepare('INSERT OR IGNORE INTO document_items(id,document_id,product_id,description,quantity,unit_price_minor,line_total_minor,snapshot_json) VALUES(?,?,?,?,?,?,?,?)').bind(`${doc}_item_${i}`,doc,x.product_id,x.product_name_snapshot,x.quantity,x.unit_price_minor,x.line_total_minor,x.variation_snapshot_json)));
+  await e.DB.batch(stmts);
+ }
+}
 function esc(v){return String(v??'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\\':'&#92;','"':'&quot;'}[m]))}
 async function digestHex(value){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('')}
 async function docToken(e,o,type){return digestHex(`${S(e.REQOO_ADMIN_TOKEN||e.SHOP_ADMIN_TOKEN||e.ADMIN_KEY)}|${o.id}|${o.order_no}|${type}`)}

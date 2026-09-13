@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../admin/admin-theme-v3.css',import.meta.url),'utf8');
-assert.match(worker,/admin-theme-v3\.css\?v=1/,'Admin theme v3 must be injected');
+assert.match(worker,/admin-theme-v3\.css\?v=2/,'Admin theme v3 must be injected');
 assert.match(worker,/premium-theme-v3/,'Admin response must advertise theme v3');
 assert.match(css,/--rq-bg:#f7f7f5/,'workspace must use a neutral light background');
 assert.match(css,/--rq-sidebar:#151515/,'navigation must use a restrained dark sidebar');

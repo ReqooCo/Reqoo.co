@@ -57,23 +57,45 @@ async function hydrate(row,env){
   let company={};try{company=JSON.parse(row.company_json||'{}')}catch{}
   return {...row,company,items};
 }
+function documentItems(id,o,items,env,repair=false){
+  const rows=items.length?items:[{product_name_snapshot:`Order ${S(o.order_no||o.id)}`,quantity:1,unit_price_minor:o.total_minor,line_total_minor:o.total_minor}];
+  return rows.map((item,ix)=>{
+    let v={};try{v=JSON.parse(item.variation_snapshot_json||'{}')}catch{}
+    // Stable repair ids make simultaneous retries idempotent.
+    const sql=repair?'INSERT OR IGNORE INTO reqoo_document_items':'INSERT INTO reqoo_document_items';
+    return env.DB.prepare(sql+'(id,document_id,description,variation,quantity,unit_price_minor,line_total_minor,sort_order) VALUES(?,?,?,?,?,?,?,?)').bind(repair?`${id}_repair_${ix}`:ID('di'),id,S(item.product_name_snapshot||'Item'),S(v.name),Number(item.quantity||1),Number(item.unit_price_minor||0),Number(item.line_total_minor||0),ix);
+  });
+}
 async function createDocument(d,env){
   const type=S(d.type).toLowerCase();if(!TYPES.has(type))return J({ok:false,error:'Jenis dokumen tidak sah'},400);
   const {o,items}=await orderSnapshot(d,env);
   if(type==='receipt'&&S(o.payment_status).toLowerCase()!=='paid')return J({ok:false,error:'Receipt hanya boleh dikeluarkan selepas bayaran disahkan.'},409);
   const existing=await env.DB.prepare('SELECT * FROM reqoo_documents WHERE order_id=? AND type=? LIMIT 1').bind(o.id,type).first();
-  if(existing)return J({ok:true,created:false,document:await hydrate(existing,env)});
+  if(existing){
+    const doc=await hydrate(existing,env);
+    if(doc.items.length)return J({ok:true,created:false,document:doc});
+    // Repair a header left behind by the previous non-atomic writer.
+    await env.DB.batch(documentItems(existing.id,o,items,env,true));
+    return J({ok:true,created:false,repaired:true,document:await hydrate(existing,env)});
+  }
   const company=await settings(env),now=NOW(),number=await nextNumber(type,env),id=ID('doc'),shareToken=`${crypto.randomUUID()}${crypto.randomUUID().replaceAll('-','')}`;
   const dueAt=S(d.dueAt)||((type==='quotation')?plusDays(now,company.quoteValidDays):(type==='invoice')?plusDays(now,company.invoiceDueDays):null);
   const status=type==='receipt'?'paid':(type==='invoice'&&S(o.payment_status).toLowerCase()==='paid')?'paid':'issued';
   const vals={subtotal:Number(o.subtotal_minor||0),discount:Number(o.discount_minor||0),shipping:Number(o.shipping_minor||0),tax:Number(o.tax_minor||0),total:Number(o.total_minor||0)};
-  await env.DB.prepare('INSERT INTO reqoo_documents(id,type,number,order_id,status,currency,subtotal_minor,discount_minor,shipping_minor,tax_minor,total_minor,issued_at,due_at,customer_name,customer_phone,customer_email,company_json,payment_status,share_token,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(id,type,number,o.id,status,S(o.currency||'MYR'),vals.subtotal,vals.discount,vals.shipping,vals.tax,vals.total,now,dueAt,S(o.customer_name),S(o.customer_phone),S(o.customer_email),JSON.stringify(company),S(o.payment_status),shareToken,now,now).run();
-  const stmts=[];let ix=0;
-  for(const item of items){let v={};try{v=JSON.parse(item.variation_snapshot_json||'{}')}catch{}stmts.push(env.DB.prepare('INSERT INTO reqoo_document_items(id,document_id,description,variation,quantity,unit_price_minor,line_total_minor,sort_order) VALUES(?,?,?,?,?,?,?,?)').bind(ID('di'),id,S(item.product_name_snapshot||'Item'),S(v.name),Number(item.quantity||1),Number(item.unit_price_minor||0),Number(item.line_total_minor||0),ix++));}
-  if(!stmts.length)stmts.push(env.DB.prepare('INSERT INTO reqoo_document_items(id,document_id,description,variation,quantity,unit_price_minor,line_total_minor,sort_order) VALUES(?,?,?,?,?,?,?,?)').bind(ID('di'),id,`Order ${S(o.order_no||o.id)}`,'',1,vals.total,vals.total,0));
-  await env.DB.batch(stmts);
+  const header=env.DB.prepare('INSERT INTO reqoo_documents(id,type,number,order_id,status,currency,subtotal_minor,discount_minor,shipping_minor,tax_minor,total_minor,issued_at,due_at,customer_name,customer_phone,customer_email,company_json,payment_status,share_token,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(id,type,number,o.id,status,S(o.currency||'MYR'),vals.subtotal,vals.discount,vals.shipping,vals.tax,vals.total,now,dueAt,S(o.customer_name),S(o.customer_phone),S(o.customer_email),JSON.stringify(company),S(o.payment_status),shareToken,now,now);
+  await env.DB.batch([header,...documentItems(id,o,items,env)]);
   const row=await env.DB.prepare('SELECT * FROM reqoo_documents WHERE id=?').bind(id).first();
   return J({ok:true,created:true,document:await hydrate(row,env)});
+}
+async function documentLinks(d,env){
+  const {o}=await orderSnapshot(d,env);
+  if(o.payment_status!=='paid')return J({ok:false,error:'Sahkan bayaran sebelum menjana invoice dan resit.'},409);
+  const invoiceResponse=await createDocument({...d,type:'invoice'},env);
+  if(!invoiceResponse.ok)return invoiceResponse;
+  const receiptResponse=await createDocument({...d,type:'receipt'},env);
+  if(!receiptResponse.ok)return receiptResponse;
+  const invoice=await invoiceResponse.json(),receipt=await receiptResponse.json();
+  return J({ok:true,invoiceUrl:`https://reqoo.co/d/${invoice.document.share_token}`,receiptUrl:`https://reqoo.co/d/${receipt.document.share_token}`});
 }
 async function listDocuments(d,env){
   const limit=Math.min(500,Math.max(1,Number(d.limit||100))),type=S(d.type),orderId=S(d.orderId||d.orderRef);
@@ -88,15 +110,17 @@ export async function onRequest({request,env}){
   if(request.method==='OPTIONS')return new Response(null,{status:204,headers:C});
   if(!env.DB)return J({ok:false,error:'D1 binding DB tidak dijumpai'},503);
   try{
-    const d=await data(request),action=S(d.action);await ensure(env);
-    if(action==='publicDocument')return publicDocument(d,env);
-    if(['createDocument','listDocuments','getDocument','documentSettings','saveDocumentSettings'].includes(action)){
+    const d=await data(request),action=S(d.action);
+    if(action==='publicDocument'){await ensure(env);return await publicDocument(d,env);}
+    if(['createDocument','listDocuments','getDocument','documentSettings','saveDocumentSettings','documentLinks'].includes(action)){
       if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);
-      if(action==='createDocument')return createDocument(d,env);
-      if(action==='listDocuments')return listDocuments(d,env);
-      if(action==='getDocument')return getDocument(d,env);
+      await ensure(env);
+      if(action==='documentLinks')return await documentLinks(d,env);
+      if(action==='createDocument')return await createDocument(d,env);
+      if(action==='listDocuments')return await listDocuments(d,env);
+      if(action==='getDocument')return await getDocument(d,env);
       if(action==='documentSettings')return J({ok:true,settings:await settings(env)});
-      if(action==='saveDocumentSettings')return saveSettings(d,env);
+      if(action==='saveDocumentSettings')return await saveSettings(d,env);
     }
     return legacy({request,env});
   }catch(e){console.error('REQOO documents v12:',e);return J({ok:false,error:e?.message||String(e)},500)}

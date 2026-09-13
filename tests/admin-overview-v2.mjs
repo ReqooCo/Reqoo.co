@@ -8,5 +8,5 @@ assert.match(js,/dashboardSummary/);assert.doesNotMatch(js,/listOrders/);assert.
 assert.match(api,/dashboardSummary/);assert.match(api,/LIMIT 8/);assert.match(api,/shop_production_meta/);assert.match(api,/payment_status='paid'/);
 assert.doesNotMatch(html,/function loadOrders/,'legacy Overview order loader must be removed');assert.doesNotMatch(html,/Latest Orders/,'legacy duplicate dashboard must be removed');
 assert.match(css,/\.rqKpis/);assert.match(css,/\.rqDashGrid/);assert.match(css,/@media\(max-width:780px\)/);
-assert.match(worker,/overview-v2\.css\?v=2/);assert.match(worker,/overview-v2\.js\?v=2/);assert.match(worker,/REQOO Admin — Control Centre/);
+assert.match(worker,/overview-v2\.css\?v=2/);assert.match(worker,/overview-v2\.js\?v=3/);assert.match(worker,/REQOO Admin — Control Centre/);
 console.log('PASS: Overview uses one consolidated summary request and removes duplicate legacy loading.');
