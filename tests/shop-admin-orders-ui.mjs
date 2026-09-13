@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const js=fs.readFileSync('shop/admin-whatsapp-docs-v1.js','utf8');
+const css=fs.readFileSync('admin/shop-orders-premium-v1.css','utf8');
+assert.match(js,/shop-orders-premium-v1\.css\?v=1/,'order admin enhancer must load premium order stylesheet');
+assert.match(js,/✓ Sahkan Bayaran/,'payment verification action must use clear Malay label');
+assert.match(js,/Tolak Bayaran/,'payment rejection action must use clear Malay label');
+assert.match(js,/pemulangan stok/,'reject payment control must explain stock restoration');
+assert.match(css,/#orders \.orderRow:not\(\.orderHead\)/,'orders stylesheet must target order rows');
+assert.match(css,/@media\(max-width:700px\)/,'orders stylesheet must include mobile layout');
+assert.match(css,/#orderModal \.modalActions/,'order action area must receive mobile-safe styling');
+console.log('PASS: Shop admin order management polish is wired and guarded.');
