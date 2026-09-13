@@ -15,6 +15,8 @@ assert.match(v9,/status==='processing'\|\|status==='fulfilled'/,'v9 must handle 
 const v10=fs.readFileSync(new URL('../api/shop-admin-flow-v10.js',import.meta.url),'utf8');
 assert.match(v10,/shop-admin-flow-v9\.js/,'v10 must preserve v9 and prior safety layers');
 assert.match(v10,/fulfillment_status,updated_at FROM orders/,'v10 must verify persisted fulfillment state');
+const v11=fs.readFileSync(new URL('../api/shop-admin-flow-v11.js',import.meta.url),'utf8');
+assert.match(v11,/shop-admin-flow-v10\.js/,'v11 must preserve v10 fulfillment persistence and prior safety layers');
 const worker=fs.readFileSync(new URL('../api/worker.js',import.meta.url),'utf8');
-assert.match(worker,/shop-admin-flow-v10\.js/,'worker must route Shop admin through v10 while retaining prior safety layers');
+assert.match(worker,/shop-admin-flow-v11\.js/,'worker must route Shop admin through v11 while retaining prior safety layers');
 console.log('shop status stock safety regression: ok');
