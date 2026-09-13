@@ -19,6 +19,7 @@ on:
       - 'admin/shop-*.css'
       - 'admin/admin-shell-v*.css'
       - 'admin/admin-shell-v*.js'
+      - 'admin/admin-theme-v*.css'
       - 'api/shop-flow-v*.js'
       - 'api/shop-admin-flow-v*.js'
       - 'api/worker.js'
@@ -72,6 +73,7 @@ jobs:
           node tests/shop-order-status-consistency.mjs
           node tests/shop-order-production-detail.mjs
           node tests/admin-premium-shell.mjs
+          node tests/admin-premium-theme-v3.mjs
       - run: npm install --no-save --no-package-lock jsdom@30.0.1
       - name: Run Shop DOM regression
         run: node tests/shop-ui.cjs
