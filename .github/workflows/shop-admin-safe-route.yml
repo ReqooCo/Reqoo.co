@@ -1,0 +1,22 @@
+name: Shop Admin Safe Route
+on:
+  pull_request:
+    paths:
+      - '_web_worker.js'
+      - 'tests/shop-admin-safe-mode-route.mjs'
+      - '.github/workflows/shop-admin-safe-route.yml'
+  push:
+    branches: [main]
+    paths:
+      - '_web_worker.js'
+      - 'tests/shop-admin-safe-mode-route.mjs'
+      - '.github/workflows/shop-admin-safe-route.yml'
+jobs:
+  route:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node tests/shop-admin-safe-mode-route.mjs
