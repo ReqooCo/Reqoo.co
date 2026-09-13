@@ -15,8 +15,31 @@ async function transformProductsResponse(response){
   try{
     const j=await response.clone().json();
     if(!j||!Array.isArray(j.products))return response;
-    lastProducts=j.products;
-    const products=j.products.map(p=>({...p,variants:(Array.isArray(p.variants)?p.variants:[]).map(normalizeVariant).filter(v=>v&&v[0])}));
+
+    const products=await Promise.all(j.products.map(async p=>{
+      const product={...p,variants:(Array.isArray(p.variants)?p.variants:[]).map(normalizeVariant).filter(v=>v&&v[0])};
+
+      // Single source of truth for storefront cover:
+      // Admin Media -> first image = cover -> shop card/detail.
+      // Fall back to legacy image fields only when no media image exists.
+      if(product.id){
+        try{
+          const r=await nativeFetch(MEDIA+'?action=listImages&productId='+encodeURIComponent(product.id)+'&_='+Date.now(),{cache:'no-store'});
+          const m=await r.json();
+          const first=Array.isArray(m?.images)&&m.images.length
+            ? (m.images[0]?.url||m.images[0]?.image||m.images[0])
+            : '';
+          if(first){
+            product.image=first;
+            product.imageUrl=first;
+            product.cover=first;
+          }
+        }catch(e){}
+      }
+      return product;
+    }));
+
+    lastProducts=products;
     return new Response(JSON.stringify({...j,products}),{status:response.status,statusText:response.statusText,headers:new Headers(response.headers)});
   }catch(e){return response}
 }
