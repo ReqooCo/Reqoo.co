@@ -7,6 +7,7 @@ on:
       - 'shop/shop-inventory-v*.js'
       - 'shop/admin-inventory-v*.js'
       - 'shop/admin-fulfillment-v*.js'
+      - 'shop/admin-production-queue-v*.js'
       - 'shop/account-premium-v*.js'
       - 'shop/postpurchase-v*.js'
       - 'shop/shop-inventory-v*.css'
@@ -38,6 +39,7 @@ jobs:
           node --check shop/shop-inventory-v1.js
           node --check shop/admin-inventory-v1.js
           node --check shop/admin-fulfillment-v1.js
+          node --check shop/admin-production-queue-v1.js
           node --check shop/account-premium-v1.js
           node --check shop/postpurchase-v1.js
           for file in api/shop-flow-v*.js api/shop-admin-flow-v*.js api/worker.js; do node --check "$file"; done
@@ -58,6 +60,7 @@ jobs:
           node tests/shop-customer-account-ux.mjs
           node tests/shop-admin-fulfillment-ux.mjs
           node tests/shop-admin-whatsapp-status.mjs
+          node tests/shop-production-queue-ux.mjs
       - run: npm install --no-save --no-package-lock jsdom@30.0.1
       - name: Run Shop DOM regression
         run: node tests/shop-ui.cjs
