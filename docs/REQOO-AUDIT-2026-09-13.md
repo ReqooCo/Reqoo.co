@@ -49,3 +49,7 @@ The live Shop was inspected in Cloud Browser: hero and footer rendered, while th
 Validation: routing tests, quantity/upload tests, server quote tests and jsdom DOM integration tests passed locally. DOM tests exercise product → cart → shipping quote → contact validation → receipt → success, duplicate-click prevention, draft recovery and quote-failure blocking. API/legacy API, worker and simulator syntax gates pass. Tests use fixtures and do not place production orders. Cloud Browser blocks local file previews; responsive CSS has source validation but no local rendered visual verification. Real payment, authenticated admin operations and production order fulfillment remain outside these checks.
 
 The original browser test was replaced with runnable DOM regression coverage. CI uses jsdom 30.0.1. No new schema migrations, PKSK question content changes or legacy PR merges are included.
+
+## Release verification
+
+PR #35 merged as 39b540d; GitHub Shop regression and production deployment succeeded. Live browser confirmed 3 catalog products, Tumbler color variations and cart quantities, and the server-calculated RM66 total (2 × RM29 plus configured RM8 shipping). Desktop product dialog visually inspected. No real order submitted or money transferred. Final polish translates internal category labels and refreshes the runtime cache key.
