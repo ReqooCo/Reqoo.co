@@ -22,6 +22,7 @@ on:
       - 'admin/admin-theme-v*.css'
       - 'admin/overview*'
       - 'admin/orders*'
+      - 'admin/production*'
       - 'admin/documents*'
       - 'admin/document-public*'
       - 'admin/customers*'
@@ -50,6 +51,7 @@ jobs:
           node --check admin/admin-shell-v2.js
           node --check admin/overview-v2.js
           node --check admin/orders-v1.js
+          node --check admin/production-v1.js
           node --check admin/documents-v1.js
           node --check admin/documents-v2.js
           node --check admin/document-public-v1.js
@@ -92,6 +94,7 @@ jobs:
           node tests/admin-premium-theme-v3.mjs
           node tests/admin-overview-v2.mjs
           node tests/admin-orders-v1.mjs
+          node tests/admin-production-page-v1.mjs
           node tests/admin-documents-pack.mjs
           node tests/admin-documents-v2.mjs
           node tests/admin-customers-crm.mjs
