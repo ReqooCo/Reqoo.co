@@ -55,7 +55,7 @@ jobs:
           node --check shop/shop-inventory-v1.js
           node --check shop/admin-inventory-v1.js
           node --check shop/admin-fulfillment-v1.js
-          node --check shop/admin-production-queue-v1.js
+          node --check shop/admin-production-queue-v2.js
           node --check shop/admin-order-production-v1.js
           node --check shop/account-premium-v1.js
           node --check shop/postpurchase-v1.js
@@ -80,6 +80,7 @@ jobs:
           node tests/shop-admin-fulfillment-ux.mjs
           node tests/shop-admin-whatsapp-status.mjs
           node tests/shop-production-queue-ux.mjs
+          node tests/shop-production-meta-v13.mjs
           node tests/shop-order-status-consistency.mjs
           node tests/shop-order-production-detail.mjs
           node tests/admin-premium-shell.mjs
