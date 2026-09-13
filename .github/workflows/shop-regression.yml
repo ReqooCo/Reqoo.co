@@ -7,6 +7,7 @@ on:
       - 'shop/index.html'
       - 'shop/account.html'
       - 'shop/shop-premium.css'
+      - 'admin/shop-*.css'
       - 'api/shop-flow-v*.js'
       - 'api/shop-admin-flow-v*.js'
       - 'api/worker.js'
@@ -36,6 +37,7 @@ jobs:
           node tests/shop-reject-stock-restore.test.mjs
           node tests/shop-status-stock-safety.mjs
           node tests/shop-customer-auth.mjs
+          node tests/shop-admin-orders-ui.mjs
       - run: npm install --no-save --no-package-lock jsdom@30.0.1
       - name: Run Shop DOM regression
         run: node tests/shop-ui.cjs
