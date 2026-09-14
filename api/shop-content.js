@@ -12,16 +12,16 @@ const DEFAULTS={
     eyebrow:'KATEGORI UTAMA',
     title:'Pilih ikut cerita anda.',
     ctaText:'Lihat semua koleksi',
-    ctaLink:'#catalogue',
+    ctaLink:'/shop/',
     background:'#f6f1e7',
     decorLeft:'/shop/assets/botanical-leaves-left.svg',
     decorRight:'/shop/assets/botanical-leaves-right.svg'
   },
   items:[
-    {title:'Plaque',text:'Cipta kenangan yang kekal.',image:'/shop/assets/plaque-prestige.jpg',link:'#catalogue',active:true},
-    {title:'Trophy',text:'Penghargaan untuk setiap pencapaian.',image:'/shop/assets/trophy.jpg',link:'#catalogue',active:true},
-    {title:'Medal',text:'Lebih daripada kemenangan.',image:'/shop/assets/medal.jpg',link:'#catalogue',active:true},
-    {title:'Brooch',text:'Butiran kecil, makna besar.',image:'/shop/assets/brooch-01-04.jpg',link:'#catalogue',active:true}
+    {title:'Plaque',text:'Cipta kenangan yang kekal.',image:'/shop/assets/plaque-prestige.jpg',link:'/shop/',active:true},
+    {title:'Trophy',text:'Penghargaan untuk setiap pencapaian.',image:'/shop/assets/trophy.jpg',link:'/shop/',active:true},
+    {title:'Medal',text:'Lebih daripada kemenangan.',image:'/shop/assets/medal.jpg',link:'/shop/',active:true},
+    {title:'Brooch',text:'Butiran kecil, makna besar.',image:'/shop/assets/brooch-01-04.jpg',link:'/shop/',active:true}
   ]
 };
 async function ensure(env){if(!env.DB)throw Error('D1 binding DB tidak dijumpai.');await env.DB.prepare(`CREATE TABLE IF NOT EXISTS reqoo_app_settings_v3(key TEXT PRIMARY KEY,value TEXT DEFAULT '')`).run();}
