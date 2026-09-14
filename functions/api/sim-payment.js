@@ -1,12 +1,11 @@
-const BILLPLZ_BASE = 'https://www.billplz.com/api/v3';
 const PRICE = 35;
 const MAX_DEVICES = 3;
 const ACCESS_URL = 'https://pksk.sim.reqoo.co/access/';
+const PROD_BASE = 'https://toyyibpay.com/index.php/api';
+const SANDBOX_BASE = 'https://dev.toyyibpay.com/index.php/api';
 
 export async function onRequest({ request, env }) {
-  if (request.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: cors() });
-  }
+  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors() });
   try {
     const d = await input(request);
     const a = String(d.action || '');
@@ -42,17 +41,16 @@ function cors() {
     'cache-control': 'no-store'
   };
 }
-
 function json(x, s = 200) {
-  return new Response(JSON.stringify(x), {
-    status: s,
-    headers: { 'content-type': 'application/json;charset=UTF-8', ...cors() }
-  });
+  return new Response(JSON.stringify(x), { status: s, headers: { 'content-type': 'application/json;charset=UTF-8', ...cors() } });
 }
-
-function basic(k) { return 'Basic ' + btoa(`${k}:`); }
+function apiBase(env) {
+  return String(env.TOYYIBPAY_ENV || 'production').toLowerCase() === 'sandbox' ? SANDBOX_BASE : PROD_BASE;
+}
+function payHost(env) {
+  return apiBase(env) === SANDBOX_BASE ? 'https://dev.toyyibpay.com' : 'https://toyyibpay.com';
+}
 function cents(n) { return Math.round(Number(n || 0) * 100); }
-
 function phone(v) {
   let p = String(v || '').replace(/\D/g, '');
   if (p.startsWith('00')) p = p.slice(2);
@@ -60,7 +58,9 @@ function phone(v) {
   if (p && !p.startsWith('60')) p = '60' + p;
   return p;
 }
-
+function safeText(v, max) {
+  return String(v || '').replace(/[^a-zA-Z0-9 _-]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
+}
 function cleanCode(v) { return String(v || '').trim().toUpperCase(); }
 function makeOrder() { return 'PKSK-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 7).toUpperCase(); }
 
@@ -72,7 +72,6 @@ function genCode() {
   for (const n of a) x += c[n % c.length];
   return `PKSK-${x.slice(0, 5)}-${x.slice(5)}`;
 }
-
 async function uniqueCode(env) {
   for (let i = 0; i < 10; i++) {
     const c = genCode();
@@ -81,7 +80,6 @@ async function uniqueCode(env) {
   }
   throw Error('Gagal menjana Access Code unik');
 }
-
 async function referralInfo(code, env) {
   const ref = cleanCode(code);
   if (!ref) return null;
@@ -90,29 +88,24 @@ async function referralInfo(code, env) {
   if (!r) throw Error('Referral Code tidak sah atau tidak aktif.');
   return { code: String(r.referral_code), commission: Number(r.commission || 5) };
 }
-
 async function tableExists(env, name) {
   const r = await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?").bind(name).first();
   return !!r;
 }
-
 async function ensureReferralEvents(env) {
   if (await tableExists(env, 'sim_referral_events')) return;
   await env.DB.prepare(`CREATE TABLE IF NOT EXISTS sim_referral_events (id TEXT PRIMARY KEY, referral_code TEXT NOT NULL, phone TEXT NOT NULL, order_id TEXT, amount INTEGER NOT NULL DEFAULT 0, commission INTEGER NOT NULL DEFAULT 0, status TEXT NOT NULL DEFAULT 'pending', created_at TEXT NOT NULL)`).run();
   await env.DB.prepare('CREATE INDEX IF NOT EXISTS idx_sim_referral_events_code ON sim_referral_events(referral_code)').run();
   await env.DB.prepare('CREATE INDEX IF NOT EXISTS idx_sim_referral_events_order ON sim_referral_events(order_id)').run();
 }
-
 async function attachReferral(orderNo, p, ref, env) {
   if (!ref) return;
   await ensureReferralEvents(env);
   const existing = await env.DB.prepare('SELECT id FROM sim_referral_events WHERE order_id=? LIMIT 1').bind(orderNo).first();
   if (existing) return;
   await env.DB.prepare('INSERT INTO sim_referral_events (id,referral_code,phone,order_id,amount,commission,status,created_at) VALUES (?,?,?,?,?,?,?,?)')
-    .bind(`evt_${crypto.randomUUID()}`, ref.code, p, orderNo, PRICE, ref.commission, 'pending', new Date().toISOString())
-    .run();
+    .bind(`evt_${crypto.randomUUID()}`, ref.code, p, orderNo, PRICE, ref.commission, 'pending', new Date().toISOString()).run();
 }
-
 async function settleReferral(orderId, env) {
   if (!(await tableExists(env, 'sim_referral_events'))) return;
   await env.DB.prepare("UPDATE sim_referral_events SET status='paid' WHERE order_id=? AND lower(status)='pending'").bind(orderId).run();
@@ -120,7 +113,9 @@ async function settleReferral(orderId, env) {
 
 async function createBill(d, env) {
   if (!env.DB) return { ok: false, error: 'DB binding belum tersedia' };
-  if (!env.BILLPLZ_API_KEY || !env.BILLPLZ_COLLECTION_ID) return { ok: false, error: 'Billplz belum dikonfigurasi dalam Cloudflare Secrets/Variables' };
+  if (!env.TOYYIBPAY_USER_SECRET_KEY || !env.TOYYIBPAY_CATEGORY_CODE) {
+    return { ok: false, error: 'ToyyibPay belum dikonfigurasi dalam Cloudflare Secrets/Variables' };
+  }
   const name = String(d.name || '').trim();
   const p = phone(d.phone);
   const email = String(d.email || '').trim();
@@ -132,9 +127,10 @@ async function createBill(d, env) {
     await settleReferral(orderNo, env);
     return { ok: true, orderNo, status: 'paid', accessCode: await issueLicense(old, env) };
   }
-  if (old?.payment_ref?.startsWith('billplz:')) {
+  if (old?.payment_ref?.startsWith('toyyibpay:')) {
     if (ref) await attachReferral(orderNo, p, ref, env);
-    return { ok: true, orderNo, status: old.payment_status || 'pending', billId: old.payment_ref.slice(8) };
+    const billCode = old.payment_ref.slice(10);
+    return { ok: true, orderNo, status: old.payment_status || 'pending', billCode, billUrl: `${payHost(env)}/${billCode}` };
   }
   const now = new Date().toISOString();
   if (!old) {
@@ -142,28 +138,42 @@ async function createBill(d, env) {
   }
   if (ref) await attachReferral(orderNo, p, ref, env);
   const q = new URLSearchParams({
-    collection_id: String(env.BILLPLZ_COLLECTION_ID),
-    description: `REQOO SIM PKSK 50 ${orderNo}`.slice(0, 200),
-    name: name.slice(0, 255),
-    amount: String(cents(PRICE)),
-    callback_url: 'https://pksk.sim.reqoo.co/api/sim-payment?action=callback',
-    redirect_url: 'https://pksk.sim.reqoo.co/api/sim-payment?action=redirect',
-    reference_1_label: 'Order',
-    reference_1: orderNo,
-    deliver: 'false'
+    userSecretKey: String(env.TOYYIBPAY_USER_SECRET_KEY).trim(),
+    categoryCode: String(env.TOYYIBPAY_CATEGORY_CODE).trim(),
+    billName: safeText(`REQOO PKSK ${orderNo}`, 30),
+    billDescription: safeText(`REQOO SIM PKSK ${orderNo}`, 100),
+    billPriceSetting: '1',
+    billPayorInfo: '1',
+    billAmount: String(cents(PRICE)),
+    billReturnUrl: 'https://pksk.sim.reqoo.co/api/sim-payment?action=redirect',
+    billCallbackUrl: 'https://pksk.sim.reqoo.co/api/sim-payment?action=callback',
+    billExternalReferenceNo: orderNo,
+    billTo: name.slice(0, 255),
+    billEmail: email || 'payment@reqoo.co',
+    billPhone: p,
+    billSplitPayment: '0',
+    billSplitPaymentArgs: '',
+    billPaymentChannel: '0',
+    billContentEmail: 'Terima kasih kerana membeli REQOO SIM PKSK.',
+    billChargeToCustomer: String(env.TOYYIBPAY_CHARGE_TO_CUSTOMER || '0'),
+    enableDuitNowQR: String(env.TOYYIBPAY_ENABLE_DUITNOW_QR || '1'),
+    chargeDuitNowQR: String(env.TOYYIBPAY_CHARGE_DUITNOW_QR || '0')
   });
-  if (email) q.set('email', email); else q.set('mobile', p);
-  const r = await fetch(`${BILLPLZ_BASE}/bills`, {
+  const r = await fetch(`${apiBase(env)}/createBill`, {
     method: 'POST',
-    headers: { Authorization: basic(String(env.BILLPLZ_API_KEY)), 'content-type': 'application/x-www-form-urlencoded' },
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
     body: q.toString()
   });
   const txt = await r.text();
-  let bp;
-  try { bp = JSON.parse(txt); } catch { bp = { error: txt }; }
-  if (!r.ok || !bp?.id || !bp?.url) return { ok: false, error: 'Billplz gagal mencipta bill', detail: bp?.error || bp?.message || 'Unknown error' };
-  await env.DB.prepare("UPDATE orders SET payment_ref=?,payment_status='pending' WHERE id=?").bind(`billplz:${bp.id}`, orderNo).run();
-  return { ok: true, orderNo, status: 'pending', amount: PRICE, billId: String(bp.id), billUrl: String(bp.url) };
+  let tp;
+  try { tp = JSON.parse(txt); } catch { tp = null; }
+  const billCode = Array.isArray(tp) ? String(tp[0]?.BillCode || '') : '';
+  if (!billCode) {
+    const detail = tp?.msg || txt || `HTTP ${r.status}`;
+    return { ok: false, error: 'ToyyibPay gagal mencipta bill', detail: String(detail).slice(0, 500) };
+  }
+  await env.DB.prepare("UPDATE orders SET payment_ref=?,payment_status='pending' WHERE id=?").bind(`toyyibpay:${billCode}`, orderNo).run();
+  return { ok: true, provider: 'toyyibpay', orderNo, status: 'pending', amount: PRICE, billCode, billUrl: `${payHost(env)}/${billCode}` };
 }
 
 async function status(d, env) {
@@ -175,32 +185,31 @@ async function status(d, env) {
   return { ok: true, found: true, orderNo: o, status: r.payment_status || 'pending', accessCode: l?.access_code || '', accessUrl: l?.access_code ? ACCESS_URL : '' };
 }
 
-async function signature(d, key) {
-  const s = String(d.x_signature || '').toLowerCase();
-  if (!s || !key) return false;
-  const src = Object.keys(d).filter(k => k !== 'x_signature').sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })).map(k => `${k}${d[k] ?? ''}`).join('|');
-  const k = await crypto.subtle.importKey('raw', new TextEncoder().encode(String(key)), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-  const sig = new Uint8Array(await crypto.subtle.sign('HMAC', k, new TextEncoder().encode(src)));
-  let h = '';
-  for (const b of sig) h += b.toString(16).padStart(2, '0');
-  if (h.length !== s.length) return false;
-  let x = 0;
-  for (let i = 0; i < h.length; i++) x |= h.charCodeAt(i) ^ s.charCodeAt(i);
-  return x === 0;
+async function md5Hex(value) {
+  const digest = await crypto.subtle.digest('MD5', new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('');
 }
-
+async function validCallback(d, env) {
+  const received = String(d.hash || '').toLowerCase();
+  if (!received || !env.TOYYIBPAY_USER_SECRET_KEY) return false;
+  const source = `${String(env.TOYYIBPAY_USER_SECRET_KEY).trim()}${String(d.status || '')}${String(d.order_id || '')}${String(d.refno || '')}ok`;
+  const expected = await md5Hex(source);
+  try {
+    const a = new TextEncoder().encode(expected);
+    const b = new TextEncoder().encode(received);
+    return a.length === b.length && crypto.subtle.timingSafeEqual(a, b);
+  } catch { return expected === received; }
+}
 async function callback(d, env) {
-  if (!env.DB || !env.BILLPLZ_X_SIGNATURE) return new Response('Configuration missing', { status: 500 });
-  if (!await signature(d, env.BILLPLZ_X_SIGNATURE)) return new Response('Invalid signature', { status: 401 });
-  const id = String(d.id || '').trim();
-  if (!id) return new Response('Missing bill id', { status: 400 });
-  const o = await env.DB.prepare('SELECT * FROM orders WHERE payment_ref=? LIMIT 1').bind(`billplz:${id}`).first();
+  if (!env.DB || !env.TOYYIBPAY_USER_SECRET_KEY) return new Response('Configuration missing', { status: 500 });
+  if (!await validCallback(d, env)) return new Response('Invalid hash', { status: 401 });
+  const orderId = String(d.order_id || '').trim();
+  if (!orderId) return new Response('Missing order id', { status: 400 });
+  const o = await env.DB.prepare('SELECT * FROM orders WHERE id=? LIMIT 1').bind(orderId).first();
   if (!o) return new Response('OK');
-  const paid = String(d.paid || '').toLowerCase() === 'true';
-  const state = String(d.state || '').toLowerCase();
-  if (!paid || state !== 'paid') return new Response('OK');
-  if (Number(d.amount || 0) !== cents(o.amount || PRICE)) return new Response('Amount mismatch', { status: 400 });
-  if (Number(d.paid_amount || 0) && Number(d.paid_amount) < cents(o.amount || PRICE)) return new Response('Amount mismatch', { status: 400 });
+  if (String(d.status || '') !== '1') return new Response('OK');
+  const billCode = String(d.billcode || '').trim();
+  if (billCode && o.payment_ref && o.payment_ref !== `toyyibpay:${billCode}`) return new Response('Bill mismatch', { status: 400 });
   if (String(o.payment_status || '').toLowerCase() === 'paid') {
     await issueLicense(o, env);
     await settleReferral(o.id, env);
@@ -226,11 +235,13 @@ async function issueLicense(o, env) {
 }
 
 async function redirect(d, env) {
-  const id = String(d['billplz[id]'] || d.id || '').trim();
+  const orderId = String(d.order_id || '').trim();
   let o = null;
-  if (env.DB && id) o = await env.DB.prepare('SELECT id,payment_status FROM orders WHERE payment_ref=? LIMIT 1').bind(`billplz:${id}`).first();
+  if (env.DB && orderId) o = await env.DB.prepare('SELECT id,payment_status FROM orders WHERE id=? LIMIT 1').bind(orderId).first();
   const u = new URL('https://pksk.sim.reqoo.co/payment/');
-  u.searchParams.set('payment', o?.payment_status === 'paid' ? 'success' : 'pending');
-  if (o?.id) u.searchParams.set('order', o.id);
+  const statusId = String(d.status_id || '');
+  const paid = o?.payment_status === 'paid';
+  u.searchParams.set('payment', paid ? 'success' : statusId === '3' ? 'failed' : 'pending');
+  if (o?.id || orderId) u.searchParams.set('order', o?.id || orderId);
   return new Response(null, { status: 302, headers: { Location: u.toString(), 'cache-control': 'no-store' } });
 }
