@@ -13,7 +13,8 @@ export async function onRequest(context) {
         provider: 'ToyyibPay',
         configured: !!env.TOYYIBPAY_USER_SECRET_KEY,
         categoryConfigured: !!env.TOYYIBPAY_CATEGORY_CODE,
-        environment: String(env.TOYYIBPAY_ENV || 'production').toLowerCase()
+        environment: String(env.TOYYIBPAY_ENV || 'production').toLowerCase(),
+        duitNowQr: false
       });
     }
     if (action === 'createCategory') {
@@ -127,6 +128,9 @@ async function createBill(data, env) {
   const callbackUrl = String(data.callbackUrl || `${origin}/api/toyyibpay?action=callback`);
   try { new URL(returnUrl); new URL(callbackUrl); } catch { return { ok: false, error: 'Return/callback URL tidak sah' }; }
 
+  // ToyyibPay is used for online banking/FPX only. REQOO keeps the existing
+  // AB Art static QR + proof/verification flow, so ToyyibPay DuitNow QR is
+  // deliberately disabled to avoid routing QR transactions through ToyyibPay.
   const params = new URLSearchParams({
     userSecretKey: String(env.TOYYIBPAY_USER_SECRET_KEY).trim(),
     categoryCode,
@@ -146,8 +150,8 @@ async function createBill(data, env) {
     billPaymentChannel: String(data.billPaymentChannel ?? '0'),
     billContentEmail: safeText(data.billContentEmail || 'Terima kasih kerana membuat pembayaran kepada REQOO.', 200),
     billChargeToCustomer: String(data.billChargeToCustomer ?? '0'),
-    enableDuitNowQR: String(data.enableDuitNowQR ?? env.TOYYIBPAY_ENABLE_DUITNOW_QR ?? '1'),
-    chargeDuitNowQR: String(data.chargeDuitNowQR ?? env.TOYYIBPAY_CHARGE_DUITNOW_QR ?? '0')
+    enableDuitNowQR: '0',
+    chargeDuitNowQR: '0'
   });
   const result = await postForm(`${apiBase(env)}/createBill`, params);
   const billCode = Array.isArray(result.parsed) ? String(result.parsed[0]?.BillCode || '') : '';
@@ -184,6 +188,6 @@ async function verifyCallback(data, env) {
     refno,
     billCode: String(data.billcode || ''),
     amount: Number(data.amount || 0),
-    transactionId: String(data.transaction_id || data.dnqr_transaction_id || data.fpx_transaction_id || '')
+    transactionId: String(data.transaction_id || data.fpx_transaction_id || '')
   };
 }
