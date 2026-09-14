@@ -24,7 +24,7 @@ assert.equal((body.match(/shop-desktop-premium-v1\.css/g)||[]).length,1,'premium
 const landing='<!doctype html><html><head><title>REQOO.CO — Custom Made. Just For You.</title></head><body><main>Landing</main></body></html>';
 const landingRendered=await worker.fetch(new Request('https://reqoo.co/'),{ASSETS:{fetch:async()=>new Response(landing,{headers:{'content-type':'text/html;charset=UTF-8'}})}});
 const landingBody=await landingRendered.text();
-assert.match(landingBody,/\/landing-premium-v2\.css\?v=2/,'homepage must load the editorial premium stylesheet');
-assert.match(landingBody,/\/landing-runtime\.js\?v=2/,'homepage must keep landing runtime');
-assert.equal((landingBody.match(/landing-premium-v2\.css/g)||[]).length,1,'homepage premium stylesheet must be injected once');
-console.log('PASS: Shop routing/premium CSS and homepage conversion runtime inject correctly.');
+assert.match(landingBody,/\/assets\/botanical-atelier-v1\.css\?v=3/,'homepage must load the selected Botanical Atelier theme');
+assert.equal((landingBody.match(/botanical-atelier-v1\.css/g)||[]).length,1,'homepage botanical stylesheet must be injected once');
+assert.doesNotMatch(landingBody,/\/landing-runtime\.js/,'retired landing runtime must not be reintroduced');
+console.log('PASS: Shop routing/premium CSS and Botanical Atelier homepage inject correctly.');

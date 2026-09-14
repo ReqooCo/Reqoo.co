@@ -6,7 +6,7 @@ const css=fs.readFileSync(new URL('../admin/admin-shell-v2.css',import.meta.url)
 assert.match(worker,/admin-shell-v2\.css\?v=1/,'premium Admin shell CSS must be injected');
 assert.match(worker,/admin-shell-v2\.js\?v=5/,'premium Admin shell runtime v5 must be injected');
 assert.match(worker,/x-reqoo-admin-ui/,'Admin response must advertise UI runtime');
-assert.match(worker,/assetRequest\('\/shop\/admin\.html',request\)\)\;return injectShopAdminSafe\(response\)/,'Shop Admin must remain isolated in safe mode');
+assert.match(worker,/assetRequest\('\/shop\/admin\.html',request\)\);\s*return injectShopAdminSafe\(response\)/,'Shop Admin must remain isolated in safe mode');
 assert.match(worker,/shop-admin-safe-mode-v1/,'Shop Admin safe mode marker must remain active');
 assert.match(shell,/Overview/,'shell must expose Overview');
 assert.match(shell,/Orders/,'shell must expose Orders');
