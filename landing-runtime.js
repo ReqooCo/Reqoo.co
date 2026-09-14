@@ -4,6 +4,14 @@
    Campaign landing page for IG/FB traffic. The landing page sells the brand/story;
    all purchase CTAs continue into the real ecommerce shop. */
 const SHOP='/shop/';
+function ensureBotanicalTheme(){
+  if(document.querySelector('link[href*="botanical-atelier-v1.css"]'))return;
+  const l=document.createElement('link');
+  l.rel='stylesheet';
+  l.href='/assets/botanical-atelier-v1.css?v=2';
+  l.id='reqoo-botanical-theme';
+  document.head.appendChild(l);
+}
 function shopUrl(){
   const u=new URL(SHOP,location.origin);
   const keep=['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid','gclid','campaign'];
@@ -12,6 +20,7 @@ function shopUrl(){
 }
 function isBuyText(t){return /\b(buat tempahan|tempah|beli|lihat produk|lihat koleksi|shop|produk|collection|lihat & tempah)\b/i.test(String(t||''))}
 function rewrite(){
+  ensureBotanicalTheme();
   const href=shopUrl();
   document.querySelectorAll('a').forEach(a=>{
     const text=(a.textContent||'').trim();
