@@ -1,0 +1,18 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const shop=fs.readFileSync('shop/order-whatsapp-v1.js','utf8');
+const landing=fs.readFileSync('tumbler/index.html','utf8');
+assert.doesNotThrow(()=>new Function(shop),'Shop enhancer must parse');
+assert.match(shop,/SAIZ/);
+assert.match(shop,/WARNA/);
+assert.match(shop,/rqOptionPicker/);
+assert.match(shop,/dispatchEvent\(new Event\('change'/);
+assert.match(landing,/id="sizes"/);
+assert.match(landing,/id="colors"/);
+assert.match(landing,/Harga saiz dipilih/);
+assert.match(landing,/Kuantiti kekal bila anda tukar saiz/);
+assert.match(landing,/listProductImages/);
+const scripts=[...landing.matchAll(/<script>([\s\S]*?)<\/script>/g)];
+assert.ok(scripts.length,'Landing page must contain ordering script');
+assert.doesNotThrow(()=>new Function(scripts.at(-1)[1]),'Tumbler ordering script must parse');
+console.log('PASS: size/color UX present in Shop and tumbler landing page.');
