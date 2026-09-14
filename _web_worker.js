@@ -147,7 +147,7 @@ export default{
 
     if(host==='admin.reqoo.co'&&(url.pathname==='/'||/^\/admin\/?$/i.test(url.pathname)))return adminOverview(request,env);
     if(host==='admin.reqoo.co'&&(/^\/admin\/sim-v2\.html$/i.test(url.pathname)||/^\/sim\/pksk\/admin\/?$/i.test(url.pathname)))return adminPkskV2(request,env);
-    if(host==='admin.reqoo.co'&&/^\/admin\/(?:settings|documents|customers|finance|orders|production|products)\.html$/i.test(url.pathname)){
+    if(host==='admin.reqoo.co'&&/^\/admin\/(?:settings|documents|customers|finance|orders|production|products|shop-content)\.html$/i.test(url.pathname)){
       const response=await env.ASSETS.fetch(assetRequest(url.pathname,request));
       return injectAdminUI(response);
     }
@@ -179,7 +179,7 @@ export default{
 
     if(host==='reqoo.co'&&(/^\/shop(?:\/|$)/i.test(url.pathname)))return injectBotanical(await injectShopRuntime(await env.ASSETS.fetch(assetRequest(url.pathname,request)),true));
 
-    if(host==='reqoo.co'&&(url.pathname==='/'||url.pathname===''))return injectBotanical(await injectLandingRuntime(await env.ASSETS.fetch(request)));
+    if(host==='reqoo.co'&&(url.pathname==='/'||url.pathname===''))return injectBotanical(await env.ASSETS.fetch(request));
 
     if(host==='reqoo.co'&&(/^\/tumbler\/?$/i.test(url.pathname)||/^\/sim\/pksk\/?$/i.test(url.pathname)))return injectBotanical(await env.ASSETS.fetch(request));
 
