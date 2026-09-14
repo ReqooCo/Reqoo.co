@@ -37,6 +37,7 @@ on:
       - 'migrations/*.sql'
       - 'tests/shop-*'
       - 'tests/admin-*'
+      - 'tests/tumbler-*'
       - '.github/workflows/shop-regression.yml'
   workflow_dispatch:
 permissions:
@@ -77,6 +78,7 @@ jobs:
       - name: Run Shop backend and routing regressions
         run: |
           node tests/shop-routing.mjs
+          node tests/tumbler-order-proxy-safety.mjs
           node tests/payment-toyyibpay-flow.mjs
           node tests/shop-quantity-unit.cjs
           node tests/shop-quote.mjs
