@@ -1,3 +1,4 @@
+import { md5Hex } from './toyyibpay-core.js';
 const PROD_BASE = 'https://toyyibpay.com/index.php/api';
 const SANDBOX_BASE = 'https://dev.toyyibpay.com/index.php/api';
 
@@ -160,10 +161,7 @@ async function createBill(data, env) {
   return { ok: true, provider: 'toyyibpay', billCode, billUrl: `${host}/${billCode}`, amount: amountMinor / 100, amountMinor, categoryCode };
 }
 
-async function md5Hex(value) {
-  const digest = await crypto.subtle.digest('MD5', new TextEncoder().encode(value));
-  return Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('');
-}
+
 async function verifyCallback(data, env) {
   const missing = requireKey(env);
   if (missing) return { ok: false, valid: false, error: missing, configurationRequired: true };
