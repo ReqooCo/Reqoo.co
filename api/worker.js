@@ -1,6 +1,6 @@
 import { onRequest as handleCore } from '../functions/api/core.js';
 import { onRequest as handleSimAdmin } from './sim-admin.js';
-import { onRequest as handleShopFlow } from './shop-flow-v4.js';
+import { onRequest as handleShopFlow } from './shop-flow-v5.js';
 import { onRequest as handleShopAdminFlow } from './shop-admin-flow-v17.js';
 // v17 preserves the complete shop-admin-flow-v16.js chain.
 import { onRequest as handleShopMedia } from './shop-media.js';
