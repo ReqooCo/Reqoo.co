@@ -1,4 +1,6 @@
 /* REQOO Botanical Commerce polish — catalogue, product modal, cart & checkout */
+html{max-width:100%;overflow-x:hidden}
+body.rqBotShop{max-width:100%;overflow-x:hidden}
 body.rqBotShop.dialog-open{overflow:hidden!important}
 
 /* Catalogue: calmer, consistent cards */
@@ -83,8 +85,8 @@ body.rqBotShop.dialog-open{overflow:hidden!important}
 .rqBotShop .rqOptionBtn:disabled{opacity:.36!important}
 
 /* Cart drawer */
-.rqBotShop .drawer{position:fixed!important;z-index:280!important;top:0!important;right:-470px!important;width:min(440px,100%)!important;height:100dvh!important;padding:24px!important;overflow:auto!important;background:#fbf8f1!important;border-left:1px solid #d8ccbd!important;box-shadow:-28px 0 80px rgba(43,31,24,.22)!important;color:#34241e!important;transition:right .28s ease!important}
-.rqBotShop .drawer.open{right:0!important}
+.rqBotShop .drawer{position:fixed!important;z-index:280!important;top:0!important;right:0!important;width:min(440px,100%)!important;height:100dvh!important;padding:24px!important;overflow:auto!important;background:#fbf8f1!important;border-left:1px solid #d8ccbd!important;box-shadow:-28px 0 80px rgba(43,31,24,.22)!important;color:#34241e!important;transform:translateX(105%)!important;visibility:hidden!important;transition:transform .28s ease,visibility 0s linear .28s!important}
+.rqBotShop .drawer.open{transform:translateX(0)!important;visibility:visible!important;transition:transform .28s ease!important}
 .rqBotShop .drawerHead{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;padding-bottom:14px!important;border-bottom:1px solid #e2d8cb!important}
 .rqBotShop .drawerHead h2{margin:3px 0 0!important;font-family:Georgia,"Times New Roman",serif!important;font-size:30px!important;font-weight:400!important;color:#4b2b20!important}
 .rqBotShop .cartItem{display:grid!important;grid-template-columns:70px 1fr auto!important;gap:12px!important;padding:16px 0!important;border-bottom:1px solid #e5dbcf!important;align-items:start!important}
