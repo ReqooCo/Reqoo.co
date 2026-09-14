@@ -1,3 +1,4 @@
+import { md5Hex } from './toyyibpay-core.js';
 const PRICE = 35;
 const MAX_DEVICES = 3;
 const ACCESS_URL = 'https://pksk.sim.reqoo.co/access/';
@@ -156,8 +157,8 @@ async function createBill(d, env) {
     billPaymentChannel: '0',
     billContentEmail: 'Terima kasih kerana membeli REQOO SIM PKSK.',
     billChargeToCustomer: String(env.TOYYIBPAY_CHARGE_TO_CUSTOMER || '0'),
-    enableDuitNowQR: String(env.TOYYIBPAY_ENABLE_DUITNOW_QR || '1'),
-    chargeDuitNowQR: String(env.TOYYIBPAY_CHARGE_DUITNOW_QR || '0')
+    enableDuitNowQR: '0',
+    chargeDuitNowQR: '0'
   });
   const r = await fetch(`${apiBase(env)}/createBill`, {
     method: 'POST',
@@ -185,10 +186,7 @@ async function status(d, env) {
   return { ok: true, found: true, orderNo: o, status: r.payment_status || 'pending', accessCode: l?.access_code || '', accessUrl: l?.access_code ? ACCESS_URL : '' };
 }
 
-async function md5Hex(value) {
-  const digest = await crypto.subtle.digest('MD5', new TextEncoder().encode(value));
-  return Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('');
-}
+
 async function validCallback(d, env) {
   const received = String(d.hash || '').toLowerCase();
   if (!received || !env.TOYYIBPAY_USER_SECRET_KEY) return false;
