@@ -1,5 +1,5 @@
 import { onRequest as handleCore } from '../functions/api/core.js';
-import { onRequest as handleCustomer } from '../functions/api/customer-v1.js';
+import { onRequestPost as handleCustomer } from '../functions/api/customer-v1.js';
 import { onRequest as handleOrder } from '../functions/api/order-v1.js';
 import { onRequest as handleSimAdmin } from './sim-admin.js';
 import { onRequest as handleShopFlow } from './shop-flow-v5.js';
