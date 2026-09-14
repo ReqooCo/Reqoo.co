@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {onRequest} from '../api/shop-flow-v3.js';
+import {onRequest} from '../api/shop-flow-v4.js';
 const product={id:'p',variation_id:'v',sku:'p',name:'Plaque',product_type:'physical',status:'active',variation_status:'active',variation_name:'A4',price_minor:21000,stock_qty:3};
 let writes=0,uploads=0;
 const env={MEDIA:{put(){uploads++}},DB:{batch:async statements=>{if(statements.some(s=>/INSERT INTO orders/.test(s.sql)))writes++;return []},prepare:sql=>({sql,bind(...args){this.args=args;return this},async first(){if(sql.includes('JOIN product_variations'))return product;if(sql.includes('FROM promotions'))return null;if(sql.includes('FROM shipping_methods'))return this.args[0]==='delivery'?{id:'delivery',price_minor:800}:null;return null}})}};
