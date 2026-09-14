@@ -18,7 +18,7 @@ const rendered=await worker.fetch(new Request('https://shop.reqoo.co/'),{ASSETS:
 const body=await rendered.text();
 assert.match(body,/\/shop\/shop-mobile-premium-v1\.css\?v=1/,'public Shop must load premium mobile stylesheet');
 assert.match(body,/\/shop\/shop-desktop-premium-v1\.css\?v=1/,'public Shop must load premium desktop stylesheet');
-assert.match(body,/\/shop\/shop-premium-v2\.css\?v=2/,'public Shop must load the premium retail layer');
+assert.match(body,/\/shop\/shop-premium-v2\.css\?v=3/,'public Shop must load the premium retail layer');
 assert.equal((body.match(/shop-mobile-premium-v1\.css/g)||[]).length,1,'premium mobile stylesheet must be injected once');
 assert.equal((body.match(/shop-desktop-premium-v1\.css/g)||[]).length,1,'premium desktop stylesheet must be injected once');
 const landing='<!doctype html><html><head><title>REQOO.CO — Custom Made. Just For You.</title></head><body><main>Landing</main></body></html>';
