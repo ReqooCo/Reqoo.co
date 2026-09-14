@@ -7,8 +7,8 @@ const api=fs.readFileSync('functions/api/pksk-payment-v2.js','utf8');
 const access=fs.readFileSync('sim/pksk/access/app.js','utf8');
 const simulator=fs.readFileSync('sim/pksk/simulator/js/app.js','utf8');
 
-assert(page.includes("rememberOrder(currentOrder)"),'QR submit must persist the pending order');
-assert(page.includes("pollStatus(currentOrder)"),'QR submit must immediately start status polling');
+assert(page.includes("remember(r.orderNo)"),'QR submit must persist the pending order');
+assert(page.includes("poll(r.orderNo)"),'QR submit must immediately start status polling');
 assert(page.includes("localStorage.setItem('reqoo_pksk_pending_order'"),'pending order must survive reload/navigation');
 assert(page.includes('SEMAK SEKARANG'),'pending state must offer an explicit recheck action');
 assert(page.includes("r.status==='paid'&&r.accessCode"),'paid order must transition to access-code state');

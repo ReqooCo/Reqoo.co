@@ -27,6 +27,7 @@ jobs:
           done
           node --check _web_worker.js
           node --check sim/pksk/simulator/js/app.js
+          node tests/payment-toyyibpay-flow.mjs
           test -f api/worker.js
           test -f api/wrangler.jsonc
           test -f wrangler-web.toml
