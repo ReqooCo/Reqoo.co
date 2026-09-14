@@ -1,3 +1,10 @@
+const BOTANICAL_THEME='<link rel="stylesheet" href="/assets/botanical-atelier-v1.css?v=1">';
+function themed(response){
+  const type=response.headers.get('content-type')||'';
+  if(!type.includes('text/html'))return response;
+  return new HTMLRewriter().on('head',{element(el){el.append(BOTANICAL_THEME,{html:true})}}).transform(response);
+}
+
 export async function onRequest(context){
   const {request,env}=context;
   const url=new URL(request.url),host=url.hostname;
@@ -26,17 +33,20 @@ export async function onRequest(context){
     if(!type.includes('text/html'))return response;
     if(isSimulator){
       return new HTMLRewriter()
+        .on('head',{element(el){el.append(BOTANICAL_THEME,{html:true})}})
         .on('script[src="js/app.js?v=18"]',{element(el){el.remove()}})
         .on('body',{element(el){el.append('<script src="/sim/pksk/simulator/js/app-v2.js?v=2"></script>',{html:true})}})
         .transform(response);
     }
     if(isAccess){
       return new HTMLRewriter()
+        .on('head',{element(el){el.append(BOTANICAL_THEME,{html:true})}})
         .on('script',{element(el){el.remove()}})
         .on('body',{element(el){el.append('<script src="/sim/pksk/access/app-v2.js?v=2"></script>',{html:true})}})
         .transform(response);
     }
-    return response;
+    if(isAdmin)return response;
+    return themed(response);
   }
 
   if(host.endsWith('.sim.reqoo.co')&&host!=='sim.reqoo.co'&&!url.pathname.startsWith('/api/')){
@@ -58,7 +68,10 @@ export async function onRequest(context){
     url.pathname=url.pathname==='/'?'/shop/':`/shop${url.pathname}`;
     const response=await env.ASSETS.fetch(url),type=response.headers.get('content-type')||'';
     if(!type.includes('text/html'))return response;
-    return new HTMLRewriter().on('body',{element(el){el.append('<script src="/shop/payment-fallback.js?v=4"></script><script src="/shop/payment-fix.js?v=1"></script>',{html:true})}}).transform(response);
+    return new HTMLRewriter()
+      .on('head',{element(el){el.append(BOTANICAL_THEME,{html:true})}})
+      .on('body',{element(el){el.append('<script src="/shop/payment-fallback.js?v=4"></script><script src="/shop/payment-fix.js?v=1"></script>',{html:true})}})
+      .transform(response);
   }
 
   if(host==='admin.reqoo.co'&&!url.pathname.startsWith('/api/')){
@@ -68,5 +81,8 @@ export async function onRequest(context){
     return new HTMLRewriter().on('body',{element(el){el.append('<link rel="stylesheet" href="/admin/reqoo-admin-universal.css?v=3.2.0"><link rel="stylesheet" href="/admin/reqoo-admin-premium-v2.css?v=1.0.0"><script src="/admin/reqoo-admin-shell.js?v=1.0.0"></script>',{html:true})}}).transform(response);
   }
 
-  return context.next();
+  const response=await context.next();
+  const path=url.pathname.replace(/\/+$/,'')||'/';
+  const botanicalPaths=new Set(['/','/shop','/tumbler','/sim/pksk']);
+  return botanicalPaths.has(path)?themed(response):response;
 }
