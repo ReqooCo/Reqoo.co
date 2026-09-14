@@ -19,7 +19,13 @@ async function data(request){
   const q=Object.fromEntries(new URL(request.url).searchParams);
   if(request.method==='GET')return q;
   const type=S(request.headers.get('content-type')).toLowerCase();
-  try{if(type.includes('application/json'))return {...q,...await request.clone().json()};return {...q,...Object.fromEntries(new URLSearchParams(await request.clone().text()))}}catch{return q;}
+  try{if(type.includes('application/json'))return {...q,...await request.json()};return {...q,...Object.fromEntries(new URLSearchParams(await request.text()))}}catch{return q;}
+}
+function replay(request,d){
+ if(request.method==='GET'||request.method==='HEAD')return request;
+ const headers=new Headers(request.headers),type=S(headers.get('content-type')).toLowerCase();
+ const body=type.includes('application/json')?JSON.stringify(d):new URLSearchParams(d).toString();
+ return new Request(request.url,{method:request.method,headers,body});
 }
 function customerSecret(env){return S(env.REQOO_CUSTOMER_TOKEN_SECRET||env.REQOO_ADMIN_TOKEN||env.SHOP_ADMIN_TOKEN||env.ADMIN_KEY);}
 async function hmac(secret,value){
@@ -107,6 +113,6 @@ export async function onRequest({request,env}){
     if(action==='customerSession')return customerSession(d,env);
     if(action==='customerOrders')return customerOrders(request,env);
     if(action==='getOrder')return getOrder(request,d,env);
-    return legacy({request,env});
+    return legacy({request:replay(request,d),env});
   }catch(err){console.error('REQOO customer auth flow:',err);return R({ok:false,error:err?.message||String(err)},500)}
 }
