@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const html=fs.readFileSync(new URL('../admin/products.html',import.meta.url),'utf8');
+const js=fs.readFileSync(new URL('../admin/product-option-matrix-v1.js',import.meta.url),'utf8');
+assert.match(html,/product-option-matrix-v1\.js/,'Products editor must load option matrix helper');
+assert.match(js,/Generate combinations/,'matrix helper must expose combination generator');
+assert.match(js,/Sizes/,'matrix helper must support size option');
+assert.match(js,/Colors/,'matrix helper must support color option');
+assert.match(js,/Price by size/,'matrix helper must support different price per size');
+assert.match(js,/sizes\.flatMap/,'matrix helper must generate the size x color cartesian product');
+console.log('PASS: product size/color option matrix helper present.');
