@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const web=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8');
+const api=fs.readFileSync(new URL('../api/worker.js',import.meta.url),'utf8');
+assert.match(web,/new Request\(target\.toString\(\),request\)/,'API proxy should clone from the incoming Request instead of reusing request.body');
+assert.doesNotMatch(web,/async function proxyApi[\s\S]*?init\.body=request\.body[\s\S]*?return fetch/,'API proxy must not manually reuse the request body stream');
+assert.match(api,/handleCustomer/,'API worker must import customer-v1 handler');
+assert.match(api,/handleOrder/,'API worker must import order-v1 handler');
+assert.match(api,/path==='\/api\/customer-v1'/,'API worker must route customer-v1');
+assert.match(api,/path==='\/api\/order-v1'/,'API worker must route order-v1');
+console.log('PASS: tumbler checkout proxy preserves request body and core order routes are wired.');
