@@ -29,4 +29,5 @@ assert.match(shop,/payment:'toyyibpay'/);assert.match(shop,/payment:'manual_qr'/
 assert.match(pksk,/createQR/);assert.match(pksk,/call\('create'/);
 for(const file of ['shop/assets/maybank-qr.jpeg','sim/pksk/payment/assets/maybank-qr.jpeg'])assert.equal(fs.readFileSync(file).subarray(0,3).toString('hex'),'ffd8ff');
 for(const script of pksk.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))new Function(script[1]);
+const tumbler=fs.readFileSync('tumbler/index.html','utf8');assert.match(tumbler,/action:'createOrder'/);assert.match(tumbler,/payment:'toyyibpay'/);assert.match(tumbler,/expectedTotalMinor/);assert.match(tumbler,/d\.billUrl\|\|d\.payment\?\.billUrl/);for(const script of tumbler.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))new Function(script[1]);
 console.log('PASS: ToyyibPay FPX, callback verification, AB Art QR and both payment choices are wired.');
