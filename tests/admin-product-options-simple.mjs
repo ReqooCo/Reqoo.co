@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const html=fs.readFileSync('admin/products.html','utf8');
+const js=fs.readFileSync('admin/product-option-matrix-v1.js','utf8');
+const css=fs.readFileSync('admin/products-v1.css','utf8');
+assert.match(html,/product-option-matrix-v1\.js\?v=2/);
+assert.match(js,/Pilihan produk/);
+assert.match(js,/Saiz & harga/);
+assert.match(js,/Bina pilihan/);
+assert.match(css,/\.rqSimpleOptions/);
+console.log('admin simple product options: ok');
