@@ -21,6 +21,17 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: rebuild/pksk-set02-gold-v1
+      - name: Resolve cross-set duplicate stems caught by validator
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/build_set02_gold.py')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace("'Choose the correct sentence.'", "'Which sentence correctly describes a completed museum visit that happened yesterday?'")
+          s=s.replace("'Dalam amalan 3R, apakah maksud “Reuse”?'", "'Sekolah mahu mengurangkan sisa melalui konsep 3R. Tindakan manakah paling tepat menunjukkan amalan “Reuse”?'")
+          p.write_text(s,encoding='utf-8')
+          PY
       - name: Build and validate Set 02
         run: python scripts/build_set02_gold.py
       - name: Validate JSON can be loaded
@@ -32,12 +43,12 @@ jobs:
       - name: Commit generated Set 02 candidate
         shell: bash
         run: |
-          if git diff --quiet -- 'sim/pksk/simulator/sets/SET 01-10/data/set02.json'; then
+          if git diff --quiet -- 'scripts/build_set02_gold.py' 'sim/pksk/simulator/sets/SET 01-10/data/set02.json'; then
             echo 'Set 02 already assembled.'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add 'sim/pksk/simulator/sets/SET 01-10/data/set02.json'
+          git add 'scripts/build_set02_gold.py' 'sim/pksk/simulator/sets/SET 01-10/data/set02.json'
           git commit -m 'Build Set 02 Gold candidate'
           git push origin HEAD:rebuild/pksk-set02-gold-v1
