@@ -2,7 +2,7 @@
   "version": "MASTER_BANK_V1",
   "status": "AUTHORING",
   "assemblyLocked": true,
-  "notes": "Author and globally QA complete section banks before assigning questions to Set 01-50.",
+  "notes": "Author and globally QA complete section banks before assigning questions to Set 01-50. Generator/canonical scaffold status is tracked separately from final editorial release status.",
   "sections": {
     "A": {
       "total": 1500,
@@ -10,7 +10,12 @@
         "SITUATIONAL": 1000,
         "AGREE_DISAGREE": 500
       },
-      "current": 0
+      "structuralScaffoldCurrent": 1500,
+      "structuralScaffoldStatus": "CANONICAL_1500_HARD_AUDIT_PASS_EDITORIAL_REVIEW_REQUIRED",
+      "current": 20,
+      "status": "EDITORIAL_AUTHORING",
+      "finalReleaseSource": "sim/pksk/master-bank/A",
+      "finalReadyRule": "current must equal 1500, locked quotas must pass, duplicate checks must pass, and every item must be EDITORIAL_QA_PASS or FINAL_APPROVED"
     },
     "B": {
       "total": 3500,
