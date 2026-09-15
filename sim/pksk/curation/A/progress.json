@@ -2,24 +2,24 @@
   "branch": "repair/pksk-live-curation-v1",
   "liveMainModified": false,
   "target": 1500,
-  "curatedCurrent": 180,
-  "percent": 12.0,
+  "curatedCurrent": 210,
+  "percent": 14.0,
   "goldSeed": 90,
-  "rewrittenFromLegacy": 90,
-  "remaining": 1320,
-  "lastCompletedSourceSet": 6,
-  "nextSourceSet": 7,
+  "rewrittenFromLegacy": 120,
+  "remaining": 1290,
+  "lastCompletedSourceSet": 7,
+  "nextSourceSet": 8,
   "globalGate": {
     "workflow": "PKSK A Global Curation Gate",
-    "runId": 34939888799,
+    "runId": 34940300170,
     "status": "PASS",
     "warnings": 0,
     "semanticReviewPairs082to0899": 0,
     "hardSimilarityPairs090plus": 0
   },
   "currentDistribution": {
-    "domain": {"EQ": 62, "SQ": 62, "SSQ": 56},
-    "format": {"SITUATIONAL": 130, "AGREE_DISAGREE": 50}
+    "domain": {"EQ": 71, "SQ": 71, "SSQ": 68},
+    "format": {"SITUATIONAL": 150, "AGREE_DISAGREE": 60}
   },
   "finalLockedDistribution": {
     "domain": {"EQ": 500, "SQ": 500, "SSQ": 500},
@@ -30,7 +30,8 @@
     "A0091-A0120 rewrite legacy Set04.",
     "A0121-A0150 rewrite legacy Set05.",
     "A0151-A0180 rewrite legacy Set06.",
-    "Set07 source contains many concepts overlapping Set05/06 and must be materially differentiated in reasoning before acceptance.",
+    "A0181-A0210 rewrite legacy Set07 with materially differentiated reasoning for heavily repeated constructs.",
+    "Set07 initially failed only the agree/disagree key-balance gate at 6:4; A0186 was reverse-keyed in the curation layer and the rerun passed 5:5.",
     "Global curation PASS is not FINAL_APPROVED; final semantic/construct editorial approval remains required."
   ]
 }
