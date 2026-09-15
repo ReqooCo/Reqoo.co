@@ -6,6 +6,7 @@ on:
       - repair/pksk-live-curation-v1
     paths:
       - 'sim/pksk/curation/A/rewrite_wave_0091_0120.jsonl'
+      - 'scripts/build_pksk_a_rewrite_wave_canonical.py'
       - 'scripts/audit_pksk_a_rewrite_wave.py'
       - '.github/workflows/pksk-a-rewrite-wave.yml'
       - 'sim/pksk/simulator/sets/SET 01-10/data/set01.json'
@@ -23,5 +24,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Build canonical balanced A wave
+        run: python scripts/build_pksk_a_rewrite_wave_canonical.py
       - name: Audit A rewrite wave
         run: python scripts/audit_pksk_a_rewrite_wave.py
+      - name: Upload canonical A wave
+        uses: actions/upload-artifact@v4
+        with:
+          name: pksk-a-rewrite-wave-0091-0120
+          path: sim/pksk/curation/A/generated/rewrite_wave_0091_0120.jsonl
