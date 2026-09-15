@@ -8,6 +8,8 @@ on:
       - 'scripts/build_pksk_master_a_content.py'
       - 'sim/pksk/generator/master/a/families.csv'
       - 'sim/pksk/generator/master/a/variant_axes.json'
+      - 'sim/pksk/generator/master/a/situational_parts/**'
+      - 'sim/pksk/generator/master/a/agree_disagree_parts/**'
       - '.github/workflows/pksk-master-a-build.yml'
   workflow_dispatch:
 
@@ -21,6 +23,21 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: rebuild/pksk-master-bank-v1
+      - name: Reconstruct validated authored profile payloads
+        shell: bash
+        run: |
+          cat sim/pksk/generator/master/a/situational_parts/part*.b64 > sim/pksk/generator/master/a/situational_profiles.zlib.b64
+          cat sim/pksk/generator/master/a/agree_disagree_parts/part*.b64 > sim/pksk/generator/master/a/agree_disagree_profiles.zlib.b64
+          python - <<'PY'
+          import base64, json, zlib
+          from pathlib import Path
+          root=Path('sim/pksk/generator/master/a')
+          sit=json.loads(zlib.decompress(base64.b64decode(root.joinpath('situational_profiles.zlib.b64').read_text())).decode())
+          ad=json.loads(zlib.decompress(base64.b64decode(root.joinpath('agree_disagree_profiles.zlib.b64').read_text())).decode())
+          assert len(sit)==100, len(sit)
+          assert len(ad)==50, len(ad)
+          print('Profile payload PASS:', len(sit), 'situational families +', len(ad), 'agree/disagree families')
+          PY
       - name: Build all 1,500 Bahagian A items
         run: python scripts/build_pksk_master_a_content.py
       - name: Commit authored bank and QA report
