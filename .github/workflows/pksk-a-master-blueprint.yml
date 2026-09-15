@@ -1,0 +1,37 @@
+name: PKSK A Master Blueprint
+
+on:
+  push:
+    branches:
+      - rebuild/pksk-master-bank-v1
+    paths:
+      - 'sim/pksk/generator/master/a/families.csv'
+      - 'sim/pksk/generator/master/a/variant_axes.json'
+      - 'scripts/build_pksk_a_master_blueprint.py'
+      - '.github/workflows/pksk-a-master-blueprint.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: rebuild/pksk-master-bank-v1
+      - name: Build and validate all 1500 Bahagian A authoring slots
+        run: python scripts/build_pksk_a_master_blueprint.py
+      - name: Commit generated blueprint
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add 'sim/pksk/generator/master/a/a_blueprint.jsonl'
+          if git diff --cached --quiet; then
+            echo 'Blueprint already current.'
+            exit 0
+          fi
+          git commit -m 'Generate 1500-slot Bahagian A master blueprint'
+          git push origin HEAD:rebuild/pksk-master-bank-v1
