@@ -2,24 +2,24 @@
   "branch": "repair/pksk-live-curation-v1",
   "liveMainModified": false,
   "target": 1500,
-  "curatedCurrent": 240,
-  "percent": 16.0,
+  "curatedCurrent": 270,
+  "percent": 18.0,
   "goldSeed": 90,
-  "rewrittenFromLegacy": 150,
-  "remaining": 1260,
-  "lastCompletedSourceSet": 8,
-  "nextSourceSet": 9,
+  "rewrittenFromLegacy": 180,
+  "remaining": 1230,
+  "lastCompletedSourceSet": 9,
+  "nextSourceSet": 10,
   "globalGate": {
     "workflow": "PKSK A Global Curation Gate",
-    "runId": 34940865544,
+    "runId": 34941545596,
     "status": "PASS",
     "warnings": 0,
     "semanticReviewPairs082to0899": 0,
     "hardSimilarityPairs090plus": 0
   },
   "currentDistribution": {
-    "domain": {"EQ": 80, "SQ": 80, "SSQ": 80},
-    "format": {"SITUATIONAL": 160, "AGREE_DISAGREE": 80}
+    "domain": {"EQ": 90, "SQ": 90, "SSQ": 90},
+    "format": {"SITUATIONAL": 180, "AGREE_DISAGREE": 90}
   },
   "finalLockedDistribution": {
     "domain": {"EQ": 500, "SQ": 500, "SSQ": 500},
@@ -31,8 +31,10 @@
     "A0121-A0150 rewrite legacy Set05.",
     "A0151-A0180 rewrite legacy Set06.",
     "A0181-A0210 rewrite legacy Set07 with materially differentiated reasoning for heavily repeated constructs.",
-    "A0211-A0240 rewrite legacy Set08. Ten repeated situational constructs were converted into binary judgement items to restore the locked 2:1 situational-to-agree/disagree ratio after legacy Set04 contained 30 situational items.",
-    "After Set08, curated domains are exactly balanced at EQ 80, SQ 80 and SSQ 80; formats are exactly proportional at 160 situational and 80 agree/disagree.",
+    "A0211-A0240 rewrite legacy Set08 and restore the locked 2:1 situational-to-agree/disagree ratio.",
+    "A0241-A0270 rewrite legacy Set09; the source repeated Set08 concepts heavily, so the curation wave changes the reasoning forms rather than merely changing contexts.",
+    "Set09 initially failed only the binary-key balance at 6:4; A0250 was reverse-keyed in the curation layer and the rerun passed 5:5.",
+    "After Set09, domains remain exactly balanced at EQ 90, SQ 90 and SSQ 90; formats remain proportional at 180 situational and 90 agree/disagree.",
     "Global curation PASS is not FINAL_APPROVED; final semantic/construct editorial approval remains required."
   ]
 }
