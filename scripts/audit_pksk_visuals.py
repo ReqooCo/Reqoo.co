@@ -12,7 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SETS = ROOT / "sim" / "pksk" / "simulator" / "sets"
-EXPECTED_TOTAL = 320
+MIN_TOTAL = 300  # six structured visuals per set is the long-term Gold baseline
 SUPPORTED = {
     "fraction_bar": ("parts", "selected"),
     "five_value_data": ("values",),
@@ -62,8 +62,8 @@ def main() -> int:
     missing_kinds = sorted(set(SUPPORTED) - set(counts))
     if missing_kinds:
         errors.append("Missing canonical visual kinds: " + ", ".join(missing_kinds))
-    if structured_total != EXPECTED_TOTAL:
-        errors.append(f"Expected {EXPECTED_TOTAL} structured visuals, found {structured_total}")
+    if structured_total < MIN_TOTAL:
+        errors.append(f"Expected at least {MIN_TOTAL} structured visuals, found {structured_total}")
 
     print(f"Structured visuals: {structured_total}")
     for kind in sorted(counts):
@@ -74,7 +74,7 @@ def main() -> int:
         for error in errors:
             print(" -", error)
         return 1
-    print("PASS: all 50 sets use only the six supported structured visual kinds")
+    print("PASS: all 50 sets use only the six supported structured visual kinds and meet the visual baseline")
     return 0
 
 
