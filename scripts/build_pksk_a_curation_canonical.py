@@ -15,7 +15,13 @@ WAVE_RE = re.compile(r'^rewrite_wave_(\d{4})_(\d{4})\.jsonl$')
 
 def main() -> int:
     OUT_ROOT.mkdir(parents=True, exist_ok=True)
-    overrides=json.loads(OVERRIDES.read_text(encoding='utf-8')) if OVERRIDES.exists() else {}
+    overrides={}
+    for override_path in sorted(A_ROOT.glob('editorial_overrides*.json')):
+        shard=json.loads(override_path.read_text(encoding='utf-8'))
+        overlap=set(overrides).intersection(shard)
+        if overlap:
+            raise SystemExit(f'FAIL: duplicate editorial override ids across shards: {sorted(overlap)}')
+        overrides.update(shard)
     waves=[]
     for p in sorted(A_ROOT.glob('rewrite_wave_*.jsonl')):
         m=WAVE_RE.match(p.name)
@@ -49,7 +55,7 @@ def main() -> int:
                 if len(opts)!=4 or sorted(weights)!=[0,1,2,3]:
                     raise SystemExit(f"FAIL: {bid}: invalid situational options/weights before canonicalisation")
                 pairs=list(zip(opts,weights))
-                pairs.sort(key=lambda p:p[1],reverse=True)  # quality 3,2,1,0
+                pairs.sort(key=lambda p:p[1],reverse=True)
                 best=pairs.pop(0)
                 target=situational_index%4
                 situational_index+=1
