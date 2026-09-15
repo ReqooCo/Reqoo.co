@@ -26,6 +26,10 @@ function clampDays(v,fallback=7){
 function plusDays(iso,days){
   const d=new Date(iso);d.setUTCDate(d.getUTCDate()+Number(days||0));return d.toISOString();
 }
+function orderNumber(){
+  const d=new Date(),date=`${d.getUTCFullYear()}${String(d.getUTCMonth()+1).padStart(2,'0')}${String(d.getUTCDate()).padStart(2,'0')}`;
+  return `RQ${date}-${crypto.randomUUID().replaceAll('-','').slice(0,5).toUpperCase()}`;
+}
 async function ensureDocuments(env){
   await env.DB.batch([
     env.DB.prepare("CREATE TABLE IF NOT EXISTS reqoo_document_sequences(seq_key TEXT PRIMARY KEY,next_number INTEGER NOT NULL DEFAULT 1,updated_at TEXT NOT NULL)"),
@@ -36,6 +40,12 @@ async function ensureDocuments(env){
     env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_reqoo_document_items_doc ON reqoo_document_items(document_id)"),
     env.DB.prepare("CREATE TABLE IF NOT EXISTS shop_settings(key TEXT PRIMARY KEY,value TEXT,updated_at TEXT NOT NULL)")
   ]);
+}
+async function ensureOrderNumber(env){
+  const cols=(await env.DB.prepare('PRAGMA table_info(orders)').all()).results||[];
+  if(!cols.length)throw new Error('Jadual order tidak dijumpai');
+  if(!cols.some(x=>x.name==='order_no'))await env.DB.prepare('ALTER TABLE orders ADD COLUMN order_no TEXT').run();
+  await env.DB.prepare('CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_order_no ON orders(order_no)').run();
 }
 async function documentSettings(env){
   const keys=['document_company_name','document_registration_no','document_address','document_phone','document_email','document_bank','document_quote_valid_days'];
@@ -57,12 +67,20 @@ async function nextQuoteNumber(env){
   const row=await env.DB.prepare('UPDATE reqoo_document_sequences SET next_number=next_number+1,updated_at=? WHERE seq_key=? RETURNING next_number-1 AS issued').bind(t,key).first();
   return `QT-${year}-${String(Number(row?.issued||1)).padStart(5,'0')}`;
 }
+async function nextOrderNumber(env){
+  for(let i=0;i<8;i++){
+    const number=orderNumber(),exists=await env.DB.prepare('SELECT id FROM orders WHERE order_no=? LIMIT 1').bind(number).first();
+    if(!exists)return number;
+  }
+  throw new Error('Nombor order unik gagal dijana');
+}
 async function hydrateDocument(row,env){
   if(!row)return null;
   const items=(await env.DB.prepare('SELECT * FROM reqoo_document_items WHERE document_id=? ORDER BY sort_order,id').bind(row.id).all()).results||[];
   let company={};try{company=JSON.parse(row.company_json||'{}')}catch{}
   return {...row,company,items};
 }
+function quoteMeta(doc){return doc?.company&&typeof doc.company.quoteMeta==='object'?doc.company.quoteMeta:{}}
 function normalizeQuoteItems(raw){
   if(!Array.isArray(raw))return [];
   return raw.slice(0,50).map((item,ix)=>{
@@ -90,6 +108,61 @@ async function createCustomQuotation(d,env){
   await env.DB.batch([header,...rows]);
   const row=await env.DB.prepare('SELECT * FROM reqoo_documents WHERE id=? LIMIT 1').bind(id).first();
   return J({ok:true,created:true,document:await hydrateDocument(row,env)});
+}
+async function customQuotation(d,env){
+  const key=S(d.documentId||d.id||d.number);
+  if(!key)return null;
+  const row=await env.DB.prepare("SELECT * FROM reqoo_documents WHERE (id=? OR number=?) AND type='quotation' LIMIT 1").bind(key,key).first();
+  if(!row)return null;
+  const doc=await hydrateDocument(row,env),meta=quoteMeta(doc);
+  return meta.source==='custom'?doc:null;
+}
+async function updateCustomQuotationStatus(d,env){
+  await ensureDocuments(env);
+  const status=S(d.status).toLowerCase(),allowed=new Set(['issued','sent','accepted','rejected','expired']);
+  if(!allowed.has(status))return J({ok:false,error:'Status quotation tidak sah.'},400);
+  const doc=await customQuotation(d,env);
+  if(!doc)return J({ok:false,error:'Custom quotation tidak dijumpai.'},404);
+  if(quoteMeta(doc).convertedOrderId&&status!=='accepted')return J({ok:false,error:'Quotation yang telah menjadi order kekal ACCEPTED.'},409);
+  await env.DB.prepare('UPDATE reqoo_documents SET status=?,updated_at=? WHERE id=?').bind(status,NOW(),doc.id).run();
+  return J({ok:true,document:await hydrateDocument(await env.DB.prepare('SELECT * FROM reqoo_documents WHERE id=?').bind(doc.id).first(),env)});
+}
+async function convertCustomQuotationToOrder(d,env){
+  await ensureDocuments(env);await ensureOrderNumber(env);
+  const doc=await customQuotation(d,env);
+  if(!doc)return J({ok:false,error:'Custom quotation tidak dijumpai.'},404);
+  const meta=quoteMeta(doc);
+  if(meta.convertedOrderId){
+    const order=await env.DB.prepare('SELECT * FROM orders WHERE id=? LIMIT 1').bind(meta.convertedOrderId).first();
+    return J({ok:true,created:false,order,document:doc});
+  }
+  if(!doc.items.length)return J({ok:false,error:'Quotation tiada item untuk dijadikan order.'},409);
+
+  const now=NOW(),phone=S(doc.customer_phone).slice(0,60),email=S(doc.customer_email).slice(0,160),name=S(doc.customer_name).slice(0,160)||'Customer';
+  let customer=null;
+  if(phone)customer=await env.DB.prepare('SELECT * FROM customers WHERE phone=? LIMIT 1').bind(phone).first();
+  if(!customer&&email)customer=await env.DB.prepare('SELECT * FROM customers WHERE email=? LIMIT 1').bind(email).first();
+  const customerId=customer?.id||ID('cus'),orderId=ID('ord'),orderNo=await nextOrderNumber(env),stmts=[];
+  if(customer){
+    stmts.push(env.DB.prepare("UPDATE customers SET name=?,phone=COALESCE(NULLIF(?,''),phone),email=COALESCE(NULLIF(?,''),email),updated_at=? WHERE id=?").bind(name,phone,email,now,customerId));
+  }else{
+    stmts.push(env.DB.prepare('INSERT INTO customers(id,name,phone,email,created_at,updated_at) VALUES(?,?,?,?,?,?)').bind(customerId,name,phone||null,email||null,now,now));
+  }
+  stmts.push(env.DB.prepare("INSERT INTO orders(id,customer_id,source,currency,subtotal_minor,discount_minor,shipping_minor,tax_minor,total_minor,payment_status,fulfillment_status,referral_code,created_at,updated_at,order_no) VALUES(?,?,?,?,?,?,?,?,?,'pending','pending',NULL,?,?,?)")
+    .bind(orderId,customerId,'admin_quotation',S(doc.currency)||'MYR',Number(doc.subtotal_minor||0),Number(doc.discount_minor||0),Number(doc.shipping_minor||0),Number(doc.tax_minor||0),Number(doc.total_minor||0),now,now,orderNo));
+  for(const item of doc.items){
+    const variation=item.variation?{name:S(item.variation).slice(0,160)}:{};
+    stmts.push(env.DB.prepare("INSERT INTO order_items(id,order_id,product_id,variation_id,product_name_snapshot,sku_snapshot,variation_snapshot_json,customization_snapshot_json,addons_snapshot_json,unit_price_minor,quantity,line_total_minor,created_at) VALUES(?,?,NULL,NULL,?,NULL,?,?, '[]',?,?,?,?)")
+      .bind(ID('itm'),orderId,S(item.description).slice(0,240)||'Custom item',JSON.stringify(variation),JSON.stringify({quotationNumber:doc.number}),Number(item.unit_price_minor||0),Number(item.quantity||1),Number(item.line_total_minor||0),now));
+  }
+  stmts.push(env.DB.prepare('INSERT INTO activity_events(id,customer_id,order_id,event_type,trace_id,metadata_json,created_at) VALUES(?,?,?,?,?,?,?)')
+    .bind(ID('evt'),customerId,orderId,'order.created',null,JSON.stringify({source:'admin_quotation',quotationNumber:doc.number}),now));
+  const company={...(doc.company||{}),quoteMeta:{...meta,convertedOrderId:orderId,convertedOrderNo:orderNo,convertedAt:now}};
+  stmts.push(env.DB.prepare("UPDATE reqoo_documents SET order_id=?,status='accepted',company_json=?,updated_at=? WHERE id=?").bind(orderId,JSON.stringify(company),now,doc.id));
+  await env.DB.batch(stmts);
+  const order=await env.DB.prepare('SELECT * FROM orders WHERE id=? LIMIT 1').bind(orderId).first();
+  const fresh=await hydrateDocument(await env.DB.prepare('SELECT * FROM reqoo_documents WHERE id=? LIMIT 1').bind(doc.id).first(),env);
+  return J({ok:true,created:true,order,document:fresh});
 }
 
 async function repairProductImages(env){
@@ -121,10 +194,14 @@ export async function onRequest({request,env}){
     try{return await repairProductImages(env)}catch(error){console.error('REQOO image repair:',error);return J({ok:false,error:'Gambar lama belum dapat dipulihkan'},500)}
   }
 
-  if(action==='createCustomQuotation'){
+  if(['createCustomQuotation','updateCustomQuotationStatus','convertCustomQuotationToOrder'].includes(action)){
     if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);
     if(!env.DB)return J({ok:false,error:'D1 binding DB tidak dijumpai'},503);
-    try{return await createCustomQuotation(d,env)}catch(error){console.error('REQOO custom quotation:',error);return J({ok:false,error:error?.message||'Quotation gagal dijana'},500)}
+    try{
+      if(action==='createCustomQuotation')return await createCustomQuotation(d,env);
+      if(action==='updateCustomQuotationStatus')return await updateCustomQuotationStatus(d,env);
+      return await convertCustomQuotationToOrder(d,env);
+    }catch(error){console.error('REQOO custom quotation:',error);return J({ok:false,error:error?.message||'Quotation gagal diproses'},500)}
   }
 
   if(action==='createDocument'&&S(d.type).toLowerCase()==='quotation'){
