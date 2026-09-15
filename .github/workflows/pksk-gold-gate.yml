@@ -1,0 +1,34 @@
+name: PKSK Gold Gate
+
+on:
+  pull_request:
+    paths:
+      - 'sim/pksk/simulator/sets/**/data/set*.json'
+      - 'scripts/validate_pksk_gold_bank.py'
+      - 'scripts/test_gold_set_contract.js'
+      - 'sim/pksk/simulator/js/visual-renderer.js'
+      - '.github/workflows/pksk-gold-gate.yml'
+  push:
+    branches:
+      - feat/pksk-gold-gate-v1
+    paths:
+      - 'scripts/validate_pksk_gold_bank.py'
+      - '.github/workflows/pksk-gold-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gold-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate every Gold set and cross-set uniqueness
+        run: python scripts/validate_pksk_gold_bank.py
+      - name: Verify Set 01 runtime contract
+        run: node scripts/test_gold_set_contract.js 01
+      - name: Verify Set 02 runtime contract
+        run: node scripts/test_gold_set_contract.js 02
+      - name: Verify structured visual renderer
+        run: node scripts/test_pksk_visual_renderer.js
