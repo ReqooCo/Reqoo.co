@@ -2,24 +2,24 @@
   "branch": "repair/pksk-live-curation-v1",
   "liveMainModified": false,
   "target": 1500,
-  "curatedCurrent": 1020,
-  "percent": 68.0,
+  "curatedCurrent": 1170,
+  "percent": 78.0,
   "goldSeed": 90,
-  "rewrittenFromLegacy": 930,
-  "remaining": 480,
-  "lastCompletedSourceSet": 34,
-  "nextSourceSet": 35,
+  "rewrittenFromLegacy": 1080,
+  "remaining": 330,
+  "lastCompletedSourceSet": 39,
+  "nextSourceSet": 40,
   "globalGate": {
     "workflow": "PKSK A Global Curation Gate",
-    "runId": 34967073002,
+    "runId": 34972227977,
     "status": "PASS",
     "warnings": 0,
     "semanticReviewPairs082to0899": 0,
     "hardSimilarityPairs090plus": 0
   },
   "currentDistribution": {
-    "domain": {"EQ": 340, "SQ": 340, "SSQ": 340},
-    "format": {"SITUATIONAL": 680, "AGREE_DISAGREE": 340}
+    "domain": {"EQ": 390, "SQ": 390, "SSQ": 390},
+    "format": {"SITUATIONAL": 780, "AGREE_DISAGREE": 390}
   },
   "finalLockedDistribution": {
     "domain": {"EQ": 500, "SQ": 500, "SSQ": 500},
@@ -39,10 +39,15 @@
     "A0931-A0960 reauthor Set32 around communication ambiguity, perspective/context, observation versus inference, precise references and checking understanding.",
     "A0961-A0990 reauthor Set33 around rule purpose, bounded exceptions, consistent criteria, edge cases, precedent, loopholes and prospective rule changes.",
     "A0991-A1020 reauthor Set34 around adaptive transfer, structural versus surface similarity, changing representations, analogy limits and method applicability.",
-    "Set30-34 were processed as one five-set curation batch with sequential global gates and editorial repairs before advancing.",
+    "A1021-A1050 reauthor Set35 around discriminating evidence, diagnostic tests, competing hypotheses, negative results and stopping when more information would not change action.",
+    "A1051-A1080 reauthor Set36 around definitions, category boundaries, necessary versus sufficient conditions, overlapping categories and operational criteria.",
+    "A1081-A1110 reauthor Set37 around counterfactual reasoning, causal attribution, interventions, confounding, interactions and contributory causes.",
+    "A1111-A1140 reauthor Set38 around constraint satisfaction, implication, exclusion, transitive ordering, exact cardinality and inconsistency detection.",
+    "A1141-A1170 reauthor Set39 around argument structure, warrants, hidden assumptions, counterexamples, relevance, qualifiers and common inference errors.",
+    "Set35-39 were authored as one five-set batch and passed the global gate clean on the first batch audit.",
     "The canonical builder normalizes short-lived id aliases to bankId, emits section BAHAGIAN A, loads editorial_overrides*.json shards and rejects duplicate override IDs.",
-    "The global workflow now triggers on every editorial_overrides*.json shard so editorial repairs are always re-audited.",
-    "Current global gate: 1020 items, EQ/SQ/SSQ 340 each, situational 680, agree/disagree 340, repeat_families_imported 0, similarity review 0, hard similarity 0, warnings 0.",
+    "The global workflow triggers on every editorial_overrides*.json shard so editorial repairs are always re-audited.",
+    "Current global gate: 1170 items, EQ/SQ/SSQ 390 each, situational 780, agree/disagree 390, repeat_families_imported 0, similarity review 0, hard similarity 0, warnings 0.",
     "The global workflow does not import or overwrite future sets during audit.",
     "Global curation PASS is not FINAL_APPROVED; final semantic/construct editorial approval remains required."
   ]
