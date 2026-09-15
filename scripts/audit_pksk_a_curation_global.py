@@ -185,6 +185,8 @@ def main()->int:
             elif r>=0.82: review_sim.append((round(r,3),id1,id2,c1,c2))
     if hard_sim:
         errors.append(f'cross-family semantic/lexical pairs >=0.90: {sorted(hard_sim,reverse=True)[:15]}')
+    if review_sim:
+        errors.append(f'cross-family semantic/lexical pairs 0.82-0.899 are not allowed in curated PASS: {sorted(review_sim,reverse=True)[:15]}')
 
     # A shared base scenario is expected within one 10-variant repeat family. A
     # template-prefix warning is useful only when the same six-word opening leaks
