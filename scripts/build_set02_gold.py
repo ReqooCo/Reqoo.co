@@ -182,7 +182,7 @@ BM = [
 ]
 
 ENG = [
-    spec(1,'past_tense','Choose the correct sentence.', 'The pupils visited the museum yesterday.', ['The pupils visit the museum yesterday.','The pupils visits the museum yesterday.','The pupils visiting the museum yesterday.']),
+    spec(1,'past_tense','Which sentence correctly describes a completed museum visit that happened yesterday?', 'The pupils visited the museum yesterday.', ['The pupils visit the museum yesterday.','The pupils visits the museum yesterday.','The pupils visiting the museum yesterday.']),
     spec(1,'subject_verb_agreement','Choose the correct verb: “Each member of the team ___ a task.”', 'has', ['have','having','are']),
     spec(2,'vocabulary_context','In the sentence “Please handle the glass model carefully because it is fragile,” the word “fragile” means ___.', 'easily broken', ['very heavy','brightly coloured','difficult to carry']),
     spec(3,'reading_inference','Mira left home with an umbrella although the sky was bright. Later, dark clouds appeared. Why did Mira most likely bring the umbrella?', 'She expected that it might rain.', ['She wanted to block the wind.','She planned to lend it to a friend.','She was going to repair it.']),
@@ -218,7 +218,7 @@ GK = [
     spec(1,'currency','Apakah mata wang rasmi Malaysia?', 'Ringgit Malaysia', ['Rupiah','Baht','Dolar Singapura']),
     spec(2,'civics','Malaysia mengamalkan sistem Raja Berperlembagaan dan Demokrasi Berparlimen. Institusi manakah menggubal undang-undang Persekutuan?', 'Parlimen', ['Mahkamah sahaja','Sekolah','Bank Negara Malaysia']),
     spec(2,'emergency_awareness','Apakah nombor kecemasan utama yang digunakan di Malaysia untuk mendapatkan bantuan agensi kecemasan?', '999', ['911','111','555']),
-    spec(2,'sustainability','Dalam amalan 3R, apakah maksud “Reuse”?', 'Menggunakan semula barang yang masih boleh digunakan.', ['Membakar semua barang terpakai.','Membeli barang baharu setiap kali.','Mengasingkan barang mengikut warna sahaja.']),
+    spec(2,'sustainability','Sekolah mahu mengurangkan sisa melalui konsep 3R. Tindakan manakah paling tepat menunjukkan amalan “Reuse”?', 'Menggunakan semula barang yang masih boleh digunakan.', ['Membakar semua barang terpakai.','Membeli barang baharu setiap kali.','Mengasingkan barang mengikut warna sahaja.']),
 ]
 
 PS = [
