@@ -1,0 +1,40 @@
+name: PKSK A Global Curation Gate
+
+on:
+  push:
+    branches:
+      - repair/pksk-live-curation-v1
+    paths:
+      - 'sim/pksk/curation/A/rewrite_wave_*.jsonl'
+      - 'scripts/build_pksk_live_a_seed.py'
+      - 'scripts/build_pksk_a_curation_canonical.py'
+      - 'scripts/audit_pksk_a_curation_global.py'
+      - '.github/workflows/pksk-a-curation-global.yml'
+      - 'sim/pksk/simulator/sets/SET 01-10/data/set01.json'
+      - 'sim/pksk/simulator/sets/SET 01-10/data/set02.json'
+      - 'sim/pksk/simulator/sets/SET 01-10/data/set03.json'
+  workflow_dispatch:
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: repair/pksk-live-curation-v1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build live Gold A seed
+        run: python scripts/build_pksk_live_a_seed.py
+      - name: Build all canonical rewrite waves
+        run: python scripts/build_pksk_a_curation_canonical.py
+      - name: Run global curated-A gate
+        run: python scripts/audit_pksk_a_curation_global.py
+      - name: Upload curated A snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: pksk-a-curated-snapshot
+          path: |
+            sim/pksk/curation/A/live_gold_seed_0001_0090.jsonl
+            sim/pksk/curation/A/generated/*.jsonl
