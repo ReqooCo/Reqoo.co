@@ -6,7 +6,7 @@
 const COLORS={ink:'#17243a',muted:'#68788e',line:'#cbd5e1',paper:'#f8fafc',navy:'#10233f',teal:'#178f8a',tealSoft:'#dff3f1',gold:'#e8b95a'};
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const num=(v,f=0)=>{const n=Number(v);return Number.isFinite(n)?n:f};
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const svg=(body,label,viewBox='0 0 560 300')=>`<div class="question-visual structured-visual" role="img" aria-label="${esc(label)}"><svg viewBox="${viewBox}" width="100%" style="display:block;width:100%;max-width:560px;height:auto;margin:0 auto" aria-hidden="true" focusable="false">${body}</svg></div>`;
 const text=(x,y,s,extra='')=>`<text x="${x}" y="${y}" text-anchor="middle" font-family="Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif" font-size="16" font-weight="700" fill="${COLORS.ink}" ${extra}>${esc(s)}</text>`;
 const line=(x1,y1,x2,y2,extra='')=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${COLORS.ink}" stroke-width="3" stroke-linecap="round" ${extra}/>`;
