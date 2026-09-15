@@ -27,6 +27,8 @@ jobs:
         run: python scripts/build_pksk_live_a_seed.py
       - name: Audit 90-item A seed
         run: python scripts/audit_pksk_live_a_seed.py
+      - name: Confirm seed is source preservation only
+        run: echo "Final 1500-item A balance remains EQ500/SQ500/SSQ500; seed distribution may differ."
       - name: Upload A seed
         uses: actions/upload-artifact@v4
         with:
