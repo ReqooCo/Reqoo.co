@@ -143,30 +143,30 @@ def main()->int:
         if formats != Counter({'SITUATIONAL':1000,'AGREE_DISAGREE':500}):
             errors.append(f'full-bank format quota mismatch {dict(formats)}')
 
+    # Legacy imported repeat-family metadata is optional in the manually curated bank.
+    # If such families are present, keep validating their internal shape, but do not
+    # require the retired 120-family fallback when the curated bank reaches 1500.
     imported_families=defaultdict(list)
     for fam,frows in family_rows.items():
         if any(bank_number(str(x.get('bankId') or ''))>=301 for x in frows):
             imported_families[fam].extend(x for x in frows if bank_number(str(x.get('bankId') or ''))>=301)
-    if len(rows)==1500:
-        if len(imported_families)!=120:
-            errors.append(f'imported fallback must contain 120 repeat families, got {len(imported_families)}')
-        for fam,frows in imported_families.items():
-            frows=sorted(frows,key=lambda x:int(x.get('variant') or 0))
-            if len(frows)!=10:
-                errors.append(f'{fam}: expected 10 imported variants, got {len(frows)}')
-                continue
-            variants=[x.get('variant') for x in frows]
-            if variants!=list(range(1,11)):
-                errors.append(f'{fam}: variants must be 1..10, got {variants}')
-            if len({x.get('domain') for x in frows})!=1:
-                errors.append(f'{fam}: domain changes inside repeat family')
-            if len({x.get('format') for x in frows})!=1:
-                errors.append(f'{fam}: format changes inside repeat family')
-            diffs=[float(x.get('difficultyScore')) for x in frows]
-            if any(b<=a for a,b in zip(diffs,diffs[1:])):
-                errors.append(f'{fam}: difficulty must strictly increase across variants: {diffs}')
-            if any(x.get('recommendedMinSetGap')!=10 for x in frows):
-                errors.append(f'{fam}: recommendedMinSetGap must remain 10')
+    for fam,frows in imported_families.items():
+        frows=sorted(frows,key=lambda x:int(x.get('variant') or 0))
+        if len(frows)!=10:
+            errors.append(f'{fam}: expected 10 imported variants, got {len(frows)}')
+            continue
+        variants=[x.get('variant') for x in frows]
+        if variants!=list(range(1,11)):
+            errors.append(f'{fam}: variants must be 1..10, got {variants}')
+        if len({x.get('domain') for x in frows})!=1:
+            errors.append(f'{fam}: domain changes inside repeat family')
+        if len({x.get('format') for x in frows})!=1:
+            errors.append(f'{fam}: format changes inside repeat family')
+        diffs=[float(x.get('difficultyScore')) for x in frows]
+        if any(b<=a for a,b in zip(diffs,diffs[1:])):
+            errors.append(f'{fam}: difficulty must strictly increase across variants: {diffs}')
+        if any(x.get('recommendedMinSetGap')!=10 for x in frows):
+            errors.append(f'{fam}: recommendedMinSetGap must remain 10')
 
     stems=[(x['bankId'],norm(x['question'],True),tokens(x['question']),x.get('construct'),x.get('repeatFamily')) for x in rows]
     hard_sim=[]; review_sim=[]; compared=0
