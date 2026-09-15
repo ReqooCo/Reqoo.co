@@ -6,6 +6,7 @@ on:
       - rebuild/pksk-master-bank-v1
     paths:
       - 'scripts/build_pksk_master_a_content.py'
+      - 'scripts/repair_pksk_master_a_language.py'
       - 'sim/pksk/generator/master/a/families.csv'
       - 'sim/pksk/generator/master/a/variant_axes.json'
       - 'sim/pksk/generator/master/a/situational_parts/**'
@@ -40,6 +41,10 @@ jobs:
           PY
       - name: Build all 1,500 Bahagian A items
         run: python scripts/build_pksk_master_a_content.py
+      - name: Normalize authored language
+        run: python scripts/repair_pksk_master_a_language.py
+      - name: Audit all 1,500 canonical A items before commit
+        run: python scripts/audit_pksk_master_a_authored.py
       - name: Commit authored bank and QA report
         shell: bash
         run: |
@@ -50,5 +55,5 @@ jobs:
             echo 'Master A bank already current.'
             exit 0
           fi
-          git commit -m 'Build complete PKSK Bahagian A master bank'
+          git commit -m 'Build complete audited PKSK Bahagian A master bank'
           git push origin HEAD:rebuild/pksk-master-bank-v1
