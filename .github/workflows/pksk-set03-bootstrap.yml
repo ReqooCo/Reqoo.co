@@ -1,0 +1,50 @@
+name: PKSK Set03 Gold Bootstrap
+
+on:
+  push:
+    branches:
+      - rebuild/pksk-set03-gold-v1
+    paths:
+      - '.github/workflows/pksk-set03-bootstrap.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: rebuild/pksk-set03-gold-v1
+      - name: Normalize Set 03 interleave order
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('scripts/build_set03_gold.py')
+          s=p.read_text(encoding='utf-8')
+          s=re.sub(r"C3=\[[^\n]+\]", "C3=['Matematik','IQ','Bahasa Melayu','English','Sains']", s)
+          s=re.sub(r"# Exact totals:.*?\nB_ORDER = \[.*?\n\]\n\nWRITING=", "# Locked interleave preserves the 70-item blueprint while mixing domains.\nB_ORDER = C1 * 4 + C2 * 2 + C3 * 2\n\nWRITING=", s, flags=re.S)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Build Set 03 and run whole Gold bank gate
+        run: python scripts/build_set03_gold.py
+      - name: Verify runtime scoring contract
+        run: node scripts/test_gold_set_contract.js 03
+      - name: Verify structured visual renderer
+        run: node scripts/test_pksk_visual_renderer.js
+      - name: Commit canonical Set 03 source and output
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add 'scripts/build_set03_gold.py' 'sim/pksk/simulator/sets/SET 01-10/data/set03.json'
+          if git diff --cached --quiet; then
+            echo 'Set 03 already canonical.'
+            exit 0
+          fi
+          git commit -m 'Build Set 03 Gold candidate'
+          git push origin HEAD:rebuild/pksk-set03-gold-v1
