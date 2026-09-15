@@ -2,24 +2,24 @@
   "branch": "repair/pksk-live-curation-v1",
   "liveMainModified": false,
   "target": 1500,
-  "curatedCurrent": 1170,
-  "percent": 78.0,
+  "curatedCurrent": 1320,
+  "percent": 88.0,
   "goldSeed": 90,
-  "rewrittenFromLegacy": 1080,
-  "remaining": 330,
-  "lastCompletedSourceSet": 39,
-  "nextSourceSet": 40,
+  "rewrittenFromLegacy": 1230,
+  "remaining": 180,
+  "lastCompletedSourceSet": 44,
+  "nextSourceSet": 45,
   "globalGate": {
     "workflow": "PKSK A Global Curation Gate",
-    "runId": 34972227977,
+    "runId": 34980547129,
     "status": "PASS",
     "warnings": 0,
     "semanticReviewPairs082to0899": 0,
     "hardSimilarityPairs090plus": 0
   },
   "currentDistribution": {
-    "domain": {"EQ": 390, "SQ": 390, "SSQ": 390},
-    "format": {"SITUATIONAL": 780, "AGREE_DISAGREE": 390}
+    "domain": {"EQ": 440, "SQ": 440, "SSQ": 440},
+    "format": {"SITUATIONAL": 880, "AGREE_DISAGREE": 440}
   },
   "finalLockedDistribution": {
     "domain": {"EQ": 500, "SQ": 500, "SSQ": 500},
@@ -44,10 +44,15 @@
     "A1081-A1110 reauthor Set37 around counterfactual reasoning, causal attribution, interventions, confounding, interactions and contributory causes.",
     "A1111-A1140 reauthor Set38 around constraint satisfaction, implication, exclusion, transitive ordering, exact cardinality and inconsistency detection.",
     "A1141-A1170 reauthor Set39 around argument structure, warrants, hidden assumptions, counterexamples, relevance, qualifiers and common inference errors.",
-    "Set35-39 were authored as one five-set batch and passed the global gate clean on the first batch audit.",
+    "A1171-A1200 reauthor Set40 around signal detection, base rates, thresholds, correlated evidence and error-cost tradeoffs.",
+    "A1201-A1230 reauthor Set41 around model selection, generalization, overfitting, assumptions, validation and model boundaries.",
+    "A1231-A1260 reauthor Set42 around problem decomposition, interfaces, recomposition, coupling and integration checks.",
+    "A1261-A1290 reauthor Set43 around measurement validity, proxies, reliability, scale resolution, missingness and comparability.",
+    "A1291-A1320 reauthor Set44 around information compression, representation choice, preserving exceptions, aggregation and summary fidelity.",
+    "Set40-44 were authored as one five-set batch; the initial audit exposed Set40 binary imbalance and option-length clues, all repaired in a dedicated override shard before clean PASS.",
     "The canonical builder normalizes short-lived id aliases to bankId, emits section BAHAGIAN A, loads editorial_overrides*.json shards and rejects duplicate override IDs.",
     "The global workflow triggers on every editorial_overrides*.json shard so editorial repairs are always re-audited.",
-    "Current global gate: 1170 items, EQ/SQ/SSQ 390 each, situational 780, agree/disagree 390, repeat_families_imported 0, similarity review 0, hard similarity 0, warnings 0.",
+    "Current global gate: 1320 items, EQ/SQ/SSQ 440 each, situational 880, agree/disagree 440, repeat_families_imported 0, similarity review 0, hard similarity 0, warnings 0.",
     "The global workflow does not import or overwrite future sets during audit.",
     "Global curation PASS is not FINAL_APPROVED; final semantic/construct editorial approval remains required."
   ]
