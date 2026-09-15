@@ -11,6 +11,7 @@ on:
       - 'scripts/validate_pksk_b_repair_batch.py'
       - 'scripts/audit_pksk_b_core_duplicates.py'
       - 'scripts/audit_pksk_b_core_duplicates_v2.py'
+      - 'scripts/build_pksk_b_strict_authoring_plan.py'
       - '.github/workflows/pksk-b-repair-plan.yml'
       - 'sim/pksk/curation/B/**'
       - 'sim/pksk/simulator/sets/**'
@@ -34,6 +35,8 @@ jobs:
         run: python scripts/validate_pksk_b_repair_batch.py
       - name: Audit hidden core-template duplicates (strict V2)
         run: python scripts/audit_pksk_b_core_duplicates_v2.py
+      - name: Build strict B authoring plan
+        run: python scripts/build_pksk_b_strict_authoring_plan.py
       - name: Upload B repair workspace
         uses: actions/upload-artifact@v4
         with:
