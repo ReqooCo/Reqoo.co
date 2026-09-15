@@ -2,24 +2,24 @@
   "branch": "repair/pksk-live-curation-v1",
   "liveMainModified": false,
   "target": 1500,
-  "curatedCurrent": 210,
-  "percent": 14.0,
+  "curatedCurrent": 240,
+  "percent": 16.0,
   "goldSeed": 90,
-  "rewrittenFromLegacy": 120,
-  "remaining": 1290,
-  "lastCompletedSourceSet": 7,
-  "nextSourceSet": 8,
+  "rewrittenFromLegacy": 150,
+  "remaining": 1260,
+  "lastCompletedSourceSet": 8,
+  "nextSourceSet": 9,
   "globalGate": {
     "workflow": "PKSK A Global Curation Gate",
-    "runId": 34940300170,
+    "runId": 34940865544,
     "status": "PASS",
     "warnings": 0,
     "semanticReviewPairs082to0899": 0,
     "hardSimilarityPairs090plus": 0
   },
   "currentDistribution": {
-    "domain": {"EQ": 71, "SQ": 71, "SSQ": 68},
-    "format": {"SITUATIONAL": 150, "AGREE_DISAGREE": 60}
+    "domain": {"EQ": 80, "SQ": 80, "SSQ": 80},
+    "format": {"SITUATIONAL": 160, "AGREE_DISAGREE": 80}
   },
   "finalLockedDistribution": {
     "domain": {"EQ": 500, "SQ": 500, "SSQ": 500},
@@ -31,7 +31,8 @@
     "A0121-A0150 rewrite legacy Set05.",
     "A0151-A0180 rewrite legacy Set06.",
     "A0181-A0210 rewrite legacy Set07 with materially differentiated reasoning for heavily repeated constructs.",
-    "Set07 initially failed only the agree/disagree key-balance gate at 6:4; A0186 was reverse-keyed in the curation layer and the rerun passed 5:5.",
+    "A0211-A0240 rewrite legacy Set08. Ten repeated situational constructs were converted into binary judgement items to restore the locked 2:1 situational-to-agree/disagree ratio after legacy Set04 contained 30 situational items.",
+    "After Set08, curated domains are exactly balanced at EQ 80, SQ 80 and SSQ 80; formats are exactly proportional at 160 situational and 80 agree/disagree.",
     "Global curation PASS is not FINAL_APPROVED; final semantic/construct editorial approval remains required."
   ]
 }
