@@ -80,12 +80,13 @@ def main()->int:
     errors=[]; warnings=[]
     exact=defaultdict(list); numbered=defaultdict(list); option_sets=defaultdict(list)
     source_refs=Counter(); domains=Counter(); formats=Counter(); statuses=Counter()
-    prefix=Counter(); family_rows=defaultdict(list)
+    prefix_usage=defaultdict(list); family_rows=defaultdict(list)
 
     for x in rows:
         bid=str(x.get('bankId') or '')
         sec=x.get('section'); dom=x.get('domain'); fmt=x.get('format')
         q=str(x.get('question') or '').strip(); opts=x.get('options'); weights=x.get('weights')
+        fam=x.get('repeatFamily')
         domains[dom]+=1; formats[fmt]+=1; statuses[x.get('reviewStatus')]+=1
         if sec!='BAHAGIAN A': errors.append(f'{bid}: wrong section {sec}')
         if dom not in {'EQ','SQ','SSQ'}: errors.append(f'{bid}: invalid domain {dom}')
@@ -97,10 +98,11 @@ def main()->int:
         if re.search(r'\b[Jj]ika\b[^.!?]{0,180},\s*[Jj]ika\b',q): errors.append(f"{bid}: awkward repeated 'Jika ..., jika ...'")
         exact[norm(q,False)].append(bid); numbered[norm(q,True)].append(bid)
         words=norm(q,True).split()
-        if len(words)>=6: prefix[' '.join(words[:6])]+=1
+        if len(words)>=6:
+            family_key=str(fam) if fam else f'__standalone__{bid}'
+            prefix_usage[' '.join(words[:6])].append((bid,family_key))
         src=(x.get('sourceSet'),x.get('sourceId'))
         if src!=(None,None): source_refs[src]+=1
-        fam=x.get('repeatFamily')
         if fam: family_rows[str(fam)].append(x)
 
         if fmt=='SITUATIONAL':
@@ -135,17 +137,12 @@ def main()->int:
     for g in option_sets.values():
         if len(g)>1: warnings.append(f'identical situational option-set {g}')
 
-    # When the full bank is present, enforce the locked global quotas. Set assignment
-    # happens later, so source/rewrite waves are not treated as final exam sets.
     if len(rows)==1500:
         if domains != Counter({'EQ':500,'SQ':500,'SSQ':500}):
             errors.append(f'full-bank domain quota mismatch {dict(domains)}')
         if formats != Counter({'SITUATIONAL':1000,'AGREE_DISAGREE':500}):
             errors.append(f'full-bank format quota mismatch {dict(formats)}')
 
-    # Scaffold fallback content from A0301 onward must preserve complete 10-variant
-    # repeat families. This is the proper place to validate progression, instead of
-    # forcing each 30-item authoring wave to look like a final assembled set.
     imported_families=defaultdict(list)
     for fam,frows in family_rows.items():
         if any(bank_number(str(x.get('bankId') or ''))>=301 for x in frows):
@@ -171,8 +168,6 @@ def main()->int:
             if any(x.get('recommendedMinSetGap')!=10 for x in frows):
                 errors.append(f'{fam}: recommendedMinSetGap must remain 10')
 
-    # Semantic/template check is cross-family. Related variants inside one repeat
-    # family are intentionally the same construct at rising reasoning difficulty.
     stems=[(x['bankId'],norm(x['question'],True),tokens(x['question']),x.get('construct'),x.get('repeatFamily')) for x in rows]
     hard_sim=[]; review_sim=[]; compared=0
     for i in range(len(stems)):
@@ -191,13 +186,22 @@ def main()->int:
     if hard_sim:
         errors.append(f'cross-family semantic/lexical pairs >=0.90: {sorted(hard_sim,reverse=True)[:15]}')
 
-    common_prefixes=sorted(((n,p) for p,n in prefix.items() if n>=6),reverse=True)
-    for n,p in common_prefixes[:30]: warnings.append(f'template prefix x{n}: {p}')
+    # A shared base scenario is expected within one 10-variant repeat family. A
+    # template-prefix warning is useful only when the same six-word opening leaks
+    # across multiple families (or multiple standalone curated items).
+    common_prefixes=[]
+    for phrase, uses in prefix_usage.items():
+        if len(uses)<6:
+            continue
+        distinct_families={family_key for _,family_key in uses}
+        if len(distinct_families)<2:
+            continue
+        common_prefixes.append((len(uses),len(distinct_families),phrase))
+    common_prefixes.sort(reverse=True)
+    for n,family_count,p in common_prefixes[:30]:
+        warnings.append(f'template prefix x{n} across {family_count} families/items: {p}')
     for row in sorted(review_sim,reverse=True)[:50]: warnings.append(f'semantic review {row}')
 
-    # The first 300 were curated as source-set waves and keep their local answer-key
-    # checks. A0301+ is now a master-bank replacement pool; set balance is deferred
-    # until final assembly.
     for name,wrows in waves.items():
         nums=[bank_number(str(x.get('bankId') or '')) for x in wrows]
         if nums and max(nums)>300:
