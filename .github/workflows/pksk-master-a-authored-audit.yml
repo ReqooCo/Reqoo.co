@@ -1,0 +1,25 @@
+name: PKSK Master A Authored Audit
+
+on:
+  push:
+    branches:
+      - rebuild/pksk-master-bank-v1
+    paths:
+      - 'sim/pksk/generator/master/a/authored/**'
+      - 'scripts/audit_pksk_master_a_authored.py'
+      - '.github/workflows/pksk-master-a-authored-audit.yml'
+  pull_request:
+    paths:
+      - 'sim/pksk/generator/master/a/authored/**'
+      - 'scripts/audit_pksk_master_a_authored.py'
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit authored Bahagian A bank
+        run: python scripts/audit_pksk_master_a_authored.py
