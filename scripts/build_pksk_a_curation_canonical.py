@@ -15,6 +15,7 @@ WAVE_RE = re.compile(r'^rewrite_wave_(\d{4})_(\d{4})\.jsonl$')
 
 def main() -> int:
     OUT_ROOT.mkdir(parents=True, exist_ok=True)
+    # Keep large editorial repairs in reviewable shards while rejecting duplicate IDs.
     overrides={}
     for override_path in sorted(A_ROOT.glob('editorial_overrides*.json')):
         shard=json.loads(override_path.read_text(encoding='utf-8'))
