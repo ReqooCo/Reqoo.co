@@ -9,6 +9,7 @@ on:
       - 'sim/pksk/curation/A/editorial_overrides.json'
       - 'scripts/build_pksk_live_a_seed.py'
       - 'scripts/import_pksk_a_scaffold_11_50.py'
+      - 'scripts/polish_pksk_a_scaffold_language.py'
       - 'scripts/build_pksk_a_curation_canonical.py'
       - 'scripts/audit_pksk_a_curation_global.py'
       - '.github/workflows/pksk-a-curation-global.yml'
@@ -34,11 +35,14 @@ jobs:
         run: python scripts/build_pksk_live_a_seed.py
       - name: Import Set11-50 scaffold fallback candidates
         run: python scripts/import_pksk_a_scaffold_11_50.py
+      - name: Diversify scaffold template language
+        run: python scripts/polish_pksk_a_scaffold_language.py
       - name: Build all canonical rewrite waves
         run: python scripts/build_pksk_a_curation_canonical.py
       - name: Run global curated-A gate
         run: python scripts/audit_pksk_a_curation_global.py
       - name: Upload curated A snapshot
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pksk-a-curated-snapshot
