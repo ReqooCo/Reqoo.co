@@ -1,0 +1,28 @@
+name: PKSK Master A Final Editorial Gate
+
+on:
+  push:
+    branches:
+      - rebuild/pksk-master-bank-v1
+    paths:
+      - 'sim/pksk/master-bank/A/**'
+      - 'sim/pksk/master-bank/manifest.json'
+      - 'scripts/audit_pksk_master_a_final.py'
+      - '.github/workflows/pksk-master-a-final-editorial-gate.yml'
+  pull_request:
+    paths:
+      - 'sim/pksk/master-bank/A/**'
+      - 'sim/pksk/master-bank/manifest.json'
+      - 'scripts/audit_pksk_master_a_final.py'
+      - '.github/workflows/pksk-master-a-final-editorial-gate.yml'
+
+jobs:
+  editorial-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate editorial release source
+        run: python scripts/audit_pksk_master_a_final.py
