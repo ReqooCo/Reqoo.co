@@ -1,16 +1,52 @@
-import fs from 'node:fs';import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+
 const api=fs.readFileSync(new URL('../api/shop-admin-flow-v12.js',import.meta.url),'utf8');
 const v14=fs.readFileSync(new URL('../api/shop-admin-flow-v14.js',import.meta.url),'utf8');
 const v15=fs.readFileSync(new URL('../api/shop-admin-flow-v15.js',import.meta.url),'utf8');
 const v16=fs.readFileSync(new URL('../api/shop-admin-flow-v16.js',import.meta.url),'utf8');
+const v17=fs.readFileSync(new URL('../api/shop-admin-flow-v17.js',import.meta.url),'utf8');
 const worker=fs.readFileSync(new URL('../api/worker.js',import.meta.url),'utf8');
 const web=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8');
 const html=fs.readFileSync(new URL('../admin/documents.html',import.meta.url),'utf8');
 const ui=fs.readFileSync(new URL('../admin/documents-v2.js',import.meta.url),'utf8');
+const publicHtml=fs.readFileSync(new URL('../admin/document-public.html',import.meta.url),'utf8');
 const publicUi=fs.readFileSync(new URL('../admin/document-public-v1.js',import.meta.url),'utf8');
-assert.match(worker,/shop-admin-flow-v16\.js/,'API worker must route Shop Admin through v16');assert.match(v16,/shop-admin-flow-v15\.js/);assert.match(v15,/shop-admin-flow-v14\.js/);assert.match(v14,/shop-admin-flow-v13\.js/,'v14 must preserve v13 -> v12 Documents chain');
-assert.match(api,/reqoo_document_sequences/);assert.match(api,/reqoo_documents/);assert.match(api,/delivery_order/);assert.match(api,/Receipt hanya boleh dikeluarkan selepas bayaran disahkan/);assert.match(api,/QT.*INV.*RC.*DO|PREFIX=/s);assert.match(api,/publicDocument/);assert.match(api,/share_token/);assert.ok(api.indexOf("if(action==='publicDocument')")<api.indexOf("if(['createDocument'"));
-assert.match(html,/Document History/);assert.match(html,/Company Details/);assert.match(html,/Delivery Order/);assert.match(html,/documents-v2\.js\?v=1/);
-assert.match(ui,/createDocument/);assert.match(ui,/listDocuments/);assert.match(ui,/saveDocumentSettings/);assert.match(ui,/wa\.me/);assert.match(ui,/\/d\//);
-assert.match(web,/document-public\.html/);assert.match(web,/\/d\\\//);assert.match(publicUi,/publicDocument/);assert.match(publicUi,/window\.print/);
-console.log('PASS: Documents V2 remains preserved behind v16.');
+
+assert.match(worker,/shop-admin-flow-v17\.js/,'API worker must route Shop Admin through v17');
+assert.match(v17,/shop-admin-flow-v16\.js/);
+assert.match(v16,/shop-admin-flow-v15\.js/);
+assert.match(v15,/shop-admin-flow-v14\.js/);
+assert.match(v14,/shop-admin-flow-v13\.js/,'v14 must preserve v13 -> v12 Documents chain');
+
+assert.match(api,/reqoo_document_sequences/);
+assert.match(api,/reqoo_documents/);
+assert.match(api,/delivery_order/);
+assert.match(api,/Receipt hanya boleh dikeluarkan selepas bayaran disahkan/);
+assert.match(api,/QT.*INV.*RC.*DO|PREFIX=/s);
+assert.match(api,/publicDocument/);
+assert.match(api,/share_token/);
+
+assert.match(v17,/createCustomQuotation/);
+assert.match(v17,/custom:\$\{id\}/);
+assert.match(v17,/Quotation dibuat secara custom sebelum order/);
+assert.match(v17,/quoteMeta/);
+
+assert.match(html,/Create Custom Quotation/);
+assert.match(html,/Order yang sudah wujud tidak perlukan quotation/);
+assert.match(html,/documents-v2\.js\?v=2/);
+assert.doesNotMatch(ui,/data-create="quotation"/);
+assert.match(ui,/createCustomQuotation/);
+assert.match(ui,/listDocuments/);
+assert.match(ui,/saveDocumentSettings/);
+assert.match(ui,/wa\.me/);
+assert.match(ui,/quoteMeta/);
+
+assert.match(publicHtml,/document-public-v1\.js\?v=2/);
+assert.match(publicUi,/publicDocument/);
+assert.match(publicUi,/quoteMeta/);
+assert.match(publicUi,/window\.print/);
+assert.match(web,/document-public\.html/);
+assert.match(web,/\/d\\\//);
+
+console.log('PASS: Documents supports custom quotations before order while preserving invoice/receipt/DO flow.');
