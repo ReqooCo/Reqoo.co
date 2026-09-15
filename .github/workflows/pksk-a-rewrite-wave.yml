@@ -1,0 +1,27 @@
+name: PKSK A Rewrite Wave Gate
+
+on:
+  push:
+    branches:
+      - repair/pksk-live-curation-v1
+    paths:
+      - 'sim/pksk/curation/A/rewrite_wave_0091_0120.jsonl'
+      - 'scripts/audit_pksk_a_rewrite_wave.py'
+      - '.github/workflows/pksk-a-rewrite-wave.yml'
+      - 'sim/pksk/simulator/sets/SET 01-10/data/set01.json'
+      - 'sim/pksk/simulator/sets/SET 01-10/data/set02.json'
+      - 'sim/pksk/simulator/sets/SET 01-10/data/set03.json'
+  workflow_dispatch:
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: repair/pksk-live-curation-v1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit A rewrite wave
+        run: python scripts/audit_pksk_a_rewrite_wave.py
