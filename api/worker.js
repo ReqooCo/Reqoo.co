@@ -3,8 +3,8 @@ import { onRequestPost as handleCustomer } from '../functions/api/customer-v1.js
 import { onRequest as handleOrder } from '../functions/api/order-v1.js';
 import { onRequest as handleSimAdmin } from './sim-admin.js';
 import { onRequest as handleShopFlow } from './shop-flow-v5.js';
-import { onRequest as handleShopAdminFlow } from './shop-admin-flow-v17.js';
-// v17 preserves the complete shop-admin-flow-v16.js chain.
+import { onRequest as handleShopAdminFlow } from './shop-admin-flow-v18.js';
+// v18 adds custom quotation while preserving the complete shop-admin-flow-v17 -> v16 chain.
 import { onRequest as handleShopMedia } from './shop-media.js';
 import { onRequest as handleProductImage } from '../functions/api/product-image.js';
 import { onRequest as handleInvoice } from '../functions/api/invoice-v1.js';
