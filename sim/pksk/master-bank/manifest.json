@@ -1,0 +1,41 @@
+{
+  "version": "MASTER_BANK_V1",
+  "status": "AUTHORING",
+  "assemblyLocked": true,
+  "notes": "Author and globally QA complete section banks before assigning questions to Set 01-50.",
+  "sections": {
+    "A": {
+      "total": 1500,
+      "formats": {
+        "SITUATIONAL": 1000,
+        "AGREE_DISAGREE": 500
+      },
+      "current": 0
+    },
+    "B": {
+      "total": 3500,
+      "domains": {
+        "Matematik": 1000,
+        "IQ": 500,
+        "Bahasa Melayu": 400,
+        "English": 400,
+        "Sains": 400,
+        "Teknologi/RBT": 300,
+        "Pengetahuan Am": 300,
+        "Penyelesaian Masalah": 200
+      },
+      "current": 0
+    },
+    "C": {
+      "total": 150,
+      "current": 0
+    }
+  },
+  "globalRules": {
+    "exactStemDuplicatesAllowed": 0,
+    "normalisedStemDuplicatesAllowed": 0,
+    "numberSwapOnlyItemsAllowed": 0,
+    "assembleBeforeBankQa": false,
+    "difficultyProgression": "gradual_set_average_01_to_50_within_set_mix"
+  }
+}
