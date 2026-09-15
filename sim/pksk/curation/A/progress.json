@@ -2,24 +2,24 @@
   "branch": "repair/pksk-live-curation-v1",
   "liveMainModified": false,
   "target": 1500,
-  "curatedCurrent": 300,
-  "percent": 20.0,
+  "curatedCurrent": 330,
+  "percent": 22.0,
   "goldSeed": 90,
-  "rewrittenFromLegacy": 210,
-  "remaining": 1200,
-  "lastCompletedSourceSet": 10,
-  "nextSourceSet": 11,
+  "rewrittenFromLegacy": 240,
+  "remaining": 1170,
+  "lastCompletedSourceSet": 11,
+  "nextSourceSet": 12,
   "globalGate": {
     "workflow": "PKSK A Global Curation Gate",
-    "runId": 34942230051,
+    "runId": 34945599012,
     "status": "PASS",
     "warnings": 0,
     "semanticReviewPairs082to0899": 0,
     "hardSimilarityPairs090plus": 0
   },
   "currentDistribution": {
-    "domain": {"EQ": 100, "SQ": 100, "SSQ": 100},
-    "format": {"SITUATIONAL": 200, "AGREE_DISAGREE": 100}
+    "domain": {"EQ": 110, "SQ": 110, "SSQ": 110},
+    "format": {"SITUATIONAL": 220, "AGREE_DISAGREE": 110}
   },
   "finalLockedDistribution": {
     "domain": {"EQ": 500, "SQ": 500, "SSQ": 500},
@@ -34,8 +34,10 @@
     "A0211-A0240 rewrite legacy Set08 and restore the locked 2:1 situational-to-agree/disagree ratio.",
     "A0241-A0270 rewrite legacy Set09; repeated source concepts were materially differentiated in reasoning.",
     "A0271-A0300 rewrite legacy Set10; repeated Set08/09 families were reframed around root cause, safety margin, bias control, reversible decisions, reproducibility and uncertainty.",
-    "Set10 first passed with one option-length warning on A0290; the curation-layer option set was polished and rerun to zero warnings.",
-    "After Set10, domains are exactly balanced at EQ 100, SQ 100 and SSQ 100; formats remain exactly proportional at 200 situational and 100 agree/disagree.",
+    "A0301-A0330 reauthor legacy Set11 one-set-at-a-time; legacy V46 template content is retained only as lineage and not reused as final wording.",
+    "Set11 was compared globally against every passed item from Set01-10 under hard similarity threshold 0.82 and passed with zero review pairs, zero hard-similarity pairs and zero warnings.",
+    "After Set11, domains remain exactly balanced at EQ 110, SQ 110 and SSQ 110; formats remain exactly proportional at 220 situational and 110 agree/disagree.",
+    "The global workflow now runs one set at a time and no longer imports or overwrites Set11-50 from scaffold fallback during audit.",
     "Global curation PASS is not FINAL_APPROVED; final semantic/construct editorial approval remains required."
   ]
 }
