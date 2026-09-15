@@ -118,7 +118,7 @@ spec(2,'tanda_baca','Pilih ayat yang menggunakan tanda baca dengan betul.', '“
 
 ENG = [
 spec(1,'preposition','Choose the best preposition: “The notice is displayed ___ the wall near the office.”', 'on', ['at','into','between']),
-spec(2,'comparative','Choose the correct sentence.', 'This box is lighter than the one we carried yesterday.', ['This box is more light than the one we carried yesterday.','This box is lightest than the one we carried yesterday.','This box lighter from the one we carried yesterday.']),
+spec(2,'comparative','Which sentence correctly compares the weight of two boxes?', 'This box is lighter than the one we carried yesterday.', ['This box is more light than the one we carried yesterday.','This box is lightest than the one we carried yesterday.','This box lighter from the one we carried yesterday.']),
 spec(1,'pronoun','Choose the correct pronoun: “Farah and I prepared the poster by ___.”', 'ourselves', ['themselves','herself','itself']),
 spec(2,'vocabulary_context','In the sentence “The path was narrow, so the pupils walked in a single line,” “narrow” means ___.', 'not wide', ['very long','covered with water','easy to climb']),
 spec(3,'reading_inference','Arun packed an extra bottle of water before a long outdoor practice on a hot day. What can we reasonably infer?', 'He expected to need more water during the practice.', ['He planned to pour water on the field.','He had forgotten where the practice was.','He wanted the bottle to make his bag heavier.']),
@@ -166,17 +166,9 @@ spec(4,'data_anomaly','Empat bacaan suhu ialah 27°C, 28°C, 27°C dan 41°C dal
 QUEUES={'IQ':deque(IQ),'Matematik':deque(MAT),'Bahasa Melayu':deque(BM),'English':deque(ENG),'Sains':deque(SCI),'Teknologi/RBT':deque(RBT),'Pengetahuan Am':deque(GK),'Penyelesaian Masalah':deque(PS)}
 C1=['IQ','Matematik','Bahasa Melayu','Matematik','English','Sains','Matematik','Teknologi/RBT','Pengetahuan Am','Penyelesaian Masalah']
 C2=['Matematik','IQ','Sains','Bahasa Melayu','Matematik','English','Teknologi/RBT','Matematik','Pengetahuan Am','IQ']
-C3=['Matematik','Bahasa Melayu','English','Sains','Teknologi/RBT']
-# Exact totals: C1*4 + C2*2 + C3*2 -> Math20 IQ8? Add IQ correction below via explicit order.
-B_ORDER = [
-'Matematik','IQ','Bahasa Melayu','English','Sains','Matematik','Teknologi/RBT','Pengetahuan Am','Matematik','Penyelesaian Masalah',
-'Matematik','IQ','Bahasa Melayu','English','Sains','Matematik','Teknologi/RBT','Pengetahuan Am','IQ','Matematik',
-'Matematik','IQ','Bahasa Melayu','English','Sains','Matematik','Teknologi/RBT','Pengetahuan Am','Matematik','Penyelesaian Masalah',
-'Matematik','IQ','Bahasa Melayu','English','Sains','Matematik','Teknologi/RBT','Pengetahuan Am','IQ','Matematik',
-'Matematik','IQ','Bahasa Melayu','English','Sains','Matematik','Teknologi/RBT','Pengetahuan Am','Matematik','Penyelesaian Masalah',
-'Matematik','IQ','Bahasa Melayu','English','Sains','Matematik','Teknologi/RBT','Pengetahuan Am','IQ','Matematik',
-'Matematik','IQ','Bahasa Melayu','English','Sains','Matematik','Teknologi/RBT','Pengetahuan Am','Matematik','Penyelesaian Masalah',
-]
+C3=['Matematik','IQ','Bahasa Melayu','English','Sains']
+# Locked interleave preserves the 70-item blueprint while mixing domains.
+B_ORDER = C1 * 4 + C2 * 2 + C3 * 2
 
 WRITING=[
 {'id':'C01','title':'Mengurangkan pembaziran makanan di kantin','prompt':'Kantin sekolah mendapati banyak makanan yang masih elok dibuang setiap hari. Cadangkan satu rancangan untuk mengurangkan pembaziran tanpa menjejaskan kebersihan dan keselamatan makanan. Huraikan langkah, pihak yang terlibat dan cara mengukur keberkesanannya.','min_words':100,'plannedLevel':2,'constructFamily':'canteen_food_waste','levelSignal':2,'contentDomain':'Artikulasi Penulisan','rebuildStatus':'GOLD_V1_HUMAN_AUTHORED'},
