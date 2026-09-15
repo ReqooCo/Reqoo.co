@@ -55,6 +55,13 @@ def load_jsonl(path:Path)->list[dict]:
     return out
 
 
+def bank_number(bid:str)->int:
+    try:
+        return int(bid[1:])
+    except Exception:
+        return -1
+
+
 def main()->int:
     if not SEED.exists(): fail('seed file missing; run build_pksk_live_a_seed.py first')
     wave_paths=sorted(GEN.glob('rewrite_wave_*.jsonl'))
@@ -73,7 +80,7 @@ def main()->int:
     errors=[]; warnings=[]
     exact=defaultdict(list); numbered=defaultdict(list); option_sets=defaultdict(list)
     source_refs=Counter(); domains=Counter(); formats=Counter(); statuses=Counter()
-    prefix=Counter()
+    prefix=Counter(); family_rows=defaultdict(list)
 
     for x in rows:
         bid=str(x.get('bankId') or '')
@@ -93,6 +100,8 @@ def main()->int:
         if len(words)>=6: prefix[' '.join(words[:6])]+=1
         src=(x.get('sourceSet'),x.get('sourceId'))
         if src!=(None,None): source_refs[src]+=1
+        fam=x.get('repeatFamily')
+        if fam: family_rows[str(fam)].append(x)
 
         if fmt=='SITUATIONAL':
             if not isinstance(opts,list) or len(opts)!=4 or len({str(o).strip() for o in opts})!=4:
@@ -126,13 +135,52 @@ def main()->int:
     for g in option_sets.values():
         if len(g)>1: warnings.append(f'identical situational option-set {g}')
 
-    # Semantic/template check across every curated stem, not merely within its source set.
-    stems=[(x['bankId'],norm(x['question'],True),tokens(x['question']),x.get('construct')) for x in rows]
+    # When the full bank is present, enforce the locked global quotas. Set assignment
+    # happens later, so source/rewrite waves are not treated as final exam sets.
+    if len(rows)==1500:
+        if domains != Counter({'EQ':500,'SQ':500,'SSQ':500}):
+            errors.append(f'full-bank domain quota mismatch {dict(domains)}')
+        if formats != Counter({'SITUATIONAL':1000,'AGREE_DISAGREE':500}):
+            errors.append(f'full-bank format quota mismatch {dict(formats)}')
+
+    # Scaffold fallback content from A0301 onward must preserve complete 10-variant
+    # repeat families. This is the proper place to validate progression, instead of
+    # forcing each 30-item authoring wave to look like a final assembled set.
+    imported_families=defaultdict(list)
+    for fam,frows in family_rows.items():
+        if any(bank_number(str(x.get('bankId') or ''))>=301 for x in frows):
+            imported_families[fam].extend(x for x in frows if bank_number(str(x.get('bankId') or ''))>=301)
+    if len(rows)==1500:
+        if len(imported_families)!=120:
+            errors.append(f'imported fallback must contain 120 repeat families, got {len(imported_families)}')
+        for fam,frows in imported_families.items():
+            frows=sorted(frows,key=lambda x:int(x.get('variant') or 0))
+            if len(frows)!=10:
+                errors.append(f'{fam}: expected 10 imported variants, got {len(frows)}')
+                continue
+            variants=[x.get('variant') for x in frows]
+            if variants!=list(range(1,11)):
+                errors.append(f'{fam}: variants must be 1..10, got {variants}')
+            if len({x.get('domain') for x in frows})!=1:
+                errors.append(f'{fam}: domain changes inside repeat family')
+            if len({x.get('format') for x in frows})!=1:
+                errors.append(f'{fam}: format changes inside repeat family')
+            diffs=[float(x.get('difficultyScore')) for x in frows]
+            if any(b<=a for a,b in zip(diffs,diffs[1:])):
+                errors.append(f'{fam}: difficulty must strictly increase across variants: {diffs}')
+            if any(x.get('recommendedMinSetGap')!=10 for x in frows):
+                errors.append(f'{fam}: recommendedMinSetGap must remain 10')
+
+    # Semantic/template check is cross-family. Related variants inside one repeat
+    # family are intentionally the same construct at rising reasoning difficulty.
+    stems=[(x['bankId'],norm(x['question'],True),tokens(x['question']),x.get('construct'),x.get('repeatFamily')) for x in rows]
     hard_sim=[]; review_sim=[]; compared=0
     for i in range(len(stems)):
-        id1,a,ta,c1=stems[i]
+        id1,a,ta,c1,f1=stems[i]
         for j in range(i+1,len(stems)):
-            id2,b,tb,c2=stems[j]
+            id2,b,tb,c2,f2=stems[j]
+            if f1 and f2 and f1==f2:
+                continue
             if not lexical_candidate(a,b,ta,tb): continue
             sm=SequenceMatcher(None,a,b,autojunk=False)
             if sm.real_quick_ratio()<0.78 or sm.quick_ratio()<0.78: continue
@@ -141,15 +189,19 @@ def main()->int:
             if r>=0.90: hard_sim.append((round(r,3),id1,id2,c1,c2))
             elif r>=0.82: review_sim.append((round(r,3),id1,id2,c1,c2))
     if hard_sim:
-        errors.append(f'semantic/lexical pairs >=0.90: {sorted(hard_sim,reverse=True)[:15]}')
+        errors.append(f'cross-family semantic/lexical pairs >=0.90: {sorted(hard_sim,reverse=True)[:15]}')
 
     common_prefixes=sorted(((n,p) for p,n in prefix.items() if n>=6),reverse=True)
     for n,p in common_prefixes[:30]: warnings.append(f'template prefix x{n}: {p}')
     for row in sorted(review_sim,reverse=True)[:50]: warnings.append(f'semantic review {row}')
 
-    # Every generated wave must have balanced situational best-response positions and,
-    # when it contains >=4 binary items, reasonably balanced positive/reverse keys.
+    # The first 300 were curated as source-set waves and keep their local answer-key
+    # checks. A0301+ is now a master-bank replacement pool; set balance is deferred
+    # until final assembly.
     for name,wrows in waves.items():
+        nums=[bank_number(str(x.get('bankId') or '')) for x in wrows]
+        if nums and max(nums)>300:
+            continue
         sits=[x for x in wrows if x.get('format')=='SITUATIONAL']
         if sits:
             pos=Counter(x['weights'].index(3) for x in sits)
@@ -164,7 +216,7 @@ def main()->int:
     if errors:
         for e in errors[:100]: print('ERROR',e)
         print('WARNINGS_BEFORE_FAIL=',len(warnings))
-        for w in warnings[:50]: print('REVIEW',w)
+        for w in warnings[:80]: print('REVIEW',w)
         fail(f'{len(errors)} global curation error(s)')
 
     print('PASS: PKSK A GLOBAL CURATION GATE')
@@ -172,11 +224,12 @@ def main()->int:
     print('domains=',dict(domains))
     print('formats=',dict(formats))
     print('reviewStatus=',dict(statuses))
+    print('repeat_families_imported=',len(imported_families))
     print('semantic_candidates_compared=',compared)
     print('semantic_review_0.82_0.899=',len(review_sim))
     print('hard_similarity_0.90_plus=',len(hard_sim))
     print('warnings=',len(warnings))
-    for w in warnings[:60]: print('REVIEW',w)
+    for w in warnings[:80]: print('REVIEW',w)
     print('NOTE: global curation PASS is not FINAL_APPROVED; semantic/editorial truth review is still required.')
     return 0
 
