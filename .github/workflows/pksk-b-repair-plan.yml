@@ -8,7 +8,9 @@ on:
       - 'scripts/audit_pksk_live_50sets_clone.py'
       - 'scripts/classify_pksk_live_50sets_clone.py'
       - 'scripts/build_pksk_b_repair_plan.py'
+      - 'scripts/validate_pksk_b_repair_batch.py'
       - '.github/workflows/pksk-b-repair-plan.yml'
+      - 'sim/pksk/curation/B/**'
       - 'sim/pksk/simulator/sets/**'
   workflow_dispatch:
 
@@ -26,6 +28,8 @@ jobs:
         run: python scripts/classify_pksk_live_50sets_clone.py
       - name: Build locked B repair plan
         run: python scripts/build_pksk_b_repair_plan.py
+      - name: Validate B repair batch 001
+        run: python scripts/validate_pksk_b_repair_batch.py
       - name: Upload B repair workspace
         uses: actions/upload-artifact@v4
         with:
