@@ -1,0 +1,69 @@
+{
+  "version": "1.0",
+  "status": "LOCKED_BY_USER",
+  "targetSets": 50,
+  "authorBeforeAssembly": true,
+  "sections": {
+    "A": {
+      "itemsPerSet": 30,
+      "totalItems": 1500,
+      "format": {
+        "situationalGraded": 1000,
+        "agreeDisagree": 500
+      },
+      "domains": ["EQ", "SQ", "SSQ"]
+    },
+    "B": {
+      "itemsPerSet": 70,
+      "totalItems": 3500,
+      "domainTotals": {
+        "Matematik": 1000,
+        "IQ": 500,
+        "Bahasa Melayu": 400,
+        "English": 400,
+        "Sains": 400,
+        "Teknologi/RBT": 300,
+        "Pengetahuan Am": 300,
+        "Penyelesaian Masalah": 200
+      }
+    },
+    "C": {
+      "promptsPerSet": 3,
+      "totalPrompts": 150
+    }
+  },
+  "grandTotalItemsAndPrompts": 5150,
+  "repetitionPolicy": {
+    "exactQuestionRepeatAllowed": false,
+    "conceptRepeatAllowed": true,
+    "targetRecurrenceSpacingSets": 10,
+    "samePatternInRolling10Sets": "normally_once_unless_materially_different",
+    "repeatRequiresDifferentDifficultyOrCognitiveDemand": true,
+    "repeatAlsoRequiresMaterialChangeInAtLeastOne": [
+      "reasoningPath",
+      "representation",
+      "informationStructure",
+      "context",
+      "numberOfSteps",
+      "decisionRequirement",
+      "distractorLogic"
+    ],
+    "numberNameObjectPlaceUnitSwapOnly": "REJECT"
+  },
+  "difficultyProgression": {
+    "01-10": "foundation_to_lower_intermediate",
+    "11-20": "lower_intermediate_to_intermediate",
+    "21-30": "intermediate",
+    "31-40": "intermediate_to_advanced",
+    "41-50": "advanced_highest_internal_challenge"
+  },
+  "assemblyRules": {
+    "assembleOnlyAfterAllBanksComplete": true,
+    "balanceBAnswerPositions": true,
+    "varyDomainOrder": true,
+    "varyOpeningSequence": true,
+    "auditFirstQuestionsPerSet": 15,
+    "runCrossSetSimilarityQA": true,
+    "runRolling10SetRecurrenceQA": true
+  }
+}
