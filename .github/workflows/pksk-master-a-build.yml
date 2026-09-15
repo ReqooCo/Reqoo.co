@@ -1,0 +1,37 @@
+name: PKSK Master A Bank Build
+
+on:
+  push:
+    branches:
+      - rebuild/pksk-master-bank-v1
+    paths:
+      - 'scripts/build_pksk_master_a_content.py'
+      - 'sim/pksk/generator/master/a/families.csv'
+      - 'sim/pksk/generator/master/a/variant_axes.json'
+      - '.github/workflows/pksk-master-a-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: rebuild/pksk-master-bank-v1
+      - name: Build all 1,500 Bahagian A items
+        run: python scripts/build_pksk_master_a_content.py
+      - name: Commit authored bank and QA report
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add sim/pksk/generator/master/a/authored docs/PKSK_MASTER_A_QA.md
+          if git diff --cached --quiet; then
+            echo 'Master A bank already current.'
+            exit 0
+          fi
+          git commit -m 'Build complete PKSK Bahagian A master bank'
+          git push origin HEAD:rebuild/pksk-master-bank-v1
