@@ -17,6 +17,29 @@ def norm(s: str) -> str:
     return " ".join(s.split())
 
 
+def token_set(s: str):
+    return frozenset(s.split())
+
+
+def likely_lexical_candidate(a: str, b: str, ta, tb) -> bool:
+    """Cheap conservative prefilter before SequenceMatcher.
+
+    Exact/normalised duplicates are checked separately. For near-duplicates, strings with
+    very different lengths or almost no shared tokens cannot reach our 0.80 lexical
+    similarity threshold. This keeps the full 1,500-item audit practical without turning
+    off the strong pairwise check.
+    """
+    la, lb = len(a), len(b)
+    if not la or not lb:
+        return False
+    if min(la, lb) / max(la, lb) < 0.60:
+        return False
+    if not ta or not tb:
+        return False
+    overlap = len(ta & tb) / min(len(ta), len(tb))
+    return overlap >= 0.35
+
+
 def load_items():
     items = []
     for path in sorted(AUTHORED.glob("wave*.jsonl")):
@@ -93,16 +116,28 @@ def main():
         fail(f"identical situational option sets: {list(dup_option_sets.values())[:5]}")
 
     # High lexical similarity is a hard stop; medium similarity is reported for editorial review.
-    stems = [(x["bankId"], norm(x["question"]), x["repeatFamily"]) for x in items]
+    # Same-family variants are intentionally related and are instead controlled by the authored
+    # variant axes; this block catches accidental template reuse across DIFFERENT families.
+    stems = []
+    for x in items:
+        s = norm(x["question"])
+        stems.append((x["bankId"], s, x["repeatFamily"], token_set(s)))
     hard = []
     review = []
+    candidates = 0
     for i in range(len(stems)):
-        id1, a, fam1 = stems[i]
+        id1, a, fam1, ta = stems[i]
         for j in range(i + 1, len(stems)):
-            id2, b, fam2 = stems[j]
+            id2, b, fam2, tb = stems[j]
             if fam1 == fam2:
                 continue
-            ratio = SequenceMatcher(None, a, b).ratio()
+            if not likely_lexical_candidate(a, b, ta, tb):
+                continue
+            sm = SequenceMatcher(None, a, b, autojunk=False)
+            if sm.real_quick_ratio() < 0.78 or sm.quick_ratio() < 0.78:
+                continue
+            candidates += 1
+            ratio = sm.ratio()
             if ratio >= 0.90:
                 hard.append((round(ratio, 3), id1, id2))
             elif ratio >= 0.80:
@@ -133,6 +168,7 @@ def main():
     print("By format:", dict(Counter(x["format"] for x in items)))
     print("By domain:", dict(Counter(x["domain"] for x in items)))
     print("By variant:", dict(Counter(x["variant"] for x in items)))
+    print(f"Lexical candidate pairs fully compared: {candidates}")
     if review:
         print("EDITORIAL_REVIEW lexical-similarity pairs (>=0.80, <0.90):")
         for row in sorted(review, reverse=True)[:20]:
