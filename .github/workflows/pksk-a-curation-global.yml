@@ -8,6 +8,7 @@ on:
       - 'sim/pksk/curation/A/rewrite_wave_*.jsonl'
       - 'sim/pksk/curation/A/editorial_overrides.json'
       - 'scripts/build_pksk_live_a_seed.py'
+      - 'scripts/import_pksk_a_scaffold_11_50.py'
       - 'scripts/build_pksk_a_curation_canonical.py'
       - 'scripts/audit_pksk_a_curation_global.py'
       - '.github/workflows/pksk-a-curation-global.yml'
@@ -23,11 +24,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: repair/pksk-live-curation-v1
+          fetch-depth: 0
+      - name: Fetch audited scaffold branch
+        run: git fetch origin rebuild/pksk-master-bank-v1:refs/remotes/origin/rebuild/pksk-master-bank-v1
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - name: Build live Gold A seed
         run: python scripts/build_pksk_live_a_seed.py
+      - name: Import Set11-50 scaffold fallback candidates
+        run: python scripts/import_pksk_a_scaffold_11_50.py
       - name: Build all canonical rewrite waves
         run: python scripts/build_pksk_a_curation_canonical.py
       - name: Run global curated-A gate
