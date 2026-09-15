@@ -1,0 +1,33 @@
+name: PKSK B 50-Set Repair Plan
+
+on:
+  push:
+    branches:
+      - repair/pksk-b-50set-v1
+    paths:
+      - 'scripts/audit_pksk_live_50sets_clone.py'
+      - 'scripts/classify_pksk_live_50sets_clone.py'
+      - 'scripts/build_pksk_b_repair_plan.py'
+      - '.github/workflows/pksk-b-repair-plan.yml'
+      - 'sim/pksk/simulator/sets/**'
+  workflow_dispatch:
+
+jobs:
+  repair-plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit cloned live PKSK 50 sets
+        run: python scripts/audit_pksk_live_50sets_clone.py
+      - name: Classify salvage path
+        run: python scripts/classify_pksk_live_50sets_clone.py
+      - name: Build locked B repair plan
+        run: python scripts/build_pksk_b_repair_plan.py
+      - name: Upload B repair workspace
+        uses: actions/upload-artifact@v4
+        with:
+          name: pksk-b-50set-repair-workspace
+          path: audit-output/
