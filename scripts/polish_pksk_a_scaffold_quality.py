@@ -7,7 +7,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 A_ROOT = ROOT / 'sim/pksk/curation/A'
 
-# Two scaffold base scenarios overlap too closely with Gold items in A0001-A0090.
 FAMILY_SCENARIO_REPLACEMENTS = {
     'SQ-S19': (
         'Kamu terlanggar sebuah alat sekolah hingga rosak sedikit ketika tiada sesiapa melihat.',
@@ -19,8 +18,6 @@ FAMILY_SCENARIO_REPLACEMENTS = {
     ),
 }
 
-# Long generic tails made unrelated constructs look semantically alike. Shorter prompts
-# preserve the reasoning demand but let the actual scenario carry more of the item.
 TAIL_REPLACEMENTS = {
     'Tiada pilihan yang sempurna; setiap tindakan mempunyai manfaat dan kos tertentu. Pilihan manakah paling baik mengurus pertukaran antara dua keperluan itu?':
         'Kedua-dua pilihan mempunyai manfaat dan kos. Pilihan manakah paling seimbang?',
@@ -40,7 +37,6 @@ TAIL_REPLACEMENTS = {
         'Apakah tindakan awal yang paling membantu keadaan bergerak ke arah yang lebih baik?',
 }
 
-# One punctuation variant escaped the first language-polish pass.
 COMMA_OPENING = 'Selepas mengambil kira keadaan, kesan segera'
 COMMA_VARIANTS = [
     'Setelah menimbang keadaan semasa dan kesan segera',
@@ -65,7 +61,6 @@ COMMA_VARIANTS = [
     'Selepas melihat situasi semasa serta kesan awal',
 ]
 
-# Variants that still happened to collide six times after the first deterministic pass.
 SIX_PREFIX_SPLITS = {
     'Walau situasi bertambah sukar atau memalukan': ['Sekalipun situasi bertambah sukar atau memalukan', 'Walaupun situasi bertambah mencabar atau memalukan'],
     'Walau cara tindakannya mungkin berubah mengikut': ['Meskipun cara tindakannya mungkin berubah mengikut', 'Sekalipun cara tindakannya berubah mengikut'],
@@ -102,6 +97,8 @@ def main() -> int:
         rows = [json.loads(line) for line in path.read_text(encoding='utf-8').splitlines() if line.strip()]
         path_changed = False
         for row in rows:
+            row_changed = False
+            option_changed = False
             family = str(row.get('repeatFamily') or row.get('scaffoldRepeatFamily') or row.get('bankId') or '')
             variant = int(row.get('variant') or 0)
             q = str(row.get('question') or '')
@@ -110,26 +107,26 @@ def main() -> int:
             if scenario and scenario[0] in q:
                 q = q.replace(scenario[0], scenario[1], 1)
                 question_edits += 1
-                path_changed = True
+                row_changed = True
 
             for old, new in TAIL_REPLACEMENTS.items():
                 if old in q:
                     q = q.replace(old, new)
                     question_edits += 1
-                    path_changed = True
+                    row_changed = True
 
             if q.startswith(COMMA_OPENING):
                 replacement = COMMA_VARIANTS[stable_index(family, variant, len(COMMA_VARIANTS))]
                 q = replacement + q[len(COMMA_OPENING):]
                 question_edits += 1
-                path_changed = True
+                row_changed = True
 
             for opening, variants in SIX_PREFIX_SPLITS.items():
                 if q.startswith(opening):
                     replacement = variants[stable_index(family, variant, len(variants))]
                     q = replacement + q[len(opening):]
                     question_edits += 1
-                    path_changed = True
+                    row_changed = True
                     break
 
             if q != row.get('question'):
@@ -146,13 +143,16 @@ def main() -> int:
                         if weight == 3 and isinstance(opt, str) and opt.startswith(BEST_PREFIX):
                             opts[i] = cap_first(opt[len(BEST_PREFIX):])
                             option_edits += 1
-                            path_changed = True
-                    row['options'] = opts
-                    if path_changed:
+                            option_changed = True
+                            row_changed = True
+                    if option_changed:
+                        row['options'] = opts
                         notes = list(row.get('editorialNotes') or [])
-                        if 'Removed generic best-option lead-in that could act as an answer-length clue.' not in notes and option_edits:
-                            notes.append('Removed generic best-option lead-in that could act as an answer-length clue.')
+                        notes.append('Removed generic best-option lead-in that could act as an answer-length clue.')
                         row['editorialNotes'] = notes
+
+            if row_changed:
+                path_changed = True
 
         if path_changed:
             path.write_text('\n'.join(json.dumps(x, ensure_ascii=False) for x in rows) + '\n', encoding='utf-8')
