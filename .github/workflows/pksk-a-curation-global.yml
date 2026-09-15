@@ -6,7 +6,7 @@ on:
       - repair/pksk-live-curation-v1
     paths:
       - 'sim/pksk/curation/A/rewrite_wave_*.jsonl'
-      - 'sim/pksk/curation/A/editorial_overrides.json'
+      - 'sim/pksk/curation/A/editorial_overrides*.json'
       - 'scripts/build_pksk_live_a_seed.py'
       - 'scripts/build_pksk_a_curation_canonical.py'
       - 'scripts/audit_pksk_a_curation_global.py'
