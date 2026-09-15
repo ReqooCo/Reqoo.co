@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - repair/pksk-live-curation-v1
+      - repair/pksk-a-final-editorial
     paths:
       - 'sim/pksk/curation/A/rewrite_wave_*.jsonl'
       - 'sim/pksk/curation/A/editorial_overrides*.json'
@@ -21,8 +22,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: repair/pksk-live-curation-v1
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
