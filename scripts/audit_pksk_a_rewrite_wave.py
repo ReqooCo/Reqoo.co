@@ -6,7 +6,7 @@ from collections import defaultdict,Counter
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
-WAVE=ROOT/'sim/pksk/curation/A/rewrite_wave_0091_0120.jsonl'
+WAVE=ROOT/'sim/pksk/curation/A/generated/rewrite_wave_0091_0120.jsonl'
 SRC=ROOT/'sim/pksk/simulator/sets/SET 01-10/data'
 NUM_RE=re.compile(r'\b\d+(?:[.,]\d+)?\b')
 PUNCT_RE=re.compile(r'[^\w\s]',re.UNICODE)
@@ -62,13 +62,19 @@ for x in rows:
     if norm(q,False) in gold_exact: errors.append(f"{x['bankId']}: exact duplicate of Gold seed")
     elif norm(q,True) in gold_num: warnings.append(f"{x['bankId']}: number-normalised similarity to Gold seed")
 
+positions=Counter((x.get('weights') or []).index(3) for x in rows)
+for pos in range(4):
+    positions.setdefault(pos,0)
+if max(positions.values())-min(positions.values())>1:
+    errors.append(f'best-response position distribution too imbalanced: {dict(positions)}')
+
 if errors:
     for e in errors[:100]: print('ERROR',e)
     fail(f'{len(errors)} rewrite-wave error(s)')
 
 print('PASS: A rewrite wave 0091-0120 structural/content-shape gate')
 print('items=30 domains=',dict(Counter(x.get('domain') for x in rows)))
-print('best-answer positions=',dict(Counter((x.get('weights') or []).index(3) for x in rows)))
+print('best-answer positions=',dict(positions))
 print('warnings=',len(warnings))
 for w in warnings[:50]: print('REVIEW',w)
 print('NOTE: still requires final semantic/editorial review before EDITORIAL_QA_PASS.')
