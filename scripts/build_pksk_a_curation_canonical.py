@@ -9,11 +9,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 A_ROOT = ROOT / 'sim/pksk/curation/A'
 OUT_ROOT = A_ROOT / 'generated'
+OVERRIDES = A_ROOT / 'editorial_overrides.json'
 WAVE_RE = re.compile(r'^rewrite_wave_(\d{4})_(\d{4})\.jsonl$')
 
 
 def main() -> int:
     OUT_ROOT.mkdir(parents=True, exist_ok=True)
+    overrides=json.loads(OVERRIDES.read_text(encoding='utf-8')) if OVERRIDES.exists() else {}
     waves=[]
     for p in sorted(A_ROOT.glob('rewrite_wave_*.jsonl')):
         m=WAVE_RE.match(p.name)
@@ -28,13 +30,24 @@ def main() -> int:
         if len(rows)!=expected:
             raise SystemExit(f'FAIL: {path.name}: expected {expected} rows, got {len(rows)}')
         situational_index=0
+        applied=0
         for x in rows:
+            bid=x.get('bankId')
+            ov=overrides.get(bid)
+            if ov:
+                for key in ('question','options','weights','domain','format','construct'):
+                    if key in ov: x[key]=ov[key]
+                notes=list(x.get('editorialNotes') or [])
+                notes.append('Applied curation-layer editorial override; live/raw source remains unchanged')
+                x['editorialNotes']=notes
+                applied+=1
+
             fmt=x.get('format')
             if fmt=='SITUATIONAL':
                 opts=list(x.get('options') or [])
                 weights=list(x.get('weights') or [])
                 if len(opts)!=4 or sorted(weights)!=[0,1,2,3]:
-                    raise SystemExit(f"FAIL: {x.get('bankId')}: invalid situational options/weights before canonicalisation")
+                    raise SystemExit(f"FAIL: {bid}: invalid situational options/weights before canonicalisation")
                 pairs=list(zip(opts,weights))
                 pairs.sort(key=lambda p:p[1],reverse=True)  # quality 3,2,1,0
                 best=pairs.pop(0)
@@ -50,15 +63,15 @@ def main() -> int:
                 x['editorialNotes']=notes
             elif fmt=='AGREE_DISAGREE':
                 if x.get('options') != ['Setuju','Tidak setuju'] or x.get('weights') not in ([3,0],[0,3]):
-                    raise SystemExit(f"FAIL: {x.get('bankId')}: invalid agree/disagree schema")
+                    raise SystemExit(f"FAIL: {bid}: invalid agree/disagree schema")
             else:
-                raise SystemExit(f"FAIL: {x.get('bankId')}: unknown format {fmt}")
+                raise SystemExit(f"FAIL: {bid}: unknown format {fmt}")
 
         out=OUT_ROOT/path.name
         out.write_text('\n'.join(json.dumps(x,ensure_ascii=False) for x in rows)+'\n',encoding='utf-8')
         pos=Counter(x['weights'].index(3) for x in rows if x.get('format')=='SITUATIONAL')
         key=Counter(tuple(x['weights']) for x in rows if x.get('format')=='AGREE_DISAGREE')
-        print(f'WROTE {path.name}: items={len(rows)} situational_best_positions={dict(pos)} agree_keys={dict(key)}')
+        print(f'WROTE {path.name}: items={len(rows)} overrides={applied} situational_best_positions={dict(pos)} agree_keys={dict(key)}')
     return 0
 
 if __name__=='__main__':
