@@ -2,24 +2,24 @@
   "branch": "repair/pksk-live-curation-v1",
   "liveMainModified": false,
   "target": 1500,
-  "curatedCurrent": 390,
-  "percent": 26.0,
+  "curatedCurrent": 420,
+  "percent": 28.0,
   "goldSeed": 90,
-  "rewrittenFromLegacy": 300,
-  "remaining": 1110,
-  "lastCompletedSourceSet": 13,
-  "nextSourceSet": 14,
+  "rewrittenFromLegacy": 330,
+  "remaining": 1080,
+  "lastCompletedSourceSet": 14,
+  "nextSourceSet": 15,
   "globalGate": {
     "workflow": "PKSK A Global Curation Gate",
-    "runId": 34948122335,
+    "runId": 34948491757,
     "status": "PASS",
     "warnings": 0,
     "semanticReviewPairs082to0899": 0,
     "hardSimilarityPairs090plus": 0
   },
   "currentDistribution": {
-    "domain": {"EQ": 130, "SQ": 130, "SSQ": 130},
-    "format": {"SITUATIONAL": 260, "AGREE_DISAGREE": 130}
+    "domain": {"EQ": 140, "SQ": 140, "SSQ": 140},
+    "format": {"SITUATIONAL": 280, "AGREE_DISAGREE": 140}
   },
   "finalLockedDistribution": {
     "domain": {"EQ": 500, "SQ": 500, "SSQ": 500},
@@ -37,9 +37,10 @@
     "A0301-A0330 reauthor legacy Set11 one-set-at-a-time; legacy V46 template content is retained only as lineage and not reused as final wording.",
     "A0331-A0360 reauthor legacy Set12 with new constructs including calibration drift, base-rate reasoning, consent scope, conflict-of-interest, nonresponse bias, opportunity cost and handover integrity.",
     "A0361-A0390 reauthor legacy Set13 with safety-and-risk constructs including predefined stop rules, single-point failure, survivorship bias, fail-safe fallback, near-miss learning and energy isolation.",
-    "Set13 was compared globally against every passed item from Set01-12 under hard similarity threshold 0.82 and passed with zero review pairs and zero hard-similarity pairs.",
-    "Set13 first run found a 6:4 agree/disagree key imbalance and one A0376 answer-length warning; A0365 was reverse-keyed and A0376 options were rebalanced, then rerun to zero warnings.",
-    "After Set13, domains remain exactly balanced at EQ 130, SQ 130 and SSQ 130; formats remain exactly proportional at 260 situational and 130 agree/disagree.",
+    "A0391-A0420 reauthor legacy Set14 with comparison-and-choice constructs including false balance, bottlenecks, denominator fairness, lifecycle cost, leading-question bias, hard constraints, sensitivity checks and variability.",
+    "A stale A0401 override from an abandoned batch experiment was removed before Set14 authoring so the new item could not be overwritten.",
+    "Set14 was compared globally against every passed item from Set01-13 under hard similarity threshold 0.82 and passed on the first full run with zero review pairs, zero hard-similarity pairs and zero warnings.",
+    "After Set14, domains remain exactly balanced at EQ 140, SQ 140 and SSQ 140; formats remain exactly proportional at 280 situational and 140 agree/disagree.",
     "The global workflow runs one set at a time and does not import or overwrite future sets during audit.",
     "Global curation PASS is not FINAL_APPROVED; final semantic/construct editorial approval remains required."
   ]
