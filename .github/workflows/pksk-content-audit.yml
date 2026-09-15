@@ -1,0 +1,26 @@
+name: PKSK Content Audit
+
+on:
+  pull_request:
+    paths:
+      - 'sim/pksk/simulator/sets/**'
+      - 'scripts/audit_pksk_content_v64.py'
+      - '.github/workflows/pksk-content-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Audit Set 01-50 content and format
+        run: python scripts/audit_pksk_content_v64.py
+      - name: Upload audit JSON
+        uses: actions/upload-artifact@v4
+        with:
+          name: pksk-content-audit-v64
+          path: pksk-content-audit-v64.json
+          if-no-files-found: error
