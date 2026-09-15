@@ -31,12 +31,21 @@ assert.match(v17,/createCustomQuotation/);
 assert.match(v17,/custom:\$\{id\}/);
 assert.match(v17,/Quotation dibuat secara custom sebelum order/);
 assert.match(v17,/quoteMeta/);
+assert.match(v17,/updateCustomQuotationStatus/);
+assert.match(v17,/convertCustomQuotationToOrder/);
+assert.match(v17,/admin_quotation/);
+assert.match(v17,/convertedOrderId/);
+assert.match(v17,/status='accepted'/);
 
 assert.match(html,/Create Custom Quotation/);
 assert.match(html,/Order yang sudah wujud tidak perlukan quotation/);
+assert.match(html,/id="docConvert"/);
 assert.match(html,/documents-v2\.js\?v=2/);
 assert.doesNotMatch(ui,/data-create="quotation"/);
 assert.match(ui,/createCustomQuotation/);
+assert.match(ui,/convertCustomQuotationToOrder/);
+assert.match(ui,/updateCustomQuotationStatus/);
+assert.match(ui,/Convert to Order|convertActiveQuote/);
 assert.match(ui,/listDocuments/);
 assert.match(ui,/saveDocumentSettings/);
 assert.match(ui,/wa\.me/);
@@ -49,4 +58,4 @@ assert.match(publicUi,/window\.print/);
 assert.match(web,/document-public\.html/);
 assert.match(web,/\/d\\\//);
 
-console.log('PASS: Documents supports custom quotations before order while preserving invoice/receipt/DO flow.');
+console.log('PASS: Documents supports custom quotations before order and conversion to the normal order flow.');
