@@ -2,24 +2,24 @@
   "branch": "repair/pksk-live-curation-v1",
   "liveMainModified": false,
   "target": 1500,
-  "curatedCurrent": 1470,
-  "percent": 98.0,
+  "curatedCurrent": 1500,
+  "percent": 100.0,
   "goldSeed": 90,
-  "rewrittenFromLegacy": 1380,
-  "remaining": 30,
-  "lastCompletedSourceSet": 49,
-  "nextSourceSet": 50,
+  "rewrittenFromLegacy": 1410,
+  "remaining": 0,
+  "lastCompletedSourceSet": 50,
+  "nextSourceSet": null,
   "globalGate": {
     "workflow": "PKSK A Global Curation Gate",
-    "runId": 34981733739,
+    "runId": 34982273846,
     "status": "PASS",
     "warnings": 0,
     "semanticReviewPairs082to0899": 0,
     "hardSimilarityPairs090plus": 0
   },
   "currentDistribution": {
-    "domain": {"EQ": 490, "SQ": 490, "SSQ": 490},
-    "format": {"SITUATIONAL": 980, "AGREE_DISAGREE": 490}
+    "domain": {"EQ": 500, "SQ": 500, "SSQ": 500},
+    "format": {"SITUATIONAL": 1000, "AGREE_DISAGREE": 500}
   },
   "finalLockedDistribution": {
     "domain": {"EQ": 500, "SQ": 500, "SSQ": 500},
@@ -54,10 +54,12 @@
     "A1381-A1410 reauthor Set47 around aggregation of judgments, independence, shared bias, calibration, expertise weighting and robust pooling.",
     "A1411-A1440 reauthor Set48 around diversification, concentration risk, common-cause failures, redundant paths and correlated disruptions.",
     "A1441-A1470 reauthor Set49 around decision robustness, sensitivity to assumptions, plausible scenarios, breakpoints and rank stability.",
-    "Set45-49 were authored as one five-set batch and passed the global gate clean on the first batch audit.",
+    "A1471-A1500 reauthor Set50 around evaluation integrity, holdout separation, leakage, blind assessment, fair test conditions and selective reporting.",
+    "Set45-49 passed the global gate clean on the first batch audit; Set50 also passed clean on its first full-bank audit.",
+    "The retired full-bank 120-repeat-family fallback requirement was removed before Set50; any repeat-family metadata that is present is still validated internally.",
     "The canonical builder normalizes short-lived id aliases to bankId, emits section BAHAGIAN A, loads editorial_overrides*.json shards and rejects duplicate override IDs.",
     "The global workflow triggers on every editorial_overrides*.json shard so editorial repairs are always re-audited.",
-    "Current global gate: 1470 items, EQ/SQ/SSQ 490 each, situational 980, agree/disagree 490, repeat_families_imported 0, similarity review 0, hard similarity 0, warnings 0.",
+    "Final global gate: 1500 items, EQ/SQ/SSQ 500 each, situational 1000, agree/disagree 500, repeat_families_imported 0, similarity review 0, hard similarity 0, warnings 0.",
     "The global workflow does not import or overwrite future sets during audit.",
     "Global curation PASS is not FINAL_APPROVED; final semantic/construct editorial approval remains required."
   ]
