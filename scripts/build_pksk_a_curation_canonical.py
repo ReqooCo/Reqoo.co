@@ -39,13 +39,13 @@ def main() -> int:
         situational_index=0
         applied=0
         for x in rows:
-            # Accept the short-lived `id` alias from manually authored waves, but
-            # always emit the canonical `bankId` field expected by the global gate.
+            # Normalize short-lived aliases/omissions from manually authored waves.
             bid=x.get('bankId') or x.get('id')
             if not bid:
                 raise SystemExit(f'FAIL: {path.name}: row missing bankId')
             x['bankId']=bid
             x.pop('id',None)
+            x.setdefault('section','A')
             ov=overrides.get(bid)
             if ov:
                 for key in ('question','options','weights','domain','format','construct'):
