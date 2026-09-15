@@ -45,7 +45,7 @@ def main() -> int:
                 raise SystemExit(f'FAIL: {path.name}: row missing bankId')
             x['bankId']=bid
             x.pop('id',None)
-            x.setdefault('section','A')
+            x['section']='BAHAGIAN A'
             ov=overrides.get(bid)
             if ov:
                 for key in ('question','options','weights','domain','format','construct'):
