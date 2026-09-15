@@ -1,0 +1,41 @@
+name: PKSK Set01 Gold Build
+
+on:
+  push:
+    branches:
+      - rebuild/pksk-set01-gold-v1
+    paths:
+      - 'sim/pksk/generator/gold/set01/**'
+      - 'scripts/assemble_set01_gold.py'
+      - 'docs/SET01_GOLD_STANDARD_PLAN.md'
+      - '.github/workflows/pksk-set01-gold-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: rebuild/pksk-set01-gold-v1
+      - name: Assemble and validate Set 01
+        run: python scripts/assemble_set01_gold.py
+      - name: Test visual renderer
+        run: node scripts/test_pksk_visual_renderer.js
+      - name: Validate JSON can be loaded by Node
+        run: node -e "const d=require('./sim/pksk/simulator/sets/SET 01-10/data/set01.json'); if(d.questions.length!==100||d.writing.length!==3) process.exit(1); console.log('PASS: Node loaded Set01',d.rebuildVersion);"
+      - name: Commit generated Set 01 candidate
+        shell: bash
+        run: |
+          if git diff --quiet -- 'sim/pksk/simulator/sets/SET 01-10/data/set01.json'; then
+            echo 'Set 01 already assembled.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add 'sim/pksk/simulator/sets/SET 01-10/data/set01.json'
+          git commit -m 'Build Set 01 gold-standard candidate'
+          git push origin HEAD:rebuild/pksk-set01-gold-v1
