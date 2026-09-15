@@ -7,6 +7,8 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const money=n=>'RM'+(Number(n||0)/100).toFixed(2);
 const toMinor=v=>Math.max(0,Math.round((Number(v)||0)*100));
 const token=()=>localStorage.getItem(TOKEN_KEY)||'';
+const LEGAL_NAME='AB ART TRADING',SSM_NO='201903337879 (003053605-X)';
+function cleanField(v){const s=String(v??'').trim();return !s||/^(?:-|—|n\/?a|none|null)$/i.test(s)?'':s}
 function toast(msg,err=false){const el=$('docsToast');el.textContent=msg;el.className='rqDocsToast show'+(err?' err':'');clearTimeout(toast.t);toast.t=setTimeout(()=>el.className='rqDocsToast',2600)}
 async function api(action,extra={},method='GET'){
   let url=new URL(API,location.origin),opt={method,headers:{'X-Admin-Token':token()},cache:'no-store'};
@@ -69,13 +71,14 @@ function showDocument(){
   $('docModal').classList.add('open');$('docModal').setAttribute('aria-hidden','false');
 }
 function customerBlock(doc,meta){
-  const lines=[doc.customer_phone||'',doc.customer_email||'',meta.customerAddress||''].filter(Boolean).map(x=>`<span>${esc(x)}</span>`).join('<br>');
-  return `${meta.attention?`<div class="rqPaperAttention">Attn: ${esc(meta.attention)}</div>`:''}<b>${esc(doc.customer_name||'Customer')}</b>${lines?`<br>${lines}`:''}`;
+  const name=cleanField(doc.customer_name)||'Customer',attention=cleanField(meta.attention),phone=cleanField(doc.customer_phone),email=cleanField(doc.customer_email),address=cleanField(meta.customerAddress);
+  const contacts=[phone?`<div><span>TEL / WHATSAPP</span><b>${esc(phone)}</b></div>`:'',email?`<div><span>EMAIL</span><b>${esc(email)}</b></div>`:''].join('');
+  return `<div class="rqPaperCustomer"><div class="rqPaperCustomerName">${esc(name)}</div>${attention?`<div class="rqPaperAttention"><span>ATTN</span><b>${esc(attention)}</b></div>`:''}${contacts?`<div class="rqPaperCustomerContacts">${contacts}</div>`:''}${address?`<div class="rqPaperCustomerAddress"><span>ADDRESS</span><p>${esc(address)}</p></div>`:''}</div>`;
 }
 function paper(doc){
   const c=doc.company||{},meta=quoteMeta(doc),isQuote=doc.type==='quotation',isDO=doc.type==='delivery_order',isPaid=!isQuote&&(String(doc.payment_status).toLowerCase()==='paid'||doc.status==='paid');
   const rows=(doc.items||[]).map(i=>isDO?`<tr><td>${esc(i.description)}${i.variation?`<br><small>${esc(i.variation)}</small>`:''}</td><td>${Number(i.quantity||1)}</td></tr>`:`<tr><td>${esc(i.description)}${i.variation?`<br><small>${esc(i.variation)}</small>`:''}</td><td>${Number(i.quantity||1)}</td><td>${money(i.unit_price_minor)}</td><td>${money(i.line_total_minor)}</td></tr>`).join('');
-  const companyLines=[c.registrationNo?`No. Daftar: ${c.registrationNo}`:'',c.address||'',c.phone||'',c.email||''].filter(Boolean).join('\n');
+  const regNo=cleanField(c.registrationNo)||SSM_NO,companyLines=[cleanField(c.address),cleanField(c.phone),cleanField(c.email)].filter(Boolean).join('\n');
   const statusText=isQuote?String(doc.status||'issued').toUpperCase():(isPaid?'PAID':'UNPAID');
   const converted=isQuote&&meta.convertedOrderNo?`<br><b>Order:</b> ${esc(meta.convertedOrderNo)}`:'';
   const detail=`${!isQuote?`<b>Order:</b> ${esc(doc.order_id)}<br>`:''}<b>Issued:</b> ${esc(dateFmt(doc.issued_at))}${doc.due_at?`<br><b>${isQuote?'Valid until':'Due'}:</b> ${esc(dateFmt(doc.due_at))}`:''}${converted}<br><span class="rqPaperStatus ${isPaid?'paid':'unpaid'}">${esc(statusText)}</span>`;
@@ -84,7 +87,7 @@ function paper(doc){
   const bank=!isDO&&c.bank?`<div class="rqPaperBank"><b>PAYMENT DETAILS</b><br>${esc(c.bank)}</div>`:'';
   const quoteInfo=isQuote&&(meta.notes||meta.terms)?`<div class="rqPaperQuoteInfo">${meta.notes?`<div><b>NOTES</b><p>${esc(meta.notes)}</p></div>`:''}${meta.terms?`<div><b>TERMS & CONDITIONS</b><p>${esc(meta.terms)}</p></div>`:''}</div>`:'';
   const foot=isQuote?'Quotation ini bukan bukti pembayaran.':doc.type==='invoice'?'Invoice ini merekodkan amaun yang perlu dibayar.':doc.type==='receipt'?'Official Receipt ini dikeluarkan selepas bayaran disahkan.':'Delivery Order mengesahkan item untuk penghantaran/serahan.';
-  return `<section class="rqPaper"><div class="rqPaperTop"><div><div class="rqPaperBrand">${esc(c.companyName||'REQOO.CO')}</div><div class="rqDocMeta">Quality · Design · Innovation</div><div class="rqPaperCompany">${esc(companyLines)}</div></div><div class="rqPaperType"><h1>${esc(typeLabel(doc.type).toUpperCase())}</h1><small>${esc(doc.number)}</small></div></div><div class="rqPaperGrid"><div><div class="rqPaperLabel">BILL TO</div>${customerBlock(doc,meta)}</div><div><div class="rqPaperLabel">DETAIL</div>${detail}</div></div>${doc.type==='receipt'?'<div class="rqReceiptNote">Bayaran telah disahkan oleh Admin Reqoo.</div>':''}${table}${totals}${quoteInfo}${bank}<div class="rqPaperFoot">${esc(foot)}<br>Generated from REQOO Admin · ${esc(doc.number)}</div></section>`;
+  return `<section class="rqPaper"><div class="rqPaperTop"><div><div class="rqPaperBrand">${esc(c.companyName||'REQOO.CO')}</div><div class="rqPaperLegal">by ${esc(LEGAL_NAME)}</div><div class="rqPaperReg">SSM: ${esc(regNo)}</div><div class="rqDocMeta">Quality · Design · Innovation</div><div class="rqPaperCompany">${esc(companyLines)}</div></div><div class="rqPaperType"><h1>${esc(typeLabel(doc.type).toUpperCase())}</h1><small>${esc(doc.number)}</small></div></div><div class="rqPaperGrid"><div><div class="rqPaperLabel">BILL TO</div>${customerBlock(doc,meta)}</div><div><div class="rqPaperLabel">DETAIL</div>${detail}</div></div>${doc.type==='receipt'?'<div class="rqReceiptNote">Bayaran telah disahkan oleh Admin Reqoo.</div>':''}${table}${totals}${quoteInfo}${bank}<div class="rqPaperFoot">${esc(foot)}<br>Generated from REQOO Admin · ${esc(doc.number)}</div></section>`;
 }
 function close(){ $('docModal').classList.remove('open');$('docModal').setAttribute('aria-hidden','true') }
 function printDoc(){if(!activeDoc)return;const w=window.open('','_blank');if(!w)return toast('Benarkan popup untuk Print / Save PDF.',true);w.document.write('<!doctype html><html><head><title>'+esc(activeDoc.number)+'</title><link rel="stylesheet" href="/admin/documents-v1.css?v=1"><link rel="stylesheet" href="/admin/documents-v2.css?v=2"><style>body{background:#fff!important;padding:18px}.rqPaper{box-shadow:none;border:0}@media print{body{padding:0}}</style></head><body>'+paper(activeDoc)+'</body></html>');w.document.close();w.focus();setTimeout(()=>w.print(),350)}
@@ -113,7 +116,7 @@ async function convertActiveQuote(){
     const fresh=await openSaved(activeDoc.id,false);activeDoc=fresh;showDocument();
   }catch(e){toast(e.message,true)}finally{btn.disabled=false;btn.textContent=old}
 }
-function fillSettings(){const s=docSettings;$('sCompany').value=s.companyName||'REQOO.CO';$('sReg').value=s.registrationNo||'';$('sAddress').value=s.address||'';$('sPhone').value=s.phone||'';$('sEmail').value=s.email||'';$('sBank').value=s.bank||'';$('sQuoteDays').value=s.quoteValidDays??7;$('sInvoiceDays').value=s.invoiceDueDays??14}
+function fillSettings(){const s=docSettings;$('sCompany').value=s.companyName||'REQOO.CO';$('sReg').value=s.registrationNo||SSM_NO;$('sAddress').value=s.address||'';$('sPhone').value=s.phone||'';$('sEmail').value=s.email||'';$('sBank').value=s.bank||'';$('sQuoteDays').value=s.quoteValidDays??7;$('sInvoiceDays').value=s.invoiceDueDays??14}
 async function saveSettings(){try{const payload={companyName:$('sCompany').value,registrationNo:$('sReg').value,address:$('sAddress').value,phone:$('sPhone').value,email:$('sEmail').value,bank:$('sBank').value,quoteValidDays:$('sQuoteDays').value,invoiceDueDays:$('sInvoiceDays').value};const d=await api('saveDocumentSettings',payload,'POST');docSettings=d.settings||payload;fillQuoteDefaults();toast('Maklumat syarikat disimpan');$('docsSettings').classList.remove('open')}catch(e){toast(e.message,true)}}
 function addQuoteItem(data={}){
   const row=document.createElement('div');row.className='rqQuoteItem';
