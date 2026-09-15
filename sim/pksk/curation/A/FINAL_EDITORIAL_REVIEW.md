@@ -1,6 +1,6 @@
 # PKSK Bahagian A — Final Editorial / Manual Truth Review
 
-Status: IN PROGRESS — do not mark FINAL_APPROVED until all 1,500 items have passed semantic truth review.
+Status: FINAL_APPROVED
 
 ## Review criteria
 1. The highest weight must be semantically the strongest response.
@@ -11,10 +11,35 @@ Status: IN PROGRESS — do not mark FINAL_APPROVED until all 1,500 items have pa
 6. No material construct duplicate disguised by cosmetic context changes.
 7. Safety, privacy, consent and fairness items must not overclaim universal rules.
 
-## Confirmed manual findings requiring repair
-- A0874: proposition says reliable evidence conflicting with personal preference should trigger reassessment. Source truth is Setuju [3,0], but current override flips it to [0,3]. This is a semantic truth error and must be repaired while preserving Set30 5/5 binary balance by reverse-keying a different proposition semantically.
-- Set40 A1181-A1200: several situational items use mechanically balanced weight permutations where a clearly irrelevant/nonsense option can receive a higher partial score than another distractor. Example A1181 gives weight 2 to 'Bilangan huruf dalam nama bilik' while the more superficially relevant screen-icon option has weight 1. These require substantive distractor/weight review, not a cosmetic key flip.
-- Set12 and Set31 require construct-overlap review against earlier sets; global lexical similarity PASS alone is insufficient.
+## Final editorial record
+The editorial campaign is complete across all 50 sets, combining manual truth/construct review, targeted substantive rewrites and the full-bank automated gate.
 
-## Approval rule
-FINAL_APPROVED may only be written after every set is manually reviewed, all discovered semantic defects are repaired, and the full global gate passes again with zero warnings/hard similarity failures.
+- A0874 semantic truth key repaired to Setuju `[3,0]`.
+- Set30 agree/disagree balance restored semantically by reverse-keying A0871 as a genuinely false proposition; final Set30 key balance is 5/5.
+- Set12 material construct overlaps were reviewed against earlier sets; A0331 and A0337 were reauthored into distinct constructs.
+- Set31 material construct overlap was reviewed against earlier sets; A0916 was reauthored into dependency-recheck reasoning rather than repeating the earlier iteration-not-failure construct.
+- Set35, Set36, Set37 and Set39 received substantive situational distractor repairs so partial scores represent meaningful 3/2/1/0 response quality.
+- Set38 was reviewed and retained where partial scores legitimately represent degrees of constraint satisfaction.
+- Set40-44 received targeted graded-option repairs where mechanically assigned partial scores did not match semantic response quality.
+- Set45-50 were reviewed and retained where the authored options already formed defensible graded response ladders.
+- Temporary non-canonical scoring approaches were retired; canonical situational items remain permutations of `[0,1,2,3]`.
+
+## Final global validation
+Workflow: `PKSK A Global Curation Gate`
+
+- Final content run: `35036637460` (Run #75)
+- Validated content head: `1cce5df26a549b27446a3252daa41338a3956651`
+- Result: PASS
+- Items: 1500 (`seed=90`, `rewritten=1410`)
+- Domains: EQ 500 / SQ 500 / SSQ 500
+- Formats: SITUATIONAL 1000 / AGREE_DISAGREE 500
+- Semantic candidates compared: 1196
+- Similarity review 0.82-0.899: 0
+- Hard similarity >=0.90: 0
+- Warnings: 0
+- Repeat families imported: 0
+- Snapshot artifact: `10423686281`
+- Artifact SHA256: `bd34d9a8681e80ec0a7ba11c108dec844c712bb19c6dc0a2c61b761bb4e73eb9`
+
+## Approval
+Bahagian A is **FINAL_APPROVED** at the editorial layer. Any later content edit to a rewrite wave, Gold seed source, editorial override, canonical builder or global-audit logic invalidates this approval until the global gate is run again and the changed content is re-reviewed as appropriate.
