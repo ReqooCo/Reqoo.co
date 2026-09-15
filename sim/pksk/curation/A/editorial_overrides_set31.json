@@ -9,6 +9,11 @@
   "A0915": {
     "options": ["Mulakan P supaya Q boleh bermula mengikut had masa","Buat R dahulu kerana tempohnya sederhana","Mulakan Q sebelum P walaupun maklumat belum tersedia","Pilih tugasan mengikut susunan abjad sahaja"]
   },
+  "A0916": {
+    "question": "Apabila satu tarikh berubah, urutan kerja boleh ditukar tanpa memeriksa semula kebergantungan asalkan semua tugasan masih disenaraikan.",
+    "weights": [0, 3],
+    "construct": "resequence_requires_dependency_recheck"
+  },
   "A0917": {
     "options": ["Hentikan semua kerja sehingga komponen tiba","Teruskan tugas bebas dan sediakan kerja yang masih bergantung","Teruskan tugas bergantung seolah-olah komponen sudah ada","Batalkan projek kerana jadual asal telah berubah"]
   },
