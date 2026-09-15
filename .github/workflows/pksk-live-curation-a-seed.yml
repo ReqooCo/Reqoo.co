@@ -1,0 +1,34 @@
+name: PKSK Live Curation A Seed
+
+on:
+  push:
+    branches:
+      - repair/pksk-live-curation-v1
+    paths:
+      - 'scripts/build_pksk_live_a_seed.py'
+      - 'scripts/audit_pksk_live_a_seed.py'
+      - '.github/workflows/pksk-live-curation-a-seed.yml'
+      - 'sim/pksk/simulator/sets/SET 01-10/data/set01.json'
+      - 'sim/pksk/simulator/sets/SET 01-10/data/set02.json'
+      - 'sim/pksk/simulator/sets/SET 01-10/data/set03.json'
+  workflow_dispatch:
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: repair/pksk-live-curation-v1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build 90-item A seed
+        run: python scripts/build_pksk_live_a_seed.py
+      - name: Audit 90-item A seed
+        run: python scripts/audit_pksk_live_a_seed.py
+      - name: Upload A seed
+        uses: actions/upload-artifact@v4
+        with:
+          name: pksk-a-live-gold-seed-90
+          path: sim/pksk/curation/A/live_gold_seed_0001_0090.jsonl
