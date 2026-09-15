@@ -2,24 +2,24 @@
   "branch": "repair/pksk-live-curation-v1",
   "liveMainModified": false,
   "target": 1500,
-  "curatedCurrent": 510,
-  "percent": 34.0,
+  "curatedCurrent": 600,
+  "percent": 40.0,
   "goldSeed": 90,
-  "rewrittenFromLegacy": 420,
-  "remaining": 990,
-  "lastCompletedSourceSet": 17,
-  "nextSourceSet": 18,
+  "rewrittenFromLegacy": 510,
+  "remaining": 900,
+  "lastCompletedSourceSet": 20,
+  "nextSourceSet": 21,
   "globalGate": {
     "workflow": "PKSK A Global Curation Gate",
-    "runId": 34951507629,
+    "runId": 34953080379,
     "status": "PASS",
     "warnings": 0,
     "semanticReviewPairs082to0899": 0,
     "hardSimilarityPairs090plus": 0
   },
   "currentDistribution": {
-    "domain": {"EQ": 170, "SQ": 170, "SSQ": 170},
-    "format": {"SITUATIONAL": 340, "AGREE_DISAGREE": 170}
+    "domain": {"EQ": 200, "SQ": 200, "SSQ": 200},
+    "format": {"SITUATIONAL": 400, "AGREE_DISAGREE": 200}
   },
   "finalLockedDistribution": {
     "domain": {"EQ": 500, "SQ": 500, "SSQ": 500},
@@ -41,8 +41,11 @@
     "A0421-A0450 reauthor legacy Set15 around real efficiency versus false economy, including rework cost, premature automation, defect-adjusted cost, maintenance debt, batching feedback, setup cost, context switching and overproduction.",
     "A0451-A0480 reauthor legacy Set16 around evidence validity and calibration, including proxy validity, precision versus accuracy, independent corroboration, operational definitions, selective reporting, extrapolation limits, measurement resolution and source dependence.",
     "A0481-A0510 reauthor legacy Set17 around collaboration and role coordination, including dependency visibility, decision rights, workload fairness, backup roles, handoff ownership, coordination cost, role interfaces and conflict escalation.",
-    "Set17 was compared globally against every passed item from Set01-16 under hard similarity threshold 0.82 and passed on the first full run with zero review pairs, zero hard-similarity pairs and zero warnings.",
-    "After Set17, domains remain exactly balanced at EQ 170, SQ 170 and SSQ 170; formats remain exactly proportional at 340 situational and 170 agree/disagree.",
+    "A0511-A0540 reauthor legacy Set18 around learning after tests, including predefined success criteria, hindsight bias, informative negative results, implementation fidelity, transfer tests, regression to the mean and information-gain testing. Its first run had only a 6:4 binary-key imbalance; A0514 was reframed and the rerun passed cleanly.",
+    "A0541-A0570 reauthor legacy Set19 around data-driven strategy adjustment, including trends, pivot triggers, segment effects, reversible pilots, leading indicators, seasonality, change points and data granularity. A0564 produced one answer-length warning, which was polished before clean PASS.",
+    "A0571-A0600 reauthor legacy Set20 around final quality and release readiness, including critical-defect priority, acceptance testing, edge cases, feature creep, error-proofing, robustness, representative inspection, usability, release criteria and metric gaming. A0593 and A0600 option-length warnings were polished before clean PASS.",
+    "Set18-20 were processed as one user-facing batch but still audited sequentially; each set was globally checked against all previously passed items before the next set was committed.",
+    "After Set20, domains are exactly balanced at EQ 200, SQ 200 and SSQ 200; formats remain exactly proportional at 400 situational and 200 agree/disagree.",
     "The global workflow runs one set at a time and does not import or overwrite future sets during audit.",
     "Global curation PASS is not FINAL_APPROVED; final semantic/construct editorial approval remains required."
   ]
