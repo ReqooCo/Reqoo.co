@@ -8,6 +8,7 @@ on:
       - 'sim/pksk/generator/gold/set01/**'
       - 'scripts/assemble_set01_gold.py'
       - 'scripts/test_set01_gold_scoring_contract.js'
+      - 'scripts/build_set01_visual_smoke.py'
       - 'docs/SET01_GOLD_STANDARD_PLAN.md'
       - '.github/workflows/pksk-set01-gold-build.yml'
   workflow_dispatch:
@@ -28,6 +29,31 @@ jobs:
         run: node scripts/test_pksk_visual_renderer.js
       - name: Test scoring/runtime contract
         run: node scripts/test_set01_gold_scoring_contract.js
+      - name: Build visual QA page
+        run: python scripts/build_set01_visual_smoke.py
+      - name: Desktop and mobile visual smoke
+        shell: bash
+        run: |
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$CHROME"
+          PAGE="file://$PWD/.tmp/set01-visual-smoke.html"
+          "$CHROME" --headless --no-sandbox --disable-gpu --allow-file-access-from-files --window-size=1440,2200 --screenshot="$PWD/.tmp/set01-desktop.png" "$PAGE"
+          "$CHROME" --headless --no-sandbox --disable-gpu --allow-file-access-from-files --window-size=390,5200 --screenshot="$PWD/.tmp/set01-mobile.png" "$PAGE"
+          "$CHROME" --headless --no-sandbox --disable-gpu --allow-file-access-from-files --window-size=390,844 --dump-dom "$PAGE" > .tmp/set01-mobile-dom.html
+          grep -q 'data-ready="1"' .tmp/set01-mobile-dom.html
+          grep -q 'data-overflow="0"' .tmp/set01-mobile-dom.html
+          grep -q 'data-visuals="6"' .tmp/set01-mobile-dom.html
+          test -s .tmp/set01-desktop.png
+          test -s .tmp/set01-mobile.png
+      - name: Upload visual QA screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: set01-visual-qa
+          path: |
+            .tmp/set01-desktop.png
+            .tmp/set01-mobile.png
+          if-no-files-found: error
+          retention-days: 7
       - name: Validate JSON can be loaded by Node
         run: |
           node -e "const d=require('./sim/pksk/simulator/sets/SET 01-10/data/set01.json'); if(d.questions.length!==100||d.writing.length!==3) process.exit(1); console.log('PASS Set01',d.rebuildVersion);"
