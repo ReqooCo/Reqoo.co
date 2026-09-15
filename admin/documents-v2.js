@@ -3,7 +3,7 @@
 const API='/api/shop-admin',TOKEN_KEY='reqoo_admin_token';
 let orders=[],documents=[],activeDoc=null,docSettings={};
 const $=id=>document.getElementById(id);
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>'RM'+(Number(n||0)/100).toFixed(2);
 const toMinor=v=>Math.max(0,Math.round((Number(v)||0)*100));
 const token=()=>localStorage.getItem(TOKEN_KEY)||'';
