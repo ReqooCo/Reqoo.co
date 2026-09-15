@@ -188,9 +188,6 @@ def main()->int:
     if review_sim:
         errors.append(f'cross-family semantic/lexical pairs 0.82-0.899 are not allowed in curated PASS: {sorted(review_sim,reverse=True)[:15]}')
 
-    # A shared base scenario is expected within one 10-variant repeat family. A
-    # template-prefix warning is useful only when the same six-word opening leaks
-    # across multiple families (or multiple standalone curated items).
     common_prefixes=[]
     for phrase, uses in prefix_usage.items():
         if len(uses)<6:
@@ -206,8 +203,17 @@ def main()->int:
 
     for name,wrows in waves.items():
         nums=[bank_number(str(x.get('bankId') or '')) for x in wrows]
-        if nums and max(nums)>300:
+        if not nums:
             continue
+        wave_domains=Counter(x.get('domain') for x in wrows)
+        wave_formats=Counter(x.get('format') for x in wrows)
+        if min(nums)>=301 and len(wrows)==30:
+            target_domains=Counter({'EQ':10,'SQ':10,'SSQ':10})
+            target_formats=Counter({'SITUATIONAL':20,'AGREE_DISAGREE':10})
+            if wave_domains!=target_domains:
+                errors.append(f'{name}: per-set domain quota mismatch {dict(wave_domains)}')
+            if wave_formats!=target_formats:
+                errors.append(f'{name}: per-set format quota mismatch {dict(wave_formats)}')
         sits=[x for x in wrows if x.get('format')=='SITUATIONAL']
         if sits:
             pos=Counter(x['weights'].index(3) for x in sits)
