@@ -19,6 +19,7 @@ on:
       - 'scripts/validate_apply_pksk_b_repair_batch009.py'
       - 'scripts/validate_apply_pksk_b_repair_batch010.py'
       - 'scripts/validate_apply_pksk_b_repair_batch011.py'
+      - 'scripts/validate_apply_pksk_b_repair_batch012.py'
       - 'scripts/validate_pksk_b_iq_batch001.py'
       - 'scripts/audit_pksk_b_core_duplicates.py'
       - 'scripts/audit_pksk_b_core_duplicates_v2.py'
@@ -32,6 +33,7 @@ on:
       - 'scripts/audit_pksk_b_core_duplicates_v10.py'
       - 'scripts/audit_pksk_b_core_duplicates_v11.py'
       - 'scripts/audit_pksk_b_core_duplicates_v12.py'
+      - 'scripts/audit_pksk_b_core_duplicates_v13.py'
       - 'scripts/build_pksk_b_strict_authoring_plan.py'
       - 'scripts/build_pksk_b_current_progress.py'
       - '.github/workflows/pksk-b-repair-plan.yml'
@@ -97,6 +99,10 @@ jobs:
         run: python scripts/validate_apply_pksk_b_repair_batch011.py
       - name: Audit hidden duplicates after batch 011 (strict V12)
         run: python scripts/audit_pksk_b_core_duplicates_v12.py
+      - name: Validate and apply B repair batch 012
+        run: python scripts/validate_apply_pksk_b_repair_batch012.py
+      - name: Audit hidden duplicates after batch 012 (strict V13)
+        run: python scripts/audit_pksk_b_core_duplicates_v13.py
       - name: Validate IQ new batch 001
         run: python scripts/validate_pksk_b_iq_batch001.py
       - name: Build current strict B authoring plan
