@@ -1,0 +1,47 @@
+name: PKSK Pengetahuan Am Batch 005
+
+on:
+  push:
+    branches:
+      - staging/pa005
+    paths:
+      - 'sim/pksk/curation/B/pa_new_batch_005*.jsonl'
+      - 'sim/pksk/curation/B/pa_new_batch_005_manifest.json'
+      - 'scripts/validate_pksk_b_pa_new_batch.py'
+      - '.github/workflows/pksk-pa005.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  validate-pa005:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Restore validated PA baseline from PA004 artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p audit-output /tmp/pa004
+          gh api repos/${{ github.repository }}/actions/artifacts/10435424004/zip > /tmp/pa004.zip
+          unzip -q /tmp/pa004.zip -d /tmp/pa004
+          cp -a /tmp/pa004/. audit-output/
+          test -f audit-output/b_section_strict_source_survivors.jsonl
+          test -f audit-output/b_pa_new_batch_001_validated.jsonl
+          test -f audit-output/b_pa_new_batch_002_validated.jsonl
+          test -f audit-output/b_pa_new_batch_003_validated.jsonl
+          test -f audit-output/b_pa_new_batch_004_validated.jsonl
+      - name: Validate Pengetahuan Am new batch 005
+        run: python scripts/validate_pksk_b_pa_new_batch.py 5
+      - name: Upload PA005 QA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pksk-pa005-qa
+          path: |
+            audit-output/b_pa_new_batch_005_qa.json
+            audit-output/b_pa_new_batch_005_validated.jsonl
