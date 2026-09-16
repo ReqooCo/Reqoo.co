@@ -6,6 +6,7 @@ on:
       - repair/pksk-b-50set-v1
       - staging/rbt004-work
       - staging/rbt005
+      - staging/pa001
     paths:
       - 'scripts/audit_pksk_live_50sets_clone.py'
       - 'scripts/classify_pksk_live_50sets_clone.py'
@@ -25,6 +26,7 @@ on:
       - 'scripts/validate_apply_pksk_b_repair_batch013.py'
       - 'scripts/validate_pksk_b_iq_batch001.py'
       - 'scripts/validate_pksk_b_iq_new_batch.py'
+      - 'scripts/validate_pksk_b_pa_new_batch.py'
       - 'scripts/validate_pksk_b_ps_new_batch.py'
       - 'scripts/validate_pksk_b_rbt_new_batch.py'
       - 'scripts/validate_pksk_b_math_new_batch001.py'
@@ -140,6 +142,8 @@ jobs:
         run: python scripts/validate_pksk_b_iq_new_batch.py 9
       - name: Validate IQ new batch 010 final
         run: python scripts/validate_pksk_b_iq_new_batch.py 10
+      - name: Validate Pengetahuan Am new batch 001
+        run: python scripts/validate_pksk_b_pa_new_batch.py 1
       - name: Validate Problem Solving new batch 001
         run: python scripts/validate_pksk_b_ps_new_batch.py 1
       - name: Validate Problem Solving new batch 002
