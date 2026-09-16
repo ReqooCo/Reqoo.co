@@ -80,6 +80,7 @@ def main()->int:
     remaining_work=sum(remaining_counts.values())
     plan_ready=int(plan.get('currentQaReadyBankContribution',-1))
     plan_remaining=int(plan.get('pendingAuthoringOrMaterialRewrite',-1))
+    math_row=domain_plan.get('Matematik') or {}
     gates={
         'strictSourceMatchesPlan':len(survivors)==int(plan.get('strictSourceSurvivors',-1)),
         'validatedIqAdditions50':len(iq_items)==50,
@@ -88,14 +89,15 @@ def main()->int:
         'remainingWorkMatchesPlan':remaining_work==len(slots)==plan_remaining,
         'iqReady80':ready_counts.get('IQ')==80,
         'iqRemaining420':remaining_counts.get('IQ')==420,
-        'mathReady314AfterBatch004':ready_counts.get('Matematik')==314,
-        'mathRemaining686AfterBatch004':remaining_counts.get('Matematik')==686,
+        'mathReadyMatchesPlan':ready_counts.get('Matematik')==int(math_row.get('currentQaReadyBankContribution',-1)),
+        'mathRemainingMatchesPlan':remaining_counts.get('Matematik')==int(math_row.get('totalPendingAuthoringOrRewrite',-1)),
+        'mathTarget1000':ready_counts.get('Matematik',0)+remaining_counts.get('Matematik',0)==1000,
         'readyPlusRemaining3500':current_ready+remaining_work==3500,
         'allDomainTotalsMatch':all(ready_counts[d]+remaining_counts[d]==TARGET[d] for d in TARGET),
     }
 
     report={
-        'version':'B_CURRENT_PROGRESS_V3_DYNAMIC',
+        'version':'B_CURRENT_PROGRESS_V4_FULLY_DYNAMIC',
         'productionFilesModified':False,
         'strictPlanVersion':plan.get('version'),
         'finalTarget':3500,
