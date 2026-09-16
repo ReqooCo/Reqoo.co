@@ -128,11 +128,11 @@ try {
     assert((await page.locator('#qnum').innerText()).includes('Soalan 1 daripada 100'), `Set ${setTag}: back navigation failed`);
     assert(await page.locator('#opts input:checked').count() === 1, `Set ${setTag}: answer state did not survive back navigation`);
 
-    const localSaved = await page.evaluate(() => {
-      const key = Object.keys(localStorage).find(k => k.includes(':set:') && k.endsWith(String(localStorage.getItem('pksk-selected-set') || '').padStart(2, '0')));
+    const localSaved = await page.evaluate(tag => {
+      const key = Object.keys(localStorage).find(k => k.includes(':set:') && k.endsWith(`:set:${tag}`));
       if (!key) return false;
       try { return Object.keys(JSON.parse(localStorage.getItem(key) || '{}').answers || {}).length >= 1; } catch (_) { return false; }
-    });
+    }, setTag);
     assert(localSaved, `Set ${setTag}: local answer save failed`);
 
     await page.evaluate(i => window.gotoQ(i), visualIndex);
