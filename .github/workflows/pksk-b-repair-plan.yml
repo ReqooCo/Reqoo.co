@@ -7,6 +7,7 @@ on:
       - staging/rbt004-work
       - staging/rbt005
       - staging/pa001
+      - staging/pa002
     paths:
       - 'scripts/audit_pksk_live_50sets_clone.py'
       - 'scripts/classify_pksk_live_50sets_clone.py'
@@ -144,6 +145,8 @@ jobs:
         run: python scripts/validate_pksk_b_iq_new_batch.py 10
       - name: Validate Pengetahuan Am new batch 001
         run: python scripts/validate_pksk_b_pa_new_batch.py 1
+      - name: Validate Pengetahuan Am new batch 002
+        run: python scripts/validate_pksk_b_pa_new_batch.py 2
       - name: Validate Problem Solving new batch 001
         run: python scripts/validate_pksk_b_ps_new_batch.py 1
       - name: Validate Problem Solving new batch 002
