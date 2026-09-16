@@ -10,9 +10,11 @@ on:
       - 'scripts/build_pksk_b_repair_plan.py'
       - 'scripts/validate_pksk_b_repair_batch.py'
       - 'scripts/validate_apply_pksk_b_repair_batch002.py'
+      - 'scripts/validate_apply_pksk_b_repair_batch003.py'
       - 'scripts/audit_pksk_b_core_duplicates.py'
       - 'scripts/audit_pksk_b_core_duplicates_v2.py'
       - 'scripts/audit_pksk_b_core_duplicates_v3.py'
+      - 'scripts/audit_pksk_b_core_duplicates_v4.py'
       - 'scripts/build_pksk_b_strict_authoring_plan.py'
       - '.github/workflows/pksk-b-repair-plan.yml'
       - 'sim/pksk/curation/B/**'
@@ -41,6 +43,10 @@ jobs:
         run: python scripts/validate_apply_pksk_b_repair_batch002.py
       - name: Audit hidden duplicates after batch 002 (strict V3)
         run: python scripts/audit_pksk_b_core_duplicates_v3.py
+      - name: Validate and apply B repair batch 003
+        run: python scripts/validate_apply_pksk_b_repair_batch003.py
+      - name: Audit hidden duplicates after batch 003 (strict V4)
+        run: python scripts/audit_pksk_b_core_duplicates_v4.py
       - name: Build current strict B authoring plan
         run: python scripts/build_pksk_b_strict_authoring_plan.py
       - name: Upload B repair workspace
