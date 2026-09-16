@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import glob
 import json
-import math
 import re
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -33,7 +32,8 @@ PER_SET = {
     "Pengetahuan Am": 6,
     "Penyelesaian Masalah": 4,
 }
-ANSWER_TARGET = [0] * 18 + [1] * 18 + [2] * 17 + [3] * 17
+# Interleaved answer positions: exactly 18/18/17/17 without long visible runs.
+ANSWER_TARGET = [0, 1, 2, 3] * 17 + [0, 1]
 VALIDATED_PATTERNS = [
     "b_math_new_batch_*_validated.jsonl",
     "b_iq_new_batch_*_validated.jsonl",
@@ -136,8 +136,10 @@ def normalise_source_item(row: dict, source: str, serial: int) -> dict:
     if not isinstance(options, list) or len(options) != 4:
         fail(f"{source} serial {serial}: expected four options")
     options = [str(x).strip() for x in options]
-    if any(not x for x in options) or len({x.casefold() for x in options}) != 4:
-        fail(f"{source} serial {serial}: options must be nonblank and unique")
+    # Case differences can be the tested construct in language questions, so
+    # uniqueness must be exact-string rather than case-folded.
+    if any(not x for x in options) or len(set(options)) != 4:
+        fail(f"{source} serial {serial}: options must be nonblank and exactly unique")
     if not isinstance(answer, int) or answer not in (0, 1, 2, 3):
         fail(f"{source} serial {serial}: invalid answerIndex {answer!r}")
 
@@ -205,8 +207,6 @@ def set_paths() -> list[Path]:
 def distribute_domain(items: list[dict], quota: int) -> list[list[dict]]:
     if len(items) != quota * 50:
         fail(f"domain chunk mismatch: items={len(items)} quota={quota}")
-    # Split visual/nonvisual first, then difficulty-sort each stream. Round-robin
-    # in serpentine order spreads both difficulty and visuals across sets.
     items = sorted(
         items,
         key=lambda x: (
@@ -216,32 +216,14 @@ def distribute_domain(items: list[dict], quota: int) -> list[list[dict]]:
         ),
     )
     buckets = [[] for _ in range(50)]
-    cursor = 0
-    direction = 1
-    for item in items:
-        # Find next bucket with free quota, moving in a serpentine pattern.
-        attempts = 0
-        while len(buckets[cursor]) >= quota:
-            cursor += direction
-            if cursor >= 50:
-                cursor = 49
-                direction = -1
-            elif cursor < 0:
-                cursor = 0
-                direction = 1
-            attempts += 1
-            if attempts > 100:
-                fail("distribution cursor could not find free bucket")
-        buckets[cursor].append(item)
-        cursor += direction
-        if cursor >= 50:
-            cursor = 49
-            direction = -1
-        elif cursor < 0:
-            cursor = 0
-            direction = 1
-    if any(len(x) != quota for x in buckets):
-        fail(f"distribution quota failure: {[len(x) for x in buckets]}")
+    pos = 0
+    for round_no in range(quota):
+        order = list(range(50)) if round_no % 2 == 0 else list(range(49, -1, -1))
+        for set_idx in order:
+            buckets[set_idx].append(items[pos])
+            pos += 1
+    if pos != len(items) or any(len(x) != quota for x in buckets):
+        fail(f"distribution quota failure: used={pos}/{len(items)} sizes={[len(x) for x in buckets]}")
     return buckets
 
 
@@ -250,8 +232,6 @@ def reorder_for_target(item: dict, target_index: int) -> tuple[list[str], int]:
     old = int(item["answerIndex"])
     correct = opts[old]
     wrong = [x for i, x in enumerate(opts) if i != old]
-    # Rotate wrong answers based on stable source ID so distractor ordering is not
-    # globally identical, then insert the independently validated correct answer.
     rot = sum(ord(ch) for ch in item["sourceBankId"]) % 3
     wrong = wrong[rot:] + wrong[:rot]
     new_opts = list(wrong)
@@ -304,7 +284,8 @@ def main() -> int:
     visual_counts = []
     level_counts_global = Counter()
 
-    # Interleave domains rather than block them, so a user sees a mixed simulator.
+    # Interleave domains so each simulator presents a mixed paper rather than
+    # long subject blocks.
     domain_cycle: list[str] = []
     remaining = dict(PER_SET)
     while sum(remaining.values()):
@@ -324,8 +305,8 @@ def main() -> int:
         if any(pools[d] for d in pools):
             fail(f"set {set_idx+1}: unconsumed domain pool")
 
-        # Rotate the exact 18/18/17/17 target sequence per set to avoid a repeated
-        # visible answer-position pattern while retaining identical counts.
+        # Rotate the interleaved exact 18/18/17/17 sequence between sets. A
+        # rotation preserves counts but avoids one repeated visible key pattern.
         shift = (set_idx * 13) % 70
         targets = ANSWER_TARGET[shift:] + ANSWER_TARGET[:shift]
         set_level = 1 + (set_idx % 4)
@@ -338,7 +319,10 @@ def main() -> int:
         if answers != Counter({0: 18, 1: 18, 2: 17, 3: 17}):
             fail(f"set {set_idx+1}: answer balance mismatch {dict(answers)}")
 
-        data["questions"] = [q for q in (data.get("questions") or []) if str(q.get("section") or "").strip() != "BAHAGIAN B"] + final_b
+        data["questions"] = [
+            q for q in (data.get("questions") or [])
+            if str(q.get("section") or "").strip() != "BAHAGIAN B"
+        ] + final_b
         data["bRebuildVersion"] = "FINAL_B_V1_3500_UNIQUE"
         data["bSourceBankSize"] = 3500
         data["bLegacyContentUsed"] = False
