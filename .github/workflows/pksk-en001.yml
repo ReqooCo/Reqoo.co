@@ -1,0 +1,47 @@
+name: PKSK English Batch 001
+
+on:
+  push:
+    branches:
+      - staging/en001
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  validate-en001:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Restore validated baseline from BM006 artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p audit-output /tmp/bm006
+          gh api repos/ReqooCo/Reqoo.co/actions/artifacts/10437387155/zip > /tmp/bm006.zip
+          unzip -q /tmp/bm006.zip -d /tmp/bm006
+          cp -a /tmp/bm006/. audit-output/
+          test -f audit-output/b_section_strict_source_survivors.jsonl
+          test -f audit-output/b_bm_new_batch_006_validated.jsonl
+
+      - name: Validate English new batch 001
+        run: python scripts/validate_pksk_b_english_new_batch.py 1
+
+      - name: Rebuild dynamic strict B authoring plan
+        run: python scripts/build_pksk_b_strict_authoring_plan_v5.py
+
+      - name: Rebuild dynamic B progress ledger
+        run: python scripts/build_pksk_b_current_progress_v5.py
+
+      - name: Upload EN001 validated workspace
+        uses: actions/upload-artifact@v4
+        with:
+          name: pksk-en001-workspace
+          path: audit-output/
