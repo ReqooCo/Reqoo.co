@@ -91,7 +91,9 @@ def main() -> int:
             weights = q.get("weights")
             if not str(q.get("question") or "").strip():
                 errors.append(f"{uid}:blank_question")
-            if not isinstance(opts, list) or len(opts) != 4 or len({str(x).strip().casefold() for x in opts}) != 4:
+            # Exact-string uniqueness is intentional: case/capitalisation can be
+            # the construct tested by English and BM language items.
+            if not isinstance(opts, list) or len(opts) != 4 or len({str(x).strip() for x in opts}) != 4:
                 errors.append(f"{uid}:invalid_options")
             if ai not in (0, 1, 2, 3):
                 errors.append(f"{uid}:invalid_answerIndex")
@@ -184,7 +186,9 @@ def main() -> int:
     visual_total = sum(1 for r in rows if r["hasVisual"])
     solution_total = sum(1 for r in rows if r["hasSolution"])
     if solution_total < 2306:
-        warnings.append(f"solutionSteps coverage is {solution_total}/3500; strict-source survivors may rely on simulator/AI explanation fallback")
+        warnings.append(
+            f"solutionSteps coverage is {solution_total}/3500; strict-source survivors may rely on simulator/AI explanation fallback"
+        )
 
     report = {
         "version": "PKSK_FINAL_B_50SETS_AUDIT_V1",
