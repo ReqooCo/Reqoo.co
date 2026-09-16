@@ -1,0 +1,62 @@
+name: PKSK Final 50 Sets V1
+
+on:
+  push:
+    branches:
+      - staging/pksk-final-50sets
+    paths:
+      - 'scripts/assemble_pksk_final_b_50sets.py'
+      - 'scripts/audit_pksk_final_b_50sets.py'
+      - 'scripts/build_pksk_c_final_50sets.py'
+      - 'scripts/audit_pksk_c_final_50sets.py'
+      - '.github/workflows/pksk-final-50sets-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  assemble-and-audit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Restore final validated B bank from SCI006 artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p audit-output /tmp/sci006
+          gh api repos/ReqooCo/Reqoo.co/actions/artifacts/10442166687/zip > /tmp/sci006.zip
+          unzip -q /tmp/sci006.zip -d /tmp/sci006
+          cp -a /tmp/sci006/. audit-output/
+          test -f audit-output/b_section_strict_source_survivors.jsonl
+          test -f audit-output/b_science_new_batch_006_validated.jsonl
+
+      - name: Build fresh final Bahagian C
+        run: python scripts/build_pksk_c_final_50sets.py
+
+      - name: Assemble 3500 validated B items into 50 sets
+        run: python scripts/assemble_pksk_final_b_50sets.py
+
+      - name: Audit final Bahagian B assembly
+        run: python scripts/audit_pksk_final_b_50sets.py
+
+      - name: Audit final Bahagian C assembly
+        run: python scripts/audit_pksk_c_final_50sets.py
+
+      - name: Upload final 50-set candidate workspace
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pksk-final-50sets-v1-workspace
+          path: |
+            audit-output/pksk_final_b_50sets_audit.json
+            audit-output/pksk_final_b_50sets_items.jsonl
+            audit-output/pksk_c_final_50sets_audit.json
+            audit-output/pksk_c_final_50sets_items.jsonl
+            sim/pksk/simulator/sets/SET */data/set*.json
+          if-no-files-found: warn
