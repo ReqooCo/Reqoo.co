@@ -1,0 +1,35 @@
+name: PKSK Final Bahagian C Audit
+
+on:
+  push:
+    branches:
+      - staging/pksk-final-50sets
+    paths:
+      - 'sim/pksk/simulator/sets/**'
+      - 'scripts/audit_pksk_c_final_50sets.py'
+      - '.github/workflows/pksk-final-c-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  audit-c:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit Bahagian C across 50 sets
+        run: python scripts/audit_pksk_c_final_50sets.py
+      - name: Upload Bahagian C audit artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pksk-final-c-audit
+          path: |
+            audit-output/pksk_c_final_50sets_audit.json
+            audit-output/pksk_c_final_50sets_items.jsonl
+          if-no-files-found: warn
