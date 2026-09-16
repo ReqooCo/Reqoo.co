@@ -6,6 +6,7 @@ on:
       - staging/pksk-final-50sets
     paths:
       - 'scripts/assemble_pksk_final_b_50sets.py'
+      - 'scripts/editorialize_pksk_final_b_stems.py'
       - 'scripts/audit_pksk_final_b_50sets.py'
       - 'scripts/build_pksk_c_final_50sets.py'
       - 'scripts/audit_pksk_c_final_50sets.py'
@@ -41,6 +42,9 @@ jobs:
 
       - name: Assemble 3500 validated B items into 50 sets
         run: python scripts/assemble_pksk_final_b_50sets.py
+
+      - name: Editorially de-template flagged B stems
+        run: python scripts/editorialize_pksk_final_b_stems.py
 
       - name: Audit final Bahagian B assembly
         run: python scripts/audit_pksk_final_b_50sets.py
