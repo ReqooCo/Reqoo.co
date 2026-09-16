@@ -11,6 +11,9 @@ OUT=ROOT/'audit-output'
 SURVIVORS=OUT/'b_section_strict_source_survivors.jsonl'
 FAMILIES=OUT/'b_section_core_duplicate_families.csv'
 SUMMARY=OUT/'b_section_core_duplicate_summary.json'
+VALIDATED_NEW_FILES=[
+    OUT/'b_iq_new_batch_001_validated.jsonl',
+]
 
 TARGET={
     'Matematik':1000,
@@ -24,8 +27,10 @@ TARGET={
 }
 
 
-def read_jsonl(path:Path)->list[dict]:
-    if not path.exists(): raise SystemExit(f'missing required input: {path.relative_to(ROOT)}')
+def read_jsonl(path:Path, required:bool=True)->list[dict]:
+    if not path.exists():
+        if required: raise SystemExit(f'missing required input: {path.relative_to(ROOT)}')
+        return []
     out=[]
     with path.open(encoding='utf-8') as f:
         for n,line in enumerate(f,1):
@@ -52,6 +57,23 @@ def main()->int:
     survivor_ids={x['bankId'] for x in survivors}
     if not survivor_ids <= set(selected_by): raise SystemExit('strict survivor contains bankId outside selected source')
 
+    validated_new=[]
+    validated_file_counts={}
+    for p in VALIDATED_NEW_FILES:
+        rows=read_jsonl(p,required=False)
+        if rows:
+            validated_file_counts[str(p.relative_to(ROOT))]=len(rows)
+            validated_new.extend(rows)
+    validated_ids=[str(x.get('bankId') or '') for x in validated_new]
+    if any(not x for x in validated_ids): raise SystemExit('validated new item missing bankId')
+    if len(validated_ids)!=len(set(validated_ids)): raise SystemExit('duplicate bankId across validated new files')
+    if set(validated_ids) & survivor_ids: raise SystemExit('validated new bankId collides with strict source survivor')
+    bad_validated=[x.get('bankId') for x in validated_new if x.get('reviewStatus')!='EDITORIAL_QA_PASS']
+    if bad_validated: raise SystemExit(f'validated new item not EDITORIAL_QA_PASS: {bad_validated[:5]}')
+    validated_counts=Counter(x.get('domain') for x in validated_new)
+    bad_domains=[d for d in validated_counts if d not in TARGET]
+    if bad_domains: raise SystemExit(f'validated new item has unsupported domain: {bad_domains}')
+
     duplicate_family={}; duplicate_role={}
     if not FAMILIES.exists(): raise SystemExit(f'missing required input: {FAMILIES.relative_to(ROOT)}')
     with FAMILIES.open(encoding='utf-8',newline='') as f:
@@ -65,8 +87,16 @@ def main()->int:
     selected_counts=Counter(x['domain'] for x in selected)
     survivor_counts=Counter(x['domain'] for x in survivors)
     follower_counts=Counter(x['domain'] for x in followers)
-    slots=[]; sequence=0; domain_sequence=Counter()
 
+    # New validated items currently fill NEW_AUTHOR_DEFICIT slots. A future validated
+    # material-rewrite batch should carry an explicit replacement/source mapping and be
+    # applied before reaching this generic planner.
+    original_new_deficit={d:max(0,TARGET[d]-selected_counts.get(d,0)) for d in TARGET}
+    for d,n in validated_counts.items():
+        if n>original_new_deficit[d]:
+            raise SystemExit(f'validated new count exceeds source deficit for {d}: {n}>{original_new_deficit[d]}')
+
+    slots=[]; sequence=0; domain_sequence=Counter()
     for x in sorted(followers,key=lambda r:(list(TARGET).index(r['domain']),int(r.get('sourceSet') or 999),str(r.get('bankId') or ''))):
         sequence+=1; domain_sequence[x['domain']]+=1
         slots.append({
@@ -76,9 +106,9 @@ def main()->int:
             'requiredChecks':['materially_new_construct_or_reasoning_form','no_exact_duplicate','no_number_swap_only_duplicate','no_synthetic_context_uniqueness','one_correct_answer','plausible_distractors','answer_truth_review'],
         })
 
-    for domain,target in TARGET.items():
-        deficit=max(0,target-selected_counts.get(domain,0))
-        for _ in range(deficit):
+    for domain in TARGET:
+        pending_deficit=max(0,original_new_deficit[domain]-validated_counts.get(domain,0))
+        for _ in range(pending_deficit):
             sequence+=1; domain_sequence[domain]+=1
             slots.append({
                 'slotId':f'B-WORK-{sequence:04d}','domainSlot':domain_sequence[domain],'domain':domain,'reason':'NEW_AUTHOR_DEFICIT',
@@ -90,28 +120,48 @@ def main()->int:
     domain_report={}
     for d,target in TARGET.items():
         domain_report[d]={
-            'target':target,'selectedSource':selected_counts.get(d,0),'strictSourceSurvivors':survivor_counts.get(d,0),
-            'hiddenDuplicateFollowersToRewrite':follower_counts.get(d,0),'newAuthorDeficit':max(0,target-selected_counts.get(d,0)),
-            'totalAuthoringOrRewriteRequired':work_counts.get(d,0),
+            'target':target,
+            'selectedSource':selected_counts.get(d,0),
+            'strictSourceSurvivors':survivor_counts.get(d,0),
+            'validatedNewQaPass':validated_counts.get(d,0),
+            'hiddenDuplicateFollowersToRewrite':follower_counts.get(d,0),
+            'originalNewAuthorDeficit':original_new_deficit[d],
+            'pendingNewAuthorDeficit':max(0,original_new_deficit[d]-validated_counts.get(d,0)),
+            'totalPendingAuthoringOrRewrite':work_counts.get(d,0),
+            'currentQaReadyBankContribution':survivor_counts.get(d,0)+validated_counts.get(d,0),
         }
 
-    expected_work=3500-len(survivors)
+    original_strict_work=3500-len(survivors)
+    pending_work=3500-len(survivors)-len(validated_new)
+    original_new_deficit_total=sum(original_new_deficit.values())
     gates={
         'selectedSource2279':len(selected)==2279,
         'strictSummaryMatchesSurvivors':strict_summary.get('hardUniqueCoreSource')==len(survivors),
         'followersMathOut':len(followers)==2279-len(survivors),
-        'newDeficit1221':reason_counts['NEW_AUTHOR_DEFICIT']==1221,
+        'originalNewDeficit1221':original_new_deficit_total==1221,
         'materialRewriteMatchesFollowers':reason_counts['MATERIAL_REWRITE_CORE_DUPLICATE']==len(followers),
-        'workMatchesStrictSummary':len(slots)==strict_summary.get('minimumNewOrMaterialRewriteRequired')==expected_work,
-        'survivorsPlusWork3500':len(survivors)+len(slots)==3500,
-        'domainFinalsMatchTarget':all(survivor_counts.get(d,0)+work_counts.get(d,0)==TARGET[d] for d in TARGET),
+        'pendingNewDeficitSubtractsValidated':reason_counts['NEW_AUTHOR_DEFICIT']==original_new_deficit_total-len(validated_new),
+        'strictSummaryOriginalWorkMatches':strict_summary.get('minimumNewOrMaterialRewriteRequired')==original_strict_work,
+        'pendingWorkMathsOut':len(slots)==pending_work,
+        'survivorsPlusValidatedPlusPending3500':len(survivors)+len(validated_new)+len(slots)==3500,
+        'domainFinalsMatchTarget':all(survivor_counts.get(d,0)+validated_counts.get(d,0)+work_counts.get(d,0)==TARGET[d] for d in TARGET),
     }
 
     report={
-        'version':'B_STRICT_AUTHORING_PLAN_V3_DYNAMIC','workingBranch':'repair/pksk-b-50set-v1','productionFilesModified':False,
-        'sourceFile':source_rel,'strictAuditVersion':strict_summary.get('version'),'finalBankTarget':3500,
-        'strictSourceSurvivors':len(survivors),'authoringOrMaterialRewriteRequired':len(slots),'reasons':dict(reason_counts),
-        'domainPlan':domain_report,'gates':gates,
+        'version':'B_STRICT_AUTHORING_PLAN_V4_WITH_VALIDATED_NEW',
+        'workingBranch':'repair/pksk-b-50set-v1',
+        'productionFilesModified':False,
+        'sourceFile':source_rel,
+        'strictAuditVersion':strict_summary.get('version'),
+        'finalBankTarget':3500,
+        'strictSourceSurvivors':len(survivors),
+        'validatedNewQaPass':len(validated_new),
+        'validatedNewFiles':validated_file_counts,
+        'currentQaReadyBankContribution':len(survivors)+len(validated_new),
+        'pendingAuthoringOrMaterialRewrite':len(slots),
+        'reasonsPending':dict(reason_counts),
+        'domainPlan':domain_report,
+        'gates':gates,
         'releaseRule':'Do not assemble Set 01-50 until every slot is FINAL_APPROVED and global strict duplicate + answer-truth gates pass.',
         'recommendedBatchOrder':['Matematik','IQ','Pengetahuan Am','Penyelesaian Masalah','Bahasa Melayu','English','Sains','Teknologi/RBT'],
     }
@@ -119,11 +169,11 @@ def main()->int:
     with (OUT/'b_section_strict_authoring_slots.jsonl').open('w',encoding='utf-8') as f:
         for x in slots: f.write(json.dumps(x,ensure_ascii=False,separators=(',',':'))+'\n')
 
-    print('PKSK B STRICT AUTHORING PLAN V3')
-    print('SOURCE',source_rel,'SURVIVORS',len(survivors),'WORK',len(slots),dict(reason_counts))
+    print('PKSK B STRICT AUTHORING PLAN V4')
+    print('SOURCE',source_rel,'SURVIVORS',len(survivors),'VALIDATED_NEW',len(validated_new),'PENDING_WORK',len(slots),dict(reason_counts))
     for d in TARGET:
         r=domain_report[d]
-        print(d,f"survivor={r['strictSourceSurvivors']} rewrite={r['hiddenDuplicateFollowersToRewrite']} new={r['newAuthorDeficit']} work={r['totalAuthoringOrRewriteRequired']} target={r['target']}")
+        print(d,f"survivor={r['strictSourceSurvivors']} validated_new={r['validatedNewQaPass']} rewrite={r['hiddenDuplicateFollowersToRewrite']} pending_new={r['pendingNewAuthorDeficit']} pending_work={r['totalPendingAuthoringOrRewrite']} target={r['target']}")
     if not all(gates.values()): print('GATES=FAIL',gates); return 2
     print('GATES=PASS'); return 0
 
