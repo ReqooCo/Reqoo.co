@@ -1,0 +1,51 @@
+name: PKSK Science Batch 006 Final
+
+on:
+  push:
+    branches:
+      - staging/sci006
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  validate-sci006:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Restore validated baseline from SCI005 artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p audit-output /tmp/sci005
+          gh api repos/ReqooCo/Reqoo.co/actions/artifacts/10441673277/zip > /tmp/sci005.zip
+          unzip -q /tmp/sci005.zip -d /tmp/sci005
+          cp -a /tmp/sci005/. audit-output/
+          test -f audit-output/b_section_strict_source_survivors.jsonl
+          test -f audit-output/b_science_new_batch_001_validated.jsonl
+          test -f audit-output/b_science_new_batch_002_validated.jsonl
+          test -f audit-output/b_science_new_batch_003_validated.jsonl
+          test -f audit-output/b_science_new_batch_004_validated.jsonl
+          test -f audit-output/b_science_new_batch_005_validated.jsonl
+
+      - name: Validate Science new batch 006 final
+        run: python scripts/validate_pksk_b_science_new_batch.py 6
+
+      - name: Rebuild dynamic strict B authoring plan
+        run: python scripts/build_pksk_b_strict_authoring_plan_v5.py
+
+      - name: Rebuild dynamic B progress ledger
+        run: python scripts/build_pksk_b_current_progress_v5.py
+
+      - name: Upload SCI006 validated workspace
+        uses: actions/upload-artifact@v4
+        with:
+          name: pksk-sci006-workspace
+          path: audit-output/
