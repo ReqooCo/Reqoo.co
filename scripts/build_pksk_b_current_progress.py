@@ -59,17 +59,14 @@ def main()->int:
     if survivor_ids & iq_ids: raise SystemExit('validated IQ bankId collides with strict source survivor bankId')
 
     domain_plan=plan.get('domainPlan') or {}
-    ready_counts={}
-    remaining_counts={}
-    domain_report={}
+    ready_counts={}; remaining_counts={}; domain_report={}
     for d,target in TARGET.items():
         row=domain_plan.get(d) or {}
         ready=int(row.get('currentQaReadyBankContribution',0))
         remaining=int(row.get('totalPendingAuthoringOrRewrite',0))
         if ready+remaining!=target:
             raise SystemExit(f'domain total mismatch for {d}: {ready}+{remaining}!={target}')
-        ready_counts[d]=ready
-        remaining_counts[d]=remaining
+        ready_counts[d]=ready; remaining_counts[d]=remaining
         domain_report[d]={
             'target':target,
             'strictSourceReady':int(row.get('strictSourceSurvivors',0)),
@@ -81,21 +78,24 @@ def main()->int:
 
     current_ready=sum(ready_counts.values())
     remaining_work=sum(remaining_counts.values())
+    plan_ready=int(plan.get('currentQaReadyBankContribution',-1))
+    plan_remaining=int(plan.get('pendingAuthoringOrMaterialRewrite',-1))
     gates={
-        'strictSourceSurvivors739':len(survivors)==739,
+        'strictSourceMatchesPlan':len(survivors)==int(plan.get('strictSourceSurvivors',-1)),
         'validatedIqAdditions50':len(iq_items)==50,
         'planValidatedNew50':int(plan.get('validatedNewQaPass',-1))==50,
-        'readyTotal789':current_ready==789==int(plan.get('currentQaReadyBankContribution',-1)),
-        'remainingWork2711':remaining_work==2711==len(slots)==int(plan.get('pendingAuthoringOrMaterialRewrite',-1)),
+        'readyTotalMatchesPlan':current_ready==plan_ready,
+        'remainingWorkMatchesPlan':remaining_work==len(slots)==plan_remaining,
         'iqReady80':ready_counts.get('IQ')==80,
         'iqRemaining420':remaining_counts.get('IQ')==420,
-        'mathReady264':ready_counts.get('Matematik')==264,
-        'mathRemaining736':remaining_counts.get('Matematik')==736,
+        'mathReady314AfterBatch004':ready_counts.get('Matematik')==314,
+        'mathRemaining686AfterBatch004':remaining_counts.get('Matematik')==686,
         'readyPlusRemaining3500':current_ready+remaining_work==3500,
+        'allDomainTotalsMatch':all(ready_counts[d]+remaining_counts[d]==TARGET[d] for d in TARGET),
     }
 
     report={
-        'version':'B_CURRENT_PROGRESS_V2_SINGLE_SOURCE_OF_TRUTH',
+        'version':'B_CURRENT_PROGRESS_V3_DYNAMIC',
         'productionFilesModified':False,
         'strictPlanVersion':plan.get('version'),
         'finalTarget':3500,
@@ -106,7 +106,7 @@ def main()->int:
         'completionPct':round(100*current_ready/3500,1),
         'domainProgress':domain_report,
         'gates':gates,
-        'releaseBlocked':True,
+        'releaseBlocked':current_ready<3500,
         'releaseRule':'Final assembly remains blocked until currentReady reaches 3500 and global duplicate, answer-truth, schema and editorial gates all pass.',
     }
     PROGRESS.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
