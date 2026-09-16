@@ -88,16 +88,49 @@ def main()->int:
     survivor_counts=Counter(x['domain'] for x in survivors)
     follower_counts=Counter(x['domain'] for x in followers)
 
-    # New validated items currently fill NEW_AUTHOR_DEFICIT slots. A future validated
-    # material-rewrite batch should carry an explicit replacement/source mapping and be
-    # applied before reaching this generic planner.
+    # A validated-new item may satisfy either kind of strict deficit:
+    # 1) an original NEW_AUTHOR_DEFICIT where selected source was below target, or
+    # 2) a MATERIAL_REWRITE_CORE_DUPLICATE slot exposed by the strict duplicate audit.
+    # The hard safety limit is therefore target - strict unique survivors, not
+    # target - originally selected source. Allocate validated-new items to original
+    # new-author deficits first, then consume duplicate-follower rewrite slots.
     original_new_deficit={d:max(0,TARGET[d]-selected_counts.get(d,0)) for d in TARGET}
-    for d,n in validated_counts.items():
-        if n>original_new_deficit[d]:
-            raise SystemExit(f'validated new count exceeds source deficit for {d}: {n}>{original_new_deficit[d]}')
+    strict_capacity={d:max(0,TARGET[d]-survivor_counts.get(d,0)) for d in TARGET}
+    validated_fill_new={}
+    validated_fill_rewrite={}
+    for d in TARGET:
+        n=validated_counts.get(d,0)
+        if n>strict_capacity[d]:
+            raise SystemExit(f'validated new count exceeds strict deficit for {d}: {n}>{strict_capacity[d]}')
+        fill_new=min(n,original_new_deficit[d])
+        fill_rewrite=n-fill_new
+        if fill_rewrite>follower_counts.get(d,0):
+            raise SystemExit(f'validated replacement count exceeds duplicate followers for {d}: {fill_rewrite}>{follower_counts.get(d,0)}')
+        validated_fill_new[d]=fill_new
+        validated_fill_rewrite[d]=fill_rewrite
+
+    # Deterministically consume duplicate-follower slots already replaced by
+    # validated-new items. The actual validated item remains independently QA'd;
+    # this only prevents the planner from counting the obsolete follower slot again.
+    sorted_followers=sorted(
+        followers,
+        key=lambda r:(list(TARGET).index(r['domain']),int(r.get('sourceSet') or 999),str(r.get('bankId') or '')),
+    )
+    rewrite_skip_remaining=dict(validated_fill_rewrite)
+    pending_followers=[]
+    consumed_follower_ids={d:[] for d in TARGET}
+    for x in sorted_followers:
+        d=x['domain']
+        if rewrite_skip_remaining.get(d,0)>0:
+            rewrite_skip_remaining[d]-=1
+            consumed_follower_ids[d].append(x['bankId'])
+        else:
+            pending_followers.append(x)
+    if any(rewrite_skip_remaining.values()):
+        raise SystemExit(f'failed to allocate validated replacements to followers: {rewrite_skip_remaining}')
 
     slots=[]; sequence=0; domain_sequence=Counter()
-    for x in sorted(followers,key=lambda r:(list(TARGET).index(r['domain']),int(r.get('sourceSet') or 999),str(r.get('bankId') or ''))):
+    for x in pending_followers:
         sequence+=1; domain_sequence[x['domain']]+=1
         slots.append({
             'slotId':f'B-WORK-{sequence:04d}','domainSlot':domain_sequence[x['domain']],'domain':x['domain'],
@@ -107,7 +140,7 @@ def main()->int:
         })
 
     for domain in TARGET:
-        pending_deficit=max(0,original_new_deficit[domain]-validated_counts.get(domain,0))
+        pending_deficit=original_new_deficit[domain]-validated_fill_new[domain]
         for _ in range(pending_deficit):
             sequence+=1; domain_sequence[domain]+=1
             slots.append({
@@ -119,14 +152,20 @@ def main()->int:
     work_counts=Counter(x['domain'] for x in slots); reason_counts=Counter(x['reason'] for x in slots)
     domain_report={}
     for d,target in TARGET.items():
+        pending_rewrite=follower_counts.get(d,0)-validated_fill_rewrite[d]
+        pending_new=original_new_deficit[d]-validated_fill_new[d]
         domain_report[d]={
             'target':target,
             'selectedSource':selected_counts.get(d,0),
             'strictSourceSurvivors':survivor_counts.get(d,0),
             'validatedNewQaPass':validated_counts.get(d,0),
-            'hiddenDuplicateFollowersToRewrite':follower_counts.get(d,0),
+            'strictValidatedCapacity':strict_capacity[d],
+            'originalHiddenDuplicateFollowers':follower_counts.get(d,0),
+            'validatedNewReplacingDuplicateFollowers':validated_fill_rewrite[d],
+            'hiddenDuplicateFollowersToRewrite':pending_rewrite,
             'originalNewAuthorDeficit':original_new_deficit[d],
-            'pendingNewAuthorDeficit':max(0,original_new_deficit[d]-validated_counts.get(d,0)),
+            'validatedNewFillingOriginalDeficit':validated_fill_new[d],
+            'pendingNewAuthorDeficit':pending_new,
             'totalPendingAuthoringOrRewrite':work_counts.get(d,0),
             'currentQaReadyBankContribution':survivor_counts.get(d,0)+validated_counts.get(d,0),
         }
@@ -134,13 +173,19 @@ def main()->int:
     original_strict_work=3500-len(survivors)
     pending_work=3500-len(survivors)-len(validated_new)
     original_new_deficit_total=sum(original_new_deficit.values())
+    validated_fill_new_total=sum(validated_fill_new.values())
+    validated_fill_rewrite_total=sum(validated_fill_rewrite.values())
+    expected_pending_rewrite=len(followers)-validated_fill_rewrite_total
+    expected_pending_new=original_new_deficit_total-validated_fill_new_total
     gates={
         'selectedSource2279':len(selected)==2279,
         'strictSummaryMatchesSurvivors':strict_summary.get('hardUniqueCoreSource')==len(survivors),
         'followersMathOut':len(followers)==2279-len(survivors),
         'originalNewDeficit1221':original_new_deficit_total==1221,
-        'materialRewriteMatchesFollowers':reason_counts['MATERIAL_REWRITE_CORE_DUPLICATE']==len(followers),
-        'pendingNewDeficitSubtractsValidated':reason_counts['NEW_AUTHOR_DEFICIT']==original_new_deficit_total-len(validated_new),
+        'validatedWithinStrictCapacity':all(validated_counts.get(d,0)<=strict_capacity[d] for d in TARGET),
+        'validatedAllocationMatchesTotal':validated_fill_new_total+validated_fill_rewrite_total==len(validated_new),
+        'pendingMaterialRewriteSubtractsValidated':reason_counts['MATERIAL_REWRITE_CORE_DUPLICATE']==expected_pending_rewrite,
+        'pendingNewDeficitSubtractsValidated':reason_counts['NEW_AUTHOR_DEFICIT']==expected_pending_new,
         'strictSummaryOriginalWorkMatches':strict_summary.get('minimumNewOrMaterialRewriteRequired')==original_strict_work,
         'pendingWorkMathsOut':len(slots)==pending_work,
         'survivorsPlusValidatedPlusPending3500':len(survivors)+len(validated_new)+len(slots)==3500,
@@ -157,6 +202,10 @@ def main()->int:
         'strictSourceSurvivors':len(survivors),
         'validatedNewQaPass':len(validated_new),
         'validatedNewFiles':validated_file_counts,
+        'validatedNewAllocation':{
+            'fillsOriginalNewAuthorDeficit':validated_fill_new_total,
+            'replacesDuplicateFollowers':validated_fill_rewrite_total,
+        },
         'currentQaReadyBankContribution':len(survivors)+len(validated_new),
         'pendingAuthoringOrMaterialRewrite':len(slots),
         'reasonsPending':dict(reason_counts),
@@ -171,6 +220,7 @@ def main()->int:
 
     print('PKSK B STRICT AUTHORING PLAN V4')
     print('SOURCE',source_rel,'SURVIVORS',len(survivors),'VALIDATED_NEW',len(validated_new),'PENDING_WORK',len(slots),dict(reason_counts))
+    print('VALIDATED_ALLOCATION',{'new_deficit':validated_fill_new_total,'duplicate_rewrite':validated_fill_rewrite_total})
     for d in TARGET:
         r=domain_report[d]
         print(d,f"survivor={r['strictSourceSurvivors']} validated_new={r['validatedNewQaPass']} rewrite={r['hiddenDuplicateFollowersToRewrite']} pending_new={r['pendingNewAuthorDeficit']} pending_work={r['totalPendingAuthoringOrRewrite']} target={r['target']}")
