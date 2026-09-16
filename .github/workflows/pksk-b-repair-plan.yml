@@ -132,6 +132,10 @@ jobs:
         run: python scripts/validate_pksk_b_iq_new_batch.py 7
       - name: Validate IQ new batch 008
         run: python scripts/validate_pksk_b_iq_new_batch.py 8
+      - name: Validate IQ new batch 009
+        run: python scripts/validate_pksk_b_iq_new_batch.py 9
+      - name: Validate IQ new batch 010 final
+        run: python scripts/validate_pksk_b_iq_new_batch.py 10
       - name: Validate Math new batch 001
         run: python scripts/validate_pksk_b_math_new_batch001.py
       - name: Validate Math new batch 002
