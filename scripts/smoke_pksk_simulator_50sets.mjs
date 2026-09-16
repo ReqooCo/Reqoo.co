@@ -167,8 +167,10 @@ try {
 
     const qAi = page.locator('.ai-review-btn[data-question-id]').first();
     assert(await qAi.count() === 1, `Set ${setTag}: question AI review button missing`);
+    const qid = await qAi.getAttribute('data-question-id');
+    assert(qid, `Set ${setTag}: question AI review id missing`);
     await qAi.click();
-    await page.waitForFunction(() => document.querySelector('.ai-review-output')?.textContent?.includes('Penerangan smoke test berjaya.'));
+    await page.waitForFunction(id => document.getElementById(`aiq-${id}`)?.textContent?.includes('Penerangan smoke test berjaya.'), qid);
 
     const wAi = page.locator('#aiWritingReview');
     assert(await wAi.count() === 1, `Set ${setTag}: writing AI review button missing`);
