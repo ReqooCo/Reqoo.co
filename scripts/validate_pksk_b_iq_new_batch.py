@@ -118,8 +118,10 @@ def main()->int:
     if dict(answers)!=expected_answers: errors.append(f'answer_position_distribution:{dict(answers)}!={expected_answers}')
     if len(constructs)!=expected_count or any(v!=1 for v in constructs.values()): errors.append(f'construct_uniqueness:{len(constructs)}')
     if len(signatures)!=expected_count or any(v!=1 for v in signatures.values()): errors.append(f'pattern_signature_uniqueness:{len(signatures)}')
-    if any(len(v)>1 for v in exact.values()): errors.append('internal_exact_duplicates')
-    if any(len(v)>1 for v in num.values()): errors.append('internal_number_normalized_duplicates')
+    internal_exact=[v for v in exact.values() if len(v)>1]
+    internal_num=[v for v in num.values() if len(v)>1]
+    if internal_exact: errors.append('internal_exact_duplicates:'+json.dumps(internal_exact,ensure_ascii=False))
+    if internal_num: errors.append('internal_number_normalized_duplicates:'+json.dumps(internal_num,ensure_ascii=False))
 
     ready_after=30+len(prev)+expected_count
     report={
@@ -128,6 +130,7 @@ def main()->int:
       'familyCounts':dict(families),'answerPositionCounts':{str(i):answers.get(i,0) for i in range(4)},
       'difficulty':{'min':min(difficulties) if difficulties else None,'max':max(difficulties) if difficulties else None,'average':round(sum(difficulties)/len(difficulties),3) if difficulties else None},
       'independentExpectedAnswerCount':len(expected),'expectedIqReadyAfterPlan':ready_after,'expectedIqRemainingAfterPlan':500-ready_after,
+      'internalExactDuplicateGroups':internal_exact,'internalNumberNormalizedDuplicateGroups':internal_num,
       'errors':errors,'warnings':warnings,'pass':not errors and not warnings
     }
     report_path=OUT/f'b_iq_new_batch_{tag}_qa.json'; output=OUT/f'b_iq_new_batch_{tag}_validated.jsonl'
