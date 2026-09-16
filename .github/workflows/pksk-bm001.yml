@@ -1,0 +1,47 @@
+name: PKSK Bahasa Melayu Batch 001
+
+on:
+  push:
+    branches:
+      - staging/bm001
+    paths:
+      - 'sim/pksk/curation/B/bm_new_batch_001*.jsonl'
+      - 'sim/pksk/curation/B/bm_new_batch_001_manifest.json'
+      - 'scripts/validate_pksk_b_bm_new_batch.py'
+      - 'scripts/build_pksk_b_strict_authoring_plan_v5.py'
+      - 'scripts/build_pksk_b_current_progress_v5.py'
+      - '.github/workflows/pksk-bm001.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  validate-bm001:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Restore final validated baseline from PA006 staging artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p audit-output /tmp/pa006
+          gh api repos/ReqooCo/Reqoo.co/actions/artifacts/10437095002/zip > /tmp/pa006.zip
+          unzip -q /tmp/pa006.zip -d /tmp/pa006
+          cp -a /tmp/pa006/. audit-output/
+          test -f audit-output/b_section_strict_source_survivors.jsonl
+      - name: Validate Bahasa Melayu new batch 001
+        run: python scripts/validate_pksk_b_bm_new_batch.py 1
+      - name: Rebuild dynamic strict B authoring plan
+        run: python scripts/build_pksk_b_strict_authoring_plan_v5.py
+      - name: Rebuild dynamic B progress ledger
+        run: python scripts/build_pksk_b_current_progress_v5.py
+      - name: Upload BM001 validated workspace
+        uses: actions/upload-artifact@v4
+        with:
+          name: pksk-bm001-workspace
+          path: audit-output/
