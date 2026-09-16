@@ -1,0 +1,1 @@
+REQOO Plaque V5 HQ assets. Product photos are stored as optimized WebP files in this folder and used by the plaque landing page.
