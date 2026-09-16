@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   actions: read
 
 jobs:
@@ -51,6 +51,18 @@ jobs:
 
       - name: Audit final Bahagian C assembly
         run: python scripts/audit_pksk_c_final_50sets.py
+
+      - name: Materialize validated 50-set candidate on staging branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add 'sim/pksk/simulator/sets/'
+          if git diff --cached --quiet; then
+            echo "No generated set changes to commit."
+          else
+            git commit -m "Materialize validated PKSK final 50-set candidate"
+            git push origin HEAD:staging/pksk-final-50sets
+          fi
 
       - name: Upload final 50-set candidate workspace
         if: always()
