@@ -1,0 +1,29 @@
+{
+  "batch": 4,
+  "domain": "Teknologi/RBT",
+  "status": "AUTHORED_PENDING_QA",
+  "range": {
+    "start": "B-RBT-NEW-0151",
+    "end": "B-RBT-NEW-0200"
+  },
+  "expectedItems": 50,
+  "parts": [
+    "rbt_new_batch_004a.jsonl",
+    "rbt_new_batch_004b.jsonl",
+    "rbt_new_batch_004c.jsonl",
+    "rbt_new_batch_004d.jsonl",
+    "rbt_new_batch_004e.jsonl"
+  ],
+  "qaTargets": {
+    "repeatFamilies": 10,
+    "itemsPerRepeatFamily": 5,
+    "answerDistribution": [13, 13, 12, 12],
+    "visualItems": 12,
+    "requireUniqueBankIds": true,
+    "requireUniquePatternSignatures": true,
+    "requireNoInternalExactDuplicate": true,
+    "requireNoInternalNormalizedDuplicate": true,
+    "requireNoInternalNearDuplicate": true
+  },
+  "promotionPolicy": "Do not count as official or promote to live/main until validator and CI gate pass with artifact confirmed."
+}
