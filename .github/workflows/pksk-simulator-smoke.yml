@@ -1,0 +1,44 @@
+name: PKSK Simulator 50-Set Smoke
+
+on:
+  push:
+    branches:
+      - staging/pksk-final-50sets
+    paths:
+      - 'scripts/smoke_pksk_simulator_50sets.mjs'
+      - 'sim/pksk/simulator/**'
+      - '.github/workflows/pksk-simulator-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Run 50-set simulator browser smoke
+        run: node scripts/smoke_pksk_simulator_50sets.mjs
+
+      - name: Upload smoke report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pksk-simulator-50set-smoke-report
+          path: |
+            audit-output/pksk_simulator_smoke_50sets.json
+            audit-output/pksk_simulator_smoke_failure.png
+          if-no-files-found: warn
