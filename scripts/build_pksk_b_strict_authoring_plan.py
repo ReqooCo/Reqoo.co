@@ -8,7 +8,6 @@ from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/'audit-output'
-SELECTED=OUT/'b_section_selected_after_batch002.jsonl'
 SURVIVORS=OUT/'b_section_strict_source_survivors.jsonl'
 FAMILIES=OUT/'b_section_core_duplicate_families.csv'
 SUMMARY=OUT/'b_section_core_duplicate_summary.json'
@@ -37,13 +36,15 @@ def read_jsonl(path:Path)->list[dict]:
 
 
 def main()->int:
-    selected=read_jsonl(SELECTED)
-    survivors=read_jsonl(SURVIVORS)
-    if len(selected)!=2279: raise SystemExit(f'expected 2279 selected source items, got {len(selected)}')
     if not SUMMARY.exists(): raise SystemExit('strict duplicate summary missing')
     strict_summary=json.loads(SUMMARY.read_text(encoding='utf-8'))
-    if strict_summary.get('sourceFile')!='audit-output/b_section_selected_after_batch002.jsonl':
-        raise SystemExit('strict summary is not the post-batch002 V3 result')
+    source_rel=str(strict_summary.get('sourceFile') or '').strip()
+    if not source_rel.startswith('audit-output/b_section_selected_after_batch'):
+        raise SystemExit(f'unexpected strict sourceFile: {source_rel!r}')
+    selected_path=ROOT/source_rel
+    selected=read_jsonl(selected_path)
+    survivors=read_jsonl(SURVIVORS)
+    if len(selected)!=2279: raise SystemExit(f'expected 2279 selected source items, got {len(selected)}')
     if int(strict_summary.get('hardUniqueCoreSource',-1))!=len(survivors):
         raise SystemExit('strict summary survivor count does not match survivor file')
 
@@ -69,16 +70,9 @@ def main()->int:
     for x in sorted(followers,key=lambda r:(list(TARGET).index(r['domain']),int(r.get('sourceSet') or 999),str(r.get('bankId') or ''))):
         sequence+=1; domain_sequence[x['domain']]+=1
         slots.append({
-            'slotId':f'B-WORK-{sequence:04d}',
-            'domainSlot':domain_sequence[x['domain']],
-            'domain':x['domain'],
-            'reason':'MATERIAL_REWRITE_CORE_DUPLICATE',
-            'sourceBankId':x['bankId'],
-            'sourceSet':x.get('sourceSet'),
-            'sourceId':x.get('sourceId'),
-            'duplicateFamilyId':duplicate_family.get(x['bankId']),
-            'sourceQuestion':x.get('question'),
-            'authoringStatus':'PENDING_AUTHORING',
+            'slotId':f'B-WORK-{sequence:04d}','domainSlot':domain_sequence[x['domain']],'domain':x['domain'],
+            'reason':'MATERIAL_REWRITE_CORE_DUPLICATE','sourceBankId':x['bankId'],'sourceSet':x.get('sourceSet'),'sourceId':x.get('sourceId'),
+            'duplicateFamilyId':duplicate_family.get(x['bankId']),'sourceQuestion':x.get('question'),'authoringStatus':'PENDING_AUTHORING',
             'requiredChecks':['materially_new_construct_or_reasoning_form','no_exact_duplicate','no_number_swap_only_duplicate','no_synthetic_context_uniqueness','one_correct_answer','plausible_distractors','answer_truth_review'],
         })
 
@@ -87,25 +81,17 @@ def main()->int:
         for _ in range(deficit):
             sequence+=1; domain_sequence[domain]+=1
             slots.append({
-                'slotId':f'B-WORK-{sequence:04d}',
-                'domainSlot':domain_sequence[domain],
-                'domain':domain,
-                'reason':'NEW_AUTHOR_DEFICIT',
-                'sourceBankId':None,'sourceSet':None,'sourceId':None,'duplicateFamilyId':None,'sourceQuestion':None,
-                'authoringStatus':'PENDING_AUTHORING',
+                'slotId':f'B-WORK-{sequence:04d}','domainSlot':domain_sequence[domain],'domain':domain,'reason':'NEW_AUTHOR_DEFICIT',
+                'sourceBankId':None,'sourceSet':None,'sourceId':None,'duplicateFamilyId':None,'sourceQuestion':None,'authoringStatus':'PENDING_AUTHORING',
                 'requiredChecks':['new_construct_or_reasoning_form','no_exact_duplicate','no_number_swap_only_duplicate','no_synthetic_context_uniqueness','one_correct_answer','plausible_distractors','answer_truth_review'],
             })
 
-    work_counts=Counter(x['domain'] for x in slots)
-    reason_counts=Counter(x['reason'] for x in slots)
+    work_counts=Counter(x['domain'] for x in slots); reason_counts=Counter(x['reason'] for x in slots)
     domain_report={}
     for d,target in TARGET.items():
         domain_report[d]={
-            'target':target,
-            'selectedSource':selected_counts.get(d,0),
-            'strictSourceSurvivors':survivor_counts.get(d,0),
-            'hiddenDuplicateFollowersToRewrite':follower_counts.get(d,0),
-            'newAuthorDeficit':max(0,target-selected_counts.get(d,0)),
+            'target':target,'selectedSource':selected_counts.get(d,0),'strictSourceSurvivors':survivor_counts.get(d,0),
+            'hiddenDuplicateFollowersToRewrite':follower_counts.get(d,0),'newAuthorDeficit':max(0,target-selected_counts.get(d,0)),
             'totalAuthoringOrRewriteRequired':work_counts.get(d,0),
         }
 
@@ -122,17 +108,10 @@ def main()->int:
     }
 
     report={
-        'version':'B_STRICT_AUTHORING_PLAN_V2_DYNAMIC',
-        'workingBranch':'repair/pksk-b-50set-v1',
-        'productionFilesModified':False,
-        'sourceFile':str(SELECTED.relative_to(ROOT)),
-        'strictAuditVersion':strict_summary.get('version'),
-        'finalBankTarget':3500,
-        'strictSourceSurvivors':len(survivors),
-        'authoringOrMaterialRewriteRequired':len(slots),
-        'reasons':dict(reason_counts),
-        'domainPlan':domain_report,
-        'gates':gates,
+        'version':'B_STRICT_AUTHORING_PLAN_V3_DYNAMIC','workingBranch':'repair/pksk-b-50set-v1','productionFilesModified':False,
+        'sourceFile':source_rel,'strictAuditVersion':strict_summary.get('version'),'finalBankTarget':3500,
+        'strictSourceSurvivors':len(survivors),'authoringOrMaterialRewriteRequired':len(slots),'reasons':dict(reason_counts),
+        'domainPlan':domain_report,'gates':gates,
         'releaseRule':'Do not assemble Set 01-50 until every slot is FINAL_APPROVED and global strict duplicate + answer-truth gates pass.',
         'recommendedBatchOrder':['Matematik','IQ','Pengetahuan Am','Penyelesaian Masalah','Bahasa Melayu','English','Sains','Teknologi/RBT'],
     }
@@ -140,13 +119,12 @@ def main()->int:
     with (OUT/'b_section_strict_authoring_slots.jsonl').open('w',encoding='utf-8') as f:
         for x in slots: f.write(json.dumps(x,ensure_ascii=False,separators=(',',':'))+'\n')
 
-    print('PKSK B STRICT AUTHORING PLAN V2')
-    print('SURVIVORS',len(survivors),'WORK',len(slots),dict(reason_counts))
+    print('PKSK B STRICT AUTHORING PLAN V3')
+    print('SOURCE',source_rel,'SURVIVORS',len(survivors),'WORK',len(slots),dict(reason_counts))
     for d in TARGET:
         r=domain_report[d]
         print(d,f"survivor={r['strictSourceSurvivors']} rewrite={r['hiddenDuplicateFollowersToRewrite']} new={r['newAuthorDeficit']} work={r['totalAuthoringOrRewriteRequired']} target={r['target']}")
     if not all(gates.values()): print('GATES=FAIL',gates); return 2
-    print('GATES=PASS')
-    return 0
+    print('GATES=PASS'); return 0
 
 if __name__=='__main__': raise SystemExit(main())
