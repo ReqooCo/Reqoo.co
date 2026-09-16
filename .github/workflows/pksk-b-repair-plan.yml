@@ -92,7 +92,7 @@ jobs:
       - name: Audit hidden duplicates after batch 007 (strict V8)
         run: python scripts/audit_pksk_b_core_duplicates_v8.py
       - name: Validate and apply B repair batch 008
-        run: python scripts/validate_apply_pksk_b_core_duplicates_v9.py
+        run: python scripts/validate_apply_pksk_b_repair_batch008.py
       - name: Audit hidden duplicates after batch 008 (strict V9)
         run: python scripts/audit_pksk_b_core_duplicates_v9.py
       - name: Validate and apply B repair batch 009
