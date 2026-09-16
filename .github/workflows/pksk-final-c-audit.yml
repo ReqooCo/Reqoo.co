@@ -6,6 +6,7 @@ on:
       - staging/pksk-final-50sets
     paths:
       - 'sim/pksk/simulator/sets/**'
+      - 'scripts/build_pksk_c_final_50sets.py'
       - 'scripts/audit_pksk_c_final_50sets.py'
       - '.github/workflows/pksk-final-c-audit.yml'
   workflow_dispatch:
@@ -22,14 +23,17 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Build fresh Bahagian C across 50 sets
+        run: python scripts/build_pksk_c_final_50sets.py
       - name: Audit Bahagian C across 50 sets
         run: python scripts/audit_pksk_c_final_50sets.py
-      - name: Upload Bahagian C audit artifact
+      - name: Upload Bahagian C validated workspace
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pksk-final-c-audit
+          name: pksk-final-c-validated-workspace
           path: |
             audit-output/pksk_c_final_50sets_audit.json
             audit-output/pksk_c_final_50sets_items.jsonl
+            sim/pksk/simulator/sets/SET */data/set*.json
           if-no-files-found: warn
