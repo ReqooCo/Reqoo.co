@@ -1,0 +1,149 @@
+name: PKSK B PA Staging Gate
+
+on:
+  push:
+    branches:
+      - staging/pa004
+    paths:
+      - 'sim/pksk/curation/B/**'
+      - 'scripts/**'
+      - '.github/workflows/pksk-b-pa-stage.yml'
+  workflow_dispatch:
+
+jobs:
+  repair-plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit cloned live PKSK 50 sets
+        run: python scripts/audit_pksk_live_50sets_clone.py
+      - name: Classify salvage path
+        run: python scripts/classify_pksk_live_50sets_clone.py
+      - name: Build locked B repair plan
+        run: python scripts/build_pksk_b_repair_plan.py
+      - name: Validate B repair batch 001
+        run: python scripts/validate_pksk_b_repair_batch.py
+      - name: Audit baseline hidden duplicates after batch 001 (strict V2)
+        run: python scripts/audit_pksk_b_core_duplicates_v2.py
+      - name: Validate and apply B repair batch 002
+        run: python scripts/validate_apply_pksk_b_repair_batch002.py
+      - name: Audit hidden duplicates after batch 002 (strict V3)
+        run: python scripts/audit_pksk_b_core_duplicates_v3.py
+      - name: Validate and apply B repair batch 003
+        run: python scripts/validate_apply_pksk_b_repair_batch003.py
+      - name: Audit hidden duplicates after batch 003 (strict V4)
+        run: python scripts/audit_pksk_b_core_duplicates_v4.py
+      - name: Validate and apply B repair batch 004
+        run: python scripts/validate_apply_pksk_b_repair_batch004.py
+      - name: Audit hidden duplicates after batch 004 (strict V5)
+        run: python scripts/audit_pksk_b_core_duplicates_v5.py
+      - name: Validate and apply B repair batch 005
+        run: python scripts/validate_apply_pksk_b_repair_batch005.py
+      - name: Audit hidden duplicates after batch 005 (strict V6)
+        run: python scripts/audit_pksk_b_core_duplicates_v6.py
+      - name: Validate and apply B repair batch 006
+        run: python scripts/validate_apply_pksk_b_repair_batch006.py
+      - name: Audit hidden duplicates after batch 006 (strict V7)
+        run: python scripts/audit_pksk_b_core_duplicates_v7.py
+      - name: Validate and apply B repair batch 007
+        run: python scripts/validate_apply_pksk_b_repair_batch007.py
+      - name: Audit hidden duplicates after batch 007 (strict V8)
+        run: python scripts/audit_pksk_b_core_duplicates_v8.py
+      - name: Validate and apply B repair batch 008
+        run: python scripts/validate_apply_pksk_b_repair_batch008.py
+      - name: Audit hidden duplicates after batch 008 (strict V9)
+        run: python scripts/audit_pksk_b_core_duplicates_v9.py
+      - name: Validate and apply B repair batch 009
+        run: python scripts/validate_apply_pksk_b_repair_batch009.py
+      - name: Audit hidden duplicates after batch 009 (strict V10)
+        run: python scripts/audit_pksk_b_core_duplicates_v10.py
+      - name: Validate and apply B repair batch 010
+        run: python scripts/validate_apply_pksk_b_repair_batch010.py
+      - name: Audit hidden duplicates after batch 010 (strict V11)
+        run: python scripts/audit_pksk_b_core_duplicates_v11.py
+      - name: Validate and apply B repair batch 011
+        run: python scripts/validate_apply_pksk_b_repair_batch011.py
+      - name: Audit hidden duplicates after batch 011 (strict V12)
+        run: python scripts/audit_pksk_b_core_duplicates_v12.py
+      - name: Validate and apply B repair batch 012
+        run: python scripts/validate_apply_pksk_b_repair_batch012.py
+      - name: Audit hidden duplicates after batch 012 (strict V13)
+        run: python scripts/audit_pksk_b_core_duplicates_v13.py
+      - name: Validate and apply B repair batch 013
+        run: python scripts/validate_apply_pksk_b_repair_batch013.py
+      - name: Audit hidden duplicates after batch 013 (strict V14)
+        run: python scripts/audit_pksk_b_core_duplicates_v14.py
+      - name: Validate IQ new batch 001
+        run: python scripts/validate_pksk_b_iq_batch001.py
+      - name: Validate IQ new batch 002
+        run: python scripts/validate_pksk_b_iq_new_batch.py 2
+      - name: Validate IQ new batch 003
+        run: python scripts/validate_pksk_b_iq_new_batch.py 3
+      - name: Validate IQ new batch 004
+        run: python scripts/validate_pksk_b_iq_new_batch.py 4
+      - name: Validate IQ new batch 005
+        run: python scripts/validate_pksk_b_iq_new_batch.py 5
+      - name: Validate IQ new batch 006
+        run: python scripts/validate_pksk_b_iq_new_batch.py 6
+      - name: Validate IQ new batch 007
+        run: python scripts/validate_pksk_b_iq_new_batch.py 7
+      - name: Validate IQ new batch 008
+        run: python scripts/validate_pksk_b_iq_new_batch.py 8
+      - name: Validate IQ new batch 009
+        run: python scripts/validate_pksk_b_iq_new_batch.py 9
+      - name: Validate IQ new batch 010 final
+        run: python scripts/validate_pksk_b_iq_new_batch.py 10
+      - name: Validate Pengetahuan Am new batch 001
+        run: python scripts/validate_pksk_b_pa_new_batch.py 1
+      - name: Validate Pengetahuan Am new batch 002
+        run: python scripts/validate_pksk_b_pa_new_batch.py 2
+      - name: Validate Pengetahuan Am new batch 003
+        run: python scripts/validate_pksk_b_pa_new_batch.py 3
+      - name: Validate Pengetahuan Am new batch 004
+        run: python scripts/validate_pksk_b_pa_new_batch.py 4
+      - name: Validate Problem Solving new batch 001
+        run: python scripts/validate_pksk_b_ps_new_batch.py 1
+      - name: Validate Problem Solving new batch 002
+        run: python scripts/validate_pksk_b_ps_new_batch.py 2
+      - name: Validate Problem Solving new batch 003
+        run: python scripts/validate_pksk_b_ps_new_batch.py 3
+      - name: Validate Problem Solving new batch 004 final
+        run: python scripts/validate_pksk_b_ps_new_batch.py 4
+      - name: Validate RBT new batch 001
+        run: python scripts/validate_pksk_b_rbt_new_batch.py 1
+      - name: Validate RBT new batch 002
+        run: python scripts/validate_pksk_b_rbt_new_batch.py 2
+      - name: Validate RBT new batch 003
+        run: python scripts/validate_pksk_b_rbt_new_batch.py 3
+      - name: Validate RBT new batch 004
+        run: python scripts/validate_pksk_b_rbt_new_batch.py 4
+      - name: Validate RBT new batch 005 final
+        run: python scripts/validate_pksk_b_rbt_new_batch.py 5
+      - name: Validate Math new batch 001
+        run: python scripts/validate_pksk_b_math_new_batch001.py
+      - name: Validate Math new batch 002
+        run: python scripts/validate_pksk_b_math_new_batch002.py
+      - name: Validate Math new batch 003
+        run: python scripts/validate_pksk_b_math_new_batch003.py
+      - name: Validate Math new batch 004
+        run: python scripts/validate_pksk_b_math_new_batch.py 4
+      - name: Validate Math new batch 005
+        run: python scripts/validate_pksk_b_math_new_batch.py 5
+      - name: Validate Math new batch 006
+        run: python scripts/validate_pksk_b_math_new_batch.py 6
+      - name: Build current strict B authoring plan regression V4
+        run: python scripts/build_pksk_b_strict_authoring_plan.py
+      - name: Build current B progress ledger regression V4
+        run: python scripts/build_pksk_b_current_progress.py
+      - name: Build dynamic strict B authoring plan V5
+        run: python scripts/build_pksk_b_strict_authoring_plan_v5.py
+      - name: Build dynamic B progress ledger V5
+        run: python scripts/build_pksk_b_current_progress_v5.py
+      - name: Upload B repair workspace
+        uses: actions/upload-artifact@v4
+        with:
+          name: pksk-b-50set-repair-workspace
+          path: audit-output/
