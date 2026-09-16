@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-from collections import Counter
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -14,7 +13,7 @@ IQ_REPORT=OUT/'b_iq_new_batch_001_qa.json'
 IQ_ITEMS=OUT/'b_iq_new_batch_001_validated.jsonl'
 PROGRESS=OUT/'b_section_current_progress.json'
 REMAINING=OUT/'b_section_remaining_work_slots.jsonl'
-FULFILLED=OUT/'b_section_fulfilled_new_slots.jsonl'
+FULFILLED=OUT/'b_section_validated_new_items.jsonl'
 
 TARGET={
     'Matematik':1000,'IQ':500,'Bahasa Melayu':400,'English':400,'Sains':400,
@@ -38,8 +37,11 @@ def main()->int:
     slots=read_jsonl(SLOTS)
     if not PLAN.exists(): raise SystemExit('strict authoring plan missing')
     plan=json.loads(PLAN.read_text(encoding='utf-8'))
+
     if len(survivors)!=int(plan.get('strictSourceSurvivors',-1)):
         raise SystemExit('survivor count disagrees with strict authoring plan')
+    if len(slots)!=int(plan.get('pendingAuthoringOrMaterialRewrite',-1)):
+        raise SystemExit('pending slot count disagrees with strict authoring plan')
 
     if not IQ_REPORT.exists(): raise SystemExit('IQ batch 001 QA report missing')
     iq_report=json.loads(IQ_REPORT.read_text(encoding='utf-8'))
@@ -49,59 +51,59 @@ def main()->int:
         raise SystemExit('expected 50 validated IQ additions')
     if len({x.get('bankId') for x in iq_items})!=50:
         raise SystemExit('duplicate IQ addition bankId')
+    if int(plan.get('validatedNewQaPass',-1))!=len(iq_items):
+        raise SystemExit('validated IQ count disagrees with strict authoring plan')
 
     survivor_ids={x['bankId'] for x in survivors}
     iq_ids={x['bankId'] for x in iq_items}
-    if survivor_ids & iq_ids: raise SystemExit('new IQ bankId collides with strict source survivor bankId')
+    if survivor_ids & iq_ids: raise SystemExit('validated IQ bankId collides with strict source survivor bankId')
 
-    iq_deficit_slots=[x for x in slots if x.get('domain')=='IQ' and x.get('reason')=='NEW_AUTHOR_DEFICIT']
-    if len(iq_deficit_slots)<50: raise SystemExit('not enough IQ deficit slots to map validated batch')
-    filled_slot_ids={x['slotId'] for x in iq_deficit_slots[:50]}
-    fulfilled=[]
-    for slot,item in zip(iq_deficit_slots[:50],sorted(iq_items,key=lambda r:r['bankId'])):
-        fulfilled.append({
-            'slotId':slot['slotId'],'domain':'IQ','reason':'NEW_AUTHOR_DEFICIT','fulfilledBy':item['bankId'],
-            'question':item.get('question'),'reviewStatus':item.get('reviewStatus'),'status':'FULFILLED_VALIDATED',
-        })
-    remaining=[x for x in slots if x.get('slotId') not in filled_slot_ids]
+    domain_plan=plan.get('domainPlan') or {}
+    ready_counts={}
+    remaining_counts={}
+    domain_report={}
+    for d,target in TARGET.items():
+        row=domain_plan.get(d) or {}
+        ready=int(row.get('currentQaReadyBankContribution',0))
+        remaining=int(row.get('totalPendingAuthoringOrRewrite',0))
+        if ready+remaining!=target:
+            raise SystemExit(f'domain total mismatch for {d}: {ready}+{remaining}!={target}')
+        ready_counts[d]=ready
+        remaining_counts[d]=remaining
+        domain_report[d]={
+            'target':target,
+            'strictSourceReady':int(row.get('strictSourceSurvivors',0)),
+            'validatedNewReady':int(row.get('validatedNewQaPass',0)),
+            'currentReady':ready,
+            'remaining':remaining,
+            'completionPct':round(100*ready/target,1),
+        }
 
-    base_counts=Counter(x.get('domain') for x in survivors)
-    addition_counts=Counter(x.get('domain') for x in iq_items)
-    ready_counts=Counter(base_counts); ready_counts.update(addition_counts)
-    remaining_counts={d:TARGET[d]-ready_counts.get(d,0) for d in TARGET}
-    if any(v<0 for v in remaining_counts.values()): raise SystemExit(f'domain over target: {remaining_counts}')
-
+    current_ready=sum(ready_counts.values())
+    remaining_work=sum(remaining_counts.values())
     gates={
         'strictSourceSurvivors739':len(survivors)==739,
         'validatedIqAdditions50':len(iq_items)==50,
-        'readyTotal789':sum(ready_counts.values())==789,
-        'remainingWork2711':len(remaining)==2711==sum(remaining_counts.values()),
-        'iqReady80':ready_counts.get('IQ',0)==80,
+        'planValidatedNew50':int(plan.get('validatedNewQaPass',-1))==50,
+        'readyTotal789':current_ready==789==int(plan.get('currentQaReadyBankContribution',-1)),
+        'remainingWork2711':remaining_work==2711==len(slots)==int(plan.get('pendingAuthoringOrMaterialRewrite',-1)),
+        'iqReady80':ready_counts.get('IQ')==80,
         'iqRemaining420':remaining_counts.get('IQ')==420,
-        'mathReady264':ready_counts.get('Matematik',0)==264,
+        'mathReady264':ready_counts.get('Matematik')==264,
         'mathRemaining736':remaining_counts.get('Matematik')==736,
-        'readyPlusRemaining3500':sum(ready_counts.values())+len(remaining)==3500,
+        'readyPlusRemaining3500':current_ready+remaining_work==3500,
     }
 
-    domain_report={}
-    for d in TARGET:
-        domain_report[d]={
-            'target':TARGET[d],
-            'strictSourceReady':base_counts.get(d,0),
-            'validatedNewReady':addition_counts.get(d,0),
-            'currentReady':ready_counts.get(d,0),
-            'remaining':remaining_counts[d],
-            'completionPct':round(100*ready_counts.get(d,0)/TARGET[d],1),
-        }
     report={
-        'version':'B_CURRENT_PROGRESS_V1_AFTER_MATH003_IQ001',
+        'version':'B_CURRENT_PROGRESS_V2_SINGLE_SOURCE_OF_TRUTH',
         'productionFilesModified':False,
+        'strictPlanVersion':plan.get('version'),
         'finalTarget':3500,
         'strictSourceReady':len(survivors),
-        'validatedNewReady':len(iq_items),
-        'currentReady':sum(ready_counts.values()),
-        'remainingWork':len(remaining),
-        'completionPct':round(100*sum(ready_counts.values())/3500,1),
+        'validatedNewReady':int(plan.get('validatedNewQaPass',0)),
+        'currentReady':current_ready,
+        'remainingWork':remaining_work,
+        'completionPct':round(100*current_ready/3500,1),
         'domainProgress':domain_report,
         'gates':gates,
         'releaseBlocked':True,
@@ -109,9 +111,13 @@ def main()->int:
     }
     PROGRESS.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
     with REMAINING.open('w',encoding='utf-8') as f:
-        for x in remaining: f.write(json.dumps(x,ensure_ascii=False,separators=(',',':'))+'\n')
+        for x in slots: f.write(json.dumps(x,ensure_ascii=False,separators=(',',':'))+'\n')
     with FULFILLED.open('w',encoding='utf-8') as f:
-        for x in fulfilled: f.write(json.dumps(x,ensure_ascii=False,separators=(',',':'))+'\n')
+        for x in sorted(iq_items,key=lambda r:r['bankId']):
+            f.write(json.dumps({
+                'bankId':x['bankId'],'domain':'IQ','status':'VALIDATED_NEW_QA_PASS',
+                'reviewStatus':x.get('reviewStatus'),'question':x.get('question')
+            },ensure_ascii=False,separators=(',',':'))+'\n')
     print(json.dumps(report,ensure_ascii=False,indent=2))
     return 0 if all(gates.values()) else 2
 
