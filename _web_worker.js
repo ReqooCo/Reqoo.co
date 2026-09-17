@@ -73,7 +73,7 @@ async function injectAdminUI(response){
   const headers=new Headers(response.headers);
   headers.set('cache-control','no-store, no-cache, must-revalidate, max-age=0');
   headers.set('pragma','no-cache');
-  headers.set('x-reqoo-admin-ui','premium-flow-v1');
+  headers.set('x-reqoo-admin-ui','premium-theme-v3+premium-flow-v1');
   headers.set('x-reqoo-admin-api-route','same-origin');
   return new Response(body,{status:response.status,statusText:response.statusText,headers});
 }
