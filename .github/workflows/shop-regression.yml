@@ -18,6 +18,8 @@ on:
       - 'shop/account.html'
       - 'shop/shop-premium.css'
       - 'tumbler/index.html'
+      - 'tumbler/tumbler-order-v*.js'
+      - 'tumbler/tumbler-v*.css'
       - 'admin/shop-*.css'
       - 'admin/admin-shell-v*.css'
       - 'admin/admin-shell-v*.js'
@@ -74,6 +76,7 @@ jobs:
           node --check shop/admin-order-production-v1.js
           node --check shop/account-premium-v1.js
           node --check shop/postpurchase-v1.js
+          node --check tumbler/tumbler-order-v4.js
           for file in api/shop-flow-v*.js api/shop-admin-flow-v*.js api/worker.js; do node --check "$file"; done
       - name: Run Shop backend and routing regressions
         run: |
