@@ -64,15 +64,16 @@ async function injectAdminUI(response){
   if(!body.includes('/admin/admin-shell-v2.css'))body=body.replace('</head>','<link rel="stylesheet" href="/admin/admin-shell-v2.css?v=1"></head>');
   if(!body.includes('/admin/admin-theme-v3.css'))body=body.replace('</head>','<link rel="stylesheet" href="/admin/admin-theme-v3.css?v=2"></head>');
   if(isOverview&&!body.includes('/admin/overview-v2.css'))body=body.replace('</head>','<link rel="stylesheet" href="/admin/overview-v2.css?v=2"></head>');
+  if(!body.includes('/admin/admin-flow-v1.css'))body=body.replace('</head>','<link rel="stylesheet" href="/admin/admin-flow-v1.css?v=2"></head>');
   if(isShopAdmin&&!body.includes('/admin/shop-admin-v1.css'))body=body.replace('</head>','<link rel="stylesheet" href="/admin/shop-admin-v1.css?v=1"><link rel="stylesheet" href="/admin/shop-orders-premium-v1.css?v=1"><link rel="stylesheet" href="/admin/shop-products-premium-v1.css?v=1"><link rel="stylesheet" href="/admin/shop-inventory-v1.css?v=1"><link rel="stylesheet" href="/admin/shop-inventory-v2.css?v=2"><link rel="stylesheet" href="/admin/shop-fulfillment-v1.css?v=1"><link rel="stylesheet" href="/admin/shop-production-queue-v1.css?v=3"><link rel="stylesheet" href="/admin/shop-production-queue-v2.css?v=1"><link rel="stylesheet" href="/admin/shop-order-production-v1.css?v=1"></head>');
   if(/id=["']orderModal["']/.test(body))body=body.replace('</body>','<script src="/shop/admin-whatsapp-docs-v1.js?v=2"></script><script src="/shop/admin-fulfillment-v1.js?v=2"></script><script src="/shop/admin-production-queue-safe-v1.js?v=1"></script><script src="/shop/admin-order-production-v1.js?v=1"></script></body>');
   if(isShopAdmin&&!body.includes('/shop/admin-inventory-v2.js'))body=body.replace('</body>','<script src="/shop/admin-inventory-v2.js?v=3"></script></body>');
   if(isOverview&&!body.includes('/admin/overview-v2.js'))body=body.replace('</body>','<script src="/admin/overview-v2.js?v=3"></script></body>');
-  if(!body.includes('/admin/admin-shell-v2.js'))body=body.replace('</body>','<script src="/admin/admin-shell-v2.js?v=5"></script></body>');
+  if(!body.includes('/admin/admin-shell-v2.js'))body=body.replace('</body>','<script src="/admin/admin-shell-v2.js?v=6"></script></body>');
   const headers=new Headers(response.headers);
   headers.set('cache-control','no-store, no-cache, must-revalidate, max-age=0');
   headers.set('pragma','no-cache');
-  headers.set('x-reqoo-admin-ui','premium-theme-v3-perf2');
+  headers.set('x-reqoo-admin-ui','premium-flow-v1');
   headers.set('x-reqoo-admin-api-route','same-origin');
   return new Response(body,{status:response.status,statusText:response.statusText,headers});
 }
@@ -145,9 +146,9 @@ export default{
       return injectShopAdminSafe(response);
     }
 
-    if(host==='admin.reqoo.co'&&(url.pathname==='/'||/^\/admin\/?$/i.test(url.pathname)))return adminOverview(request,env);
+    if(((host==='admin.reqoo.co'&&url.pathname==='/')||(['admin.reqoo.co','reqoo.co'].includes(host)&&/^\/admin\/?$/i.test(url.pathname))))return adminOverview(request,env);
     if(host==='admin.reqoo.co'&&(/^\/admin\/sim-v2\.html$/i.test(url.pathname)||/^\/sim\/pksk\/admin\/?$/i.test(url.pathname)))return adminPkskV2(request,env);
-    if(host==='admin.reqoo.co'&&/^\/admin\/(?:settings|documents|customers|finance|orders|production|products|shop-content)\.html$/i.test(url.pathname)){
+    if(['admin.reqoo.co','reqoo.co'].includes(host)&&/^\/admin\/(?:settings|documents|customers|finance|orders|production|products|shop-content)\.html$/i.test(url.pathname)){
       const response=await env.ASSETS.fetch(assetRequest(url.pathname,request));
       return injectAdminUI(response);
     }
