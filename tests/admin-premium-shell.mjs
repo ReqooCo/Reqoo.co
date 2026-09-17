@@ -5,8 +5,9 @@ const shell=fs.readFileSync(new URL('../admin/admin-shell-v2.js',import.meta.url
 const css=fs.readFileSync(new URL('../admin/admin-shell-v2.css',import.meta.url),'utf8');
 const flow=fs.readFileSync(new URL('../admin/admin-flow-v1.css',import.meta.url),'utf8');
 assert.match(worker,/admin-shell-v2\.css\?v=1/,'premium Admin shell CSS must be injected');
-assert.match(worker,/admin-shell-v2\.js\?v=5/,'premium Admin shell runtime v5 must be injected');
-assert.match(worker,/x-reqoo-admin-ui/,'Admin response must advertise UI runtime');
+assert.match(worker,/admin-shell-v2\\.js\\?v=6/,'premium Admin shell runtime v6 must be injected');
+assert.match(worker,/admin-flow-v1\\.css\\?v=2/,'Admin response must preload the final flow/contrast layer in head');
+assert.match(worker,/premium-flow-v1/,'Admin response must advertise the current UI runtime');
 assert.match(worker,/assetRequest\('\/shop\/admin\.html',request\)\);\s*return injectShopAdminSafe\(response\)/,'Shop Admin must remain isolated in safe mode');
 assert.match(worker,/shop-admin-safe-mode-v1/,'Shop Admin safe mode marker must remain active');
 assert.match(shell,/WORKFLOW/,'shell must group the core business flow');
@@ -15,7 +16,7 @@ assert.match(shell,/Overview/);assert.match(shell,/Orders/);assert.match(shell,/
 assert.match(shell,/mobilePrimary/,'mobile dock must have an explicit primary set');
 assert.match(shell,/rqAdminMoreTrigger/,'mobile dock must move secondary destinations under More');
 assert.match(shell,/moreKeys=\['products','customers','finance','pksk','settings'\]/,'secondary mobile destinations must stay available');
-assert.match(shell,/admin-flow-v1\.css\?v=1/,'shell must load the final flow/contrast layer after page styles');
+assert.match(shell,/admin-flow-v1\\.css\\?v=2/,'shell must keep the final flow/contrast layer as a fallback');
 assert.match(shell,/Orders → Production → Documents/,'overview context must communicate the core operational flow');
 assert.match(shell,/location\.hash/,'Shop sections must remain hash-addressable');
 assert.match(css,/\.rqAdminSide/,'desktop navigation must use an Admin sidebar');
@@ -25,6 +26,7 @@ assert.match(flow,/padding-bottom:82px/,'mobile content must clear the compact o
 assert.match(flow,/\.rqAdminMoreBackdrop/,'mobile More must use a dedicated sheet');
 assert.match(flow,/--rq-text:#17191c/,'flow layer must use high-contrast primary text');
 assert.match(flow,/--rq-muted:#5f646c/,'flow layer must use readable muted text');
-assert.match(flow,/\.btn\.primary/,'flow layer must retain one visually dominant primary action');
+assert.match(flow,/\\.rqCustomerPanel/,'customer CRM panel must receive the same global surface treatment');
+assert.match(flow,/\\.btn\\.primary/,'flow layer must retain one visually dominant primary action');
 assert.match(flow,/:focus-visible/,'flow layer must retain keyboard focus visibility');
 console.log('PASS: Admin flow is simplified, high-contrast and keeps secondary destinations accessible through More.');
