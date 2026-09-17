@@ -2,14 +2,14 @@
 'use strict';
 const API='/api/shop-admin',TOKEN_KEY='reqoo_admin_token';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>'RM'+(Number(n||0)/100).toFixed(2);
 const dateFmt=v=>{if(!v)return'—';const d=new Date(v);return Number.isNaN(d.getTime())?String(v):d.toLocaleDateString('ms-MY',{day:'2-digit',month:'short',year:'numeric'})};
 const methodLabel=v=>({bank_transfer:'Bank Transfer',cash:'Cash',qr:'QR / DuitNow',toyyibpay:'ToyyibPay',other:'Other'})[String(v||'').toLowerCase()]||String(v||'—');
 const paymentType=v=>({deposit:'Deposit',partial:'Partial Payment',final:'Final Payment',full:'Full Payment'})[String(v||'').toLowerCase()]||String(v||'Payment');
 const docLabel=v=>({quotation:'Quotation',invoice:'Invoice',receipt:'Official Receipt',delivery_order:'Delivery Order'})[v]||String(v||'Document');
 const docIcon=v=>({quotation:'QT',invoice:'IN',delivery_order:'DO',receipt:'RC'})[v]||'DC';
-let docs=[],payments=[],selectedNumber='',activeOrderId='',loading=false,cacheAt=0;
+let docs=[],payments=[],selectedNumber='',loading=false,cacheAt=0;
 
 async function api(action,extra={}){
  const url=new URL(API,location.origin);url.searchParams.set('action',action);Object.entries(extra).forEach(([k,v])=>{if(v!==undefined&&v!==null&&v!=='')url.searchParams.set(k,v)});
@@ -42,10 +42,11 @@ function docStatus(doc,summary){
 }
 function customerFrom(doc,pay,chain){const source=doc||chain.find(Boolean)||{};return{name:source.customer_name||pay?.customer_name||'Customer',phone:source.customer_phone||pay?.customer_phone||'',email:source.customer_email||pay?.customer_email||''}}
 function triggerDocument(number){
- const row=$$('#docHistory .rqHistRow').find(r=>rowNumber(r)===String(number));const btn=row?.querySelector('[data-open-doc]');if(btn){btn.click();return true}return false;
+ const row=$$('#docHistory .rqHistRow').find(r=>rowNumber(r)===String(number));const btn=row?.querySelector('[data-open-doc]');if(btn){closeDrawer();setTimeout(()=>btn.click(),40);return true}return false;
 }
-function triggerReceipt(id){const row=$$('#docHistory .rqHistRow').find(r=>same(r.dataset.paymentId,id));const btn=row?.querySelector('[data-open-payment]');if(btn){btn.click();return true}return false}
+function triggerReceipt(id){const row=$$('#docHistory .rqHistRow').find(r=>same(r.dataset.paymentId,id));const btn=row?.querySelector('[data-open-payment]');if(btn){closeDrawer();setTimeout(()=>btn.click(),40);return true}return false}
 function triggerRecordPayment(invoiceNumber){
+ closeDrawer();
  const tryClick=()=>{const row=$$('#docHistory .rqHistRow').find(r=>rowNumber(r)===String(invoiceNumber));const btn=row?.querySelector('.rqRecordPaymentBtn');if(btn){btn.click();return true}return false};
  if(tryClick())return;document.getElementById('refreshDocs')?.click();setTimeout(tryClick,500);
 }
@@ -60,7 +61,7 @@ function paymentsHtml(list){
 async function openByNumber(number){
  ensureDrawer();selectedNumber=number;showDrawer();$('#rqDocDrawerTitle').textContent=number||'Document Details';$('#rqDocDrawerBody').innerHTML='<div class="rqDocDrawerLoading">Memuatkan document flow…</div>';
  try{
-  await refreshData(true);const selectedDoc=findDoc(number),selectedPay=findPayment(number),orderId=selectedDoc?.order_id||selectedPay?.order_id||'';activeOrderId=orderId;
+  await refreshData(true);const selectedDoc=findDoc(number),selectedPay=findPayment(number),orderId=selectedDoc?.order_id||selectedPay?.order_id||'';
   if(!orderId){$('#rqDocDrawerBody').innerHTML='<div class="rqDocDrawerLoading">Dokumen tidak dijumpai dalam ledger semasa.</div>';return}
   const chain=chainDocs(orderId),payList=chainPayments(orderId),summary=await safeSummary(orderId),invoice=chain.find(d=>d.type==='invoice'),quote=chain.find(d=>d.type==='quotation'),customer=customerFrom(selectedDoc,selectedPay,chain);
   const fallbackTotal=Number(invoice?.total_minor??quote?.total_minor??selectedDoc?.total_minor??0),rawPaid=payList.reduce((s,p)=>s+Number(p.amount_minor||0),0),total=Number(summary?.totalMinor??fallbackTotal),paid=Number(summary?.paidMinor??Math.min(total,rawPaid)),balance=Number(summary?.balanceMinor??Math.max(0,total-rawPaid)),overpaid=Number(summary?.overpaidMinor??Math.max(0,rawPaid-total)),orderNo=summary?.orderNo||selectedPay?.order_no||(!String(orderId).startsWith('custom:')?orderId:'Custom quotation');
