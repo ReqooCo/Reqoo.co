@@ -25,9 +25,8 @@ function ensureModal(){
 }
 function invoiceByNumber(n){return docs.find(d=>d.type==='invoice'&&String(d.number)===String(n))||null}
 function sumFor(orderId,doc){
- const s=summaries.get(String(orderId));
- if(s)return s;
- const total=Number(doc?.total_minor||0),legacyPaid=String(doc?.payment_status||'').toLowerCase()==='paid'||String(doc?.status||'').toLowerCase()==='paid';
+ const total=Number(doc?.total_minor||0),legacyPaid=String(doc?.payment_status||'').toLowerCase()==='paid'||String(doc?.status||'').toLowerCase()==='paid',s=summaries.get(String(orderId));
+ if(s){if(legacyPaid&&Number(s.paidMinor||0)===0)return{...s,totalMinor:total,paidMinor:total,balanceMinor:0,paymentStatus:'paid'};return s}
  return{orderId,totalMinor:total,paidMinor:legacyPaid?total:0,balanceMinor:legacyPaid?0:total,paymentStatus:legacyPaid?'paid':'pending'};
 }
 function enrichInvoices(){
@@ -36,11 +35,11 @@ function enrichInvoices(){
    const number=row.querySelector('.rqHistNo')?.textContent?.trim(),doc=invoiceByNumber(number);if(!doc)return;
    const s=sumFor(doc.order_id,doc),target=row.querySelector('.rqHistNo')?.parentElement;
    let meta=target?.querySelector('.rqPaymentMeta');if(!meta&&target){meta=document.createElement('div');meta.className='rqPaymentMeta';target.appendChild(meta)}
-   if(meta)meta.innerHTML=`<span>Total <b>${money(s.totalMinor)}</b></span><span>Paid <b class="${s.balanceMinor===0?'settled':''}">${money(s.paidMinor)}</b></span><span>Balance <b class="${s.balanceMinor===0?'settled':'balance'}">${money(s.balanceMinor)}</b></span>`;
-   const badge=row.querySelector('.rqDocBadge');if(badge&&s.paymentStatus){badge.textContent=s.paymentStatus==='partial'?'PARTIAL':s.paymentStatus==='paid'?'PAID':badge.textContent;badge.classList.toggle('paid',s.paymentStatus==='paid');badge.classList.toggle('pending',s.paymentStatus!=='paid')}
+   const metaHtml=`<span>Total <b>${money(s.totalMinor)}</b></span><span>Paid <b class="${s.balanceMinor===0?'settled':''}">${money(s.paidMinor)}</b></span><span>Balance <b class="${s.balanceMinor===0?'settled':'balance'}">${money(s.balanceMinor)}</b></span>`;if(meta&&meta.innerHTML!==metaHtml)meta.innerHTML=metaHtml;
+   const badge=row.querySelector('.rqDocBadge');if(badge&&s.paymentStatus){const label=s.paymentStatus==='partial'?'PARTIAL':s.paymentStatus==='paid'?'PAID':badge.textContent;if(badge.textContent!==label)badge.textContent=label;badge.classList.toggle('paid',s.paymentStatus==='paid');badge.classList.toggle('pending',s.paymentStatus!=='paid')}
    const acts=row.querySelector('.rqHistActions');if(!acts)return;
    let btn=acts.querySelector('.rqRecordPaymentBtn');
-   if(s.balanceMinor>0){if(!btn){btn=document.createElement('button');btn.type='button';btn.className='btn rqRecordPaymentBtn';btn.textContent='Record Payment';acts.prepend(btn)}btn.onclick=()=>openPayment(doc,s)}else btn?.remove();
+   if(s.balanceMinor>0){if(!btn){btn=document.createElement('button');btn.type='button';btn.className='btn rqRecordPaymentBtn';btn.textContent='Record Payment';acts.prepend(btn)}btn.onclick=()=>openPayment(doc,s)}else if(btn)btn.remove();
  });
 }
 function injectPaymentReceipts(){
@@ -71,7 +70,7 @@ function printReceipt(){if(!activeReceipt)return;const html=receiptPaper(activeR
 async function refreshData(){
  if(loading)return;loading=true;try{const [d,s,p]=await Promise.all([api('listDocuments',{limit:300}),api('paymentSummary'),api('listPayments',{limit:300})]);docs=Array.isArray(d.documents)?d.documents:[];summaries=new Map((s.summaries||[]).map(x=>[String(x.orderId),x]));payments=Array.isArray(p.payments)?p.payments:[];enrichInvoices();injectPaymentReceipts()}catch(e){console.warn('REQOO payment UI:',e)}finally{loading=false}
 }
-function scheduleRefresh(){clearTimeout(refreshTimer);refreshTimer=setTimeout(refreshData,120)}
+function scheduleRefresh(){clearTimeout(refreshTimer);refreshTimer=setTimeout(refreshData,180)}
 function init(){ensureModal();refreshData();const h=$('#docHistory');if(h)new MutationObserver(scheduleRefresh).observe(h,{childList:true,subtree:true});document.getElementById('refreshDocs')?.addEventListener('click',()=>setTimeout(refreshData,350))}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
