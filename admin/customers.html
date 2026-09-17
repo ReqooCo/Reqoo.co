@@ -6,30 +6,32 @@
 <meta http-equiv="Cache-Control" content="no-store">
 <title>REQOO.CO — Customers</title>
 <link rel="stylesheet" href="/admin/customers-v1.css?v=1">
+<link rel="stylesheet" href="/admin/customers-crm-v2.css?v=1">
 </head>
 <body>
 <main class="wrap rqCustomersApp">
   <section class="rqCustomersHead">
-    <div><div class="rqCustomersEyebrow">CUSTOMER CRM</div><h1>Customers</h1><p>Lihat pelanggan, nilai belian dan sejarah order dalam satu tempat.</p></div>
+    <div><div class="rqCustomersEyebrow">CUSTOMER CRM</div><h1>Customers</h1><p>Customer profile, order, dokumen, payment dan outstanding dalam satu tempat.</p></div>
     <button class="btn" id="refreshCustomers" type="button">↻ Refresh</button>
   </section>
-  <section class="rqCustomerStats">
+  <section class="rqCustomerStats crm">
     <article><span>CUSTOMERS</span><strong id="statCustomers">—</strong></article>
     <article><span>REPEAT BUYERS</span><strong id="statRepeat">—</strong></article>
-    <article><span>PAID REVENUE</span><strong id="statRevenue">—</strong></article>
+    <article><span>LIFETIME COLLECTED</span><strong id="statRevenue">—</strong></article>
+    <article class="outstanding"><span>OUTSTANDING</span><strong id="statOutstanding">—</strong></article>
     <article><span>AVG. CUSTOMER VALUE</span><strong id="statAov">—</strong></article>
   </section>
   <section class="rqCustomerPanel">
     <div class="rqCustomerToolbar">
       <input id="customerSearch" placeholder="Cari nama, telefon atau email">
-      <select id="customerSort"><option value="recent">Terbaru</option><option value="spend">Nilai tertinggi</option><option value="orders">Order terbanyak</option><option value="name">Nama A–Z</option></select>
+      <select id="customerSort"><option value="recent">Terbaru</option><option value="spend">Lifetime value tertinggi</option><option value="outstanding">Outstanding tertinggi</option><option value="orders">Order terbanyak</option><option value="name">Nama A–Z</option></select>
     </div>
     <div id="customerState" class="rqCustomerState">Memuatkan pelanggan…</div>
     <div id="customerList" class="rqCustomerList"></div>
   </section>
 </main>
-<div class="rqCustomerDrawer" id="customerDrawer" aria-hidden="true"><div class="rqCustomerDrawerBox"><div class="rqCustomerDrawerHead"><div><div class="rqCustomersEyebrow">CUSTOMER DETAIL</div><h2 id="drawerTitle">Customer</h2></div><button id="drawerClose" type="button" aria-label="Tutup">×</button></div><div id="drawerBody"></div></div></div>
+<div class="rqCustomerDrawer" id="customerDrawer" aria-hidden="true"><div class="rqCustomerDrawerBox"><div class="rqCustomerDrawerHead"><div><div class="rqCustomersEyebrow">CUSTOMER PROFILE</div><h2 id="drawerTitle">Customer</h2></div><button id="drawerClose" type="button" aria-label="Tutup">×</button></div><div id="drawerBody"></div></div></div>
 <div class="rqCustomerToast" id="customerToast"></div>
-<script src="/admin/customers-v1.js?v=1"></script>
+<script src="/admin/customers-v2.js?v=1"></script>
 </body>
 </html>
