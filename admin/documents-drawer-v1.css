@@ -1,0 +1,74 @@
+/* REQOO Documents Drawer + Payment Timeline v1 */
+body.rq-admin-shell.rqDocsPage .rqHistRow{cursor:pointer}
+body.rq-admin-shell.rqDocsPage .rqHistRow:focus-visible{outline:2px solid #aa925a;outline-offset:-2px}
+
+.rqDocDrawerBackdrop{position:fixed;inset:0;z-index:1180;background:rgba(28,25,21,.28);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .18s ease}
+.rqDocDrawerBackdrop.open{opacity:1;pointer-events:auto}
+.rqDocDrawer{position:fixed;z-index:1190;top:0;right:0;width:min(520px,94vw);height:100dvh;background:#fbf8f2;border-left:1px solid #dcd4c8;box-shadow:-22px 0 70px rgba(36,30,22,.16);transform:translateX(102%);transition:transform .22s ease;display:flex;flex-direction:column;color:#20242a}
+.rqDocDrawer.open{transform:translateX(0)}
+.rqDocDrawerHead{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding:20px 20px 16px;border-bottom:1px solid #e5ded4;background:rgba(255,253,249,.94);backdrop-filter:blur(14px)}
+.rqDocDrawerEyebrow{font-size:8px;letter-spacing:1.25px;font-weight:900;color:#5c4012;margin-bottom:5px}
+.rqDocDrawerHead h2{margin:0;font-size:20px;letter-spacing:-.35px;color:#20242a}
+.rqDocDrawerHead p{margin:5px 0 0;font-size:10px;line-height:1.5;color:#747b84}
+.rqDocDrawerClose{width:34px;height:34px;border:1px solid #d9d2c7;border-radius:10px;background:#fffdf9;color:#4d4944;font-size:20px;cursor:pointer}
+.rqDocDrawerClose:hover{background:#f1ebe2}
+.rqDocDrawerBody{overflow:auto;padding:16px 18px 26px;overscroll-behavior:contain}
+.rqDocDrawerLoading{padding:34px 12px;text-align:center;color:#77716a;font-size:11px}
+
+.rqDocDrawerCustomer{padding:14px 15px;border:1px solid #e3ddd3;border-radius:14px;background:#fffdf9;margin-bottom:12px}
+.rqDocDrawerCustomerTop{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.rqDocDrawerCustomer h3{margin:0;font-size:15px;color:#20242a}
+.rqDocDrawerCustomer p{margin:4px 0 0;font-size:9.5px;color:#77716a;line-height:1.5}
+.rqDocDrawerOrder{font-size:8px;font-weight:850;letter-spacing:.55px;color:#5c4012;background:#f3ead7;border:1px solid #decda8;padding:6px 8px;border-radius:999px;white-space:nowrap}
+
+.rqDocDrawerMoney{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 14px}
+.rqDocDrawerMoney>div{padding:11px 10px;border:1px solid #e3ddd3;border-radius:12px;background:#fffdf9;min-width:0}
+.rqDocDrawerMoney span{display:block;font-size:7.5px;letter-spacing:.85px;font-weight:850;color:#888178;margin-bottom:5px}
+.rqDocDrawerMoney b{display:block;font-size:15px;letter-spacing:-.25px;color:#20242a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rqDocDrawerMoney .balance b{color:#7a561a}
+.rqDocDrawerMoney .paid b{color:#2c7259}
+.rqDocDrawerAlert{margin:-4px 0 14px;padding:9px 11px;border:1px solid #e6b7aa;background:#fff1ed;color:#8d2d20;border-radius:10px;font-size:9px;font-weight:750}
+
+.rqDocDrawerSection{margin-top:15px}
+.rqDocDrawerSectionHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.rqDocDrawerSection h4{margin:0;font-size:10px;letter-spacing:.75px;text-transform:uppercase;color:#5d5852}
+.rqDocDrawerCount{font-size:8px;color:#77716a;background:#eee8df;border-radius:999px;padding:4px 7px}
+
+.rqDocChain{display:grid;gap:7px}
+.rqDocChainItem{display:grid;grid-template-columns:31px minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 11px;border:1px solid #e5ded4;border-radius:12px;background:#fffdf9}
+.rqDocChainItem.current{border-color:#cbb27a;background:#fff9ec;box-shadow:inset 3px 0 0 #9a762e}
+.rqDocChainIcon{display:grid;place-items:center;width:31px;height:31px;border-radius:9px;background:#f0e8da;color:#604718;font-size:11px;font-weight:900}
+.rqDocChainText{min-width:0}
+.rqDocChainText b{display:block;color:#25282d;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rqDocChainText span{display:block;color:#7b7f86;font-size:8.5px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rqDocChainActions{display:flex;align-items:center;gap:5px}
+.rqDocMiniStatus{font-size:7px;font-weight:850;letter-spacing:.4px;padding:4px 6px;border-radius:999px;background:#f3ead7;color:#664b18;white-space:nowrap}
+.rqDocMiniStatus.paid{background:#e8f3ed;color:#2c7259}
+.rqDocMiniStatus.partial{background:#f7efd9;color:#7a561a}
+.rqDocMiniBtn{border:1px solid #d9d2c7;background:#fffdf9;color:#34312e;border-radius:8px;padding:5px 7px;font-size:8px;font-weight:800;cursor:pointer}
+.rqDocMiniBtn:hover{background:#f2ece3}
+.rqDocMiniBtn.primary{background:#85611f;color:#fffdf8;border-color:#74531c}
+
+.rqPaymentTimeline{position:relative;display:grid;gap:0;padding-left:15px}
+.rqPaymentTimeline:before{content:'';position:absolute;left:5px;top:10px;bottom:11px;width:1px;background:#ddd4c7}
+.rqPaymentEvent{position:relative;padding:8px 0 10px 12px}
+.rqPaymentEvent:before{content:'';position:absolute;left:-13px;top:13px;width:8px;height:8px;border-radius:50%;background:#a47a2b;border:2px solid #fbf8f2;box-shadow:0 0 0 1px #c7ae78}
+.rqPaymentEventTop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.rqPaymentEvent b{font-size:10px;color:#25282d}
+.rqPaymentEventAmount{font-size:11px!important;color:#2c7259!important;white-space:nowrap}
+.rqPaymentEventMeta{margin-top:3px;color:#7b7f86;font-size:8.5px;line-height:1.5}
+.rqPaymentReceiptLink{display:inline-flex;margin-top:5px;border:0;background:transparent;color:#5c4012;padding:0;font-size:8.5px;font-weight:850;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.rqPaymentEmpty{padding:12px;border:1px dashed #d7cec1;border-radius:11px;color:#888178;font-size:9.5px;text-align:center;background:#fcfaf6}
+
+.rqDocDrawerFooter{display:flex;gap:8px;position:sticky;bottom:-26px;margin:18px -18px -26px;padding:12px 18px calc(12px + env(safe-area-inset-bottom));border-top:1px solid #e4ddd3;background:rgba(251,248,242,.96);backdrop-filter:blur(12px)}
+.rqDocDrawerFooter .btn{flex:1;min-height:36px}
+
+@media(max-width:700px){
+ .rqDocDrawer{width:100vw;border-left:0}
+ .rqDocDrawerHead{padding:16px 15px 13px}
+ .rqDocDrawerBody{padding:13px 13px 22px}
+ .rqDocDrawerMoney{gap:6px}
+ .rqDocDrawerMoney>div{padding:9px 8px}
+ .rqDocDrawerMoney b{font-size:13px}
+ .rqDocDrawerFooter{margin-left:-13px;margin-right:-13px;margin-bottom:-22px;padding-left:13px;padding-right:13px}
+}
