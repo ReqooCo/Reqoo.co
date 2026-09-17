@@ -11,5 +11,5 @@ assert.match(js,/LIFETIME COLLECTED/);assert.match(js,/OUTSTANDING/);assert.matc
 assert.match(js,/customerOutstanding/);assert.match(js,/collectedValue/);assert.match(js,/activityFor/);
 assert.match(css,/\.rqCrmTabs/);assert.match(css,/\.rqCrmEvent/);assert.match(css,/\.rqCustomerBadge\.owes/);assert.match(css,/@media\(max-width:700px\)/);
 assert.match(shell,/Customers/);assert.match(shell,/\/admin\/customers\.html/);
-assert.match(worker,/settings\|documents\|customers/);assert.match(worker,/admin-shell-v2\.js\?v=5/);
+assert.match(worker,/settings\|documents\|customers/);assert.match(worker,/admin-shell-v2\.js\?v=6/);
 console.log('PASS: Customers mini CRM links orders, documents, payment ledger, lifetime collection and outstanding balances.');
