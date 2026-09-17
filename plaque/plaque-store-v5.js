@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const SHOP='/api/shop',WA='60103982803';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-const CURATED={basic:'/plaque/assets/v5/hero-plaque.webp',classic:'/plaque/assets/v5/corporate-plaque.webp',prestige:'/plaque/assets/v5/premium-3d-plaque.webp',signature:'/plaque/assets/v5/portrait-plaque.webp'};
+const CURATED={basic:'/plaque/assets/v5/hero-plaque.webp?v=2',classic:'/plaque/assets/v5/corporate-plaque.webp?v=2',prestige:'/plaque/assets/v5/premium-3d-plaque.webp?v=2',signature:'/plaque/assets/v5/portrait-plaque.webp?v=2'};
 let products=[],shipping=[],selected=null,selectedVariant=0,busy=false,gallery=[];
 const money=n=>'RM'+Number(n||0).toFixed(2),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 async function get(url,opt){const r=await fetch(url,opt),j=await r.json().catch(()=>({}));if(!r.ok||j.ok===false)throw Error(j.error||'Sambungan gagal');return j}
@@ -10,7 +10,7 @@ function normVariant(v){if(Array.isArray(v))return{id:'',name:String(v[0]||'Pili
 function normProduct(p){let variants=(Array.isArray(p.variants)?p.variants:[]).map(normVariant).filter(v=>v.name&&Number.isFinite(v.price));if(!variants.length){const price=p.price!=null?Number(p.price):Number(p.priceMinor||0)/100;variants=[{id:'',name:'Pilihan standard',price:Number.isFinite(price)?price:0,image:image(p.image||p.imageUrl)}]}return{...p,id:String(p.id),name:String(p.name||'Plaque Custom'),desc:String(p.desc||p.description||''),category:String(p.category||p.productType||''),image:image(p.image||p.imageUrl||p.cover),variants}}
 function isPlaque(p){return`${p.name} ${p.category} ${p.desc}`.toLowerCase().includes('plaque')}
 function minPrice(p){const a=p.variants.map(v=>Number(v.price)).filter(n=>n>0);return a.length?Math.min(...a):0}
-function curatedCover(p){const n=String(p?.name||'').toLowerCase();for(const [key,url] of Object.entries(CURATED))if(n.includes(key))return url;return p?.image||'/plaque/assets/v5/hero-plaque.webp'}
+function curatedCover(p){const n=String(p?.name||'').toLowerCase();for(const [key,url] of Object.entries(CURATED))if(n.includes(key))return url;return p?.image||'/plaque/assets/v5/hero-plaque.webp?v=2'}
 function ship(){return shipping.find(x=>String(x.id)===String($('#mShipping')?.value||''))||null}
 function variant(){return selected?.variants[selectedVariant]||selected?.variants[0]||null}
 function qty(){return Math.max(1,Math.min(999,Number($('#mQty')?.value||1)||1))}
