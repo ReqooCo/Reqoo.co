@@ -24,7 +24,7 @@ function applyFilter(){
  const q=($('#docUnifiedSearch')?.value||'').trim().toLowerCase();
  let shown=0;
  rows().forEach(row=>{
-   const type=rowType(row),okType=activeFilter==='all'||type===activeFilter,okSearch=!q||row.textContent.toLowerCase().includes(q),show=okType&&okSearch;
+   const type=rowType(row),okType=activeFilter==='all'||type===activeFilter,okSearch=!q||row.textContent.toLowerCase().includes(q),okFinance=row.dataset.rqFinanceMatch!=='0',show=okType&&okSearch&&okFinance;
    row.hidden=!show;if(show)shown++;
  });
  const empty=$('#docUnifiedEmpty');if(empty)empty.hidden=shown>0;
@@ -34,6 +34,7 @@ function refreshUnified(){syncCounts();applyFilter()}
 function initTabs(){
  $$('.rqDocTab').forEach(b=>b.addEventListener('click',()=>{activeFilter=b.dataset.docFilter||'all';applyFilter()}));
  $('#docUnifiedSearch')?.addEventListener('input',applyFilter);
+ document.addEventListener('rq:documents-finance-filter',applyFilter);
 }
 function initOrderDrawer(){
  const panel=$('#rqOrderSourcePanel'),btn=$('#toggleOrderDrawer'),close=$('#closeOrderDrawer');
