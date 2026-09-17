@@ -2,11 +2,12 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const read = path => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
-const [shop, core, commerce, tumbler, plaque, worker] = await Promise.all([
+const [shop, core, commerce, tumbler, tumblerRuntime, plaque, worker] = await Promise.all([
   read('shop/index.html'),
   read('shop/shop-core-v1.js'),
   read('shop/botanical-commerce-v1.css'),
   read('tumbler/index.html'),
+  read('tumbler/tumbler-order-v4.js'),
   read('plaque/index.html'),
   read('_web_worker.js'),
 ]);
@@ -22,9 +23,12 @@ assert.match(core, /if\(\/tumbler\/i\.test\(name\)\)return'Tumbler'/, 'Tumbler p
 assert.match(core, /Produk custom REQOO yang boleh disesuaikan/, 'Draft descriptions must not leak into the public shop');
 assert.match(tumbler, /href="\/shop\/">Shop<\/a>/, 'Tumbler landing must link back to the Shop');
 assert.match(tumbler, /Terus ke Bayaran/, 'Tumbler CTA must explain the next step');
-assert.match(tumbler, /aria-label="Kuantiti \$\{label\}"/, 'Tumbler quantities need accessible names');
-assert.match(tumbler, /Sila isi nombor WhatsApp yang sah/, 'Tumbler checkout must validate WhatsApp numbers');
-assert.match(tumbler, /Sila isi alamat lengkap untuk penghantaran/, 'Paid shipping must require an address');
+assert.match(tumbler, /300ml/, 'Tumbler landing must advertise the 300ml option');
+assert.match(tumbler, /600ml/, 'Tumbler landing must advertise the 600ml option');
+assert.match(tumblerRuntime, /aria-label="Kuantiti \$\{label\}"/, 'Tumbler quantities need accessible names');
+assert.match(tumblerRuntime, /Sila isi nombor WhatsApp yang sah/, 'Tumbler checkout must validate WhatsApp numbers');
+assert.match(tumblerRuntime, /Sila isi alamat lengkap untuk penghantaran/, 'Paid shipping must require an address');
+assert.doesNotThrow(()=>new Function(tumblerRuntime),'Tumbler runtime must parse');
 for (const id of ['variantSelect', 'unitPrice', 'qty', 'customText', 'artwork', 'note']) {
   assert.match(plaque, new RegExp(`label for="${id}"`), `Plaque field ${id} must have a linked label`);
 }
