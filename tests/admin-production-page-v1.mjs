@@ -3,7 +3,7 @@ const html=fs.readFileSync(new URL('../admin/production.html',import.meta.url),'
 const js=fs.readFileSync(new URL('../admin/production-v1.js',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../admin/production-v1.css',import.meta.url),'utf8');
 const shell=fs.readFileSync(new URL('../admin/admin-shell-v2.js',import.meta.url),'utf8');
-assert.match(html,/PRODUCTION CONTROL/);assert.match(html,/production-v1\.js/);assert.match(html,/admin-shell-v2\.js\?v=5/);
+assert.match(html,/PRODUCTION CONTROL/);assert.match(html,/production-v1\.js/);assert.match(html,/admin-shell-v2\\.js\\?v=6/);
 assert.match(js,/productionDashboard/);assert.doesNotMatch(js,/MutationObserver/);assert.doesNotMatch(js,/setInterval/);assert.doesNotMatch(js,/visibilitychange/);assert.doesNotMatch(js,/focus/);
 assert.match(js,/saveProductionMeta/);assert.match(js,/verifyPayment/);assert.match(js,/status/);assert.match(js,/processing/);assert.match(js,/fulfilled/);
 assert.match(css,/\.rqProductionDrawer/);assert.match(css,/@media\(max-width:600px\)/);
