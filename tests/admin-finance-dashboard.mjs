@@ -6,5 +6,5 @@ const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8'
 assert.match(html,/PAID REVENUE/);assert.match(html,/PENDING VALUE/);assert.match(html,/REVENUE TREND/);assert.match(html,/Top products/i);
 assert.match(js,/listOrders/);assert.match(js,/status\(o\)==='paid'/);assert.match(js,/cancelled/);assert.match(js,/Revenue hanya payment PAID/);
 assert.match(shell,/Finance/);assert.match(shell,/\/admin\/finance\.html/);
-assert.match(worker,/settings\|documents\|customers\|finance/);assert.match(worker,/admin-shell-v2\.js\?v=5/);
+assert.match(worker,/settings\|documents\|customers\|finance/);assert.match(worker,/admin-shell-v2\.js\?v=6/);
 console.log('PASS: Finance V1 is read-only, paid-revenue based, and wired into premium Admin.');
