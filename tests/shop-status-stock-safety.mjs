@@ -10,5 +10,7 @@ const v13=fs.readFileSync(new URL('../api/shop-admin-flow-v13.js',import.meta.ur
 const v14=fs.readFileSync(new URL('../api/shop-admin-flow-v14.js',import.meta.url),'utf8');assert.match(v14,/shop-admin-flow-v13\.js/);
 const v15=fs.readFileSync(new URL('../api/shop-admin-flow-v15.js',import.meta.url),'utf8');assert.match(v15,/shop-admin-flow-v14\.js/);
 const v16=fs.readFileSync(new URL('../api/shop-admin-flow-v16.js',import.meta.url),'utf8');assert.match(v16,/shop-admin-flow-v15\.js/,'v16 must preserve v15 and every prior safety layer');
-const worker=fs.readFileSync(new URL('../api/worker.js',import.meta.url),'utf8');assert.match(worker,/shop-admin-flow-v16\.js/,'worker must route Shop admin through v16');
+const v17=fs.readFileSync(new URL('../api/shop-admin-flow-v17.js',import.meta.url),'utf8');assert.match(v17,/shop-admin-flow-v16\.js/);
+const v18=fs.readFileSync(new URL('../api/shop-admin-flow-v18.js',import.meta.url),'utf8');assert.match(v18,/shop-admin-flow-v17\.js/);
+const worker=fs.readFileSync(new URL('../api/worker.js',import.meta.url),'utf8');assert.match(worker,/shop-admin-flow-v18\.js/,'worker must route Shop admin through latest v18');
 console.log('shop status stock safety regression: ok');
