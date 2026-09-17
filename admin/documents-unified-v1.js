@@ -14,6 +14,7 @@ function rows(){return $$('#docHistory .rqHistRow')}
 function syncCounts(){
  const all=rows();
  const set=(id,n)=>{const el=document.getElementById(id);if(el)el.textContent=String(n)};
+ set('docSaved',all.length);
  set('docQuoteCount',all.filter(r=>rowType(r)==='quotation').length);
  set('docInvoiceCount',all.filter(r=>rowType(r)==='invoice').length);
  set('docReceiptCount',all.filter(r=>rowType(r)==='receipt').length);
