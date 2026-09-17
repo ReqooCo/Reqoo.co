@@ -1,0 +1,118 @@
+/* REQOO Documents — compact ledger/business UI inspired by proven accounting software patterns */
+.rqDocsApp{width:min(1420px,calc(100% - 44px));margin:0 auto;padding:18px 0 72px;color:#172033}
+.rqDocsHead{align-items:center;margin-bottom:14px;padding:0 2px}
+.rqDocsHead h1{margin:2px 0 3px;font-size:24px;line-height:1.12;letter-spacing:-.45px}
+.rqDocsHead p{font-size:11px;line-height:1.45;color:#7a8493}
+.rqDocsEyebrow{font-size:7px;letter-spacing:1.45px;color:#9b7623}
+.rqDocsTopActions{gap:6px}
+.rqDocsTopActions .btn,.rqDocsPanelHead>.btn{min-height:32px;padding:7px 10px!important;border-radius:7px!important;font-size:10px!important;font-weight:750!important}
+
+.rqDocsStats{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.rqDocsStat{min-height:70px;padding:12px 13px;border-radius:8px;border-color:#e2e6ea;box-shadow:none;background:#fff}
+.rqDocsStat span{font-size:7px;letter-spacing:1.05px;color:#89929e}
+.rqDocsStat strong{margin-top:5px;font-size:20px;line-height:1;color:#172033}
+
+.rqDocsPanel{padding:14px;border-radius:8px;border-color:#e1e5e9;box-shadow:0 1px 2px rgba(16,24,40,.025);background:#fff}
+.rqDocsPanelHead{gap:14px;min-height:38px}
+.rqDocsPanelHead h2{font-size:14px;letter-spacing:-.15px;color:#172033}
+.rqDocsPanelHead p{margin-top:3px;font-size:9.5px;line-height:1.45;color:#87909c}
+.rqDocsSearch{width:min(320px,100%);height:34px;padding:7px 10px;border-radius:7px;border-color:#dfe3e7;font-size:10px;color:#263140}
+.rqDocsSearch:focus{outline:2px solid rgba(46,93,145,.12);border-color:#9eb7d2}
+
+.rqDocsSettings{margin-bottom:10px;background:#fbfcfd}
+.rqDocsSettingsGrid{gap:9px 12px;margin-top:11px}
+.rqDocsField label{font-size:7.5px;letter-spacing:.7px;margin-bottom:4px;color:#788391}
+.rqDocsField input,.rqDocsField textarea{padding:8px 9px;border-radius:6px;border-color:#dfe3e7;font-size:10.5px}
+.rqDocsField textarea{min-height:66px}
+
+.rqQuoteBuilder{margin-bottom:10px;border-color:#e3dccb;background:#fff}
+.rqQuoteBuilder>.rqDocsPanelHead{position:relative;padding-left:11px}
+.rqQuoteBuilder>.rqDocsPanelHead:before{content:"";position:absolute;left:0;top:1px;bottom:1px;width:3px;border-radius:3px;background:#b58a37}
+.rqQuoteBuilderBody{margin-top:12px;padding-top:12px}
+.rqQuoteSectionTitle{font-size:8px;letter-spacing:.95px}
+.rqQuoteSectionHead{margin:17px 0 8px}
+.rqQuoteHint{font-size:9px}
+.rqQuoteItemHeader,.rqQuoteItem{grid-template-columns:minmax(220px,2fr) minmax(135px,1fr) 70px 100px 105px 30px;gap:7px}
+.rqQuoteItemHeader{padding:0 7px 6px;font-size:7px;color:#89929e}
+.rqQuoteItems{gap:5px}
+.rqQuoteItem{padding:7px;border-radius:7px;border-color:#e4e7ea}
+.rqQuoteItem input{padding:7px 8px;border-radius:6px;font-size:10px}
+.rqQuoteBottomGrid{gap:12px;margin-top:13px}
+.rqQuoteTotalsBox{padding:10px;border-radius:7px;border-color:#e1e5e9}
+.rqQuoteCalc{font-size:10px}
+.rqQuoteCalc.grand{font-size:14px}
+.rqQuoteActions{margin-top:12px}
+
+/* Ledger / table treatment */
+.rqDocsOrdersPanel,.rqDocsHistoryPanel{padding:0;overflow:hidden}
+.rqDocsOrdersPanel>.rqDocsPanelHead,.rqDocsHistoryPanel>.rqDocsPanelHead{padding:13px 14px 11px;border-bottom:1px solid #edf0f2}
+.rqDocsState{padding:12px 14px;font-size:10px;color:#7d8794}
+.rqDocsState:empty{display:none}
+.rqDocsTableHead{display:grid;align-items:center;gap:12px;padding:8px 14px;background:#f7f9fb;border-bottom:1px solid #e7eaed;color:#7c8794;font-size:7.5px;font-weight:850;letter-spacing:.72px;text-transform:uppercase}
+.rqOrderTableHead{grid-template-columns:155px minmax(230px,1fr) 130px 105px 260px}
+.rqHistoryTableHead{grid-template-columns:175px 125px minmax(230px,1fr) 105px 170px}
+.rqDocsList,.rqDocsHistoryList{display:block;margin:0}
+.rqDocRow{grid-template-columns:155px minmax(230px,1fr) 130px 105px 260px;gap:12px;min-height:58px;padding:9px 14px;border:0;border-bottom:1px solid #edf0f2;border-radius:0;background:#fff}
+.rqDocRow:last-child{border-bottom:0}
+.rqDocRow:hover{border-color:#edf0f2;background:#fafbfc}
+.rqDocRef{font-size:10.5px;font-weight:800;line-height:1.25;color:#1f2b3b}
+.rqDocRef .rqDocMeta{margin-top:2px}
+.rqDocCustomer b{font-size:10.5px;font-weight:750;color:#263140}
+.rqDocCustomer span,.rqDocMeta{font-size:8.5px;color:#929aa5}
+.rqDocAmount{font-size:11.5px;font-weight:850;color:#142136;font-variant-numeric:tabular-nums}
+.rqDocBadge{padding:4px 7px;border-radius:999px;font-size:7px;letter-spacing:.25px}
+.rqDocButtons{gap:5px;flex-wrap:nowrap}
+.rqDocButtons .btn{min-height:28px;padding:6px 8px!important;border-radius:6px!important;font-size:8px!important;font-weight:750!important;background:#fff!important;color:#344050!important;border-color:#dfe3e7!important;white-space:nowrap}
+.rqDocButtons .btn:hover{background:#f5f7f9!important;border-color:#cfd5db!important}
+.rqDocButtons .btn:disabled{opacity:.38}
+.rqDocSaved{margin-top:3px;font-size:7.5px}
+
+.rqDocsHistory{margin-top:10px}
+.rqHistRow{grid-template-columns:175px 125px minmax(230px,1fr) 105px 170px;gap:12px;min-height:54px;padding:9px 14px;border:0;border-bottom:1px solid #edf0f2;border-radius:0;background:#fff}
+.rqHistRow:last-child{border-bottom:0}
+.rqHistRow:hover{background:#fafbfc}
+.rqHistType{font-size:7px;letter-spacing:.65px;color:#9a7528}
+.rqHistNo{font-size:10px;font-weight:800;color:#263140}
+.rqHistDate{font-size:9px;color:#8a949f}
+.rqHistCustomer{font-size:10px;color:#263140}
+.rqHistActions{gap:5px}
+.rqHistActions .btn{min-height:27px;padding:6px 8px!important;border-radius:6px!important;font-size:8px!important;background:#fff!important;border-color:#dfe3e7!important}
+
+/* Document modal stays premium but less oversized */
+.rqDocsModalBox{width:min(880px,100%);border-radius:10px;padding:14px}
+.rqDocsModalHead{padding-bottom:9px}
+.rqDocsModalHead h2{font-size:16px}
+.rqDocsClose{width:32px;height:32px;font-size:18px}
+.rqDocsPreview{padding:12px 0}
+.rqDocsActions{gap:6px;padding-top:10px}
+.rqDocsActions .btn{min-height:32px;padding:7px 10px!important;border-radius:6px!important;font-size:9px!important}
+
+@media(max-width:1100px){
+ .rqDocsApp{width:min(100% - 26px,1420px)}
+ .rqOrderTableHead,.rqDocRow{grid-template-columns:135px minmax(180px,1fr) 110px 90px 220px}
+ .rqHistoryTableHead,.rqHistRow{grid-template-columns:150px 105px minmax(180px,1fr) 90px 150px}
+}
+@media(max-width:900px){
+ .rqDocsTableHead{display:none}
+ .rqDocRow{grid-template-columns:120px minmax(0,1fr) 95px;padding:10px 12px}
+ .rqDocStatus{display:block;text-align:right}
+ .rqDocButtons{grid-column:1/-1;justify-content:flex-start}
+ .rqHistRow{grid-template-columns:130px minmax(0,1fr) 90px;padding:10px 12px}
+ .rqHistDate{display:none}
+ .rqHistActions{grid-column:1/-1;justify-content:flex-start}
+ .rqQuoteItemHeader{display:none}
+}
+@media(max-width:600px){
+ .rqDocsApp{width:min(100% - 16px,1420px);padding-top:12px}
+ .rqDocsHead h1{font-size:21px}
+ .rqDocsStats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .rqDocsStat{min-height:64px;padding:10px 11px}
+ .rqDocsStat strong{font-size:18px}
+ .rqDocsPanel{border-radius:7px}
+ .rqDocsOrdersPanel>.rqDocsPanelHead,.rqDocsHistoryPanel>.rqDocsPanelHead{padding:11px}
+ .rqDocRow{grid-template-columns:1fr auto;gap:7px;padding:10px 11px}
+ .rqDocCustomer{grid-column:1/-1}.rqDocAmount{grid-column:1}.rqDocStatus{grid-column:2;grid-row:1/3;align-self:start}.rqDocButtons{grid-column:1/-1}
+ .rqDocButtons .btn{flex:1}
+ .rqHistRow{grid-template-columns:1fr auto;gap:7px;padding:10px 11px}.rqHistCustomer{grid-column:1/-1}.rqHistActions{grid-column:1/-1}
+ .rqQuoteItem{border-radius:6px}
+}
