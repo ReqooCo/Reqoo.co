@@ -7,6 +7,7 @@
 <title>REQOO.CO — Documents</title>
 <link rel="stylesheet" href="/admin/documents-v2.css?v=4">
 <link rel="stylesheet" href="/admin/document-deposit-note-v1.css?v=1">
+<link rel="stylesheet" href="/admin/documents-ledger-v1.css?v=1">
 </head>
 <body>
 <main class="wrap rqDocsApp">
@@ -93,17 +94,19 @@
     </div>
   </section>
 
-  <section class="rqDocsPanel">
+  <section class="rqDocsPanel rqDocsOrdersPanel">
     <div class="rqDocsPanelHead">
       <div><h2>Order Documents</h2><p>Order yang sudah wujud tidak perlukan quotation. Jana Invoice, Official Receipt atau Delivery Order sahaja.</p></div>
       <input id="docSearch" class="rqDocsSearch" placeholder="Cari order, nama atau WhatsApp">
     </div>
+    <div class="rqDocsTableHead rqOrderTableHead" aria-hidden="true"><span>Order / Date</span><span>Customer</span><span>Amount</span><span>Status</span><span>Actions</span></div>
     <div id="docState" class="rqDocsState">Memuatkan order…</div>
     <div id="docList" class="rqDocsList"></div>
   </section>
 
-  <section class="rqDocsPanel rqDocsHistory">
+  <section class="rqDocsPanel rqDocsHistory rqDocsHistoryPanel">
     <div class="rqDocsPanelHead"><div><h2>Document History</h2><p>Semua quotation custom, invoice, receipt dan delivery order yang telah dijana.</p></div></div>
+    <div class="rqDocsTableHead rqHistoryTableHead" aria-hidden="true"><span>Document</span><span>Issued</span><span>Customer</span><span>Status</span><span>Actions</span></div>
     <div id="docHistory" class="rqDocsHistoryList"></div>
   </section>
 </main>
