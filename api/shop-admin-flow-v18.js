@@ -23,11 +23,37 @@ async function ensure(env){
     env.DB.prepare('CREATE TABLE IF NOT EXISTS reqoo_document_sequences(seq_key TEXT PRIMARY KEY,next_number INTEGER NOT NULL DEFAULT 1,updated_at TEXT NOT NULL)')
   ]);
 }
+function receiptSeq(number,year){
+  const m=String(number||'').match(new RegExp(`^RC-${year}-(\\d+)$`));
+  return m?Number(m[1]||0):0;
+}
+async function maxExistingReceiptSeq(env,year){
+  const like=`RC-${year}-%`;
+  let max=0;
+  try{
+    const docs=(await env.DB.prepare("SELECT number FROM reqoo_documents WHERE type='receipt' AND number LIKE ?").bind(like).all()).results||[];
+    for(const r of docs)max=Math.max(max,receiptSeq(r.number,year));
+  }catch{}
+  const pays=(await env.DB.prepare('SELECT receipt_number FROM reqoo_payments WHERE receipt_number LIKE ?').bind(like).all()).results||[];
+  for(const r of pays)max=Math.max(max,receiptSeq(r.receipt_number,year));
+  return max;
+}
+async function receiptNumberExists(env,number){
+  const payment=await env.DB.prepare('SELECT id FROM reqoo_payments WHERE receipt_number=? LIMIT 1').bind(number).first();
+  if(payment)return true;
+  try{return !!(await env.DB.prepare("SELECT id FROM reqoo_documents WHERE type='receipt' AND number=? LIMIT 1").bind(number).first())}catch{return false}
+}
 async function nextReceiptNumber(env){
   const year=new Date().getUTCFullYear(),key=`payment_receipt:${year}`,t=NOW();
   await env.DB.prepare('INSERT OR IGNORE INTO reqoo_document_sequences(seq_key,next_number,updated_at) VALUES(?,1,?)').bind(key,t).run();
-  const row=await env.DB.prepare('UPDATE reqoo_document_sequences SET next_number=next_number+1,updated_at=? WHERE seq_key=? RETURNING next_number-1 AS issued').bind(t,key).first();
-  return `RC-${year}-${String(Number(row?.issued||1)).padStart(5,'0')}`;
+  const floor=(await maxExistingReceiptSeq(env,year))+1;
+  await env.DB.prepare('UPDATE reqoo_document_sequences SET next_number=CASE WHEN next_number<? THEN ? ELSE next_number END,updated_at=? WHERE seq_key=?').bind(floor,floor,t,key).run();
+  for(let i=0;i<50;i++){
+    const row=await env.DB.prepare('UPDATE reqoo_document_sequences SET next_number=next_number+1,updated_at=? WHERE seq_key=? RETURNING next_number-1 AS issued').bind(NOW(),key).first();
+    const number=`RC-${year}-${String(Number(row?.issued||1)).padStart(5,'0')}`;
+    if(!(await receiptNumberExists(env,number)))return number;
+  }
+  throw new Error('Nombor receipt unik gagal dijana.');
 }
 async function orderByKey(key,env){
   return env.DB.prepare('SELECT o.*,c.name customer_name,c.phone customer_phone,c.email customer_email FROM orders o LEFT JOIN customers c ON c.id=o.customer_id WHERE o.id=? OR o.order_no=? LIMIT 1').bind(key,key).first();
@@ -35,10 +61,13 @@ async function orderByKey(key,env){
 async function paymentsFor(orderId,env){
   return (await env.DB.prepare("SELECT * FROM reqoo_payments WHERE order_id=? AND status='confirmed' ORDER BY paid_at,created_at,id").bind(orderId).all()).results||[];
 }
+async function invoiceForOrder(orderId,env){
+  try{return await env.DB.prepare("SELECT id,number,total_minor FROM reqoo_documents WHERE order_id=? AND type='invoice' ORDER BY created_at,id LIMIT 1").bind(orderId).first()}catch{return null}
+}
 async function summaryForOrder(o,env){
-  const payments=await paymentsFor(o.id,env),paid=payments.reduce((s,p)=>s+Number(p.amount_minor||0),0),total=Number(o.total_minor||0),balance=Math.max(0,total-paid);
-  const paymentStatus=balance<=0&&total>0?'paid':paid>0?'partial':S(o.payment_status||'pending').toLowerCase()==='paid'?'paid':'pending';
-  return {orderId:o.id,orderNo:o.order_no||o.id,totalMinor:total,paidMinor:Math.min(total,paid),balanceMinor:balance,paymentStatus,payments};
+  const payments=await paymentsFor(o.id,env),invoice=await invoiceForOrder(o.id,env),rawPaid=payments.reduce((s,p)=>s+Number(p.amount_minor||0),0),total=Number(invoice?.total_minor??o.total_minor??0),paid=Math.min(total,rawPaid),balance=Math.max(0,total-rawPaid),overpaid=Math.max(0,rawPaid-total);
+  const paymentStatus=overpaid>0?'paid':balance<=0&&total>0?'paid':paid>0?'partial':S(o.payment_status||'pending').toLowerCase()==='paid'?'paid':'pending';
+  return {orderId:o.id,orderNo:o.order_no||o.id,invoiceId:invoice?.id||null,invoiceNumber:invoice?.number||null,totalMinor:total,paidMinor:paid,rawPaidMinor:rawPaid,balanceMinor:balance,overpaidMinor:overpaid,paymentStatus,payments};
 }
 async function ensureInvoice(request,o,env){
   let invoice=await env.DB.prepare("SELECT * FROM reqoo_documents WHERE order_id=? AND type='invoice' LIMIT 1").bind(o.id).first();
@@ -63,8 +92,9 @@ async function recordPayment(d,request,env){
   await ensure(env);
   const key=S(d.orderId||d.orderNo||d.orderRef);if(!key)return J({ok:false,error:'Order diperlukan.'},400);
   const o=await orderByKey(key,env);if(!o)return J({ok:false,error:'Order tidak dijumpai.'},404);
-  const invoice=await ensureInvoice(request,o,env),before=await summaryForOrder(o,env),amount=money(d.amountMinor,Number(o.total_minor||0));
+  const invoice=await ensureInvoice(request,o,env),before=await summaryForOrder(o,env),amount=money(d.amountMinor);
   if(amount<=0)return J({ok:false,error:'Amaun bayaran mesti lebih daripada RM0.00.'},400);
+  if(before.balanceMinor<=0)return J({ok:false,error:'Invoice telah selesai dibayar.'},409);
   if(amount>before.balanceMinor)return J({ok:false,error:`Amaun melebihi baki semasa.`},409);
   const now=NOW(),paidAt=S(d.paidAt)||now,type=normalizeType(d.paymentType,before.paidMinor,amount,before.totalMinor,before.balanceMinor),method=S(d.method||'bank_transfer').slice(0,80)||'bank_transfer',reference=S(d.reference).slice(0,160),note=S(d.note).slice(0,1000),receiptNumber=await nextReceiptNumber(env),id=ID('pay'),shareToken=`${crypto.randomUUID()}${crypto.randomUUID().replaceAll('-','')}`;
   const paidAfter=before.paidMinor+amount,balanceAfter=Math.max(0,before.totalMinor-paidAfter),status=balanceAfter===0?'paid':'partial';
@@ -84,8 +114,8 @@ async function listPayments(d,env){
 }
 async function paymentSummary(d,env){
   await ensure(env);const key=S(d.orderId||d.orderNo||d.orderRef);if(key){const o=await orderByKey(key,env);if(!o)return J({ok:false,error:'Order tidak dijumpai.'},404);return J({ok:true,summary:await summaryForOrder(o,env)});}
-  const rows=(await env.DB.prepare("SELECT o.id,o.order_no,o.total_minor,o.payment_status,COALESCE(SUM(CASE WHEN p.status='confirmed' THEN p.amount_minor ELSE 0 END),0) paid_minor FROM orders o LEFT JOIN reqoo_payments p ON p.order_id=o.id GROUP BY o.id,o.order_no,o.total_minor,o.payment_status ORDER BY o.created_at DESC LIMIT 500").all()).results||[];
-  return J({ok:true,summaries:rows.map(r=>{const total=Number(r.total_minor||0),paid=Number(r.paid_minor||0),balance=Math.max(0,total-paid);return{orderId:r.id,orderNo:r.order_no||r.id,totalMinor:total,paidMinor:Math.min(total,paid),balanceMinor:balance,paymentStatus:balance===0&&total>0?'paid':paid>0?'partial':S(r.payment_status||'pending').toLowerCase()}})});
+  const rows=(await env.DB.prepare("SELECT o.id,o.order_no,o.total_minor order_total_minor,o.payment_status,COALESCE((SELECT d.total_minor FROM reqoo_documents d WHERE d.order_id=o.id AND d.type='invoice' ORDER BY d.created_at,d.id LIMIT 1),o.total_minor) billing_total_minor,COALESCE(SUM(CASE WHEN p.status='confirmed' THEN p.amount_minor ELSE 0 END),0) paid_minor FROM orders o LEFT JOIN reqoo_payments p ON p.order_id=o.id GROUP BY o.id,o.order_no,o.total_minor,o.payment_status ORDER BY o.created_at DESC LIMIT 500").all()).results||[];
+  return J({ok:true,summaries:rows.map(r=>{const total=Number(r.billing_total_minor||0),rawPaid=Number(r.paid_minor||0),paid=Math.min(total,rawPaid),balance=Math.max(0,total-rawPaid),overpaid=Math.max(0,rawPaid-total);return{orderId:r.id,orderNo:r.order_no||r.id,totalMinor:total,paidMinor:paid,rawPaidMinor:rawPaid,balanceMinor:balance,overpaidMinor:overpaid,paymentStatus:overpaid>0?'paid':balance===0&&total>0?'paid':paid>0?'partial':S(r.payment_status||'pending').toLowerCase()}})});
 }
 async function getPaymentReceipt(d,env){
   await ensure(env);const key=S(d.paymentId||d.receiptNumber||d.shareToken);if(!key)return J({ok:false,error:'Receipt diperlukan.'},400);
@@ -94,18 +124,37 @@ async function getPaymentReceipt(d,env){
   const companyRows=(await env.DB.prepare("SELECT key,value FROM shop_settings WHERE key IN ('document_company_name','document_registration_no','document_address','document_phone','document_email')").all()).results||[],m=Object.fromEntries(companyRows.map(r=>[r.key,r.value||'']));
   const o=await orderByKey(p.order_id,env),summary=await summaryForOrder(o,env);return J({ok:true,receipt:{...p,company:{companyName:m.document_company_name||'REQOO.CO',registrationNo:m.document_registration_no||'',address:m.document_address||'',phone:m.document_phone||'',email:m.document_email||''},summary}});
 }
+async function canonicalDocuments(d,request,env){
+  await ensure(env);
+  const r=await legacy({request,env});if(!r.ok)return r;
+  let out={};try{out=await r.clone().json()}catch{return r}
+  if(!out.ok||!Array.isArray(out.documents))return r;
+  const used=(await env.DB.prepare("SELECT receipt_number FROM reqoo_payments WHERE status='confirmed'").all()).results||[];
+  const canonical=new Set(used.map(x=>S(x.receipt_number)).filter(Boolean));
+  const documents=out.documents.filter(doc=>!(doc?.type==='receipt'&&canonical.has(S(doc.number))));
+  return J({...out,documents,hiddenLegacyReceiptCollisions:out.documents.length-documents.length},r.status);
+}
+async function documentIntegrityAudit(env){
+  await ensure(env);
+  const collisions=(await env.DB.prepare("SELECT d.id document_id,d.number,p.id payment_id,p.order_id FROM reqoo_documents d JOIN reqoo_payments p ON p.receipt_number=d.number WHERE d.type='receipt' AND p.status='confirmed' ORDER BY d.created_at DESC").all()).results||[];
+  const mismatches=(await env.DB.prepare("SELECT d.id document_id,d.number,d.order_id,d.total_minor invoice_total_minor,o.total_minor order_total_minor FROM reqoo_documents d JOIN orders o ON o.id=d.order_id WHERE d.type='invoice' AND d.total_minor<>o.total_minor ORDER BY d.created_at DESC LIMIT 200").all()).results||[];
+  const overpaid=(await env.DB.prepare("SELECT d.id document_id,d.number,d.order_id,d.total_minor invoice_total_minor,COALESCE(SUM(CASE WHEN p.status='confirmed' THEN p.amount_minor ELSE 0 END),0) paid_minor FROM reqoo_documents d LEFT JOIN reqoo_payments p ON p.order_id=d.order_id WHERE d.type='invoice' GROUP BY d.id,d.number,d.order_id,d.total_minor HAVING paid_minor>d.total_minor ORDER BY paid_minor-d.total_minor DESC LIMIT 200").all()).results||[];
+  return J({ok:true,audit:{receiptNumberCollisions:collisions.length,invoiceOrderTotalMismatches:mismatches.length,overpaidInvoices:overpaid.length,collisions,mismatches,overpaid}});
+}
 
 export async function onRequest({request,env}){
   if(request.method==='OPTIONS')return new Response(null,{status:204,headers:C});
   if(!env.DB)return J({ok:false,error:'D1 binding DB tidak dijumpai'},503);
   try{
     const d=await data(request),action=S(d.action);
-    if(['recordPayment','listPayments','paymentSummary','getPaymentReceipt'].includes(action)){
+    if(['recordPayment','listPayments','paymentSummary','getPaymentReceipt','listDocuments','documentIntegrityAudit'].includes(action)){
       if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);
       if(action==='recordPayment')return await recordPayment(d,request,env);
       if(action==='listPayments')return await listPayments(d,env);
       if(action==='paymentSummary')return await paymentSummary(d,env);
       if(action==='getPaymentReceipt')return await getPaymentReceipt(d,env);
+      if(action==='listDocuments')return await canonicalDocuments(d,request,env);
+      if(action==='documentIntegrityAudit')return await documentIntegrityAudit(env);
     }
     return legacy({request,env});
   }catch(e){console.error('REQOO payment ledger v18:',e);return J({ok:false,error:e?.message||String(e)},500)}
