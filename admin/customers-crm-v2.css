@@ -1,0 +1,23 @@
+/* REQOO Customers mini CRM v2 */
+.rqCustomerStats.crm{grid-template-columns:repeat(5,minmax(0,1fr))}
+.rqCustomerStats article.outstanding strong{color:#8d2d20}
+.rqCustomerBadge.owes{background:#fff0ec;color:#96382a;border:1px solid #efc1b8}
+.rqCustomerRow:focus-visible{outline:2px solid #9b7937;outline-offset:2px}
+.rqCustomerDrawerBox{width:min(620px,100%)}
+.rqCustomerProfileGrid.crm{grid-template-columns:repeat(3,minmax(0,1fr))}
+.rqCustomerMini.due{background:#fff7f3;border-color:#edcfc7}
+.rqCustomerMini.due b{color:#8d2d20}
+.rqCrmTabs{position:sticky;top:-20px;z-index:2;display:flex;gap:5px;overflow:auto;margin:0 -20px;padding:10px 20px;border-bottom:1px solid #ebe6de;background:rgba(255,255,255,.96);backdrop-filter:blur(12px)}
+.rqCrmTabs button{appearance:none;border:1px solid #ddd8cf;background:#fff;color:#66615a;border-radius:999px;padding:7px 10px;font-size:9px;font-weight:850;white-space:nowrap;cursor:pointer}
+.rqCrmTabs button.active{background:#5c4012;color:#fffdf8;border-color:#5c4012}
+.rqCrmPane{display:none;padding:16px 0 4px}.rqCrmPane.active{display:block}.rqCrmPane h3{margin:0 0 10px;font-size:13px;color:#35312d}
+.rqCustomerEmpty{padding:14px;border:1px dashed #dcd5ca;border-radius:10px;background:#fcfaf6;color:#817a72;font-size:10px;text-align:center}
+.rqCrmDoc{display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #eee9e1}
+.rqCrmDocCode{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;background:#f3ead8;color:#654916;font-size:8px;font-weight:900}
+.rqCrmDoc b,.rqCrmPayment b,.rqCrmEvent b{display:block;font-size:10px;color:#2d3035}.rqCrmDoc span:not(.rqCrmDocCode),.rqCrmPayment span,.rqCrmEvent span:not(.rqCrmDot){display:block;margin-top:3px;font-size:8.5px;color:#7b7f86}.rqCrmDocAmount{font-size:10px;font-weight:850;color:#3d3934}
+.rqCrmPayment{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #eee9e1}.rqCrmPayment strong{font-size:11px;color:#2c7259}
+.rqCrmEvent{position:relative;display:grid;grid-template-columns:13px minmax(0,1fr) auto;gap:9px;padding:9px 0}.rqCrmEvent:before{content:'';position:absolute;left:5px;top:0;bottom:0;width:1px;background:#e2dbd0}.rqCrmEvent:first-child:before{top:14px}.rqCrmEvent:last-child:before{bottom:calc(100% - 14px)}
+.rqCrmDot{position:relative;z-index:1;width:9px;height:9px;margin-top:4px;border-radius:50%;background:#9d7831;border:2px solid #fff;box-shadow:0 0 0 1px #ceb985}.rqCrmDot.payment{background:#2c7259;box-shadow:0 0 0 1px #8db9a6}.rqCrmDot.invoice{background:#7a561a}.rqCrmDot.receipt{background:#2c7259}.rqCrmEventSide{text-align:right;font-size:9.5px;font-weight:850;color:#383531}.rqCrmEventSide small{display:block;margin-top:3px;font-size:7px;color:#858079;font-weight:800}
+.rqOrderBalance{display:block;margin-top:3px;color:#8d2d20;font-size:7.5px;font-weight:850}
+@media(max-width:1050px){.rqCustomerStats.crm{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:700px){.rqCustomerStats.crm{grid-template-columns:repeat(2,1fr)}.rqCustomerProfileGrid.crm{grid-template-columns:1fr 1fr}.rqCrmTabs{top:-16px;margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}}
