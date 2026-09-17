@@ -1,0 +1,230 @@
+/* REQOO Documents — comfort palette v2
+   Warm neutral workspace, restrained gold and softer contrast.
+   Visual-only overrides: no document/payment behaviour changes. */
+body.rq-admin-shell.rqDocsPage{
+  --rq-doc-bg:#f3f0ea;
+  --rq-doc-surface:#fffdf9;
+  --rq-doc-surface-soft:#f8f4ed;
+  --rq-doc-surface-hover:#fbf7f0;
+  --rq-doc-line:#e3ddd3;
+  --rq-doc-line-soft:#eee9e1;
+  --rq-doc-text:#20242a;
+  --rq-doc-muted:#747b84;
+  --rq-doc-faint:#969ca3;
+  --rq-doc-gold:#947027;
+  --rq-doc-gold-dark:#75561e;
+  --rq-doc-gold-soft:#f3ead7;
+  --rq-doc-green:#2c7259;
+  --rq-doc-green-soft:#e8f3ed;
+  --rq-doc-warning:#8a6421;
+  --rq-doc-warning-soft:#f7efd9;
+  background:var(--rq-doc-bg)!important;
+  color:var(--rq-doc-text)!important;
+}
+
+/* Keep the shell premium without the hard black/white contrast. */
+body.rq-admin-shell.rqDocsPage .rqAdminSide{
+  background:#1a1c1e!important;
+  border-right-color:#2b2e31!important;
+}
+body.rq-admin-shell.rqDocsPage .rqAdminNav a:hover{background:#232629!important}
+body.rq-admin-shell.rqDocsPage .rqAdminNav a.active{
+  background:linear-gradient(135deg,rgba(180,139,55,.24),rgba(180,139,55,.11))!important;
+  border-color:#51442b!important;
+  color:#f3dfae!important;
+}
+body.rq-admin-shell.rqDocsPage .rqAdminNav a.active:before{background:#c39b45!important}
+body.rq-admin-shell.rqDocsPage .rqAdminNav a.active .rqAdminIcon{color:#e0bd6a!important}
+
+/* Page hierarchy */
+body.rq-admin-shell.rqDocsPage .rqDocsHead h1,
+body.rq-admin-shell.rqDocsPage .rqDocsPanelHead h2,
+body.rq-admin-shell.rqDocsPage .rqDocRef,
+body.rq-admin-shell.rqDocsPage .rqDocCustomer b,
+body.rq-admin-shell.rqDocsPage .rqDocAmount,
+body.rq-admin-shell.rqDocsPage .rqHistNo,
+body.rq-admin-shell.rqDocsPage .rqHistCustomer{
+  color:var(--rq-doc-text)!important;
+}
+body.rq-admin-shell.rqDocsPage .rqDocsHead p,
+body.rq-admin-shell.rqDocsPage .rqDocsPanelHead p,
+body.rq-admin-shell.rqDocsPage .rqDocCustomer span,
+body.rq-admin-shell.rqDocsPage .rqDocMeta,
+body.rq-admin-shell.rqDocsPage .rqHistDate,
+body.rq-admin-shell.rqDocsPage .rqDocsState{
+  color:var(--rq-doc-muted)!important;
+}
+body.rq-admin-shell.rqDocsPage .rqDocsEyebrow,
+body.rq-admin-shell.rqDocsPage .rqHistType,
+body.rq-admin-shell.rqDocsPage .rqQuoteSectionTitle{
+  color:var(--rq-doc-gold)!important;
+}
+
+/* Softer cards and less glare. */
+body.rq-admin-shell.rqDocsPage .rqDocsStat,
+body.rq-admin-shell.rqDocsPage .rqDocsPanel{
+  background:linear-gradient(180deg,#fffdf9 0%,#fdfaf5 100%)!important;
+  border-color:var(--rq-doc-line)!important;
+  box-shadow:0 1px 2px rgba(52,43,31,.025),0 7px 24px rgba(52,43,31,.035)!important;
+}
+body.rq-admin-shell.rqDocsPage .rqDocsStat span{color:#888178!important}
+body.rq-admin-shell.rqDocsPage .rqDocsStat strong{color:var(--rq-doc-text)!important}
+body.rq-admin-shell.rqDocsPage .rqDocsSettings{background:#faf7f1!important}
+
+/* Toolbar and tabs */
+body.rq-admin-shell.rqDocsPage .rqDocsUnifiedPanel>.rqDocsPanelHead,
+body.rq-admin-shell.rqDocsPage .rqDocsOrdersPanel>.rqDocsPanelHead,
+body.rq-admin-shell.rqDocsPage .rqDocsHistoryPanel>.rqDocsPanelHead{
+  border-bottom-color:var(--rq-doc-line-soft)!important;
+}
+body.rq-admin-shell.rqDocsPage .rqDocsUnifiedToolbar{
+  background:#f7f3ec!important;
+  border-bottom-color:var(--rq-doc-line)!important;
+}
+body.rq-admin-shell.rqDocsPage .rqDocTab{
+  color:#746f68!important;
+  border-color:transparent!important;
+}
+body.rq-admin-shell.rqDocsPage .rqDocTab:hover{
+  background:#eee8de!important;
+  color:#3a3733!important;
+}
+body.rq-admin-shell.rqDocsPage .rqDocTab em{
+  background:#e9e4dc!important;
+  color:#6f6b65!important;
+}
+body.rq-admin-shell.rqDocsPage .rqDocTab.active{
+  background:#fffaf1!important;
+  color:#4f3c18!important;
+  border-color:#d7c59b!important;
+  box-shadow:0 1px 2px rgba(78,59,22,.05)!important;
+}
+body.rq-admin-shell.rqDocsPage .rqDocTab.active em{
+  background:#eee1c5!important;
+  color:#74571e!important;
+}
+
+/* Search + form controls */
+body.rq-admin-shell.rqDocsPage .rqDocsUnifiedSearch,
+body.rq-admin-shell.rqDocsPage .rqDocsSearch,
+body.rq-admin-shell.rqDocsPage .rqDocsField input,
+body.rq-admin-shell.rqDocsPage .rqDocsField textarea,
+body.rq-admin-shell.rqDocsPage .rqPaymentField input,
+body.rq-admin-shell.rqDocsPage .rqPaymentField select,
+body.rq-admin-shell.rqDocsPage .rqPaymentField textarea{
+  background:#fffdfa!important;
+  border-color:#d9d2c7!important;
+  color:var(--rq-doc-text)!important;
+}
+body.rq-admin-shell.rqDocsPage .rqDocsUnifiedSearch:focus,
+body.rq-admin-shell.rqDocsPage .rqDocsSearch:focus,
+body.rq-admin-shell.rqDocsPage .rqDocsField input:focus,
+body.rq-admin-shell.rqDocsPage .rqDocsField textarea:focus,
+body.rq-admin-shell.rqDocsPage .rqPaymentField input:focus,
+body.rq-admin-shell.rqDocsPage .rqPaymentField select:focus,
+body.rq-admin-shell.rqDocsPage .rqPaymentField textarea:focus{
+  border-color:#bda874!important;
+  outline:none!important;
+  box-shadow:0 0 0 3px rgba(148,112,39,.10)!important;
+}
+
+/* Primary and secondary actions */
+body.rq-admin-shell.rqDocsPage .rqDocsTopActions .btn,
+body.rq-admin-shell.rqDocsPage .rqDocsUnifiedActions .btn,
+body.rq-admin-shell.rqDocsPage .rqDocButtons .btn,
+body.rq-admin-shell.rqDocsPage .rqHistActions .btn,
+body.rq-admin-shell.rqDocsPage .rqDocsActions .btn,
+body.rq-admin-shell.rqDocsPage .rqPaymentActions .btn{
+  background:#fffdf9!important;
+  color:#34312e!important;
+  border-color:#d9d2c7!important;
+  box-shadow:none!important;
+}
+body.rq-admin-shell.rqDocsPage .rqDocsTopActions .btn:hover,
+body.rq-admin-shell.rqDocsPage .rqDocsUnifiedActions .btn:hover,
+body.rq-admin-shell.rqDocsPage .rqDocButtons .btn:hover,
+body.rq-admin-shell.rqDocsPage .rqHistActions .btn:hover,
+body.rq-admin-shell.rqDocsPage .rqDocsActions .btn:hover,
+body.rq-admin-shell.rqDocsPage .rqPaymentActions .btn:hover{
+  background:#f5efe6!important;
+  border-color:#c9bfae!important;
+}
+body.rq-admin-shell.rqDocsPage .rqDocsUnifiedActions .primary,
+body.rq-admin-shell.rqDocsPage .rqQuoteActions .primary,
+body.rq-admin-shell.rqDocsPage .rqDocsSettingsActions .primary,
+body.rq-admin-shell.rqDocsPage .rqDocsActions .primary,
+body.rq-admin-shell.rqDocsPage .rqRecordPaymentBtn{
+  background:linear-gradient(180deg,#9a762e,#846221)!important;
+  color:#fffdf7!important;
+  border-color:#7d5d22!important;
+}
+body.rq-admin-shell.rqDocsPage .rqDocsUnifiedActions .primary:hover,
+body.rq-admin-shell.rqDocsPage .rqQuoteActions .primary:hover,
+body.rq-admin-shell.rqDocsPage .rqDocsSettingsActions .primary:hover,
+body.rq-admin-shell.rqDocsPage .rqDocsActions .primary:hover,
+body.rq-admin-shell.rqDocsPage .rqRecordPaymentBtn:hover{
+  background:linear-gradient(180deg,#896724,#73531b)!important;
+}
+
+/* Ledger: warm header, cream rows, subtle hover. */
+body.rq-admin-shell.rqDocsPage .rqDocsTableHead{
+  background:#f2eee6!important;
+  border-bottom-color:#ded7cc!important;
+  color:#77716a!important;
+}
+body.rq-admin-shell.rqDocsPage .rqDocRow,
+body.rq-admin-shell.rqDocsPage .rqHistRow{
+  background:#fffdf9!important;
+  border-bottom-color:var(--rq-doc-line-soft)!important;
+}
+body.rq-admin-shell.rqDocsPage .rqDocRow:hover,
+body.rq-admin-shell.rqDocsPage .rqHistRow:hover{
+  background:var(--rq-doc-surface-hover)!important;
+}
+body.rq-admin-shell.rqDocsPage #docUnifiedEmpty{color:var(--rq-doc-muted)!important}
+
+/* Statuses: calm pastels, readable labels. */
+body.rq-admin-shell.rqDocsPage .rqDocBadge.paid,
+body.rq-admin-shell.rqDocsPage .rqPaymentMeta .settled{
+  background:var(--rq-doc-green-soft)!important;
+  color:var(--rq-doc-green)!important;
+}
+body.rq-admin-shell.rqDocsPage .rqDocBadge.pending,
+body.rq-admin-shell.rqDocsPage .rqPaymentMeta .balance{
+  background:var(--rq-doc-warning-soft)!important;
+  color:var(--rq-doc-warning)!important;
+}
+
+/* Composer + payment modal */
+body.rq-admin-shell.rqDocsPage .rqQuoteBuilder,
+body.rq-admin-shell.rqDocsPage .rqQuoteTotalsBox,
+body.rq-admin-shell.rqDocsPage .rqQuoteItem,
+body.rq-admin-shell.rqDocsPage .rqPaymentBox,
+body.rq-admin-shell.rqDocsPage .rqPaymentSummary>div{
+  background:#fffdf9!important;
+  border-color:var(--rq-doc-line)!important;
+}
+body.rq-admin-shell.rqDocsPage .rqQuoteBuilder>.rqDocsPanelHead:before{background:#aa8131!important}
+body.rq-admin-shell.rqDocsPage .rqPaymentHead{border-bottom-color:var(--rq-doc-line-soft)!important}
+body.rq-admin-shell.rqDocsPage .rqPaymentHead h2,
+body.rq-admin-shell.rqDocsPage .rqPaymentSummary b{color:var(--rq-doc-text)!important}
+body.rq-admin-shell.rqDocsPage .rqPaymentHead p,
+body.rq-admin-shell.rqDocsPage .rqPaymentStatus{color:var(--rq-doc-muted)!important}
+body.rq-admin-shell.rqDocsPage .rqPaymentClose{background:#eee8df!important;color:#4e4a44!important}
+body.rq-admin-shell.rqDocsPage .rqPaymentModal,
+body.rq-admin-shell.rqDocsPage .rqDocsModal{background:rgba(35,31,26,.38)!important}
+
+/* Keep printable/preview documents white for accurate PDF output. */
+body.rq-admin-shell.rqDocsPage .rqPaper,
+body.rq-admin-shell.rqDocsPage .rqReceiptPaper{background:#fff!important}
+
+@media(max-width:900px){
+  body.rq-admin-shell.rqDocsPage .rqAdminMobile{
+    background:rgba(250,247,241,.97)!important;
+    border-color:#ddd5ca!important;
+  }
+  body.rq-admin-shell.rqDocsPage .rqAdminMobile a.active{
+    background:#eee6da!important;
+    color:#5f481c!important;
+  }
+}
