@@ -8,7 +8,7 @@ assert.match(worker,/admin-base\.css\?v=1/,'canonical Admin base CSS must be inj
 assert.match(worker,/admin-flow\.css\?v=1/,'canonical Admin flow CSS must be injected last');
 assert.match(worker,/admin-shell\.js\?v=1/,'canonical Admin shell runtime must be injected');
 assert.match(worker,/admin-ui-v1/,'Admin response must advertise the canonical UI runtime');
-assert.match(worker,/assetRequest\('\/shop\/admin\.html',request\);\s*return injectShopAdminSafe\(response\)/,'Shop Admin must remain isolated in safe mode');
+assert.match(worker,/assetRequest\('\/shop\/admin\.html',request\)\);\s*return injectShopAdminSafe\(response\)/,'Shop Admin must remain isolated in safe mode');
 assert.match(worker,/shop-admin-safe-mode-v1/,'Shop Admin safe mode marker must remain active');
 assert.match(shell,/WORKFLOW/,'shell must group the core business flow');
 assert.match(shell,/CATALOG & CRM/,'shell must separate catalogue and CRM from workflow');
