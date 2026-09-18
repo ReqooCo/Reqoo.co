@@ -5,7 +5,7 @@ const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
 const money=n=>'RM'+(Number(n||0)/100).toFixed(2);
 const dateFmt=v=>{if(!v)return'—';const d=new Date(v);return Number.isNaN(d.getTime())?String(v):d.toLocaleDateString('ms-MY',{day:'2-digit',month:'short',year:'numeric'})};
-let docs=[],payments=[],summaries=new Map(),active='all',loading=false,timer=0,drawerTimer=0;
+let docs=[],payments=[],summaries=new Map(),active='all',loading=false,timer=0,drawerTimer=0,initialReady=false;
 
 async function api(action,extra={}){
  const url=new URL(API,location.origin);url.searchParams.set('action',action);Object.entries(extra).forEach(([k,v])=>{if(v!==undefined&&v!==null&&v!=='')url.searchParams.set(k,v)});
@@ -87,11 +87,26 @@ function enhanceDrawer(){
 function watchDrawer(){
  const body=$('#rqDocDrawerBody');if(!body||body.dataset.rqOverdueObserved==='1')return;body.dataset.rqOverdueObserved='1';new MutationObserver(()=>{clearTimeout(drawerTimer);drawerTimer=setTimeout(enhanceDrawer,40)}).observe(body,{childList:true});
 }
+function consumeFinance(data){
+ if(!data)return;
+ docs=Array.isArray(data.documents)?data.documents.slice():docs;payments=Array.isArray(data.payments)?data.payments.slice():payments;summaries=new Map((data.summaries||[]).map(x=>[String(x.orderId),x]));
+ updateSummary();decorateRows();enhanceDrawer();
+}
 async function refresh(){
  if(loading)return;loading=true;ensureUi();
- try{const [d,s,p]=await Promise.all([api('listDocuments',{limit:300}),api('paymentSummary'),api('listPayments',{limit:300})]);docs=Array.isArray(d.documents)?d.documents:[];payments=Array.isArray(p.payments)?p.payments:[];summaries=new Map((s.summaries||[]).map(x=>[String(x.orderId),x]));updateSummary();decorateRows();enhanceDrawer()}catch(e){console.warn('REQOO overdue dashboard:',e);$$('#docHistory .rqHistRow').forEach(r=>r.dataset.rqFinanceMatch='1');document.dispatchEvent(new CustomEvent('rq:documents-finance-filter',{detail:{filter:'all'}}))}finally{loading=false}
+ try{const [d,s,p]=await Promise.all([api('listDocuments',{limit:150}),api('paymentSummary'),api('listPayments',{limit:300})]);consumeFinance({documents:d.documents||[],payments:p.payments||[],summaries:s.summaries||[]})}catch(e){console.warn('REQOO overdue dashboard:',e);$('#docHistory .rqHistRow').forEach(r=>r.dataset.rqFinanceMatch='1');document.dispatchEvent(new CustomEvent('rq:documents-finance-filter',{detail:{filter:'all'}}))}finally{loading=false}
 }
-function schedule(ms=120){clearTimeout(timer);timer=setTimeout(refresh,ms)}
-function init(){ensureUi();schedule(50);const h=$('#docHistory');if(h)new MutationObserver(()=>schedule(100)).observe(h,{childList:true});new MutationObserver(()=>{watchDrawer();setTimeout(enhanceDrawer,50)}).observe(document.body,{childList:true});watchDrawer();document.getElementById('refreshDocs')?.addEventListener('click',()=>schedule(420))}
+function schedule(ms=1200){if(!initialReady)return;clearTimeout(timer);timer=setTimeout(()=>{if(window.__REQOO_DOCS_FINANCE__)consumeFinance(window.__REQOO_DOCS_FINANCE__);else refresh()},ms)}
+function init(){
+ ensureUi();
+ const onFinance=e=>consumeFinance(e?.detail||window.__REQOO_DOCS_FINANCE__);
+ document.addEventListener('rq:documents-finance-ready',onFinance);
+ if(window.__REQOO_DOCS_FINANCE__)consumeFinance(window.__REQOO_DOCS_FINANCE__);
+ const start=()=>{if(initialReady)return;initialReady=true;schedule(1500)};
+ if(document.documentElement.dataset.rqDocumentsReady==='1')start();else document.addEventListener('rq:documents-ready',start,{once:true});
+ const h=$('#docHistory');if(h)new MutationObserver(()=>{if(window.__REQOO_DOCS_FINANCE__)setTimeout(()=>consumeFinance(window.__REQOO_DOCS_FINANCE__),50);else schedule(1500)}).observe(h,{childList:true});
+ new MutationObserver(()=>{watchDrawer();setTimeout(enhanceDrawer,50)}).observe(document.body,{childList:true});watchDrawer();
+ document.getElementById('refreshDocs')?.addEventListener('click',()=>schedule(1700));
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
