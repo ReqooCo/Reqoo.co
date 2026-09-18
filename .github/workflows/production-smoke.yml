@@ -1,0 +1,42 @@
+name: Production smoke
+
+on:
+  pull_request:
+    paths:
+      - '_web_worker.js'
+      - 'functions/**'
+      - 'admin/**'
+      - 'shop/**'
+      - 'plaque/**'
+      - 'tumbler/**'
+      - 'api/**'
+      - 'tests/production-smoke.mjs'
+      - '.github/workflows/production-smoke.yml'
+  push:
+    branches: [main]
+    paths:
+      - '_web_worker.js'
+      - 'functions/**'
+      - 'admin/**'
+      - 'shop/**'
+      - 'plaque/**'
+      - 'tumbler/**'
+      - 'api/**'
+      - 'tests/production-smoke.mjs'
+      - '.github/workflows/production-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Smoke production
+        run: node tests/production-smoke.mjs
