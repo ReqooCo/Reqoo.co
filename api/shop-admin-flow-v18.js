@@ -188,6 +188,22 @@ export async function onRequest({request,env}){
       if(action==='listDocuments')return await canonicalDocuments(d,request,env);
       if(action==='documentIntegrityAudit')return await documentIntegrityAudit(env);
     }
+    if(action==='dashboardSummary'){
+      if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);
+      await ensure(env);
+      await syncLegacyPaidPayments(env);
+      return legacy({request,env});
+    }
+    if(action==='verifyPayment'||(action==='status'&&S(d.status).toLowerCase()==='paid')){
+      if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);
+      const response=await legacy({request,env});
+      if(!response.ok)return response;
+      let out={};try{out=await response.clone().json()}catch{return response}
+      if(out.ok===false)return response;
+      await ensure(env);
+      await syncLegacyPaidPayments(env,S(d.orderId||d.orderRef||d.orderNo));
+      return response;
+    }
     return legacy({request,env});
   }catch(e){console.error('REQOO payment ledger v18:',e);return J({ok:false,error:e?.message||String(e)},500)}
 }
