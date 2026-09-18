@@ -62,8 +62,8 @@ async function shopCall(action,data={}){
   const request=new Request('https://api.reqoo.co/api/shop',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action,...data})});
   const response=await shop({request,env});
   const type=response.headers.get('content-type')||'';
-  if(type.includes('json'))return {status:response.status,...await response.json()};
-  return {status:response.status,text:await response.text()};
+  if(type.includes('json'))return {httpStatus:response.status,...await response.json()};
+  return {httpStatus:response.status,text:await response.text()};
 }
 async function adminCall(action,data={}){
   const request=new Request('https://api.reqoo.co/api/shop-admin',{method:'POST',headers:{'content-type':'application/json','X-Admin-Token':'e2e-admin'},body:JSON.stringify({action,...data})});
@@ -82,7 +82,7 @@ try{
     expectedTotalMinor:100,
     items:[{productId:'prod_e2e',variantId:'var_e2e',qty:1}]
   });
-  assert.equal(created.status,200);
+  assert.equal(created.httpStatus,200);
   assert.equal(created.ok,true);
   assert.equal(created.payment.provider,'TOYYIBPAY');
   assert.equal(created.payment.billCode,'E2EBILL001');
@@ -108,7 +108,7 @@ try{
     transaction_id:'TX-E2E-001',
     hash:md5Hex(`e2e-secret${status}${created.orderRef}${refno}ok`)
   });
-  assert.equal(paid.status,200);
+  assert.equal(paid.httpStatus,200);
   assert.equal(paid.text,'OK');
 
   order=sqlite.prepare('SELECT * FROM orders WHERE id=?').get(created.orderId);
@@ -130,7 +130,7 @@ try{
   assert.match(summary.summary.payments[0].note,/ToyyibPay|toyyibpay/i);
 
   const duplicate=await adminCall('recordPayment',{orderId:created.orderId,amountMinor:100,method:'bank_transfer'});
-  assert.equal(duplicate.status,409);
+  assert.equal(duplicate.httpStatus,409);
   assert.match(duplicate.error,/selesai dibayar/i);
   assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM reqoo_payments WHERE order_id=? AND status='confirmed'").get(created.orderId).n,1);
 
