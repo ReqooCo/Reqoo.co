@@ -31,7 +31,7 @@ function replaceDocument(doc){const ix=documents.findIndex(x=>String(x.id)===Str
 function renderOrders(){
   $('docList').innerHTML=orders.map(o=>{
     const id=o.id||orderRef(o),paid=orderStatus(o)==='paid';
-    const saved=['invoice','receipt','delivery_order'].filter(t=>savedFor(id,t)).map(typeShort).join(' · ');
+    const serverTypes=String(o.document_types||'').split(',').filter(Boolean),saved=['invoice','receipt','delivery_order'].filter(t=>savedFor(id,t)||serverTypes.includes(t)).map(typeShort).join(' · ');
     return `<article class="rqDocRow"><div class="rqDocRef">${esc(orderRef(o))}<div class="rqDocMeta">${esc(dateFmt(o.created_at||o.createdAt))}</div>${saved?`<span class="rqDocSaved">Saved: ${esc(saved)}</span>`:''}</div><div class="rqDocCustomer"><b>${esc(customer(o))}</b><span>${esc(phone(o)||'Tiada WhatsApp')}</span></div><div class="rqDocAmount">${money(total(o))}</div><div class="rqDocStatus"><span class="rqDocBadge ${paid?'paid':'pending'}">${paid?'PAID':'PENDING'}</span></div><div class="rqDocButtons"><button class="btn" data-create="invoice" data-id="${esc(id)}">Invoice</button><button class="btn" data-create="receipt" data-id="${esc(id)}" ${paid?'':'disabled'}>Receipt</button><button class="btn" data-create="delivery_order" data-id="${esc(id)}">DO</button></div></article>`;
   }).join('')||'<div class="rqDocsState">Tiada order dijumpai.</div>';
   const more=$('loadMoreDocOrders');if(more){more.hidden=!orderHasMore;more.disabled=false;more.textContent='Load More'}
@@ -88,7 +88,6 @@ async function load(force=false){
     documents=Array.isArray(d.documents)?d.documents:[];renderHistory();return documents;
   }).catch(e=>{$('docHistory').innerHTML='<div class="rqDocsState">'+esc(e.message)+'</div>';toast(e.message,true);throw e}).finally(()=>{docsLoading=null});
   const result=await docsLoading;
-  if(ordersLoaded)loadOrders(true);
   return result;
 }
 async function applyDeepLink(){let term=initialDocQuery;if(initialDocOrder){try{const exact=await api('listDocuments',{orderId:initialDocOrder,limit:50}),seen=new Set(documents.map(d=>String(d.id)));for(const d of exact.documents||[]){if(!seen.has(String(d.id))){documents.push(d);seen.add(String(d.id))}}renderHistory()}catch{}let match=null;try{const detail=await api('getOrder',{orderId:initialDocOrder});match=detail.order||null}catch{}term=match?orderRef(match):initialDocOrder;$('docSearch').value=term;await loadOrders(true);if(match&&!orders.some(o=>String(o.id)===String(match.id))){orders.unshift(match);renderOrders()}const panel=$('rqOrderSourcePanel'),btn=$('toggleOrderDrawer');panel?.classList.add('open');btn?.classList.add('active');btn?.setAttribute('aria-expanded','true');setTimeout(()=>panel?.scrollIntoView({behavior:'smooth',block:'start'}),40)}if(term){const unified=$('docUnifiedSearch');if(unified){unified.value=term;setTimeout(()=>unified.dispatchEvent(new Event('input',{bubbles:true})),0)}}}
