@@ -10,7 +10,7 @@ assert.match(html,/documents-overdue-v1\.css\?v=2/);
 assert.match(html,/documents-overdue-v1\.js\?v=4/);
 assert.match(html,/documents-unified-v1\.js\?v=2/);
 
-assert.match(overdue,/documentsFinanceDashboard/);assert.match(overdue,/rq:documents-finance-ready/);assert.match(overdue,/__REQOO_DOCS_FINANCE__/);assert.match(overdue,/loadMoreFinanceInvoices/);assert.match(overdue,/limit:80/);assert.match(overdue,/financeSeq/);assert.doesNotMatch(overdue,/paymentSummary/);assert.doesNotMatch(overdue,/listDocuments/);assert.doesNotMatch(overdue,/listPayments/);
+assert.match(overdue,/documentsFinanceDashboard/);assert.match(overdue,/rq:documents-finance-ready/);assert.match(overdue,/__REQOO_DOCS_FINANCE__/);assert.match(overdue,/rqLoadMoreFinanceInvoices/);assert.match(overdue,/limit:80/);assert.match(overdue,/financeSeq/);assert.doesNotMatch(overdue,/paymentSummary/);assert.doesNotMatch(overdue,/listDocuments/);assert.doesNotMatch(overdue,/listPayments/);
 assert.match(overdue,/OUTSTANDING/);
 assert.match(overdue,/OVERDUE/);
 assert.match(overdue,/DUE IN 7 DAYS/);
