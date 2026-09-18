@@ -22,6 +22,7 @@ function buildUI(){const list=$('variantList'),table=list?.closest('.rqVariantTa
  box.addEventListener('input',e=>{if(e.target.matches('[data-option-value],[data-option-price],#rqPrimaryLabel,#rqSecondaryLabel'))onDirty()});
  $('productForm')?.addEventListener('submit',()=>{if(dirty)syncNow()},true);
  document.addEventListener('click',e=>{if(!e.target.closest('[data-edit]')&&!e.target.closest('#addProduct'))return;setTimeout(hydrate,120)},true);
+ document.addEventListener('reqoo:product-editor-hydrate',hydrate);
  hydrate();
 }
 function scheduleSync(){clearTimeout(timer);timer=setTimeout(syncNow,300)}
