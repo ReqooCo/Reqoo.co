@@ -1,6 +1,6 @@
 import fs from 'node:fs';import assert from 'node:assert/strict';
-const js=fs.readFileSync(new URL('../admin/overview-v2.js',import.meta.url),'utf8');
-const css=fs.readFileSync(new URL('../admin/overview-v2.css',import.meta.url),'utf8');
+const js=fs.readFileSync(new URL('../admin/overview.js',import.meta.url),'utf8');
+const css=fs.readFileSync(new URL('../admin/overview.css',import.meta.url),'utf8');
 const api=fs.readFileSync(new URL('../api/shop-admin-flow-v15.js',import.meta.url),'utf8');
 const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8');
 const html=fs.readFileSync(new URL('../admin/index.html',import.meta.url),'utf8');
@@ -9,7 +9,7 @@ assert.match(js,/COMMAND CENTER/);assert.match(js,/TODAY COLLECTED/);assert.matc
 assert.match(js,/DAILY FOLLOW-UP/);assert.match(js,/Priority hari ini/);assert.match(js,/WhatsApp/);assert.match(js,/PAYMENT FOLLOW-UP/);assert.match(js,/CUSTOMER FOLLOW-UP/);assert.match(js,/wa\.me/);assert.match(js,/followup_whatsapp_count/);
 assert.match(api,/dashboardSummary/);assert.match(api,/LIMIT 8/);assert.match(api,/shop_production_meta/);assert.match(api,/payment_status='paid'/);assert.match(api,/commandCenter/);assert.match(api,/reqoo_payments/);assert.match(api,/reqoo_documents/);assert.match(api,/recent_customers/);assert.match(api,/invoice_due/);assert.match(api,/Asia\/Kuala_Lumpur/);
 assert.match(api,/followups/);assert.match(api,/customer_reactivate/);assert.match(api,/payment_pending/);assert.match(api,/production_overdue/);assert.match(api,/invoice_overdue/);assert.match(api,/45 days/);assert.match(api,/followupScore/);
-assert.doesNotMatch(html,/function loadOrders/,'legacy Overview order loader must be removed');assert.doesNotMatch(html,/Latest Orders/,'legacy duplicate dashboard must be removed');assert.match(html,/Business Command Center/);assert.match(html,/overview-v2\.css\?v=4/);assert.match(html,/overview-v2\.js\?v=5/);
+assert.doesNotMatch(html,/function loadOrders/,'legacy Overview order loader must be removed');assert.doesNotMatch(html,/Latest Orders/,'legacy duplicate dashboard must be removed');assert.match(html,/Business Command Center/);assert.match(html,/overview\.css\?v=1/);assert.match(html,/overview\.js\?v=1/);
 assert.match(css,/\.rqKpis/);assert.match(css,/\.rqDashGridTop/);assert.match(css,/\.rqFollowupPanel/);assert.match(css,/\.rqFollowupRow/);assert.match(css,/\.rqMiniAction\.wa/);assert.match(css,/@media\(max-width:680px\)/);
-assert.match(worker,/overview-v2\.css\?v=2/);assert.match(worker,/overview-v2\.js\?v=3/);assert.match(worker,/REQOO Admin — Control Centre/);
+assert.match(worker,/overview\.css\?v=1/);assert.match(worker,/overview\.js\?v=1/);assert.match(worker,/REQOO Admin — Control Centre/);
 console.log('PASS: Overview command center keeps one consolidated summary request and adds a prioritized daily follow-up queue with WhatsApp and internal actions.');

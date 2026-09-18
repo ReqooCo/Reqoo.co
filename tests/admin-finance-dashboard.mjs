@@ -1,6 +1,6 @@
 import fs from 'node:fs';import assert from 'node:assert/strict';
 const html=fs.readFileSync(new URL('../admin/finance.html',import.meta.url),'utf8');
-const js=fs.readFileSync(new URL('../admin/finance-v1.js',import.meta.url),'utf8');
+const js=fs.readFileSync(new URL('../admin/finance.js',import.meta.url),'utf8');
 const shell=fs.readFileSync(new URL('../admin/admin-shell.js',import.meta.url),'utf8');
 const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8');
 assert.match(html,/PAID REVENUE/);assert.match(html,/PENDING VALUE/);assert.match(html,/REVENUE TREND/);assert.match(html,/Top products/i);
