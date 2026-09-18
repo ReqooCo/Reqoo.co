@@ -10,6 +10,7 @@ const middleware=fs.readFileSync(new URL('../functions/_middleware.js',import.me
 const canonicalRuntimes=['overview.js','orders.js','production.js','products.js','documents.js','documents-drawer-v1.js','documents-payment-v1.js','documents-overdue-v1.js','customers.js','finance.js'].map(f=>fs.readFileSync(new URL('../admin/'+f,import.meta.url),'utf8'));
 const settings=fs.readFileSync(new URL('../admin/settings.html',import.meta.url),'utf8');
 const shopContent=fs.readFileSync(new URL('../admin/shop-content.html',import.meta.url),'utf8');
+const pkskAdmin=fs.readFileSync(new URL('../admin/sim-v2.html',import.meta.url),'utf8');
 assert.match(worker,/admin-base\.css\?v=1/,'canonical Admin base CSS must be injected');
 assert.match(worker,/admin-flow\.css\?v=2/,'canonical Admin flow CSS must be injected last');
 assert.match(worker,/admin-shell\.js\?v=3/,'canonical Admin shell runtime must be injected');
@@ -40,6 +41,8 @@ const inlineScript=html=>html.match(/<script>([\s\S]*?)<\/script>/)?.[1]||'';
 new Function(inlineScript(index));
 new Function(inlineScript(settings));
 new Function(inlineScript(shopContent));
+new Function(inlineScript(pkskAdmin));
+assert.doesNotMatch(pkskAdmin,/localStorage\.getItem/,'PKSK Admin must not read the Admin secret from localStorage');assert.doesNotMatch(pkskAdmin,/X-Admin-Token/,'PKSK Admin must rely on the shared secure session');assert.match(apiWorker,/path==='\/api\/sim-admin'/,'PKSK Admin API must pass through session authorization');assert.doesNotMatch(worker,/https:\/\/api\.reqoo\.co\/api\/sim-admin/,'PKSK Admin must stay same-origin so the host-only session cookie is sent');
 const {default:apiRuntime}=await import('../api/worker.js');
 const sessionEnv={DB:{prepare(){return{first:async()=>({admin_token:'admin-test-secret'})}}}};
 const loginResponse=await apiRuntime.fetch(new Request('https://api.reqoo.co/api/admin-session',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({token:'admin-test-secret'})}),sessionEnv,{});
