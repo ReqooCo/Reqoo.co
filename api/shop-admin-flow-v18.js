@@ -155,6 +155,36 @@ async function getPaymentReceipt(d,env){
   const o=await orderByKey(p.order_id,env),summary=await summaryForOrder(o,env);return J({ok:true,receipt:{...p,company:{companyName:m.document_company_name||'REQOO.CO',registrationNo:m.document_registration_no||'',address:m.document_address||'',phone:m.document_phone||'',email:m.document_email||''},summary}});
 }
 
+
+const ORDER_CLOSED_SQL="(o.fulfillment_status='cancelled' OR o.payment_status IN ('failed','cancelled','refunded'))";
+const ORDER_READY_SQL="(o.payment_status IN ('paid','partial'))";
+function orderFilterSql(filter){
+  if(filter==='closed')return ORDER_CLOSED_SQL;
+  if(filter==='pending')return "NOT "+ORDER_CLOSED_SQL+" AND NOT "+ORDER_READY_SQL;
+  if(filter==='paid')return "NOT "+ORDER_CLOSED_SQL+" AND "+ORDER_READY_SQL+" AND o.fulfillment_status='pending'";
+  if(filter==='processing')return "NOT "+ORDER_CLOSED_SQL+" AND "+ORDER_READY_SQL+" AND o.fulfillment_status='processing'";
+  if(filter==='fulfilled')return "NOT "+ORDER_CLOSED_SQL+" AND "+ORDER_READY_SQL+" AND o.fulfillment_status='fulfilled'";
+  if(filter==='active')return "NOT "+ORDER_CLOSED_SQL;
+  return '1=1';
+}
+async function ordersDashboard(d,env){
+  await ensure(env);
+  const q=S(d.q).toLowerCase(),filter=S(d.filter||'active').toLowerCase(),limit=Math.min(150,Math.max(20,Number(d.limit||80))),offset=Math.max(0,Math.min(1000000,Number(d.offset||0)));
+  const where=[orderFilterSql(filter)],args=[];
+  if(q){
+    where.push("(LOWER(COALESCE(o.order_no,o.id,'')) LIKE ? OR LOWER(COALESCE(c.name,'')) LIKE ? OR REPLACE(REPLACE(REPLACE(COALESCE(c.phone,''),' ',''),'-',''),'+','') LIKE ? OR LOWER(COALESCE(c.email,'')) LIKE ?)");
+    const phone=q.replace(/[^0-9]/g,'');args.push('%'+q+'%','%'+q+'%','%'+phone+'%','%'+q+'%');
+  }
+  const whereSql=' WHERE '+where.join(' AND ');
+  const rows=(await env.DB.prepare("SELECT o.*,c.name customer_name,c.phone,c.email FROM orders o LEFT JOIN customers c ON c.id=o.customer_id"+whereSql+" ORDER BY o.created_at DESC,o.id DESC LIMIT ? OFFSET ?").bind(...args,limit,offset).all()).results||[];
+  const totalRow=await env.DB.prepare("SELECT COUNT(*) n FROM orders o LEFT JOIN customers c ON c.id=o.customer_id"+whereSql).bind(...args).first();
+  const stats=await env.DB.prepare("SELECT COUNT(*) total,"+
+    " SUM(CASE WHEN NOT "+ORDER_CLOSED_SQL+" AND NOT "+ORDER_READY_SQL+" THEN 1 ELSE 0 END) pending,"+
+    " SUM(CASE WHEN NOT "+ORDER_CLOSED_SQL+" AND "+ORDER_READY_SQL+" AND o.fulfillment_status='pending' THEN 1 ELSE 0 END) paid,"+
+    " SUM(CASE WHEN NOT "+ORDER_CLOSED_SQL+" AND "+ORDER_READY_SQL+" AND o.fulfillment_status='processing' THEN 1 ELSE 0 END) processing"+
+    " FROM orders o").first();
+  return J({ok:true,orders:rows.map(o=>({...o,orderNo:S(o.order_no)||('RQ-'+String(o.id).replace(/[^A-Za-z0-9]/g,'').slice(-12).toUpperCase()),order_ref:S(o.order_no)||o.id,name:o.customer_name||'',total:Number(o.total_minor||0)/100,status:o.fulfillment_status,payment:o.payment_status,timestamp:o.created_at})),total:Number(totalRow?.n||0),offset,limit,hasMore:offset+rows.length<Number(totalRow?.n||0),stats:{total:Number(stats?.total||0),pending:Number(stats?.pending||0),paid:Number(stats?.paid||0),processing:Number(stats?.processing||0)}});
+}
 const CUSTOMER_ROLLUP_CTE="WITH order_rollup AS ("+
 " SELECT o.customer_id,COUNT(*) order_count,MAX(o.created_at) last_order_at,"+
 " COALESCE(SUM(CASE WHEN EXISTS(SELECT 1 FROM reqoo_payments p0 WHERE p0.order_id=o.id AND p0.status='confirmed') THEN COALESCE((SELECT SUM(p1.amount_minor) FROM reqoo_payments p1 WHERE p1.order_id=o.id AND p1.status='confirmed'),0) WHEN o.payment_status='paid' THEN o.total_minor ELSE 0 END),0) collected_minor,"+
@@ -222,7 +252,7 @@ export async function onRequest({request,env}){
   if(!env.DB)return J({ok:false,error:'D1 binding DB tidak dijumpai'},503);
   try{
     const d=await data(request),action=S(d.action);
-    if(['recordPayment','listPayments','paymentSummary','getPaymentReceipt','listDocuments','documentIntegrityAudit','customerDashboard','customerDetail'].includes(action)){
+    if(['recordPayment','listPayments','paymentSummary','getPaymentReceipt','listDocuments','documentIntegrityAudit','customerDashboard','customerDetail','ordersDashboard'].includes(action)){
       if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);
       if(action==='recordPayment')return await recordPayment(d,request,env);
       if(action==='listPayments')return await listPayments(d,env);
@@ -232,6 +262,7 @@ export async function onRequest({request,env}){
       if(action==='documentIntegrityAudit')return await documentIntegrityAudit(env);
       if(action==='customerDashboard')return await customerDashboard(d,env);
       if(action==='customerDetail')return await customerDetail(d,env);
+      if(action==='ordersDashboard')return await ordersDashboard(d,env);
     }
     if(action==='dashboardSummary'){
       if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);
