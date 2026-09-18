@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
 const API='/api/shop-admin';
-let orders=[],documents=[],activeDoc=null,docSettings={},ordersLoaded=false,ordersLoading=null,settingsLoaded=false,settingsLoading=null,docsLoading=null,documentsReady=false;
+let orders=[],documents=[],activeDoc=null,docSettings={},ordersLoaded=false,ordersLoading=null,settingsLoaded=false,settingsLoading=null,docsLoading=null,documentsReady=false;const deepParams=new URLSearchParams(location.search),initialDocOrder=deepParams.get('order')||'',initialDocQuery=deepParams.get('q')||'';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>'RM'+(Number(n||0)/100).toFixed(2);
@@ -69,7 +69,7 @@ async function loadOrders(force=false){
   if(ordersLoaded&&!force)return orders;
   if(ordersLoading)return ordersLoading;
   $('docState').textContent='Memuatkan order…';
-  ordersLoading=api('listOrders',{limit:100}).then(o=>{
+  ordersLoading=api('listOrders',{limit:1000}).then(o=>{
     orders=Array.isArray(o.orders)?o.orders:[];ordersLoaded=true;
     $('docOrders').textContent=orders.length;$('docPaid').textContent=orders.filter(x=>['paid','partial'].includes(orderStatus(x))).length;
     $('docState').textContent=orders.length?'':'Belum ada order.';renderOrders();return orders;
@@ -86,6 +86,7 @@ async function load(force=false){
   if(ordersLoaded)loadOrders(true);
   return result;
 }
+async function applyDeepLink(){let term=initialDocQuery;if(initialDocOrder){try{const exact=await api('listDocuments',{orderId:initialDocOrder,limit:50}),seen=new Set(documents.map(d=>String(d.id)));for(const d of exact.documents||[]){if(!seen.has(String(d.id))){documents.push(d);seen.add(String(d.id))}}renderHistory()}catch{}await loadOrders();const match=orders.find(o=>String(o.id||'')===initialDocOrder||orderRef(o)===initialDocOrder);term=match?orderRef(match):initialDocOrder;const panel=$('rqOrderSourcePanel'),btn=$('toggleOrderDrawer');panel?.classList.add('open');btn?.classList.add('active');btn?.setAttribute('aria-expanded','true');setTimeout(()=>panel?.scrollIntoView({behavior:'smooth',block:'start'}),40)}if(term){$('docSearch').value=term;renderOrders();const unified=$('docUnifiedSearch');if(unified){unified.value=term;setTimeout(()=>unified.dispatchEvent(new Event('input',{bubbles:true})),0)}}}
 async function createAndOpen(type,id){
   try{toast('Menjana '+typeLabel(type)+'…');const d=await api('createDocument',{type,orderId:id},'POST');activeDoc=d.document;if(d.created){documents.unshift(activeDoc);toast(activeDoc.number+' disimpan');}else toast(activeDoc.number+' sudah wujud');renderOrders();renderHistory();showDocument();}catch(e){toast(e.message,true)}
 }
@@ -167,5 +168,5 @@ function quotePayload(){const items=quoteRows().map(row=>({description:row.query
 async function createCustomQuote(){const payload=quotePayload();if(!payload.customerName)return toast('Masukkan nama pelanggan / syarikat.',true);if(!payload.items.length)return toast('Masukkan sekurang-kurangnya satu item.',true);const btn=$('qCreate'),old=btn.textContent;btn.disabled=true;btn.textContent='Creating…';try{const d=await api('createCustomQuotation',payload,'POST');activeDoc=d.document;documents.unshift(activeDoc);renderHistory();toast(activeDoc.number+' berjaya dibuat');showDocument();resetQuoteForm();$('quoteBuilderBody').classList.remove('open');$('toggleQuoteBuilder').textContent='+ Quotation Baru'}catch(e){toast(e.message,true)}finally{btn.disabled=false;btn.textContent=old}}
 $('refreshDocs').addEventListener('click',()=>{load(true);if(ordersLoaded)loadOrders(true);if(settingsLoaded)loadSettings(true)});$('docSearch').addEventListener('input',renderOrders);$('toggleOrderDrawer').addEventListener('click',()=>{if(!ordersLoaded)loadOrders()});$('toggleSettings').addEventListener('click',()=>{const panel=$('docsSettings');panel.classList.toggle('open');if(panel.classList.contains('open'))loadSettings()});$('saveSettings').addEventListener('click',saveSettings);$('toggleQuoteBuilder').addEventListener('click',()=>{const body=$('quoteBuilderBody');body.classList.toggle('open');if(body.classList.contains('open'))loadSettings();$('toggleQuoteBuilder').textContent=body.classList.contains('open')?'Tutup':'+ Quotation Baru'});$('qAddItem').addEventListener('click',()=>addQuoteItem());$('qReset').addEventListener('click',resetQuoteForm);$('qCreate').addEventListener('click',createCustomQuote);$('qDiscount').addEventListener('input',recalcQuote);$('qShipping').addEventListener('input',recalcQuote);$('docClose').addEventListener('click',close);$('docCloseBottom').addEventListener('click',close);$('docPrint').addEventListener('click',printDoc);$('docWhatsapp').addEventListener('click',shareWhatsApp);$('docConvert').addEventListener('click',convertActiveQuote);$('docModal').addEventListener('click',e=>{if(e.target.id==='docModal')close()});
 addQuoteItem();
-load();
+load().then(applyDeepLink).catch(()=>{});
 })();
