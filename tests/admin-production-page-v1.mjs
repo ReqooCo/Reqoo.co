@@ -4,7 +4,7 @@ const js=fs.readFileSync(new URL('../admin/production.js',import.meta.url),'utf8
 const css=fs.readFileSync(new URL('../admin/production.css',import.meta.url),'utf8');
 const shell=fs.readFileSync(new URL('../admin/admin-shell.js',import.meta.url),'utf8');
 const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8');
-assert.match(html,/PRODUCTION CONTROL/);assert.match(html,/production-v1\.js/);
+assert.match(html,/PRODUCTION CONTROL/);assert.match(html,/production\.js/);
 assert.doesNotMatch(html,/admin-(?:base|flow|shell).*\.(?:css|js)/,'shared Admin assets must be owned by routing, not duplicated in page HTML');
 assert.match(worker,/admin-base\.css\?v=1/);assert.match(worker,/admin-flow\.css\?v=1/);assert.match(worker,/admin-shell\.js\?v=1/);
 assert.match(js,/productionDashboard/);assert.doesNotMatch(js,/MutationObserver/);assert.doesNotMatch(js,/setInterval/);assert.doesNotMatch(js,/visibilitychange/);assert.doesNotMatch(js,/focus/);
