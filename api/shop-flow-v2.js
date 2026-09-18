@@ -9,11 +9,15 @@ const ID=p=>`${p}_${crypto.randomUUID()}`;
 const NOW=()=>new Date().toISOString();
 const R=(x,s=200)=>new Response(JSON.stringify(x),{status:s,headers:{'content-type':'application/json;charset=UTF-8',...C}});
 async function body(request){const u=new URL(request.url),q=Object.fromEntries(u.searchParams.entries());if(request.method==='GET')return q;const ct=(request.headers.get('content-type')||'').toLowerCase();if(ct.includes('json'))return {...q,...await request.json()};return q}
-async function ensure(env){await env.DB.batch([
+async function ensure(env){const t=NOW();await env.DB.batch([
   env.DB.prepare("CREATE TABLE IF NOT EXISTS shipping_methods(id TEXT PRIMARY KEY,name TEXT NOT NULL,price_minor INTEGER NOT NULL DEFAULT 0,active INTEGER NOT NULL DEFAULT 1,sort_order INTEGER NOT NULL DEFAULT 0,created_at TEXT NOT NULL,updated_at TEXT NOT NULL)"),
   env.DB.prepare("CREATE TABLE IF NOT EXISTS promotions(id TEXT PRIMARY KEY,code TEXT NOT NULL UNIQUE,type TEXT NOT NULL DEFAULT 'fixed',value INTEGER NOT NULL DEFAULT 0,min_spend INTEGER NOT NULL DEFAULT 0,starts_at TEXT,ends_at TEXT,usage_limit INTEGER,usage_count INTEGER NOT NULL DEFAULT 0,active INTEGER NOT NULL DEFAULT 1,created_at TEXT NOT NULL,updated_at TEXT NOT NULL,title TEXT,product_id TEXT,variant TEXT,promo_price_minor INTEGER,slug TEXT)"),
   env.DB.prepare("CREATE TABLE IF NOT EXISTS shop_settings(key TEXT PRIMARY KEY,value TEXT,updated_at TEXT NOT NULL)"),
-  env.DB.prepare("CREATE TABLE IF NOT EXISTS order_addresses(order_id TEXT PRIMARY KEY REFERENCES orders(id) ON DELETE CASCADE,name TEXT,phone TEXT,address TEXT,shipping_method_id TEXT,created_at TEXT NOT NULL,updated_at TEXT NOT NULL)")
+  env.DB.prepare("CREATE TABLE IF NOT EXISTS order_addresses(order_id TEXT PRIMARY KEY REFERENCES orders(id) ON DELETE CASCADE,name TEXT,phone TEXT,address TEXT,shipping_method_id TEXT,created_at TEXT NOT NULL,updated_at TEXT NOT NULL)"),
+  env.DB.prepare("UPDATE shipping_methods SET name='Semenanjung Malaysia',price_minor=800,active=1,sort_order=10,updated_at=? WHERE lower(name) LIKE 'semenanjung%'").bind(t),
+  env.DB.prepare("INSERT OR IGNORE INTO shipping_methods(id,name,price_minor,active,sort_order,created_at,updated_at) VALUES('ship_semenanjung','Semenanjung Malaysia',800,1,10,?,?)").bind(t,t),
+  env.DB.prepare("UPDATE shipping_methods SET name='Sabah & Sarawak',price_minor=1200,active=1,sort_order=20,updated_at=? WHERE lower(name) LIKE '%sabah%' OR lower(name) LIKE '%sarawak%'").bind(t),
+  env.DB.prepare("INSERT OR IGNORE INTO shipping_methods(id,name,price_minor,active,sort_order,created_at,updated_at) VALUES('ship_sabah_sarawak','Sabah & Sarawak',1200,1,20,?,?)").bind(t,t)
 ]);}
 async function setting(env,key){return (await env.DB.prepare('SELECT value FROM shop_settings WHERE key=?').bind(key).first())?.value||'';}
 function paymentQr(env){return setting(env,'payment_qr_url').then(v=>/maybank-qr-premium\.svg(?:\?|$)/i.test(S(v))?'/shop/maybank-qr.jpg':S(v)||'/shop/maybank-qr.jpg');}
