@@ -4,11 +4,11 @@ const js=fs.readFileSync(new URL('../admin/production.js',import.meta.url),'utf8
 const css=fs.readFileSync(new URL('../admin/production.css',import.meta.url),'utf8');
 const shell=fs.readFileSync(new URL('../admin/admin-shell.js',import.meta.url),'utf8');
 const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8');
-assert.match(html,/PRODUCTION CONTROL/);assert.match(html,/production\.css\?v=2/);assert.match(html,/production\.js\?v=2/);
+assert.match(html,/PRODUCTION CONTROL/);assert.match(html,/production\.css\?v=3/);assert.match(html,/production\.js\?v=3/);
 assert.doesNotMatch(html,/admin-(?:base|flow|shell).*\.(?:css|js)/,'shared Admin assets must be owned by routing, not duplicated in page HTML');
 assert.match(worker,/admin-base\.css\?v=1/);assert.match(worker,/admin-flow\.css\?v=1/);assert.match(worker,/admin-shell\.js\?v=1/);
 assert.match(js,/productionDashboard/);assert.doesNotMatch(js,/MutationObserver/);assert.doesNotMatch(js,/setInterval/);assert.doesNotMatch(js,/visibilitychange/);assert.doesNotMatch(js,/focus/);
-assert.match(js,/saveProductionMeta/);assert.match(js,/verifyPayment/);assert.match(js,/Order kini Ready untuk mula proses/);assert.match(js,/status/);assert.match(js,/processing/);assert.match(js,/fulfilled/);
+assert.match(js,/saveProductionMeta/);assert.match(js,/verifyPayment/);assert.match(js,/\['paid','partial'\]/,'Partial payment must unlock production');assert.match(js,/Deposit Dibayar/);assert.match(js,/Order kini Ready untuk mula proses/);assert.match(js,/status/);assert.match(js,/processing/);assert.match(js,/fulfilled/);
 assert.match(css,/\.rqProductionDrawer/);assert.match(css,/z-index:980/,'Production alert must sit above the mobile Admin dock');assert.match(css,/bottom:calc\(88px \+ env\(safe-area-inset-bottom\)\)/,'Mobile alert must clear the bottom dock');assert.match(css,/@media\(max-width:600px\)/);
 assert.match(shell,/\/admin\/production\.html/);assert.match(shell,/isProduction/);
 console.log('PASS: standalone Production page uses page assets only while shared Admin UI is injected canonically.');
