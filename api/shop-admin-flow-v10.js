@@ -17,7 +17,7 @@ async function setFulfillment(request,d,env,status){
   try{
     const order=await env.DB.prepare('SELECT id,order_no,payment_status,fulfillment_status FROM orders WHERE id=? OR order_no=? LIMIT 1').bind(key,key).first();
     if(!order)return J({ok:false,error:'Order tidak dijumpai'},404);
-    if(S(order.payment_status).toLowerCase()!=='paid')return J({ok:false,error:'Bayaran perlu disahkan sebelum status kerja boleh diubah'},409);
+    if(!['paid','partial'].includes(S(order.payment_status).toLowerCase()))return J({ok:false,error:'Bayaran perlu disahkan atau deposit perlu direkodkan sebelum status kerja boleh diubah'},409);
     const t=NOW();
     const result=await env.DB.prepare('UPDATE orders SET fulfillment_status=?,updated_at=? WHERE id=?').bind(status,t,order.id).run();
     const fresh=await env.DB.prepare('SELECT id,order_no,payment_status,fulfillment_status,updated_at FROM orders WHERE id=? LIMIT 1').bind(order.id).first();
