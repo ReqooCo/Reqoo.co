@@ -7,7 +7,7 @@ const [shop, core, commerce, tumbler, tumblerRuntime, plaque, worker] = await Pr
   read('shop/shop-core-v1.js'),
   read('shop/botanical-commerce-v1.css'),
   read('tumbler/index.html'),
-  read('tumbler/tumbler-order-v4.js'),
+  read('tumbler/tumbler-order.js'),
   read('plaque/index.html'),
   read('_web_worker.js'),
 ]);
