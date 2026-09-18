@@ -94,9 +94,12 @@ jobs:
           node tests/admin-product-option-matrix.mjs
           node tests/admin-documents-pack.mjs
           node tests/admin-documents-v2.mjs
+          node tests/admin-documents-performance.mjs
           node tests/admin-documents-overdue.mjs
           node tests/admin-customers-crm.mjs
           node tests/admin-finance-dashboard.mjs
       - run: npm install --no-save --no-package-lock jsdom@30.0.1
+      - name: Run Documents fast-load DOM regression
+        run: node tests/admin-documents-fast-load.cjs
       - name: Run Shop DOM regression
         run: node tests/shop-ui.cjs
