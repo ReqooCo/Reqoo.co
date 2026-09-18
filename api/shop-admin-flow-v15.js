@@ -59,15 +59,52 @@ async function dashboardSummary(env){
     due:dueRows.map(x=>({...x,orderNo:orderNo(x),name:x.customer_name||'',total:Number(x.total_minor||0)/100})),trend:trend?.results||[],latest:(latest?.results||[]).map(mapOrder),pending:(pending?.results||[]).map(mapOrder)
   });
 }
-async function productsDashboard(env){
-  const [pr,vr,ir,sr]=await Promise.all([
-    env.DB.prepare('SELECT * FROM products ORDER BY created_at DESC').all(),
-    env.DB.prepare('SELECT * FROM product_variations ORDER BY created_at').all(),
-    env.DB.prepare('SELECT * FROM product_images ORDER BY is_cover DESC,sort_order,id').all(),
-    env.DB.prepare(`SELECT oi.product_id,MAX(oi.product_name_snapshot) product_name,SUM(oi.quantity) units_sold,SUM(oi.line_total_minor) revenue_minor,COUNT(DISTINCT oi.order_id) paid_orders,MAX(o.created_at) last_sale_at FROM order_items oi JOIN orders o ON o.id=oi.order_id WHERE o.payment_status='paid' GROUP BY oi.product_id ORDER BY revenue_minor DESC`).all()
-  ]);
-  const p=pr?.results||[],v=vr?.results||[],im=ir?.results||[];
-  const products=p.map(x=>{const image=im.find(y=>y.product_id===x.id)?.url||'';return{id:x.id,sku:x.sku||'',name:x.name,slug:x.slug||'',category:x.category||x.product_type,productType:x.product_type,fulfillmentType:x.fulfillment_type||'physical_shipping',description:x.description||'',shortDescription:x.short_description||'',short_description:x.short_description||'',desc:x.short_description||x.description||'',image,imageUrl:image,basePrice:Number(x.base_price_minor||0)/100,salePriceMinor:x.sale_price_minor==null?null:Number(x.sale_price_minor),active:x.status==='active',status:x.status,variants:v.filter(y=>y.product_id===x.id).map(y=>({id:y.id,name:y.name,sku:y.sku||'',price:Number((y.sale_price_minor??y.price_minor)||0)/100,priceMinor:Number(y.price_minor||0),salePrice:y.sale_price_minor==null?null:Number(y.sale_price_minor)/100,stock:y.stock_qty,active:y.status==='active',image:y.image_url||''}))}});
-  return J({ok:true,products,insights:sr?.results||[]});
+
+const PRODUCT_ROLLUP_CTE="WITH variant_rollup AS ("+
+" SELECT product_id,COUNT(*) variant_count,"+
+" SUM(CASE WHEN stock_qty IS NOT NULL THEN 1 ELSE 0 END) tracked_count,"+
+" COALESCE(SUM(CASE WHEN stock_qty IS NOT NULL THEN MAX(stock_qty,0) ELSE 0 END),0) stock_units,"+
+" SUM(CASE WHEN stock_qty IS NOT NULL AND stock_qty<=5 THEN 1 ELSE 0 END) low_count,"+
+" SUM(CASE WHEN stock_qty IS NOT NULL AND stock_qty>0 THEN 1 ELSE 0 END) positive_count"+
+" FROM product_variations GROUP BY product_id),"+
+" sales_rollup AS ("+
+" SELECT oi.product_id,COALESCE(SUM(oi.quantity),0) units_sold,COALESCE(SUM(oi.line_total_minor),0) revenue_minor,COUNT(DISTINCT oi.order_id) paid_orders,MAX(o.created_at) last_sale_at"+
+" FROM order_items oi JOIN orders o ON o.id=oi.order_id WHERE o.payment_status='paid' AND oi.product_id IS NOT NULL GROUP BY oi.product_id)";
+function productFilterSql(filter){
+  if(filter==='active')return "p.status='active'";
+  if(filter==='hidden')return "p.status<>'active'";
+  if(filter==='low')return "COALESCE(v.tracked_count,0)>0 AND COALESCE(v.positive_count,0)>0 AND COALESCE(v.low_count,0)>0";
+  if(filter==='out')return "COALESCE(v.tracked_count,0)>0 AND COALESCE(v.positive_count,0)=0";
+  if(filter==='untracked')return "COALESCE(v.tracked_count,0)=0";
+  return '1=1';
 }
-export async function onRequest({request,env}){if(request.method==='OPTIONS')return new Response(null,{status:204,headers:C});const d=await data(request),action=S(d.action);if(action==='dashboardSummary'||action==='productsDashboard'){if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);if(!env.DB)return J({ok:false,error:'D1 binding DB tidak dijumpai'},503);try{return await (action==='dashboardSummary'?dashboardSummary(env):productsDashboard(env))}catch(e){console.error('REQOO admin v15:',e);return J({ok:false,error:e?.message||String(e)},500)}}return legacy({request,env});}
+function mapProductListRow(x){return{id:x.id,sku:x.sku||'',name:x.name,slug:x.slug||'',category:x.category||x.product_type,productType:x.product_type,fulfillmentType:x.fulfillment_type||'physical_shipping',image:x.image||'',imageUrl:x.image||'',basePrice:Number(x.base_price_minor||0)/100,salePriceMinor:x.sale_price_minor==null?null:Number(x.sale_price_minor),active:x.status==='active',status:x.status,variantCount:Number(x.variant_count||0),trackedCount:Number(x.tracked_count||0),stockUnits:Number(x.stock_units||0),lowStock:Number(x.tracked_count||0)>0&&Number(x.positive_count||0)>0&&Number(x.low_count||0)>0,outOfStock:Number(x.tracked_count||0)>0&&Number(x.positive_count||0)===0,untracked:Number(x.tracked_count||0)===0,unitsSold:Number(x.units_sold||0),revenueMinor:Number(x.revenue_minor||0),paidOrders:Number(x.paid_orders||0),lastSaleAt:x.last_sale_at||null}}
+async function productsDashboard(d,env){
+  const q=S(d.q).toLowerCase(),filter=S(d.filter||'all').toLowerCase(),limit=Math.min(150,Math.max(20,Number(d.limit||80))),offset=Math.max(0,Math.min(1000000,Number(d.offset||0)));
+  const where=[productFilterSql(filter)],args=[];
+  if(q){where.push("(LOWER(COALESCE(p.name,'')) LIKE ? OR LOWER(COALESCE(p.sku,'')) LIKE ? OR LOWER(COALESCE(p.category,p.product_type,'')) LIKE ? OR EXISTS(SELECT 1 FROM product_variations pv WHERE pv.product_id=p.id AND LOWER(COALESCE(pv.sku,'')) LIKE ?))");for(let i=0;i<4;i++)args.push('%'+q+'%')}
+  const whereSql=' WHERE '+where.join(' AND ');
+  const rows=(await env.DB.prepare(PRODUCT_ROLLUP_CTE+
+    " SELECT p.*,COALESCE(v.variant_count,0) variant_count,COALESCE(v.tracked_count,0) tracked_count,COALESCE(v.stock_units,0) stock_units,COALESCE(v.low_count,0) low_count,COALESCE(v.positive_count,0) positive_count,COALESCE(s.units_sold,0) units_sold,COALESCE(s.revenue_minor,0) revenue_minor,COALESCE(s.paid_orders,0) paid_orders,s.last_sale_at,"+
+    " COALESCE((SELECT pi.url FROM product_images pi WHERE pi.product_id=p.id ORDER BY pi.is_cover DESC,pi.sort_order,pi.id LIMIT 1),'') image"+
+    " FROM products p LEFT JOIN variant_rollup v ON v.product_id=p.id LEFT JOIN sales_rollup s ON s.product_id=p.id"+
+    whereSql+" ORDER BY p.created_at DESC,p.id DESC LIMIT ? OFFSET ?").bind(...args,limit,offset).all()).results||[];
+  const totalRow=await env.DB.prepare(PRODUCT_ROLLUP_CTE+" SELECT COUNT(*) n FROM products p LEFT JOIN variant_rollup v ON v.product_id=p.id LEFT JOIN sales_rollup s ON s.product_id=p.id"+whereSql).bind(...args).first();
+  const stats=await env.DB.prepare(PRODUCT_ROLLUP_CTE+
+    " SELECT COUNT(*) total,SUM(CASE WHEN p.status='active' THEN 1 ELSE 0 END) active,"+
+    " SUM(CASE WHEN COALESCE(v.tracked_count,0)>0 AND COALESCE(v.positive_count,0)>0 AND COALESCE(v.low_count,0)>0 THEN 1 ELSE 0 END) low,"+
+    " SUM(CASE WHEN COALESCE(v.tracked_count,0)>0 AND COALESCE(v.positive_count,0)=0 THEN 1 ELSE 0 END) out"+
+    " FROM products p LEFT JOIN variant_rollup v ON v.product_id=p.id").first();
+  const revenue=await env.DB.prepare("SELECT COALESCE(SUM(oi.line_total_minor),0) revenue_minor FROM order_items oi JOIN orders o ON o.id=oi.order_id WHERE o.payment_status='paid'").first();
+  const total=Number(totalRow?.n||0);
+  return J({ok:true,products:rows.map(mapProductListRow),total,offset,limit,hasMore:offset+rows.length<total,stats:{total:Number(stats?.total||0),active:Number(stats?.active||0),low:Number(stats?.low||0),out:Number(stats?.out||0),revenueMinor:Number(revenue?.revenue_minor||0)},query:q,filter});
+}
+async function productDetail(d,env){
+  const id=S(d.productId||d.id);if(!id)return J({ok:false,error:'Product diperlukan'},400);
+  const x=await env.DB.prepare("SELECT p.*,COALESCE((SELECT pi.url FROM product_images pi WHERE pi.product_id=p.id ORDER BY pi.is_cover DESC,pi.sort_order,pi.id LIMIT 1),'') image FROM products p WHERE p.id=? LIMIT 1").bind(id).first();
+  if(!x)return J({ok:false,error:'Product tidak dijumpai'},404);
+  const vr=(await env.DB.prepare('SELECT * FROM product_variations WHERE product_id=? ORDER BY created_at,id').bind(id).all()).results||[];
+  const product={id:x.id,sku:x.sku||'',name:x.name,slug:x.slug||'',category:x.category||x.product_type,productType:x.product_type,product_type:x.product_type,fulfillmentType:x.fulfillment_type||'physical_shipping',fulfillment_type:x.fulfillment_type||'physical_shipping',description:x.description||'',shortDescription:x.short_description||'',short_description:x.short_description||'',desc:x.short_description||x.description||'',image:x.image||'',imageUrl:x.image||'',basePrice:Number(x.base_price_minor||0)/100,salePriceMinor:x.sale_price_minor==null?null:Number(x.sale_price_minor),active:x.status==='active',status:x.status,variants:vr.map(y=>({id:y.id,name:y.name,sku:y.sku||'',price:Number((y.sale_price_minor??y.price_minor)||0)/100,priceMinor:Number(y.price_minor||0),salePrice:y.sale_price_minor==null?null:Number(y.sale_price_minor)/100,stock:y.stock_qty,active:y.status==='active',image:y.image_url||''}))};
+  return J({ok:true,product});
+}
+export async function onRequest({request,env}){if(request.method==='OPTIONS')return new Response(null,{status:204,headers:C});const d=await data(request),action=S(d.action);if(action==='dashboardSummary'||action==='productsDashboard'||action==='productDetail'){if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);if(!env.DB)return J({ok:false,error:'D1 binding DB tidak dijumpai'},503);try{if(action==='dashboardSummary')return await dashboardSummary(env);if(action==='productsDashboard')return await productsDashboard(d,env);return await productDetail(d,env)}catch(e){console.error('REQOO admin v15:',e);return J({ok:false,error:e?.message||String(e)},500)}}return legacy({request,env});}

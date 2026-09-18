@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 const html=fs.readFileSync(new URL('../admin/products.html',import.meta.url),'utf8');
 const js=fs.readFileSync(new URL('../admin/product-option-matrix.js',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../admin/product-options.css',import.meta.url),'utf8');
-assert.match(html,/product-option-matrix\.js\?v=1/,'Products editor must load latest options-first helper');
+assert.match(html,/product-option-matrix\.js\?v=2/,'Products editor must load latest options-first helper');
 assert.match(html,/product-options\.css\?v=1/,'Products editor must load latest options-first styling');
 assert.match(html,/<h3>Pilihan produk<\/h3>/,'Product card should use seller-facing options language');
 assert.match(js,/Ada pilihan/,'Options UI must have a simple enable switch');
@@ -18,5 +18,6 @@ assert.match(js,/if\(secondActive&&!secondary\.length\)/,'Incomplete second opti
 assert.match(js,/looksLikeSize/,'Existing options must identify size-like values');
 assert.match(js,/swapDimensions/,'Legacy color-first combinations must normalize to size-first display');
 assert.match(js,/Stok & SKU/,'Generated variant details should remain secondary/collapsible');
+assert.match(js,/reqoo:product-editor-hydrate/,'Options UI must hydrate after lazy product detail finishes');
 assert.match(css,/\.rqOptionHero/,'Options-first UI must have dedicated responsive styling');
 console.log('PASS: size-first options editor present with safe automatic combinations.');
