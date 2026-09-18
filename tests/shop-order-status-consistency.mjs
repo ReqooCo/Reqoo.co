@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 
-const js=fs.readFileSync('admin/orders-v1.js','utf8');
-const css=fs.readFileSync('admin/orders-v1.css','utf8');
+const js=fs.readFileSync('admin/orders.js','utf8');
+const css=fs.readFileSync('admin/orders.css','utf8');
 
 assert.match(js,/function bucket\(o\)/,'current Orders status normalizer must exist');
 const fn=js.slice(js.indexOf('function bucket'),js.indexOf('function label'));
