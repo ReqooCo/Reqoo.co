@@ -176,7 +176,7 @@ async function ordersDashboard(d,env){
     const phone=q.replace(/[^0-9]/g,'');args.push('%'+q+'%','%'+q+'%',phone?'%'+phone+'%':'__NO_PHONE_MATCH__','%'+q+'%');
   }
   const whereSql=' WHERE '+where.join(' AND ');
-  const rows=(await env.DB.prepare("SELECT o.*,c.name customer_name,c.phone,c.email FROM orders o LEFT JOIN customers c ON c.id=o.customer_id"+whereSql+" ORDER BY o.created_at DESC,o.id DESC LIMIT ? OFFSET ?").bind(...args,limit,offset).all()).results||[];
+  const rows=(await env.DB.prepare("SELECT o.*,c.name customer_name,c.phone,c.email,(SELECT GROUP_CONCAT(d.type) FROM reqoo_documents d WHERE d.order_id=o.id) document_types FROM orders o LEFT JOIN customers c ON c.id=o.customer_id"+whereSql+" ORDER BY o.created_at DESC,o.id DESC LIMIT ? OFFSET ?").bind(...args,limit,offset).all()).results||[];
   const totalRow=await env.DB.prepare("SELECT COUNT(*) n FROM orders o LEFT JOIN customers c ON c.id=o.customer_id"+whereSql).bind(...args).first();
   const stats=await env.DB.prepare("SELECT COUNT(*) total,"+
     " SUM(CASE WHEN NOT "+ORDER_CLOSED_SQL+" AND NOT "+ORDER_READY_SQL+" THEN 1 ELSE 0 END) pending,"+
