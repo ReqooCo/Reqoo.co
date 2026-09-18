@@ -22,3 +22,6 @@ body{margin:0}.rqDocsApp{width:min(1180px,calc(100% - 32px));margin:0 auto;paddi
  body.rq-admin-shell.rqDocsPage .rqDocsHistoryList{gap:0!important;margin-top:0!important}
  body.rq-admin-shell.rqDocsPage .rqDocsUnifiedPanel{border-radius:12px!important}
 }
+
+/* Preview must expand to the actual document height. */
+.rqDocsPreview .rqPaper{aspect-ratio:auto!important;min-height:0!important;overflow:visible!important}
