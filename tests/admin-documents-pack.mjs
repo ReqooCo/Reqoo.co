@@ -6,5 +6,5 @@ const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8'
 assert.match(html,/quotation/i);assert.match(html,/invoice/i);assert.match(html,/receipt/i);assert.match(html,/documents\.js\?v=4/);
 assert.match(js,/listOrders/);assert.match(js,/listDocuments/);assert.match(js,/Pautan rasmi REQOO\.CO/);assert.doesNotMatch(js,/\?v='\+rev/,'WhatsApp document URL should stay as short as possible');assert.match(js,/rqPaperPaymentTerms/);assert.match(js,/createDocument/);assert.match(js,/saveDocumentSettings/);assert.match(js,/w\.print\(\)/);
 assert.match(shell,/Documents/);assert.match(shell,/\/admin\/documents\.html/);
-assert.match(worker,/settings\|documents/);assert.match(worker,/admin-shell\.js\?v=1/);
+assert.match(worker,/settings\|documents/);assert.match(worker,/admin-shell\.js\?v=2/);
 console.log('PASS: current Admin Documents runtime is wired to canonical shared Admin assets.');
