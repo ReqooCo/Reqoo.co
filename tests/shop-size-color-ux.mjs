@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 const shop=fs.readFileSync('shop/order-whatsapp-v1.js','utf8');
 const landing=fs.readFileSync('tumbler/index.html','utf8');
-const runtime=fs.readFileSync('tumbler/tumbler-order-v4.js','utf8');
+const runtime=fs.readFileSync('tumbler/tumbler-order.js','utf8');
 assert.doesNotThrow(()=>new Function(shop),'Shop enhancer must parse');
 assert.doesNotThrow(()=>new Function(runtime),'Tumbler order runtime must parse');
 assert.match(shop,/SAIZ/);

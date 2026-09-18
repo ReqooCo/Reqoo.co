@@ -49,7 +49,9 @@ jobs:
           node --check shop/admin-order-production-v1.js
           node --check shop/account-premium-v1.js
           node --check shop/postpurchase-v1.js
-          node --check tumbler/tumbler-order-v4.js
+          node --check tumbler/tumbler-order.js
+          node --check plaque/plaque-store.js
+          node --check landing-runtime.js
           for file in api/shop-flow-v*.js api/shop-admin-flow-v*.js api/worker.js; do node --check "$file"; done
       - name: Run Shop backend and routing regressions
         run: |
@@ -77,6 +79,8 @@ jobs:
           node tests/shop-order-status-consistency.mjs
           node tests/shop-order-production-detail.mjs
           node tests/shop-size-color-ux.mjs
+          node tests/storefront-sales-flow.mjs
+          node tests/storefront-asset-integrity.mjs
           node tests/admin-asset-integrity.mjs
           node tests/api-version-chain.mjs
           node tests/admin-premium-shell.mjs

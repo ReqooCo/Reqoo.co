@@ -44,13 +44,13 @@ async function injectLandingRuntime(response){
   const type=response.headers.get('content-type')||'';
   if(!type.toLowerCase().includes('text/html'))return response;
   const html=await response.text();
-  const cleaned=html.replace(/<script[^>]+src=["']\/landing-runtime\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi,'').replace(/<link[^>]+href=["']\/landing-premium-v[0-9]+\.css(?:\?[^"']*)?["'][^>]*>/gi,'');
-  const withUi=cleaned.replace('</head>','<link rel="stylesheet" href="/landing-premium-v2.css?v=2"></head>');
+  const cleaned=html.replace(/<script[^>]+src=["']\/landing-runtime\.js(?:\?[^"']*)?["'][^>]*><\/script>/gi,'').replace(/<link[^>]+href=["']\/landing-premium(?:-v[0-9]+)?\.css(?:\?[^"']*)?["'][^>]*>/gi,'');
+  const withUi=cleaned.replace('</head>','<link rel="stylesheet" href="/landing-premium.css?v=1"></head>');
   const body=withUi.replace('</body>','<script src="/landing-runtime.js?v=2"></script></body>');
   const headers=new Headers(response.headers);
   headers.set('cache-control','no-store, no-cache, must-revalidate, max-age=0');
   headers.set('pragma','no-cache');
-  headers.set('x-reqoo-page','campaign-landing-v2');
+  headers.set('x-reqoo-page','campaign-landing');
   return new Response(body,{status:response.status,statusText:response.statusText,headers});
 }
 

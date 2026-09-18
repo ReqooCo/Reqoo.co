@@ -7,7 +7,7 @@ const [shop, core, commerce, tumbler, tumblerRuntime, plaque, worker] = await Pr
   read('shop/shop-core-v1.js'),
   read('shop/botanical-commerce-v1.css'),
   read('tumbler/index.html'),
-  read('tumbler/tumbler-order-v4.js'),
+  read('tumbler/tumbler-order.js'),
   read('plaque/index.html'),
   read('_web_worker.js'),
 ]);
@@ -29,7 +29,7 @@ assert.match(tumblerRuntime, /aria-label="Kuantiti \$\{label\}"/, 'Tumbler quant
 assert.match(tumblerRuntime, /Sila isi nombor WhatsApp yang sah/, 'Tumbler checkout must validate WhatsApp numbers');
 assert.match(tumblerRuntime, /Sila isi alamat lengkap untuk penghantaran/, 'Paid shipping must require an address');
 assert.doesNotThrow(()=>new Function(tumblerRuntime),'Tumbler runtime must parse');
-for (const id of ['variantSelect', 'unitPrice', 'qty', 'customText', 'artwork', 'note']) {
+for (const id of ['mVariant', 'mUnit', 'mQty', 'mCustom', 'mArtwork', 'mNote']) {
   assert.match(plaque, new RegExp(`label for="${id}"`), `Plaque field ${id} must have a linked label`);
 }
 
