@@ -15,3 +15,21 @@
  .rqOrderActions{margin-top:11px!important;gap:6px!important}
  .rqOrderActions .btn{min-height:31px!important;padding:6px 9px!important;font-size:8.5px!important}
 }
+
+/* Orders Detail V2 — canonical order workspace replaces legacy detail dependency. */
+.rqDrawerStatus{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;padding-bottom:12px;border-bottom:1px solid var(--line);color:var(--muted);font-size:10px;font-weight:800}
+.rqDetail span{display:block;margin-top:3px;color:var(--muted);font-size:9px;overflow-wrap:anywhere}.rqDetailWide{grid-column:1/-1}.rqMoneyOk{color:var(--green)!important}.rqMoneyDue{color:var(--red)!important}
+.rqOrderSection{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}.rqOrderSectionHead small{display:block;color:var(--gold);font-size:8px;font-weight:900;letter-spacing:1.1px}.rqOrderSectionHead h3{margin:4px 0 10px;font-size:15px}
+.rqOrderAddress{border:1px solid var(--line);border-radius:11px;padding:12px;background:#faf9f6}.rqOrderAddress b,.rqOrderAddress span{display:block}.rqOrderAddress span{margin-top:2px;color:var(--muted);font-size:10px}.rqOrderAddress p{margin:8px 0 0;white-space:pre-line;color:var(--text);font-size:11px;line-height:1.5}
+.rqOrderItems{display:grid;gap:9px}.rqOrderItem{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}.rqOrderItemTop{display:flex;align-items:start;justify-content:space-between;gap:12px}.rqOrderItemTop small{color:var(--gold);font-size:8px;font-weight:900;letter-spacing:.9px}.rqOrderItemTop h4{margin:3px 0 2px;font-size:13px}.rqOrderItemTop span{color:var(--muted);font-size:10px}.rqOrderItemTop>b{white-space:nowrap;font-size:12px}
+.rqOrderCustom{display:grid;gap:6px;margin-top:10px}.rqOrderCustom>div{padding:8px 9px;border-radius:8px;background:#f7f6f2}.rqOrderCustom span{display:block;color:var(--muted);font-size:7.5px;font-weight:900;letter-spacing:.7px}.rqOrderCustom strong{display:block;margin-top:3px;font-size:11px;white-space:pre-line}.rqOrderNoCustom{margin-top:8px;color:var(--muted);font-size:9px}.rqArtworkBtn{margin-top:9px!important;padding:7px 9px!important;font-size:9px!important}
+.rqOrderPayments{display:grid;gap:7px}.rqOrderPayment{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:10px;padding:10px}.rqOrderPayment b{display:block;font-size:10.5px}.rqOrderPayment span{display:block;margin-top:3px;color:var(--muted);font-size:8.5px}.rqOrderPayment strong{color:var(--green);font-size:11px;white-space:nowrap}
+.rqOrderEmpty,.rqOrderLoading{padding:16px;border:1px dashed var(--line);border-radius:10px;color:var(--muted);font-size:10px;text-align:center}.rqOrderLoading{margin-top:16px}
+.rqOrderDrawer[aria-busy="true"] .rqOrderDrawerCard{cursor:progress}
+@media(max-width:600px){
+ .rqDrawerStatus{margin-top:8px;padding-bottom:8px;font-size:8px}
+ .rqOrderSection{margin-top:12px;padding-top:11px}.rqOrderSectionHead h3{margin-bottom:7px;font-size:12px}
+ .rqOrderAddress,.rqOrderItem{padding:9px}.rqOrderItemTop h4{font-size:11px}.rqOrderItemTop span{font-size:8.5px}.rqOrderItemTop>b{font-size:10px}
+ .rqOrderCustom{margin-top:7px}.rqOrderCustom>div{padding:6px 7px}.rqOrderCustom strong{font-size:9.5px}
+ .rqOrderPayment{padding:7px 8px}.rqOrderPayment b{font-size:9px}.rqOrderPayment span{font-size:7.5px}.rqOrderPayment strong{font-size:9.5px}
+}
