@@ -140,6 +140,7 @@ export default{
   async fetch(request,env,ctx){
     const url=new URL(request.url),host=url.hostname.toLowerCase();
     if(url.pathname==='/api'||url.pathname.startsWith('/api/'))return proxyApi(request,url);
+    if(host==='reqoo.co'&&(url.pathname==='/admin'||url.pathname==='/admin/'||url.pathname.startsWith('/admin/'))){const target=new URL(request.url);target.hostname='admin.reqoo.co';return Response.redirect(target.toString(),308)}
 
     if(host==='reqoo.co'&&/^\/d\/[A-Za-z0-9-]+\/?$/.test(url.pathname)){
       const response=await env.ASSETS.fetch(assetRequest('/admin/document-public.html',request));
