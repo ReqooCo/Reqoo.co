@@ -23,7 +23,7 @@ async function setFulfillment(request,d,env,status){
   try{
     const order=await env.DB.prepare('SELECT id,payment_status FROM orders WHERE id=? OR order_no=? LIMIT 1').bind(key,key).first();
     if(!order)return J({ok:false,error:'Order tidak dijumpai'},404);
-    if(!['paid','partial'].includes(S(order.payment_status).toLowerCase()))return J({ok:false,error:'Deposit atau bayaran perlu direkodkan sebelum status kerja boleh diubah'},409);
+    if(!['paid','partial'].includes(S(order.payment_status).toLowerCase()))return J({ok:false,error:'Bayaran perlu disahkan atau deposit perlu direkodkan sebelum status kerja boleh diubah'},409);
     await env.DB.prepare('UPDATE orders SET fulfillment_status=?,updated_at=? WHERE id=?').bind(status,NOW(),order.id).run();
     return J({ok:true,status});
   }catch(err){
