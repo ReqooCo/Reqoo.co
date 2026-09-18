@@ -4,9 +4,9 @@ const js=fs.readFileSync(new URL('../admin/production.js',import.meta.url),'utf8
 const css=fs.readFileSync(new URL('../admin/production.css',import.meta.url),'utf8');
 const shell=fs.readFileSync(new URL('../admin/admin-shell.js',import.meta.url),'utf8');
 const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8');
-assert.match(html,/PRODUCTION CONTROL/);assert.match(html,/production\.css\?v=5/);assert.match(html,/production\.js\?v=4/);
+assert.match(html,/PRODUCTION CONTROL/);assert.match(html,/production\.css\?v=5/);assert.match(html,/production\.js\?v=5/);
 assert.doesNotMatch(html,/admin-(?:base|flow|shell).*\.(?:css|js)/,'shared Admin assets must be owned by routing, not duplicated in page HTML');
-assert.match(worker,/admin-base\.css\?v=1/);assert.match(worker,/admin-flow\.css\?v=2/);assert.match(worker,/admin-shell\.js\?v=2/);
+assert.match(worker,/admin-base\.css\?v=1/);assert.match(worker,/admin-flow\.css\?v=2/);assert.match(worker,/admin-shell\.js\?v=3/);
 assert.match(js,/productionDashboard/);assert.match(js,/getOrder/);assert.match(js,/paymentSummary/);assert.match(js,/customization_snapshot_json/);assert.match(js,/TEKS \/ NAMA/);assert.match(js,/NOTA CUSTOMER/);assert.match(js,/Lihat Artwork Customer/);assert.match(js,/data-artwork-item/);assert.match(js,/\/admin\/orders\.html\?order=/);assert.doesNotMatch(js,/MutationObserver/);assert.doesNotMatch(js,/setInterval/);assert.doesNotMatch(js,/visibilitychange/);assert.doesNotMatch(js,/focus/);
 assert.match(js,/saveProductionMeta/);assert.match(js,/verifyPayment/);assert.match(js,/\['paid','partial'\]/,'Partial payment must unlock production');assert.match(js,/Deposit Dibayar/);assert.match(js,/Order kini Ready untuk mula proses/);assert.match(js,/status/);assert.match(js,/processing/);assert.match(js,/fulfilled/);
 assert.match(css,/\.rqProductionDrawer/);assert.match(css,/\.rqProdWorkItem/);assert.match(css,/\.rqProdInstructions/);assert.match(css,/\.rqProdSummaryGrid/);assert.match(css,/z-index:980/,'Production alert must sit above the mobile Admin dock');assert.match(css,/bottom:calc\(88px \+ env\(safe-area-inset-bottom\)\)/,'Mobile alert must clear the bottom dock');assert.match(css,/@media\(max-width:600px\)/);
