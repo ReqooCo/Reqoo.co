@@ -250,7 +250,16 @@ async function customerDetail(d,env){
   const key=S(d.customerId||d.id);if(!key)return J({ok:false,error:'Customer diperlukan'},400);
   const customer=await env.DB.prepare('SELECT * FROM customers WHERE id=? LIMIT 1').bind(key).first();
   if(!customer)return J({ok:false,error:'Customer tidak dijumpai'},404);
-  const rollup=await env.DB.prepare(CUSTOMER_ROLLUP_CTE+" SELECT COALESCE(o.order_count,0) order_count,COALESCE(o.collected_minor,0) collected_minor,COALESCE(o.outstanding_minor,0) outstanding_minor FROM customers c LEFT JOIN order_rollup o ON o.customer_id=c.id WHERE c.id=? LIMIT 1").bind(customer.id).first();
+  const rollup=await env.DB.prepare("WITH customer_orders AS ("+
+    " SELECT o.id,o.payment_status,o.fulfillment_status,o.total_minor,"+
+    " COALESCE((SELECT d.total_minor FROM reqoo_documents d WHERE d.order_id=o.id AND d.type='invoice' ORDER BY d.created_at,d.id LIMIT 1),o.total_minor) billing_total_minor,"+
+    " COALESCE((SELECT SUM(p.amount_minor) FROM reqoo_payments p WHERE p.order_id=o.id AND p.status='confirmed'),0) ledger_paid_minor"+
+    " FROM orders o WHERE o.customer_id=?),"+
+    " normalized AS (SELECT *,CASE WHEN ledger_paid_minor>0 THEN ledger_paid_minor WHEN payment_status='paid' THEN billing_total_minor ELSE 0 END raw_paid_minor FROM customer_orders)"+
+    " SELECT COUNT(*) order_count,"+
+    " COALESCE(SUM(raw_paid_minor),0) collected_minor,"+
+    " COALESCE(SUM(CASE WHEN fulfillment_status='cancelled' OR payment_status IN ('failed','cancelled','refunded') THEN 0 ELSE MAX(0,billing_total_minor-raw_paid_minor) END),0) outstanding_minor"+
+    " FROM normalized").bind(customer.id).first();
   const docStats=await env.DB.prepare("SELECT COUNT(DISTINCT d.id) document_count,COALESCE(SUM(CASE WHEN d.type='quotation' THEN 1 ELSE 0 END),0) quotation_count,COALESCE(SUM(CASE WHEN d.type='receipt' THEN 1 ELSE 0 END),0) receipt_document_count FROM reqoo_documents d WHERE d.order_id IN (SELECT id FROM orders WHERE customer_id=?) OR (TRIM(COALESCE(d.customer_phone,''))<>'' AND REPLACE(REPLACE(REPLACE(d.customer_phone,' ',''),'-',''),'+','')=REPLACE(REPLACE(REPLACE(COALESCE(?,''),' ',''),'-',''),'+','')) OR (TRIM(COALESCE(d.customer_email,''))<>'' AND LOWER(d.customer_email)=LOWER(COALESCE(?,'')))").bind(customer.id,customer.phone,customer.email).first();
   const payStats=await env.DB.prepare("SELECT COUNT(*) receipt_count FROM reqoo_payments p JOIN orders o ON o.id=p.order_id WHERE o.customer_id=? AND p.status='confirmed'").bind(customer.id).first();
   const recentOrders=(await env.DB.prepare("SELECT o.id,o.order_no,o.total_minor,o.payment_status,o.fulfillment_status,o.created_at FROM orders o WHERE o.customer_id=? ORDER BY o.created_at DESC,o.id DESC LIMIT 12").bind(customer.id).all()).results||[];
