@@ -1,9 +1,8 @@
 (()=>{
 'use strict';
-const API='/api/shop-admin',TOKEN_KEY='reqoo_admin_token',FRESH_MS=30000;
+const API='/api/shop-admin',FRESH_MS=30000;
 const $=s=>document.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const token=()=>localStorage.getItem(TOKEN_KEY)||document.cookie.match(/(?:^|;\s*)reqoo_admin_token=([^;]+)/)?.[1]||'';
 const money=n=>'RM'+(Number(n||0)/100).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2});
 let busy=false,lastLoad=0,data=null;
 
@@ -73,7 +72,7 @@ function render(){
 }
 async function load(force=false){
  ensure();if(!token()||busy)return;if(!force&&data&&Date.now()-lastLoad<FRESH_MS){render();return}busy=true;$('#rqDashRefresh').disabled=true;$('#rqDashFoot').textContent='Memuatkan command center…';
- try{const r=await fetch(`${API}?action=dashboardSummary`,{headers:{'X-Admin-Token':decodeURIComponent(token())},cache:'no-store'}),j=await r.json().catch(()=>({}));if(!r.ok||!j.ok)throw Error(j.error||'Gagal memuatkan dashboard');data=j;lastLoad=Date.now();render()}catch(e){$('#rqDashFoot').textContent=e.message||'Dashboard gagal dimuatkan.'}finally{busy=false;$('#rqDashRefresh').disabled=false}
+ try{const r=await fetch(`${API}?action=dashboardSummary`,{cache:'no-store'}),j=await r.json().catch(()=>({}));if(!r.ok||!j.ok)throw Error(j.error||'Gagal memuatkan dashboard');data=j;lastLoad=Date.now();render()}catch(e){$('#rqDashFoot').textContent=e.message||'Dashboard gagal dimuatkan.'}finally{busy=false;$('#rqDashRefresh').disabled=false}
 }
 function boot(){ensure();if(token())load()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
