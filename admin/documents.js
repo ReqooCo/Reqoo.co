@@ -60,7 +60,7 @@ function renderHistory(){
 }
 async function loadSettings(force=false){
   if(settingsLoaded&&!force)return docSettings;
-  if(settingsLoading&&!force)return settingsLoading;
+  if(settingsLoading)return settingsLoading;
   settingsLoading=api('documentSettings').then(s=>{
     docSettings=s.settings||{};settingsLoaded=true;fillSettings();fillQuoteDefaults();return docSettings;
   }).catch(e=>{console.warn('REQOO document settings:',e);return docSettings}).finally(()=>{settingsLoading=null});
@@ -68,7 +68,7 @@ async function loadSettings(force=false){
 }
 async function loadOrders(force=false){
   if(ordersLoaded&&!force)return orders;
-  if(ordersLoading&&!force)return ordersLoading;
+  if(ordersLoading)return ordersLoading;
   $('docState').textContent='Memuatkan order…';
   ordersLoading=api('listOrders',{limit:100}).then(o=>{
     orders=Array.isArray(o.orders)?o.orders:[];ordersLoaded=true;
@@ -77,16 +77,11 @@ async function loadOrders(force=false){
   }).catch(e=>{$('docState').textContent=e.message;toast(e.message,true);return orders}).finally(()=>{ordersLoading=null});
   return ordersLoading;
 }
-function idleSettings(){
-  if(settingsLoaded||settingsLoading)return;
-  const run=()=>loadSettings();
-  if('requestIdleCallback'in window)requestIdleCallback(run,{timeout:1600});else setTimeout(run,900);
-}
 async function load(force=false){
-  if(docsLoading&&!force)return docsLoading;
+  if(docsLoading)return docsLoading;
   if(!documents.length)$('docHistory').innerHTML='<div class="rqDocsState">Memuatkan dokumen…</div>';
   docsLoading=api('listDocuments',{limit:150}).then(d=>{
-    documents=Array.isArray(d.documents)?d.documents:[];renderHistory();idleSettings();return documents;
+    documents=Array.isArray(d.documents)?d.documents:[];renderHistory();return documents;
   }).catch(e=>{$('docHistory').innerHTML='<div class="rqDocsState">'+esc(e.message)+'</div>';toast(e.message,true);throw e}).finally(()=>{docsLoading=null});
   const result=await docsLoading;
   if(ordersLoaded)loadOrders(true);
