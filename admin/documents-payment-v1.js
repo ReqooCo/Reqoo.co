@@ -4,7 +4,7 @@ const API='/api/shop-admin';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>'RM'+(Number(n||0)/100).toFixed(2);
-let docs=[],summaries=new Map(),payments=[],paymentsHasMore=false,paymentOffset=0,paymentQuery='',activeInvoice=null,activeReceipt=null,refreshTimer=0,searchTimer=0,loading=false,initialReady=false;
+let docs=[],summaries=new Map(),payments=[],paymentsHasMore=false,paymentOffset=0,paymentQuery='',activeInvoice=null,activeReceipt=null,refreshTimer=0,searchTimer=0,loading=false,refreshQueued=false,initialReady=false;
 async function api(action,extra={},method='GET'){
  const url=new URL(API,location.origin),opt={method,headers:{},cache:'no-store'};
  if(method==='GET'){url.searchParams.set('action',action);Object.entries(extra).forEach(([k,v])=>{if(v!==undefined&&v!==null&&v!=='')url.searchParams.set(k,v)})}
@@ -62,7 +62,7 @@ function receiptPaper(r){const c=r.company||{},company=[c.address,c.phone,c.emai
 function printReceipt(){if(!activeReceipt)return;const html=receiptPaper(activeReceipt),w=window.open('','_blank');if(!w)return alert('Benarkan popup untuk Print / Save PDF.');w.document.write(`<!doctype html><html><head><title>${esc(activeReceipt.receipt_number)}</title><link rel="stylesheet" href="/admin/documents-payment-v1.css?v=2"><style>body{margin:0;background:#fff;font-family:Arial,sans-serif}.rqReceiptPaper{max-width:760px;margin:auto;padding:34px}@media print{.rqReceiptPaper{padding:18px}}</style></head><body>${html}</body></html>`);w.document.close();w.focus();setTimeout(()=>w.print(),350)}
 function snapshotPayload(data){return{documents:docs.slice(),payments:payments.slice(),summaries:[...summaries.values()],stats:data.stats||{},paymentsHasMore,at:Date.now()}}
 async function refreshData(resetPayments=true){
- if(loading)return;loading=true;ensureModal();
+ if(loading){if(resetPayments)refreshQueued=true;return}loading=true;ensureModal();
  try{
   const shared=Array.isArray(window.__REQOO_DOCUMENTS__)?window.__REQOO_DOCUMENTS__:[],orderIds=[...new Set(shared.filter(x=>x.type==='invoice').map(x=>String(x.order_id||'')).filter(Boolean))];
   paymentQuery=($('#docUnifiedSearch')?.value||'').trim();
@@ -71,7 +71,7 @@ async function refreshData(resetPayments=true){
   if(resetPayments){payments=Array.isArray(d.payments)?d.payments:[];paymentOffset=payments.length;clearPaymentRows()}else{const seen=new Set(payments.map(x=>String(x.id)));for(const p of d.payments||[])if(!seen.has(String(p.id))){payments.push(p);seen.add(String(p.id))}paymentOffset=Number(d.paymentOffset||0)+(d.payments||[]).length}
   paymentsHasMore=!!d.paymentsHasMore;enrichInvoices();injectPaymentReceipts();
   const snapshot=snapshotPayload(d);window.__REQOO_DOCS_FINANCE__=snapshot;document.dispatchEvent(new CustomEvent('rq:documents-finance-ready',{detail:snapshot}))
- }catch(e){console.warn('REQOO payment UI:',e)}finally{loading=false}
+ }catch(e){console.warn('REQOO payment UI:',e)}finally{loading=false;if(refreshQueued){refreshQueued=false;setTimeout(()=>refreshData(true),0)}}
 }
 async function loadMorePayments(){if(!paymentsHasMore||loading)return;const b=$('#rqLoadMorePayments');if(b){b.disabled=true;b.textContent='Memuatkan…'}await refreshData(false)}
 function scheduleRefresh(ms=220){if(!initialReady)return;clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>refreshData(true),ms)}
