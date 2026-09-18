@@ -38,21 +38,29 @@ const noTextMatch=await call('customerDashboard',{q:'ZZZNOPE',limit:120});assert
 
 const detail=await call('customerDetail',{customerId:'c0'});
 assert.equal(detail.ok,true);
-assert.equal(detail.orders.length,2);
-assert.equal(detail.payments.length,1);
-assert.equal(detail.documents.length,1);
+assert.equal(detail.summary.orderCount,2);
+assert.equal(detail.summary.documentCount,1);
+assert.equal(detail.summary.receiptCount,1);
 assert.equal(detail.summary.collectedMinor,1500);
 assert.equal(detail.summary.outstandingMinor,1500);
-assert.equal(detail.paymentSummaries.find(x=>x.orderId==='o2').balanceMinor,1500);
+assert.ok(detail.activity.length>0);
+assert.equal(detail.orders,undefined);
+const orderRecords=await call('customerRecords',{customerId:'c0',type:'orders',limit:40});
+assert.equal(orderRecords.records.length,2);
+assert.equal(orderRecords.records.find(x=>x.id==='o2').balanceMinor,1500);
+const paymentRecords=await call('customerRecords',{customerId:'c0',type:'payments',limit:40});
+assert.equal(paymentRecords.records.length,1);
+const documentRecords=await call('customerRecords',{customerId:'c0',type:'documents',limit:40});
+assert.equal(documentRecords.records.length,1);
 
 const ui=fs.readFileSync(new URL('../admin/customers.js',import.meta.url),'utf8');
 assert.match(ui,/customerDashboard/);
-assert.match(ui,/customerDetail/);
+assert.match(ui,/customerDetail/);\nassert.match(ui,/customerRecords/);
 assert.doesNotMatch(ui,/listCustomers/);
 assert.doesNotMatch(ui,/listOrders/);
 assert.doesNotMatch(ui,/listDocuments/);
 assert.doesNotMatch(ui,/listPayments/);
 assert.doesNotMatch(ui,/paymentSummary/);
-assert.match(ui,/setTimeout\(load,260\)/);
-console.log('PASS: CRM list uses one bounded aggregate request while exact customer detail stays lazy and global KPIs remain complete.');
+assert.match(ui,/setTimeout\(load,260\)/);\nassert.match(ui,/limit:40/);\nassert.match(ui,/data-crm-more/);
+console.log('PASS: CRM list and profile KPIs stay complete while customer detail records are loaded in bounded pages.');
 sqlite.close();
