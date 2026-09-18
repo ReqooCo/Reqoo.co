@@ -34,6 +34,7 @@ assert.equal(Number(dash.customers[0].outstanding_minor),1500);
 const search=await call('customerDashboard',{q:'Customer 519',limit:120});
 assert.equal(search.customers.length,1);
 assert.equal(search.customers[0].id,'c519');
+const noTextMatch=await call('customerDashboard',{q:'ZZZNOPE',limit:120});assert.equal(noTextMatch.customers.length,0,'text-only CRM search must not match every phone via an empty wildcard');
 
 const detail=await call('customerDetail',{customerId:'c0'});
 assert.equal(detail.ok,true);
