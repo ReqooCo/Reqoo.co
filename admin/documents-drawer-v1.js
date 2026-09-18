@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const API='/api/shop-admin',TOKEN_KEY='reqoo_admin_token';
+const API='/api/shop-admin';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>'RM'+(Number(n||0)/100).toFixed(2);
@@ -13,8 +13,8 @@ let docs=[],payments=[],selectedNumber='',loading=false,cacheAt=0;
 
 async function api(action,extra={}){
  const url=new URL(API,location.origin);url.searchParams.set('action',action);Object.entries(extra).forEach(([k,v])=>{if(v!==undefined&&v!==null&&v!=='')url.searchParams.set(k,v)});
- const r=await fetch(url,{headers:{'X-Admin-Token':localStorage.getItem(TOKEN_KEY)||''},cache:'no-store'});let d={};try{d=await r.json()}catch{}
- if(r.status===401){location.href='/admin/?return='+encodeURIComponent(location.pathname);throw Error('Sesi Admin tamat.')}
+ const r=await fetch(url,{cache:'no-store'});let d={};try{d=await r.json()}catch{}
+ if(r.status===401){location.href='/admin/?return='+encodeURIComponent(location.pathname+location.search);throw Error('Sesi Admin tamat.')}
  if(!r.ok||d.ok===false)throw Error(d.error||'Request gagal');return d;
 }
 function ensureDrawer(){
