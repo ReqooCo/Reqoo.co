@@ -15,6 +15,7 @@ for(const [host,path] of [['shop.reqoo.co','/shop/assets/maybank-qr.jpeg'],['sho
 }
 const adminRedirect=await worker.fetch(new Request('https://reqoo.co/admin/orders.html?order=RQ-123'),{ASSETS:{fetch:async()=>{throw new Error('Admin canonical redirect must occur before asset fetch')}}});
 assert.equal(adminRedirect.status,308);assert.equal(adminRedirect.headers.get('location'),'https://admin.reqoo.co/admin/orders.html?order=RQ-123');
+const legacyAdminRedirect=await worker.fetch(new Request('https://reqoo.co/shop/admin.html#orders'),{ASSETS:{fetch:async()=>{throw new Error('Legacy Admin canonical redirect must occur before asset fetch')}}});assert.equal(legacyAdminRedirect.status,308);assert.equal(new URL(legacyAdminRedirect.headers.get('location')).hostname,'admin.reqoo.co');
 const html='<!doctype html><html><head><title>REQOO.CO — Shop</title></head><body><div id="heroProduct"></div></body></html>';
 const rendered=await worker.fetch(new Request('https://shop.reqoo.co/'),{ASSETS:{fetch:async()=>new Response(html,{headers:{'content-type':'text/html;charset=UTF-8'}})}});
 const body=await rendered.text();
