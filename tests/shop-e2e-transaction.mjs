@@ -69,8 +69,8 @@ async function adminCall(action,data={}){
   const request=new Request('https://api.reqoo.co/api/shop-admin',{method:'POST',headers:{'content-type':'application/json','X-Admin-Token':'e2e-admin'},body:JSON.stringify({action,...data})});
   const response=await admin({request,env});
   const type=response.headers.get('content-type')||'';
-  if(type.includes('json'))return {status:response.status,...await response.json()};
-  return {status:response.status,text:await response.text()};
+  if(type.includes('json'))return {httpStatus:response.status,...await response.json()};
+  return {httpStatus:response.status,text:await response.text()};
 }
 
 try{
