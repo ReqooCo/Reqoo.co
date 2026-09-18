@@ -58,7 +58,7 @@ assert.match(html,/id="docConvert"/);
 assert.match(html,/SSM REGISTRATION NO/);
 assert.match(html,/id="qDeposit"[^>]*value="50"/);
 assert.match(html,/documents\.js\?v=6/);
-assert.match(html,/documents\.css\?v=2/);
+assert.match(html,/documents\.css\?v=3/);
 assert.match(html,/documents-payment-v1\.js\?v=3/);
 assert.match(html,/documents-drawer-v1\.js\?v=2/);
 assert.match(html,/documents-drawer-v1\.css\?v=1/);
