@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
 const API='/api/shop-admin',TOKEN_KEY='reqoo_admin_token';
-let orders=[],documents=[],activeDoc=null,docSettings={};
+let orders=[],documents=[],activeDoc=null,docSettings={},ordersLoaded=false,ordersLoading=null,settingsLoaded=false,settingsLoading=null,docsLoading=null,documentsReady=false;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>'RM'+(Number(n||0)/100).toFixed(2);
@@ -38,6 +38,15 @@ function renderOrders(){
   }).join('')||'<div class="rqDocsState">Tiada order dijumpai.</div>';
   document.querySelectorAll('[data-create]').forEach(b=>b.addEventListener('click',()=>createAndOpen(b.dataset.create,b.dataset.id)));
 }
+function publishDocuments(){
+  window.__REQOO_DOCUMENTS__=documents.slice();
+  document.dispatchEvent(new CustomEvent('rq:documents-changed',{detail:{documents:window.__REQOO_DOCUMENTS__}}));
+  if(!documentsReady){
+    documentsReady=true;
+    document.documentElement.dataset.rqDocumentsReady='1';
+    document.dispatchEvent(new CustomEvent('rq:documents-ready',{detail:{documents:window.__REQOO_DOCUMENTS__,count:documents.length}}));
+  }
+}
 function renderHistory(){
   $('docSaved').textContent=documents.length;
   $('docHistory').innerHTML=documents.map(d=>{
@@ -47,15 +56,41 @@ function renderHistory(){
   }).join('')||'<div class="rqDocsState">Belum ada dokumen rasmi dijana.</div>';
   document.querySelectorAll('[data-open-doc]').forEach(b=>b.addEventListener('click',()=>openSaved(b.dataset.openDoc)));
   document.querySelectorAll('[data-share-doc]').forEach(b=>b.addEventListener('click',async()=>{await openSaved(b.dataset.shareDoc,false);shareWhatsApp()}));
+  publishDocuments();
 }
-async function load(){
-  try{
-    $('docState').textContent='Memuatkan order…';
-    const [o,d,s]=await Promise.all([api('listOrders',{limit:100}),api('listDocuments',{limit:100}),api('documentSettings')]);
-    orders=Array.isArray(o.orders)?o.orders:[];documents=Array.isArray(d.documents)?d.documents:[];docSettings=s.settings||{};
-    $('docOrders').textContent=orders.length;$('docPaid').textContent=orders.filter(x=>orderStatus(x)==='paid').length;$('docState').textContent=orders.length?'':'Belum ada order.';
-    fillSettings();fillQuoteDefaults();renderOrders();renderHistory();
-  }catch(e){$('docState').textContent=e.message;toast(e.message,true)}
+async function loadSettings(force=false){
+  if(settingsLoaded&&!force)return docSettings;
+  if(settingsLoading&&!force)return settingsLoading;
+  settingsLoading=api('documentSettings').then(s=>{
+    docSettings=s.settings||{};settingsLoaded=true;fillSettings();fillQuoteDefaults();return docSettings;
+  }).catch(e=>{console.warn('REQOO document settings:',e);return docSettings}).finally(()=>{settingsLoading=null});
+  return settingsLoading;
+}
+async function loadOrders(force=false){
+  if(ordersLoaded&&!force)return orders;
+  if(ordersLoading&&!force)return ordersLoading;
+  $('docState').textContent='Memuatkan order…';
+  ordersLoading=api('listOrders',{limit:100}).then(o=>{
+    orders=Array.isArray(o.orders)?o.orders:[];ordersLoaded=true;
+    $('docOrders').textContent=orders.length;$('docPaid').textContent=orders.filter(x=>['paid','partial'].includes(orderStatus(x))).length;
+    $('docState').textContent=orders.length?'':'Belum ada order.';renderOrders();return orders;
+  }).catch(e=>{$('docState').textContent=e.message;toast(e.message,true);return orders}).finally(()=>{ordersLoading=null});
+  return ordersLoading;
+}
+function idleSettings(){
+  if(settingsLoaded||settingsLoading)return;
+  const run=()=>loadSettings();
+  if('requestIdleCallback'in window)requestIdleCallback(run,{timeout:1600});else setTimeout(run,900);
+}
+async function load(force=false){
+  if(docsLoading&&!force)return docsLoading;
+  if(!documents.length)$('docHistory').innerHTML='<div class="rqDocsState">Memuatkan dokumen…</div>';
+  docsLoading=api('listDocuments',{limit:150}).then(d=>{
+    documents=Array.isArray(d.documents)?d.documents:[];renderHistory();idleSettings();return documents;
+  }).catch(e=>{$('docHistory').innerHTML='<div class="rqDocsState">'+esc(e.message)+'</div>';toast(e.message,true);throw e}).finally(()=>{docsLoading=null});
+  const result=await docsLoading;
+  if(ordersLoaded)loadOrders(true);
+  return result;
 }
 async function createAndOpen(type,id){
   try{toast('Menjana '+typeLabel(type)+'…');const d=await api('createDocument',{type,orderId:id},'POST');activeDoc=d.document;if(d.created){documents.unshift(activeDoc);toast(activeDoc.number+' disimpan');}else toast(activeDoc.number+' sudah wujud');renderOrders();renderHistory();showDocument();}catch(e){toast(e.message,true)}
@@ -119,7 +154,7 @@ async function convertActiveQuote(){
     activeDoc=d.document;replaceDocument(activeDoc);
     const ref=d.order?.order_no||d.order?.id||'order baru';
     toast(`Order ${ref} berjaya dibuat`);
-    await load();
+    await load(true);if(ordersLoaded)await loadOrders(true);
     const fresh=await openSaved(activeDoc.id,false);activeDoc=fresh;showDocument();
   }catch(e){toast(e.message,true)}finally{btn.disabled=false;btn.textContent=old}
 }
@@ -136,7 +171,7 @@ function fillQuoteDefaults(){if($('qValidDays'))$('qValidDays').value=docSetting
 function resetQuoteForm(){['qCustomer','qPhone','qEmail','qAttention','qAddress','qNotes','qTerms'].forEach(id=>$(id).value='');$('qDiscount').value='0';$('qShipping').value='0';$('qDeposit').value='0';fillQuoteDefaults();$('quoteItems').innerHTML='';addQuoteItem();recalcQuote()}
 function quotePayload(){const items=quoteRows().map(row=>({description:row.querySelector('[data-q="description"]').value.trim(),variation:row.querySelector('[data-q="variation"]').value.trim(),quantity:Number(row.querySelector('[data-q="quantity"]').value)||0,unitPriceMinor:toMinor(row.querySelector('[data-q="unit"]').value)})).filter(x=>x.description&&x.quantity>0);return {customerName:$('qCustomer').value.trim(),customerPhone:$('qPhone').value.trim(),customerEmail:$('qEmail').value.trim(),attention:$('qAttention').value.trim(),customerAddress:$('qAddress').value.trim(),items,validDays:Number($('qValidDays').value||docSettings.quoteValidDays||7),discountMinor:toMinor($('qDiscount').value),shippingMinor:toMinor($('qShipping').value),depositPercent:Number($('qDeposit').value||0),notes:$('qNotes').value.trim(),terms:$('qTerms').value.trim()}}
 async function createCustomQuote(){const payload=quotePayload();if(!payload.customerName)return toast('Masukkan nama pelanggan / syarikat.',true);if(!payload.items.length)return toast('Masukkan sekurang-kurangnya satu item.',true);const btn=$('qCreate'),old=btn.textContent;btn.disabled=true;btn.textContent='Creating…';try{const d=await api('createCustomQuotation',payload,'POST');activeDoc=d.document;documents.unshift(activeDoc);renderHistory();toast(activeDoc.number+' berjaya dibuat');showDocument();resetQuoteForm();$('quoteBuilderBody').classList.remove('open');$('toggleQuoteBuilder').textContent='+ Quotation Baru'}catch(e){toast(e.message,true)}finally{btn.disabled=false;btn.textContent=old}}
-$('refreshDocs').addEventListener('click',load);$('docSearch').addEventListener('input',renderOrders);$('toggleSettings').addEventListener('click',()=>$('docsSettings').classList.toggle('open'));$('saveSettings').addEventListener('click',saveSettings);$('toggleQuoteBuilder').addEventListener('click',()=>{const body=$('quoteBuilderBody');body.classList.toggle('open');$('toggleQuoteBuilder').textContent=body.classList.contains('open')?'Tutup':'+ Quotation Baru'});$('qAddItem').addEventListener('click',()=>addQuoteItem());$('qReset').addEventListener('click',resetQuoteForm);$('qCreate').addEventListener('click',createCustomQuote);$('qDiscount').addEventListener('input',recalcQuote);$('qShipping').addEventListener('input',recalcQuote);$('docClose').addEventListener('click',close);$('docCloseBottom').addEventListener('click',close);$('docPrint').addEventListener('click',printDoc);$('docWhatsapp').addEventListener('click',shareWhatsApp);$('docConvert').addEventListener('click',convertActiveQuote);$('docModal').addEventListener('click',e=>{if(e.target.id==='docModal')close()});
+$('refreshDocs').addEventListener('click',()=>{load(true);if(ordersLoaded)loadOrders(true);if(settingsLoaded)loadSettings(true)});$('docSearch').addEventListener('input',renderOrders);$('toggleOrderDrawer').addEventListener('click',()=>{if(!ordersLoaded)loadOrders()});$('toggleSettings').addEventListener('click',()=>{const panel=$('docsSettings');panel.classList.toggle('open');if(panel.classList.contains('open'))loadSettings()});$('saveSettings').addEventListener('click',saveSettings);$('toggleQuoteBuilder').addEventListener('click',()=>{const body=$('quoteBuilderBody');body.classList.toggle('open');if(body.classList.contains('open'))loadSettings();$('toggleQuoteBuilder').textContent=body.classList.contains('open')?'Tutup':'+ Quotation Baru'});$('qAddItem').addEventListener('click',()=>addQuoteItem());$('qReset').addEventListener('click',resetQuoteForm);$('qCreate').addEventListener('click',createCustomQuote);$('qDiscount').addEventListener('input',recalcQuote);$('qShipping').addEventListener('input',recalcQuote);$('docClose').addEventListener('click',close);$('docCloseBottom').addEventListener('click',close);$('docPrint').addEventListener('click',printDoc);$('docWhatsapp').addEventListener('click',shareWhatsApp);$('docConvert').addEventListener('click',convertActiveQuote);$('docModal').addEventListener('click',e=>{if(e.target.id==='docModal')close()});
 addQuoteItem();
 if(!token())location.href='/admin/?return='+encodeURIComponent(location.pathname);else load();
 })();
