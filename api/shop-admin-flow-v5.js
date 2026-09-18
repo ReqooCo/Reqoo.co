@@ -7,7 +7,7 @@ const NOW=()=>new Date().toISOString();
 const J=(x,s=200)=>new Response(JSON.stringify(x),{status:s,headers:{'content-type':'application/json;charset=UTF-8',...C}});
 
 function auth(request,env,data){const supplied=S(request.headers.get('X-Admin-Token')||data.token),expected=S(env.REQOO_ADMIN_TOKEN||env.SHOP_ADMIN_TOKEN||env.ADMIN_KEY);return !!supplied&&supplied===expected}
-async function body(request){if(request.method==='GET')return Object.fromEntries(new URL(request.url).searchParams);try{return await request.json()}catch{return {}}}
+async function body(request){if(request.method==='GET')return Object.fromEntries(new URL(request.url).searchParams);try{return await request.clone().json()}catch{return {}}}
 
 async function saveProduct(d,env){
   const pid=S(d.id)||ID('prd'),t=NOW(),old=await env.DB.prepare('SELECT * FROM products WHERE id=?').bind(pid).first();
