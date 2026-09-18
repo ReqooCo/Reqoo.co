@@ -318,6 +318,20 @@ async function documentsFinanceDashboard(d,env){
   }
   return J({ok:true,filter,query:q,stats:{all:Number(stats?.all_count||0),outstandingCount:Number(stats?.outstanding_count||0),outstandingMinor:Number(stats?.outstanding_minor||0),partialCount:Number(stats?.partial_count||0),dueSoonCount:Number(stats?.due_soon_count||0),dueSoonMinor:Number(stats?.due_soon_minor||0),overdueCount:Number(stats?.overdue_count||0),overdueMinor:Number(stats?.overdue_minor||0),paidCount:Number(stats?.paid_count||0)},invoices,invoiceTotal,invoiceOffset:offset,invoiceLimit:limit,invoicesHasMore,summaries,payments,paymentOffset,paymentLimit,paymentsHasMore});
 }
+async function documentFlow(d,env){
+  await ensure(env);
+  const key=S(d.key||d.documentId||d.documentNumber||d.paymentId||d.receiptNumber);if(!key)return J({ok:false,error:'Dokumen atau receipt diperlukan'},400);
+  const selectedDocument=await env.DB.prepare("SELECT * FROM reqoo_documents WHERE id=? OR number=? LIMIT 1").bind(key,key).first();
+  const selectedPayment=selectedDocument?null:await env.DB.prepare("SELECT p.*,o.order_no,c.name customer_name,c.phone customer_phone,c.email customer_email,rd.number invoice_number FROM reqoo_payments p JOIN orders o ON o.id=p.order_id LEFT JOIN customers c ON c.id=o.customer_id LEFT JOIN reqoo_documents rd ON rd.id=p.invoice_document_id WHERE p.id=? OR p.receipt_number=? LIMIT 1").bind(key,key).first();
+  const orderId=S(selectedDocument?.order_id||selectedPayment?.order_id);if(!orderId)return J({ok:false,error:'Dokumen tidak dijumpai'},404);
+  const documents=(await env.DB.prepare("SELECT * FROM reqoo_documents WHERE order_id=? ORDER BY created_at,id").bind(orderId).all()).results||[];
+  if(orderId.startsWith('custom:'))return J({ok:true,selectedDocument,selectedPayment,documents,payments:[],summary:null,order:null});
+  const order=await orderByKey(orderId,env);if(!order)return J({ok:false,error:'Order tidak dijumpai'},404);
+  await syncLegacyPaidPayments(env,order.id);
+  const payments=(await env.DB.prepare("SELECT p.*,o.order_no,c.name customer_name,c.phone customer_phone,c.email customer_email,rd.number invoice_number FROM reqoo_payments p JOIN orders o ON o.id=p.order_id LEFT JOIN customers c ON c.id=o.customer_id LEFT JOIN reqoo_documents rd ON rd.id=p.invoice_document_id WHERE p.order_id=? AND p.status='confirmed' ORDER BY p.paid_at,p.created_at,p.id").bind(order.id).all()).results||[];
+  const summary=await summaryForOrder(order,env);
+  return J({ok:true,selectedDocument,selectedPayment,documents,payments,summary,order});
+}
 async function canonicalDocuments(d,request,env){
   await ensure(env);
   await syncLegacyPaidPayments(env,S(d.orderId||d.orderRef||d.orderNo));
@@ -343,7 +357,7 @@ export async function onRequest({request,env}){
   if(!env.DB)return J({ok:false,error:'D1 binding DB tidak dijumpai'},503);
   try{
     const d=await data(request),action=S(d.action);
-    if(['recordPayment','listPayments','paymentSummary','getPaymentReceipt','listDocuments','documentIntegrityAudit','customerDashboard','customerDetail','ordersDashboard','financeDashboard','financeTransactions','documentsFinanceDashboard'].includes(action)){
+    if(['recordPayment','listPayments','paymentSummary','getPaymentReceipt','listDocuments','documentIntegrityAudit','customerDashboard','customerDetail','ordersDashboard','financeDashboard','financeTransactions','documentsFinanceDashboard','documentFlow'].includes(action)){
       if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);
       if(action==='recordPayment')return await recordPayment(d,request,env);
       if(action==='listPayments')return await listPayments(d,env);
@@ -357,6 +371,7 @@ export async function onRequest({request,env}){
       if(action==='financeDashboard')return await financeDashboard(d,env);
       if(action==='financeTransactions')return await financeTransactions(d,env);
       if(action==='documentsFinanceDashboard')return await documentsFinanceDashboard(d,env);
+      if(action==='documentFlow')return await documentFlow(d,env);
     }
     if(action==='dashboardSummary'){
       if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);
