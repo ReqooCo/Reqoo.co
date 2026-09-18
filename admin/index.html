@@ -23,5 +23,5 @@ async function login(){const v=document.getElementById('loginToken').value.trim(
 async function ensureSession(){const requested=safeReturn(new URLSearchParams(location.search).get('return'));if(requested)sessionStorage.setItem(RETURN_KEY,requested);try{if(await sessionStatus()){clearLegacySecrets();ready();return}}catch{}const legacy=LEGACY_KEYS.map(k=>localStorage.getItem(k)).find(Boolean)||legacyCookie('reqoo_admin_token');if(legacy){try{if(await createSession(legacy)){clearLegacySecrets();ready();return}}catch{}clearLegacySecrets()}showGate('Masukkan password Admin untuk mulakan sesi selamat.')}
 ensureSession();
 </script>
-<script src="/admin/overview.js?v=2"></script>
+<script src="/admin/overview.js?v=3"></script>
 </body></html>
