@@ -263,15 +263,6 @@ async function customerDetail(d,env){
   activity.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
   return J({ok:true,customer,summary:{collectedMinor:Number(rollup?.collected_minor||0),outstandingMinor:Number(rollup?.outstanding_minor||0),orderCount:Number(rollup?.order_count||0),documentCount:Number(docStats?.document_count||0),quotationCount:Number(docStats?.quotation_count||0),receiptCount:Number(payStats?.receipt_count||0)||Number(docStats?.receipt_document_count||0)},activity:activity.slice(0,30)});
 }
-function customerRecordQuery(type,q){
-  const query=S(q).toLowerCase(),args=[];
-  if(type==='orders'){
-    let where=' WHERE o.customer_id=?';args.push(null);
-    if(query){const digits=query.replace(/[^0-9]/g,'');where+=" AND (LOWER(COALESCE(o.order_no,o.id,'')) LIKE ? OR LOWER(COALESCE(o.payment_status,'')) LIKE ? OR LOWER(COALESCE(o.fulfillment_status,'')) LIKE ?)";args.push('%'+query+'%','%'+query+'%','%'+query+'%')}
-    return{where,args};
-  }
-  return{where:'',args};
-}
 async function customerRecords(d,env){
   await ensure(env);
   const key=S(d.customerId||d.id),type=S(d.type||'orders').toLowerCase(),q=S(d.q).toLowerCase(),limit=Math.min(100,Math.max(20,Number(d.limit||40))),offset=Math.max(0,Math.min(1000000,Number(d.offset||0)));
@@ -280,7 +271,7 @@ async function customerRecords(d,env){
   if(!customer)return J({ok:false,error:'Customer tidak dijumpai'},404);
   if(type==='orders'){
     const where=["o.customer_id=?"],args=[customer.id];
-    if(q)where.push("(LOWER(COALESCE(o.order_no,o.id,'')) LIKE ? OR LOWER(COALESCE(o.payment_status,'')) LIKE ? OR LOWER(COALESCE(o.fulfillment_status,'')) LIKE ?)",args.push('%'+q+'%','%'+q+'%','%'+q+'%');
+    if(q){where.push("(LOWER(COALESCE(o.order_no,o.id,'')) LIKE ? OR LOWER(COALESCE(o.payment_status,'')) LIKE ? OR LOWER(COALESCE(o.fulfillment_status,'')) LIKE ?)");args.push('%'+q+'%','%'+q+'%','%'+q+'%')}
     const whereSql=' WHERE '+where.join(' AND ');
     const rows=(await env.DB.prepare("SELECT o.*,COALESCE((SELECT d.total_minor FROM reqoo_documents d WHERE d.order_id=o.id AND d.type='invoice' ORDER BY d.created_at,d.id LIMIT 1),o.total_minor) billing_total_minor,COALESCE((SELECT SUM(p.amount_minor) FROM reqoo_payments p WHERE p.order_id=o.id AND p.status='confirmed'),0) ledger_paid_minor FROM orders o"+whereSql+" ORDER BY o.created_at DESC,o.id DESC LIMIT ? OFFSET ?").bind(...args,limit+1,offset).all()).results||[];
     const mapped=rows.slice(0,limit).map(o=>{const total=Number(o.billing_total_minor||o.total_minor||0),ledgerPaid=Number(o.ledger_paid_minor||0),closed=S(o.fulfillment_status).toLowerCase()==='cancelled'||['failed','cancelled','refunded'].includes(S(o.payment_status).toLowerCase()),rawPaid=ledgerPaid>0?ledgerPaid:S(o.payment_status).toLowerCase()==='paid'?total:0,paid=Math.min(total,rawPaid),balance=closed?0:Math.max(0,total-rawPaid),overpaid=Math.max(0,rawPaid-total);return{...o,totalMinor:total,paidMinor:paid,balanceMinor:balance,overpaidMinor:overpaid,paymentStatus:overpaid>0?'paid':balance===0&&total>0?'paid':paid>0?'partial':S(o.payment_status||'pending').toLowerCase()}});
@@ -288,7 +279,7 @@ async function customerRecords(d,env){
   }
   if(type==='documents'){
     const where=["(d.order_id IN (SELECT id FROM orders WHERE customer_id=?) OR (TRIM(COALESCE(d.customer_phone,''))<>'' AND REPLACE(REPLACE(REPLACE(d.customer_phone,' ',''),'-',''),'+','')=REPLACE(REPLACE(REPLACE(COALESCE(?,''),' ',''),'-',''),'+','')) OR (TRIM(COALESCE(d.customer_email,''))<>'' AND LOWER(d.customer_email)=LOWER(COALESCE(?,''))))"],args=[customer.id,customer.phone,customer.email];
-    if(q)where.push("(LOWER(COALESCE(d.number,'')) LIKE ? OR LOWER(COALESCE(d.type,'')) LIKE ? OR LOWER(COALESCE(d.order_id,'')) LIKE ?)",args.push('%'+q+'%','%'+q+'%','%'+q+'%');
+    if(q){where.push("(LOWER(COALESCE(d.number,'')) LIKE ? OR LOWER(COALESCE(d.type,'')) LIKE ? OR LOWER(COALESCE(d.order_id,'')) LIKE ?)");args.push('%'+q+'%','%'+q+'%','%'+q+'%')}
     const rows=(await env.DB.prepare("SELECT d.* FROM reqoo_documents d WHERE "+where.join(' AND ')+" ORDER BY COALESCE(d.issued_at,d.created_at) DESC,d.id DESC LIMIT ? OFFSET ?").bind(...args,limit+1,offset).all()).results||[];
     return J({ok:true,type,records:rows.slice(0,limit),offset,limit,hasMore:rows.length>limit,query:q});
   }
