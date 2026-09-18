@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
 const API='/api/shop-admin';
-let orders=[],documents=[],activeDoc=null,docSettings={},ordersLoaded=false,ordersLoading=null,settingsLoaded=false,settingsLoading=null,docsLoading=null,documentsReady=false;const deepParams=new URLSearchParams(location.search),initialDocOrder=deepParams.get('order')||'',initialDocQuery=deepParams.get('q')||'';
+let orders=[],documents=[],activeDoc=null,docSettings={},ordersLoaded=false,ordersLoading=null,orderOffset=0,orderTotal=0,orderHasMore=false,orderLoadSeq=0,settingsLoaded=false,settingsLoading=null,docsLoading=null,documentsReady=false;const deepParams=new URLSearchParams(location.search),initialDocOrder=deepParams.get('order')||'',initialDocQuery=deepParams.get('q')||'';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>'RM'+(Number(n||0)/100).toFixed(2);
@@ -29,12 +29,13 @@ function quoteMeta(doc){return doc?.company&&typeof doc.company.quoteMeta==='obj
 function savedFor(orderId,type){return documents.find(d=>String(d.order_id)===String(orderId)&&d.type===type)}
 function replaceDocument(doc){const ix=documents.findIndex(x=>String(x.id)===String(doc.id));if(ix>=0)documents[ix]=doc;else documents.unshift(doc)}
 function renderOrders(){
-  const q=$('docSearch').value.trim().toLowerCase(),list=orders.filter(o=>!q||[orderRef(o),customer(o),phone(o)].join(' ').toLowerCase().includes(q));
-  $('docList').innerHTML=list.map(o=>{
-    const id=o.id||orderRef(o),paid=orderStatus(o)==='paid';
+  $('docList').innerHTML=orders.map(o=>{
+    const id=o.id||orderRef(o),paid=['paid','partial'].includes(orderStatus(o));
     const saved=['invoice','receipt','delivery_order'].filter(t=>savedFor(id,t)).map(typeShort).join(' · ');
-    return `<article class="rqDocRow"><div class="rqDocRef">${esc(orderRef(o))}<div class="rqDocMeta">${esc(dateFmt(o.created_at||o.createdAt))}</div>${saved?`<span class="rqDocSaved">Saved: ${esc(saved)}</span>`:''}</div><div class="rqDocCustomer"><b>${esc(customer(o))}</b><span>${esc(phone(o)||'Tiada WhatsApp')}</span></div><div class="rqDocAmount">${money(total(o))}</div><div class="rqDocStatus"><span class="rqDocBadge ${paid?'paid':'pending'}">${paid?'PAID':'PENDING'}</span></div><div class="rqDocButtons"><button class="btn" data-create="invoice" data-id="${esc(id)}">Invoice</button><button class="btn" data-create="receipt" data-id="${esc(id)}" ${paid?'':'disabled'}>Receipt</button><button class="btn" data-create="delivery_order" data-id="${esc(id)}">DO</button></div></article>`;
+    return `<article class="rqDocRow"><div class="rqDocRef">${esc(orderRef(o))}<div class="rqDocMeta">${esc(dateFmt(o.created_at||o.createdAt))}</div>${saved?`<span class="rqDocSaved">Saved: ${esc(saved)}</span>`:''}</div><div class="rqDocCustomer"><b>${esc(customer(o))}</b><span>${esc(phone(o)||'Tiada WhatsApp')}</span></div><div class="rqDocAmount">${money(total(o))}</div><div class="rqDocStatus"><span class="rqDocBadge ${paid?'paid':'pending'}">${paid?'PAID / DEPOSIT':'PENDING'}</span></div><div class="rqDocButtons"><button class="btn" data-create="invoice" data-id="${esc(id)}">Invoice</button><button class="btn" data-create="receipt" data-id="${esc(id)}" ${paid?'':'disabled'}>Receipt</button><button class="btn" data-create="delivery_order" data-id="${esc(id)}">DO</button></div></article>`;
   }).join('')||'<div class="rqDocsState">Tiada order dijumpai.</div>';
+  const more=$('loadMoreDocOrders');if(more){more.hidden=!orderHasMore;more.disabled=false;more.textContent='Load More'}
+  $('docState').textContent=orders.length?`${orders.length} daripada ${orderTotal} padanan dipaparkan · carian server-side.`:'Tiada order dijumpai.';
   document.querySelectorAll('[data-create]').forEach(b=>b.addEventListener('click',()=>createAndOpen(b.dataset.create,b.dataset.id)));
 }
 function publishDocuments(){
@@ -65,15 +66,19 @@ async function loadSettings(force=false){
   }).catch(e=>{console.warn('REQOO document settings:',e);return docSettings}).finally(()=>{settingsLoading=null});
   return settingsLoading;
 }
-async function loadOrders(force=false){
-  if(ordersLoaded&&!force)return orders;
-  if(ordersLoading)return ordersLoading;
-  $('docState').textContent='Memuatkan order…';
-  ordersLoading=api('listOrders',{limit:1000}).then(o=>{
-    orders=Array.isArray(o.orders)?o.orders:[];ordersLoaded=true;
-    $('docOrders').textContent=orders.length;$('docPaid').textContent=orders.filter(x=>['paid','partial'].includes(orderStatus(x))).length;
-    $('docState').textContent=orders.length?'':'Belum ada order.';renderOrders();return orders;
-  }).catch(e=>{$('docState').textContent=e.message;toast(e.message,true);return orders}).finally(()=>{ordersLoading=null});
+async function loadOrders(reset=false){
+  const seq=++orderLoadSeq;if(reset){orderOffset=0;orders=[]}
+  if(ordersLoading&&!reset)return ordersLoading;
+  $('docState').textContent=reset?'Memuatkan order…':'Memuatkan lagi…';
+  const offset=reset?0:orderOffset;
+  ordersLoading=api('ordersDashboard',{q:$('docSearch').value.trim(),filter:'all',limit:80,offset}).then(o=>{
+    if(seq!==orderLoadSeq)return orders;
+    const batch=Array.isArray(o.orders)?o.orders:[];
+    orders=reset?batch:[...orders,...batch.filter(n=>!orders.some(x=>String(x.id)===String(n.id)))];
+    ordersLoaded=true;orderOffset=Number(o.offset||0)+batch.length;orderTotal=Number(o.total||0);orderHasMore=!!o.hasMore;
+    $('docOrders').textContent=Number(o.stats?.total||0);$('docPaid').textContent=Number(o.stats?.paymentReady||0);
+    renderOrders();return orders;
+  }).catch(e=>{if(seq===orderLoadSeq){$('docState').textContent=e.message;toast(e.message,true)}return orders}).finally(()=>{ordersLoading=null});
   return ordersLoading;
 }
 async function load(force=false){
@@ -86,7 +91,7 @@ async function load(force=false){
   if(ordersLoaded)loadOrders(true);
   return result;
 }
-async function applyDeepLink(){let term=initialDocQuery;if(initialDocOrder){try{const exact=await api('listDocuments',{orderId:initialDocOrder,limit:50}),seen=new Set(documents.map(d=>String(d.id)));for(const d of exact.documents||[]){if(!seen.has(String(d.id))){documents.push(d);seen.add(String(d.id))}}renderHistory()}catch{}await loadOrders();let match=orders.find(o=>String(o.id||'')===initialDocOrder||orderRef(o)===initialDocOrder);if(!match){try{const detail=await api('getOrder',{orderId:initialDocOrder});if(detail.order){match=detail.order;orders.unshift(match)}}catch{}}term=match?orderRef(match):initialDocOrder;const panel=$('rqOrderSourcePanel'),btn=$('toggleOrderDrawer');panel?.classList.add('open');btn?.classList.add('active');btn?.setAttribute('aria-expanded','true');setTimeout(()=>panel?.scrollIntoView({behavior:'smooth',block:'start'}),40)}if(term){$('docSearch').value=term;renderOrders();const unified=$('docUnifiedSearch');if(unified){unified.value=term;setTimeout(()=>unified.dispatchEvent(new Event('input',{bubbles:true})),0)}}}
+async function applyDeepLink(){let term=initialDocQuery;if(initialDocOrder){try{const exact=await api('listDocuments',{orderId:initialDocOrder,limit:50}),seen=new Set(documents.map(d=>String(d.id)));for(const d of exact.documents||[]){if(!seen.has(String(d.id))){documents.push(d);seen.add(String(d.id))}}renderHistory()}catch{}let match=null;try{const detail=await api('getOrder',{orderId:initialDocOrder});match=detail.order||null}catch{}term=match?orderRef(match):initialDocOrder;$('docSearch').value=term;await loadOrders(true);if(match&&!orders.some(o=>String(o.id)===String(match.id))){orders.unshift(match);renderOrders()}const panel=$('rqOrderSourcePanel'),btn=$('toggleOrderDrawer');panel?.classList.add('open');btn?.classList.add('active');btn?.setAttribute('aria-expanded','true');setTimeout(()=>panel?.scrollIntoView({behavior:'smooth',block:'start'}),40)}if(term){const unified=$('docUnifiedSearch');if(unified){unified.value=term;setTimeout(()=>unified.dispatchEvent(new Event('input',{bubbles:true})),0)}}}
 async function createAndOpen(type,id){
   try{toast('Menjana '+typeLabel(type)+'…');const d=await api('createDocument',{type,orderId:id},'POST');activeDoc=d.document;if(d.created){documents.unshift(activeDoc);toast(activeDoc.number+' disimpan');}else toast(activeDoc.number+' sudah wujud');renderOrders();renderHistory();showDocument();}catch(e){toast(e.message,true)}
 }
@@ -166,7 +171,7 @@ function fillQuoteDefaults(){if($('qValidDays'))$('qValidDays').value=docSetting
 function resetQuoteForm(){['qCustomer','qPhone','qEmail','qAttention','qAddress','qNotes','qTerms'].forEach(id=>$(id).value='');$('qDiscount').value='0';$('qShipping').value='0';$('qDeposit').value='0';fillQuoteDefaults();$('quoteItems').innerHTML='';addQuoteItem();recalcQuote()}
 function quotePayload(){const items=quoteRows().map(row=>({description:row.querySelector('[data-q="description"]').value.trim(),variation:row.querySelector('[data-q="variation"]').value.trim(),quantity:Number(row.querySelector('[data-q="quantity"]').value)||0,unitPriceMinor:toMinor(row.querySelector('[data-q="unit"]').value)})).filter(x=>x.description&&x.quantity>0);return {customerName:$('qCustomer').value.trim(),customerPhone:$('qPhone').value.trim(),customerEmail:$('qEmail').value.trim(),attention:$('qAttention').value.trim(),customerAddress:$('qAddress').value.trim(),items,validDays:Number($('qValidDays').value||docSettings.quoteValidDays||7),discountMinor:toMinor($('qDiscount').value),shippingMinor:toMinor($('qShipping').value),depositPercent:Number($('qDeposit').value||0),notes:$('qNotes').value.trim(),terms:$('qTerms').value.trim()}}
 async function createCustomQuote(){const payload=quotePayload();if(!payload.customerName)return toast('Masukkan nama pelanggan / syarikat.',true);if(!payload.items.length)return toast('Masukkan sekurang-kurangnya satu item.',true);const btn=$('qCreate'),old=btn.textContent;btn.disabled=true;btn.textContent='Creating…';try{const d=await api('createCustomQuotation',payload,'POST');activeDoc=d.document;documents.unshift(activeDoc);renderHistory();toast(activeDoc.number+' berjaya dibuat');showDocument();resetQuoteForm();$('quoteBuilderBody').classList.remove('open');$('toggleQuoteBuilder').textContent='+ Quotation Baru'}catch(e){toast(e.message,true)}finally{btn.disabled=false;btn.textContent=old}}
-$('refreshDocs').addEventListener('click',()=>{load(true);if(ordersLoaded)loadOrders(true);if(settingsLoaded)loadSettings(true)});$('docSearch').addEventListener('input',renderOrders);$('toggleOrderDrawer').addEventListener('click',()=>{if(!ordersLoaded)loadOrders()});$('toggleSettings').addEventListener('click',()=>{const panel=$('docsSettings');panel.classList.toggle('open');if(panel.classList.contains('open'))loadSettings()});$('saveSettings').addEventListener('click',saveSettings);$('toggleQuoteBuilder').addEventListener('click',()=>{const body=$('quoteBuilderBody');body.classList.toggle('open');if(body.classList.contains('open'))loadSettings();$('toggleQuoteBuilder').textContent=body.classList.contains('open')?'Tutup':'+ Quotation Baru'});$('qAddItem').addEventListener('click',()=>addQuoteItem());$('qReset').addEventListener('click',resetQuoteForm);$('qCreate').addEventListener('click',createCustomQuote);$('qDiscount').addEventListener('input',recalcQuote);$('qShipping').addEventListener('input',recalcQuote);$('docClose').addEventListener('click',close);$('docCloseBottom').addEventListener('click',close);$('docPrint').addEventListener('click',printDoc);$('docWhatsapp').addEventListener('click',shareWhatsApp);$('docConvert').addEventListener('click',convertActiveQuote);$('docModal').addEventListener('click',e=>{if(e.target.id==='docModal')close()});
+$('refreshDocs').addEventListener('click',()=>{load(true);if(ordersLoaded)loadOrders(true);if(settingsLoaded)loadSettings(true)});let orderSearchTimer;$('docSearch').addEventListener('input',()=>{clearTimeout(orderSearchTimer);orderSearchTimer=setTimeout(()=>loadOrders(true),260)});$('toggleOrderDrawer').addEventListener('click',()=>{if(!ordersLoaded)loadOrders(true)});$('loadMoreDocOrders')?.addEventListener('click',()=>loadOrders(false));$('toggleSettings').addEventListener('click',()=>{const panel=$('docsSettings');panel.classList.toggle('open');if(panel.classList.contains('open'))loadSettings()});$('saveSettings').addEventListener('click',saveSettings);$('toggleQuoteBuilder').addEventListener('click',()=>{const body=$('quoteBuilderBody');body.classList.toggle('open');if(body.classList.contains('open'))loadSettings();$('toggleQuoteBuilder').textContent=body.classList.contains('open')?'Tutup':'+ Quotation Baru'});$('qAddItem').addEventListener('click',()=>addQuoteItem());$('qReset').addEventListener('click',resetQuoteForm);$('qCreate').addEventListener('click',createCustomQuote);$('qDiscount').addEventListener('input',recalcQuote);$('qShipping').addEventListener('input',recalcQuote);$('docClose').addEventListener('click',close);$('docCloseBottom').addEventListener('click',close);$('docPrint').addEventListener('click',printDoc);$('docWhatsapp').addEventListener('click',shareWhatsApp);$('docConvert').addEventListener('click',convertActiveQuote);$('docModal').addEventListener('click',e=>{if(e.target.id==='docModal')close()});
 addQuoteItem();
 load().then(applyDeepLink).catch(()=>{});
 })();
