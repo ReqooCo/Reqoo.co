@@ -1,6 +1,6 @@
 import fs from 'node:fs';import assert from 'node:assert/strict';
-const js=fs.readFileSync(new URL('../admin/overview-v2.js',import.meta.url),'utf8');
-const css=fs.readFileSync(new URL('../admin/overview-v2.css',import.meta.url),'utf8');
+const js=fs.readFileSync(new URL('../admin/overview.js',import.meta.url),'utf8');
+const css=fs.readFileSync(new URL('../admin/overview.css',import.meta.url),'utf8');
 const api=fs.readFileSync(new URL('../api/shop-admin-flow-v15.js',import.meta.url),'utf8');
 const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8');
 const html=fs.readFileSync(new URL('../admin/index.html',import.meta.url),'utf8');
