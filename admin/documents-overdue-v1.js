@@ -96,17 +96,17 @@ async function refresh(){
  if(loading)return;loading=true;ensureUi();
  try{const [d,s,p]=await Promise.all([api('listDocuments',{limit:150}),api('paymentSummary'),api('listPayments',{limit:300})]);consumeFinance({documents:d.documents||[],payments:p.payments||[],summaries:s.summaries||[]})}catch(e){console.warn('REQOO overdue dashboard:',e);$('#docHistory .rqHistRow').forEach(r=>r.dataset.rqFinanceMatch='1');document.dispatchEvent(new CustomEvent('rq:documents-finance-filter',{detail:{filter:'all'}}))}finally{loading=false}
 }
-function schedule(ms=1200){if(!initialReady)return;clearTimeout(timer);timer=setTimeout(()=>{if(window.__REQOO_DOCS_FINANCE__)consumeFinance(window.__REQOO_DOCS_FINANCE__);else refresh()},ms)}
+function schedule(ms=3000){if(!initialReady)return;clearTimeout(timer);timer=setTimeout(()=>{if(window.__REQOO_DOCS_FINANCE__)consumeFinance(window.__REQOO_DOCS_FINANCE__);else refresh()},ms)}
 function init(){
  ensureUi();
  const onFinance=e=>consumeFinance(e?.detail||window.__REQOO_DOCS_FINANCE__);
  document.addEventListener('rq:documents-finance-ready',onFinance);
  if(window.__REQOO_DOCS_FINANCE__)consumeFinance(window.__REQOO_DOCS_FINANCE__);
- const start=()=>{if(initialReady)return;initialReady=true;schedule(1500)};
+ const start=()=>{if(initialReady)return;initialReady=true;schedule(3000)};
  if(document.documentElement.dataset.rqDocumentsReady==='1')start();else document.addEventListener('rq:documents-ready',start,{once:true});
- const h=$('#docHistory');if(h)new MutationObserver(()=>{if(window.__REQOO_DOCS_FINANCE__)setTimeout(()=>consumeFinance(window.__REQOO_DOCS_FINANCE__),50);else schedule(1500)}).observe(h,{childList:true});
+ const h=$('#docHistory');if(h)new MutationObserver(()=>{if(window.__REQOO_DOCS_FINANCE__)setTimeout(()=>consumeFinance(window.__REQOO_DOCS_FINANCE__),50);else schedule(3000)}).observe(h,{childList:true});
  new MutationObserver(()=>{watchDrawer();setTimeout(enhanceDrawer,50)}).observe(document.body,{childList:true});watchDrawer();
- document.getElementById('refreshDocs')?.addEventListener('click',()=>schedule(1700));
+ document.getElementById('refreshDocs')?.addEventListener('click',()=>schedule(3200));
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
