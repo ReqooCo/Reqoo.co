@@ -28,6 +28,10 @@ assert.match(tumbler, /600ml/, 'Tumbler landing must advertise the 600ml option'
 assert.match(tumblerRuntime, /aria-label="Kuantiti \$\{label\}"/, 'Tumbler quantities need accessible names');
 assert.match(tumblerRuntime, /Sila isi nombor WhatsApp yang sah/, 'Tumbler checkout must validate WhatsApp numbers');
 assert.match(tumblerRuntime, /Sila isi alamat lengkap untuk penghantaran/, 'Paid shipping must require an address');
+assert.match(tumbler, /shared\/meta-pixel-v1\.js\?v=1/, 'Tumbler landing must load the shared Meta pixel');
+assert.match(tumblerRuntime, /ViewContent/, 'Tumbler must track product viewing');
+assert.match(tumblerRuntime, /AddToCart/, 'Tumbler must track order intent');
+assert.match(tumblerRuntime, /InitiateCheckout/, 'Tumbler must track checkout intent');
 assert.doesNotThrow(()=>new Function(tumblerRuntime),'Tumbler runtime must parse');
 for (const id of ['mVariant', 'mUnit', 'mQty', 'mCustom', 'mArtwork', 'mNote']) {
   assert.match(plaque, new RegExp(`label for="${id}"`), `Plaque field ${id} must have a linked label`);
