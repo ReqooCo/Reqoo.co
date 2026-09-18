@@ -1,4 +1,4 @@
-const BOTANICAL_THEME='<link rel="stylesheet" href="/assets/botanical-atelier-v1.css?v=1">';
+const BOTANICAL_THEME='<link rel="stylesheet" href="/assets/botanical-atelier-v1.css?v=3">';
 function themed(response){
   const type=response.headers.get('content-type')||'';
   if(!type.includes('text/html'))return response;
@@ -68,17 +68,17 @@ export async function onRequest(context){
     url.pathname=url.pathname==='/'?'/shop/':`/shop${url.pathname}`;
     const response=await env.ASSETS.fetch(url),type=response.headers.get('content-type')||'';
     if(!type.includes('text/html'))return response;
-    return new HTMLRewriter()
-      .on('head',{element(el){el.append(BOTANICAL_THEME,{html:true})}})
-      .on('body',{element(el){el.append('<script src="/shop/payment-fallback.js?v=4"></script><script src="/shop/payment-fix.js?v=1"></script>',{html:true})}})
-      .transform(response);
+    return themed(response);
   }
 
-  if(host==='admin.reqoo.co'&&!url.pathname.startsWith('/api/')){
-    url.pathname=url.pathname==='/'?'/admin/':url.pathname;
+  if((host==='admin.reqoo.co'||(host==='reqoo.co'&&url.pathname.startsWith('/admin')))&&!url.pathname.startsWith('/api/')){
+    if(host==='admin.reqoo.co')url.pathname=url.pathname==='/'?'/admin/':url.pathname;
     const response=await env.ASSETS.fetch(url),type=response.headers.get('content-type')||'';
     if(!type.includes('text/html'))return response;
-    return new HTMLRewriter().on('body',{element(el){el.append('<link rel="stylesheet" href="/admin/reqoo-admin-universal.css?v=3.2.0"><link rel="stylesheet" href="/admin/reqoo-admin-premium-v2.css?v=1.0.0"><script src="/admin/reqoo-admin-shell.js?v=1.0.0"></script>',{html:true})}}).transform(response);
+    return new HTMLRewriter()
+      .on('head',{element(el){el.prepend('<link rel="stylesheet" href="/admin/admin-base.css?v=1">',{html:true});el.append('<link rel="stylesheet" href="/admin/admin-flow.css?v=1">',{html:true})}})
+      .on('body',{element(el){el.append('<script src="/admin/admin-shell.js?v=1"></script>',{html:true})}})
+      .transform(response);
   }
 
   const response=await context.next();
