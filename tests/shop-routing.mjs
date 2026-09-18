@@ -27,4 +27,24 @@ const landingBody=await landingRendered.text();
 assert.match(landingBody,/\/assets\/botanical-atelier-v1\.css\?v=3/,'homepage must load the selected Botanical Atelier theme');
 assert.equal((landingBody.match(/botanical-atelier-v1\.css/g)||[]).length,1,'homepage botanical stylesheet must be injected once');
 assert.doesNotMatch(landingBody,/\/landing-runtime\.js/,'retired landing runtime must not be reintroduced');
+const oldFetch=globalThis.fetch;
+try{
+  globalThis.fetch=async input=>{
+    const u=input instanceof URL?input:new URL(typeof input==='string'?input:input.url);
+    if(u.hostname==='api.reqoo.co'&&u.pathname==='/api/shop-admin'&&u.searchParams.get('action')==='publicDocument'){
+      return new Response(JSON.stringify({ok:true,document:{type:'receipt',number:'RCT-PREVIEW-001',total_minor:12900,payment_status:'paid'}}),{status:200,headers:{'content-type':'application/json'}});
+    }
+    throw new Error('Unexpected preview fetch '+u);
+  };
+  const publicHtml='<!doctype html><html><head><title>REQOO.CO — Document</title></head><body>Document</body></html>';
+  const preview=await worker.fetch(new Request('https://reqoo.co/d/abc123?v=preview1'),{ASSETS:{fetch:async()=>new Response(publicHtml,{headers:{'content-type':'text/html;charset=UTF-8'}})}});
+  const previewBody=await preview.text();
+  assert.equal(preview.headers.get('x-reqoo-document-preview'),'v1');
+  assert.match(previewBody,/Official Receipt RCT-PREVIEW-001 \| REQOO\.CO/);
+  assert.match(previewBody,/property="og:title"/);
+  assert.match(previewBody,/property="og:description"/);
+  assert.match(previewBody,/property="og:image" content="https:\/\/reqoo\.co\/og-image\.jpg"/);
+  assert.match(previewBody,/RM129\.00/);
+  assert.match(previewBody,/reqoo\.co\/d\/abc123\?v=preview1/);
+}finally{globalThis.fetch=oldFetch}
 console.log('PASS: Shop routing/premium CSS and Botanical Atelier homepage inject correctly.');

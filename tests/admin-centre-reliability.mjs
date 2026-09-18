@@ -30,6 +30,7 @@ try{
  const manual=await call('verifyPayment',{orderId:'manual'});assert.equal(manual.ok,true);assert.equal(manual.paymentCreated,true);
  const manualPay=sqlite.prepare("SELECT * FROM payments WHERE order_id='manual'").get();assert.equal(manualPay.status,'paid');assert.equal(manualPay.provider,'manual');assert.equal(manualPay.method,'admin_verify');assert.equal(manualPay.amount_minor,1500);
  assert.equal(sqlite.prepare("SELECT fulfillment_status FROM orders WHERE id='manual'").get().fulfillment_status,'pending');
+ seed('deposit','partial','pending');const started=await call('status',{orderId:'deposit',status:'processing'});assert.equal(started.ok,true);assert.equal(sqlite.prepare("SELECT fulfillment_status FROM orders WHERE id='deposit'").get().fulfillment_status,'processing');
  seed('repair','paid','fulfilled');assert.equal((await call('verifyPayment',{orderId:'repair'})).already,true);
  assert.equal(sqlite.prepare("SELECT status FROM payments WHERE order_id='repair'").get().status,'paid');
  assert.equal(sqlite.prepare("SELECT fulfillment_status FROM orders WHERE id='repair'").get().fulfillment_status,'fulfilled');
@@ -46,5 +47,5 @@ try{
  // More than 12 overdue rows plus today's rows must all contribute to the KPIs.
  for(let i=0;i<20;i++){seed('due_'+i,'paid','processing');sqlite.prepare("INSERT INTO shop_production_meta(order_id,due_date,updated_at) VALUES(?,date('now',?),datetime('now'))").run('due_'+i,i<15?'-1 day':'+0 day')}
  const dashboard=await call('dashboardSummary');assert.equal(dashboard.ok,true);assert.equal(dashboard.due.length,12);assert.equal(dashboard.kpis.overdue,15);assert.equal(dashboard.kpis.due_today,5);
- console.log('PASS: payment confirmation is atomic, creates a manual payment row when needed, leaves paid work READY, repairs legacy state, and preserves production KPIs.');
+ console.log('PASS: payment confirmation is atomic, creates a manual payment row when needed, leaves paid work READY, allows deposit-paid work to start, repairs legacy state, and preserves production KPIs.');
 }finally{console.error=originalError;sqlite.close()}

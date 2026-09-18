@@ -9,8 +9,8 @@ function mapRow(o){return {...o,orderNo:orderNo(o),order_ref:orderNo(o),name:o.c
 async function productionDashboard(env){
   const [counts,rows]=await Promise.all([
     env.DB.prepare(`SELECT
-      SUM(CASE WHEN payment_status NOT IN ('paid','failed','cancelled','refunded') AND fulfillment_status!='cancelled' THEN 1 ELSE 0 END) pending,
-      SUM(CASE WHEN payment_status='paid' AND fulfillment_status='pending' THEN 1 ELSE 0 END) paid,
+      SUM(CASE WHEN payment_status NOT IN ('paid','partial','failed','cancelled','refunded') AND fulfillment_status!='cancelled' THEN 1 ELSE 0 END) pending,
+      SUM(CASE WHEN payment_status IN ('paid','partial') AND fulfillment_status='pending' THEN 1 ELSE 0 END) paid,
       SUM(CASE WHEN fulfillment_status='processing' AND payment_status NOT IN ('failed','cancelled','refunded') THEN 1 ELSE 0 END) processing,
       SUM(CASE WHEN fulfillment_status='fulfilled' AND payment_status NOT IN ('failed','cancelled','refunded') THEN 1 ELSE 0 END) fulfilled
       FROM orders`).first(),
