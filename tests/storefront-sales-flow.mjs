@@ -13,8 +13,8 @@ const [shop, core, commerce, tumbler, tumblerRuntime, plaque, worker] = await Pr
 ]);
 
 assert.match(shop, /botanical-commerce-v1\.css\?v=2/, 'Shop must load the fixed cart drawer stylesheet');
-assert.match(shop, /shop-core-v1\.js\?v=6/, 'Shop must bypass the stale catalogue script cache');
-assert.match(worker, /shop-core-v1\.js\?v=6/, 'Edge worker must serve the same Shop runtime version');
+assert.match(shop, /shop-core-v1\.js\?v=7/, 'Shop must bypass the stale catalogue script cache');
+assert.match(worker, /shop-core-v1\.js\?v=7/, 'Edge worker must serve the same Shop runtime version');
 assert.doesNotMatch(commerce, /right:-470px/, 'Closed cart must not widen the page');
 assert.match(commerce, /transform:translateX\(105%\)/, 'Closed cart should use a compositor transform');
 assert.match(commerce, /overflow-x:hidden/, 'Storefront must prevent accidental horizontal scrolling');
