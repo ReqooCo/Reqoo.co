@@ -25,3 +25,14 @@ To avoid version drift, shared Admin presentation has one canonical set only:
 - `functions/_middleware.js` — Cloudflare Pages preview compatibility layer; keep its Admin asset references aligned with `_web_worker.js`
 
 Numbered `api/shop-flow-v*.js` and `api/shop-admin-flow-v*.js` files are an intentional compatibility chain. Their imports are checked by `tests/api-version-chain.mjs`; do not remove a version without flattening the chain first.
+
+
+## Storefront canonical assets
+
+Plaque, Tumbler and campaign landing pages use stable filenames. New visual revisions should update the same file and bump only the query-string cache version.
+
+- `plaque/plaque.css` + `plaque/plaque-store.js`
+- `tumbler/tumbler.css` + `tumbler/tumbler-order.js`
+- `landing-premium.css` + `landing-runtime.js`
+
+`tests/storefront-asset-integrity.mjs` prevents old numbered storefront copies from returning.
