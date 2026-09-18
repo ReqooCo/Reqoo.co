@@ -49,6 +49,8 @@ window.eval(js);
   await sleep(25);
   assert.equal(orderCalls,1,'Orders should start loading only when Create from Order is opened');
   assert.match(window.document.getElementById('docHistory').textContent,/INV-FAST-001/,'Document list must remain visible while Orders load');
+  await sleep(540);
+  assert.match(window.document.getElementById('docList').textContent,/RQ-FAST/,'Lazy Orders should render after their slower request finishes');
 
   dom.window.close();
   console.log('PASS: Documents render before slow Orders/settings and lazy Orders start only on demand.');
