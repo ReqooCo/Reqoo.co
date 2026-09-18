@@ -8,7 +8,7 @@ const order={id:'test',orderNo:'TEST',name:'Test',payment_status:'paid',fulfillm
 let posts=0,resolvePost;
 w.fetch=async(url,opts={})=>{const action=opts.method==='POST'?JSON.parse(opts.body).action:new URL(url,w.location.href).searchParams.get('action');if(action==='verifyPayment'){posts++;return await new Promise(r=>{resolvePost=()=>r({ok:true,status:200,json:async()=>({ok:true})})})}return {ok:true,status:200,json:async()=>action==='getOrder'?{ok:true,order,items:[]}:{ok:true,products:[],orders:[]}}};
 w.eval(html.match(/<script>([\s\S]*?)<\/script>/)[1]);
-w.eval(fs.readFileSync('admin/admin-shell-v2.js','utf8'));
+w.eval(fs.readFileSync('admin/admin-shell.js','utf8'));
 w.eval(fs.readFileSync('shop/admin-fulfillment-v1.js','utf8'));
 (async()=>{await new Promise(r=>setImmediate(r));
  assert.equal(w.document.body.dataset.adminWorkspace,'orders');

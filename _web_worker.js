@@ -60,20 +60,19 @@ async function injectAdminUI(response){
   const html=await response.text();
   const routed=html.replace(/const API='https:\/\/api\.reqoo\.co\/api\/shop-admin',IMAGE_API='https:\/\/api\.reqoo\.co\/api\/product-image',TOKEN_KEY=/g,"const API=location.origin+'/api/shop-admin',IMAGE_API=location.origin+'/api/product-image',TOKEN_KEY=");
   const isShopAdmin=html.includes('<title>REQOO.CO — Shop Admin</title>'),isOverview=html.includes('<title>REQOO Admin — Control Centre</title>');
-  let body=routed.includes('/admin/reqoo-admin-universal.css')?routed:routed.replace('</head>','<link rel="stylesheet" href="/admin/reqoo-admin-universal.css?v=2"></head>');
-  if(!body.includes('/admin/admin-shell-v2.css'))body=body.replace('</head>','<link rel="stylesheet" href="/admin/admin-shell-v2.css?v=1"></head>');
-  if(!body.includes('/admin/admin-theme-v3.css'))body=body.replace('</head>','<link rel="stylesheet" href="/admin/admin-theme-v3.css?v=2"></head>');
+  let body=routed;
+  if(!body.includes('/admin/admin-base.css'))body=body.replace('</head>','<link rel="stylesheet" href="/admin/admin-base.css?v=1"></head>');
   if(isOverview&&!body.includes('/admin/overview-v2.css'))body=body.replace('</head>','<link rel="stylesheet" href="/admin/overview-v2.css?v=2"></head>');
-  if(!body.includes('/admin/admin-flow-v1.css'))body=body.replace('</head>','<link rel="stylesheet" href="/admin/admin-flow-v1.css?v=2"></head>');
+  if(!body.includes('/admin/admin-flow.css'))body=body.replace('</head>','<link rel="stylesheet" href="/admin/admin-flow.css?v=1"></head>');
   if(isShopAdmin&&!body.includes('/admin/shop-admin-v1.css'))body=body.replace('</head>','<link rel="stylesheet" href="/admin/shop-admin-v1.css?v=1"><link rel="stylesheet" href="/admin/shop-orders-premium-v1.css?v=1"><link rel="stylesheet" href="/admin/shop-products-premium-v1.css?v=1"><link rel="stylesheet" href="/admin/shop-inventory-v1.css?v=1"><link rel="stylesheet" href="/admin/shop-inventory-v2.css?v=2"><link rel="stylesheet" href="/admin/shop-fulfillment-v1.css?v=1"><link rel="stylesheet" href="/admin/shop-production-queue-v1.css?v=3"><link rel="stylesheet" href="/admin/shop-production-queue-v2.css?v=1"><link rel="stylesheet" href="/admin/shop-order-production-v1.css?v=1"></head>');
   if(/id=["']orderModal["']/.test(body))body=body.replace('</body>','<script src="/shop/admin-whatsapp-docs-v1.js?v=2"></script><script src="/shop/admin-fulfillment-v1.js?v=2"></script><script src="/shop/admin-production-queue-safe-v1.js?v=1"></script><script src="/shop/admin-order-production-v1.js?v=1"></script></body>');
   if(isShopAdmin&&!body.includes('/shop/admin-inventory-v2.js'))body=body.replace('</body>','<script src="/shop/admin-inventory-v2.js?v=3"></script></body>');
   if(isOverview&&!body.includes('/admin/overview-v2.js'))body=body.replace('</body>','<script src="/admin/overview-v2.js?v=3"></script></body>');
-  if(!body.includes('/admin/admin-shell-v2.js'))body=body.replace('</body>','<script src="/admin/admin-shell-v2.js?v=6"></script></body>');
+  if(!body.includes('/admin/admin-shell.js'))body=body.replace('</body>','<script src="/admin/admin-shell.js?v=1"></script></body>');
   const headers=new Headers(response.headers);
   headers.set('cache-control','no-store, no-cache, must-revalidate, max-age=0');
   headers.set('pragma','no-cache');
-  headers.set('x-reqoo-admin-ui','premium-theme-v3+premium-flow-v1');
+  headers.set('x-reqoo-admin-ui','admin-ui-v1');
   headers.set('x-reqoo-admin-api-route','same-origin');
   return new Response(body,{status:response.status,statusText:response.statusText,headers});
 }

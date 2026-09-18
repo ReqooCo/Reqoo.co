@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 const html=fs.readFileSync(new URL('../admin/customers.html',import.meta.url),'utf8');
 const js=fs.readFileSync(new URL('../admin/customers-v2.js',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../admin/customers-crm-v2.css',import.meta.url),'utf8');
-const shell=fs.readFileSync(new URL('../admin/admin-shell-v2.js',import.meta.url),'utf8');
+const shell=fs.readFileSync(new URL('../admin/admin-shell.js',import.meta.url),'utf8');
 const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8');
 assert.match(html,/CUSTOMER CRM/);assert.match(html,/LIFETIME COLLECTED/);assert.match(html,/statOutstanding/);assert.match(html,/customers-v2\.js\?v=1/);assert.match(html,/customers-crm-v2\.css\?v=1/);
 assert.match(js,/listCustomers/);assert.match(js,/listOrders/);assert.match(js,/listDocuments/);assert.match(js,/listPayments/);assert.match(js,/paymentSummary/);
@@ -11,5 +11,5 @@ assert.match(js,/LIFETIME COLLECTED/);assert.match(js,/OUTSTANDING/);assert.matc
 assert.match(js,/customerOutstanding/);assert.match(js,/collectedValue/);assert.match(js,/activityFor/);
 assert.match(css,/\.rqCrmTabs/);assert.match(css,/\.rqCrmEvent/);assert.match(css,/\.rqCustomerBadge\.owes/);assert.match(css,/@media\(max-width:700px\)/);
 assert.match(shell,/Customers/);assert.match(shell,/\/admin\/customers\.html/);
-assert.match(worker,/settings\|documents\|customers/);assert.match(worker,/admin-shell-v2\.js\?v=6/);
+assert.match(worker,/settings\|documents\|customers/);assert.match(worker,/admin-shell\.js\?v=1/);
 console.log('PASS: Customers mini CRM links orders, documents, payment ledger, lifetime collection and outstanding balances.');

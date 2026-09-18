@@ -1,10 +1,10 @@
 import fs from 'node:fs';import assert from 'node:assert/strict';
 const html=fs.readFileSync(new URL('../admin/finance.html',import.meta.url),'utf8');
 const js=fs.readFileSync(new URL('../admin/finance-v1.js',import.meta.url),'utf8');
-const shell=fs.readFileSync(new URL('../admin/admin-shell-v2.js',import.meta.url),'utf8');
+const shell=fs.readFileSync(new URL('../admin/admin-shell.js',import.meta.url),'utf8');
 const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8');
 assert.match(html,/PAID REVENUE/);assert.match(html,/PENDING VALUE/);assert.match(html,/REVENUE TREND/);assert.match(html,/Top products/i);
 assert.match(js,/listOrders/);assert.match(js,/status\(o\)==='paid'/);assert.match(js,/cancelled/);assert.match(js,/Revenue hanya payment PAID/);
 assert.match(shell,/Finance/);assert.match(shell,/\/admin\/finance\.html/);
-assert.match(worker,/settings\|documents\|customers\|finance/);assert.match(worker,/admin-shell-v2\.js\?v=6/);
+assert.match(worker,/settings\|documents\|customers\|finance/);assert.match(worker,/admin-shell\.js\?v=1/);
 console.log('PASS: Finance V1 is read-only, paid-revenue based, and wired into premium Admin.');
