@@ -23,7 +23,13 @@ try{
  assert.equal(sqlite.prepare("SELECT status FROM payments WHERE order_id='atomic'").get().status,'pending');
  failPattern=null;assert.equal((await call('verifyPayment',{orderId:'atomic'})).ok,true);
  assert.equal(sqlite.prepare("SELECT status FROM payments WHERE order_id='atomic'").get().status,'paid');
+ assert.equal(sqlite.prepare("SELECT fulfillment_status FROM orders WHERE id='atomic'").get().fulfillment_status,'pending');
  assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM documents WHERE order_id='atomic'").get().n,2);
+ sqlite.prepare("INSERT INTO orders(id,order_no,payment_status,fulfillment_status,total_minor,subtotal_minor,created_at,updated_at) VALUES('manual','manual','pending','pending',1500,1500,datetime('now'),datetime('now'))").run();
+ sqlite.prepare("INSERT INTO order_items(id,order_id,product_name_snapshot,quantity,unit_price_minor,line_total_minor,created_at) VALUES('item_manual','manual','Manual item',1,1500,1500,datetime('now'))").run();
+ const manual=await call('verifyPayment',{orderId:'manual'});assert.equal(manual.ok,true);assert.equal(manual.paymentCreated,true);
+ const manualPay=sqlite.prepare("SELECT * FROM payments WHERE order_id='manual'").get();assert.equal(manualPay.status,'paid');assert.equal(manualPay.provider,'manual');assert.equal(manualPay.method,'admin_verify');assert.equal(manualPay.amount_minor,1500);
+ assert.equal(sqlite.prepare("SELECT fulfillment_status FROM orders WHERE id='manual'").get().fulfillment_status,'pending');
  seed('repair','paid','fulfilled');assert.equal((await call('verifyPayment',{orderId:'repair'})).already,true);
  assert.equal(sqlite.prepare("SELECT status FROM payments WHERE order_id='repair'").get().status,'paid');
  assert.equal(sqlite.prepare("SELECT fulfillment_status FROM orders WHERE id='repair'").get().fulfillment_status,'fulfilled');
@@ -40,5 +46,5 @@ try{
  // More than 12 overdue rows plus today's rows must all contribute to the KPIs.
  for(let i=0;i<20;i++){seed('due_'+i,'paid','processing');sqlite.prepare("INSERT INTO shop_production_meta(order_id,due_date,updated_at) VALUES(?,date('now',?),datetime('now'))").run('due_'+i,i<15?'-1 day':'+0 day')}
  const dashboard=await call('dashboardSummary');assert.equal(dashboard.ok,true);assert.equal(dashboard.due.length,12);assert.equal(dashboard.kpis.overdue,15);assert.equal(dashboard.kpis.due_today,5);
- console.log('PASS: SQLite transactions roll back failed payments/documents; retries repair legacy state; closed orders remain closed; all 20 due orders are counted.');
+ console.log('PASS: payment confirmation is atomic, creates a manual payment row when needed, leaves paid work READY, repairs legacy state, and preserves production KPIs.');
 }finally{console.error=originalError;sqlite.close()}
