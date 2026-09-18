@@ -4,7 +4,7 @@ const API='/api/shop-admin',TOKEN_KEY='reqoo_admin_token';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>'RM'+(Number(n||0)/100).toFixed(2);
-let docs=[],summaries=new Map(),payments=[],activeInvoice=null,activeReceipt=null,refreshTimer=0,loading=false;
+let docs=[],summaries=new Map(),payments=[],activeInvoice=null,activeReceipt=null,refreshTimer=0,loading=false,initialReady=false;
 async function api(action,extra={},method='GET'){
   const url=new URL(API,location.origin),opt={method,headers:{'X-Admin-Token':localStorage.getItem(TOKEN_KEY)||''},cache:'no-store'};
   if(method==='GET'){url.searchParams.set('action',action);Object.entries(extra).forEach(([k,v])=>{if(v!==undefined&&v!==null&&v!=='')url.searchParams.set(k,v)});}
@@ -68,9 +68,25 @@ function receiptPaper(r){
  const c=r.company||{},company=[c.address,c.phone,c.email].filter(Boolean).join('\n');return `<section class="rqReceiptPaper"><div class="rqReceiptTop"><div><div class="rqReceiptBrand">${esc(c.companyName||'REQOO.CO')}</div><div class="rqReceiptCompany">AB ART TRADING${c.registrationNo?'\nSSM: '+esc(c.registrationNo):''}${company?'\n'+esc(company):''}</div></div><div class="rqReceiptTitle"><h1>OFFICIAL RECEIPT</h1><b>${esc(r.receipt_number)}</b></div></div><div class="rqReceiptGrid"><div class="rqReceiptBlock"><span>Received From</span><b>${esc(r.customer_name||'Customer')}</b><div class="rqReceiptCompany">${esc(r.customer_phone||'')}${r.customer_email?' · '+esc(r.customer_email):''}</div></div><div class="rqReceiptBlock"><span>Date</span><b>${esc(dateFmt(r.paid_at))}</b></div></div><div class="rqReceiptAmount"><span>AMOUNT RECEIVED</span><b>${money(r.amount_minor)}</b></div><table class="rqReceiptDetails"><tr><td>Payment Type</td><td>${esc(typeLabel(r.payment_type))}</td></tr><tr><td>Payment Method</td><td>${esc(methodLabel(r.method))}</td></tr>${r.reference?`<tr><td>Reference</td><td>${esc(r.reference)}</td></tr>`:''}<tr><td>Invoice</td><td>${esc(r.invoice_number||'—')}</td></tr><tr><td>Order</td><td>${esc(r.order_no||r.order_id||'—')}</td></tr><tr><td>Invoice Total</td><td>${money(r.summary?.totalMinor)}</td></tr><tr><td>Total Paid</td><td>${money(r.summary?.paidMinor)}</td></tr><tr><td>Balance</td><td><b>${money(r.summary?.balanceMinor)}</b></td></tr>${r.note?`<tr><td>Note</td><td>${esc(r.note)}</td></tr>`:''}</table><div class="rqReceiptFoot">Bayaran ini telah direkod dan disahkan oleh Admin REQOO.CO.<br>Generated from REQOO Admin · ${esc(r.receipt_number)}</div></section>`}
 function printReceipt(){if(!activeReceipt)return;const html=receiptPaper(activeReceipt),w=window.open('','_blank');if(!w)return alert('Benarkan popup untuk Print / Save PDF.');w.document.write(`<!doctype html><html><head><title>${esc(activeReceipt.receipt_number)}</title><link rel="stylesheet" href="/admin/documents-payment-v1.css?v=1"><style>body{margin:0;background:#fff;font-family:Arial,sans-serif}.rqReceiptPaper{max-width:760px;margin:auto;padding:34px}@media print{.rqReceiptPaper{padding:18px}}</style></head><body>${html}</body></html>`);w.document.close();w.focus();setTimeout(()=>w.print(),350)}
 async function refreshData(){
- if(loading)return;loading=true;try{const [d,s,p]=await Promise.all([api('listDocuments',{limit:300}),api('paymentSummary'),api('listPayments',{limit:300})]);docs=Array.isArray(d.documents)?d.documents:[];summaries=new Map((s.summaries||[]).map(x=>[String(x.orderId),x]));payments=Array.isArray(p.payments)?p.payments:[];enrichInvoices();injectPaymentReceipts()}catch(e){console.warn('REQOO payment UI:',e)}finally{loading=false}
+ if(loading)return;loading=true;
+ try{
+  const shared=Array.isArray(window.__REQOO_DOCUMENTS__)?window.__REQOO_DOCUMENTS__:null;
+  const [s,p,d]=await Promise.all([api('paymentSummary'),api('listPayments',{limit:300}),shared?Promise.resolve(null):api('listDocuments',{limit:150})]);
+  docs=shared?shared.slice():Array.isArray(d?.documents)?d.documents:[];
+  summaries=new Map((s.summaries||[]).map(x=>[String(x.orderId),x]));payments=Array.isArray(p.payments)?p.payments:[];
+  enrichInvoices();injectPaymentReceipts();
+  const snapshot={documents:docs.slice(),payments:payments.slice(),summaries:[...summaries.values()],at:Date.now()};
+  window.__REQOO_DOCS_FINANCE__=snapshot;
+  document.dispatchEvent(new CustomEvent('rq:documents-finance-ready',{detail:snapshot}));
+ }catch(e){console.warn('REQOO payment UI:',e)}finally{loading=false}
 }
-function scheduleRefresh(){clearTimeout(refreshTimer);refreshTimer=setTimeout(refreshData,180)}
-function init(){ensureModal();refreshData();const h=$('#docHistory');if(h)new MutationObserver(scheduleRefresh).observe(h,{childList:true,subtree:true});document.getElementById('refreshDocs')?.addEventListener('click',()=>setTimeout(refreshData,350))}
+function scheduleRefresh(){if(!initialReady)return;clearTimeout(refreshTimer);refreshTimer=setTimeout(refreshData,220)}
+function init(){
+ ensureModal();
+ const start=()=>{if(initialReady)return;initialReady=true;setTimeout(refreshData,120)};
+ if(document.documentElement.dataset.rqDocumentsReady==='1')start();else document.addEventListener('rq:documents-ready',start,{once:true});
+ const h=$('#docHistory');if(h)new MutationObserver(scheduleRefresh).observe(h,{childList:true,subtree:true});
+ document.getElementById('refreshDocs')?.addEventListener('click',()=>{if(initialReady)setTimeout(refreshData,500)});
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
