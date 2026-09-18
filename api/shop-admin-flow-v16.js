@@ -10,10 +10,10 @@ const ELIGIBLE="o.payment_status NOT IN ('failed','cancelled','refunded') AND o.
 function filterSql(filter){
   if(filter==='pending')return ELIGIBLE+" AND o.payment_status NOT IN ('paid','partial')";
   if(filter==='paid')return ELIGIBLE+" AND o.payment_status IN ('paid','partial') AND o.fulfillment_status='pending'";
-  if(filter==='processing')return ELIGIBLE+" AND o.fulfillment_status='processing'";
-  if(filter==='fulfilled')return ELIGIBLE+" AND o.fulfillment_status='fulfilled'";
-  if(filter==='today')return ELIGIBLE+" AND o.fulfillment_status IN ('pending','processing') AND m.due_date=date('now','+8 hours')";
-  if(filter==='overdue')return ELIGIBLE+" AND o.fulfillment_status IN ('pending','processing') AND m.due_date IS NOT NULL AND m.due_date<>'' AND m.due_date<date('now','+8 hours')";
+  if(filter==='processing')return ELIGIBLE+" AND o.payment_status IN ('paid','partial') AND o.fulfillment_status='processing'";
+  if(filter==='fulfilled')return ELIGIBLE+" AND o.payment_status IN ('paid','partial') AND o.fulfillment_status='fulfilled'";
+  if(filter==='today')return ELIGIBLE+" AND m.due_date=date('now','+8 hours')";
+  if(filter==='overdue')return ELIGIBLE+" AND m.due_date IS NOT NULL AND m.due_date<>'' AND m.due_date<date('now','+8 hours')";
   return ELIGIBLE+" AND o.fulfillment_status IN ('pending','processing')";
 }
 async function productionDashboard(d,env){
