@@ -98,7 +98,8 @@ async function summaryForOrder(o,env){
   return {orderId:o.id,orderNo:o.order_no||o.id,invoiceId:invoice?.id||null,invoiceNumber:invoice?.number||null,totalMinor:total,paidMinor:paid,rawPaidMinor:rawPaid,balanceMinor:balance,overpaidMinor:overpaid,paymentStatus,payments};
 }
 async function ensureInvoice(request,o,env){
-  let invoice=await env.DB.prepare("SELECT * FROM reqoo_documents WHERE order_id=? AND type='invoice' LIMIT 1").bind(o.id).first();
+  let invoice=null;
+  try{invoice=await env.DB.prepare("SELECT * FROM reqoo_documents WHERE order_id=? AND type='invoice' LIMIT 1").bind(o.id).first()}catch{}
   if(invoice)return invoice;
   const headers=new Headers(request.headers);headers.set('content-type','application/json');
   const r=await legacy({request:new Request(request.url,{method:'POST',headers,body:JSON.stringify({action:'createDocument',type:'invoice',orderId:o.id})}),env});
