@@ -98,9 +98,9 @@ async function toyyibCallback(d,env){
 }
 async function toyyibRedirect(d,env){
  const orderNo=S(d.order_id),billCode=S(d.billcode);let payment=null;
- if(orderNo)payment=await env.DB.prepare("SELECT p.status,o.order_no FROM payments p JOIN orders o ON o.id=p.order_id WHERE p.provider='toyyibpay' AND o.order_no=? LIMIT 1").bind(orderNo).first();
- else if(billCode)payment=await env.DB.prepare("SELECT p.status,o.order_no FROM payments p JOIN orders o ON o.id=p.order_id WHERE p.provider='toyyibpay' AND p.provider_reference=? LIMIT 1").bind(billCode).first();
- const url=new URL('https://shop.reqoo.co/');url.searchParams.set('payment',payment?.status==='paid'?'success':'pending');if(payment?.order_no)url.searchParams.set('order',payment.order_no);return new Response(null,{status:302,headers:{Location:url.toString(),'cache-control':'no-store'}});
+ if(orderNo)payment=await env.DB.prepare("SELECT p.status,p.amount_minor,o.order_no,o.currency FROM payments p JOIN orders o ON o.id=p.order_id WHERE p.provider='toyyibpay' AND o.order_no=? LIMIT 1").bind(orderNo).first();
+ else if(billCode)payment=await env.DB.prepare("SELECT p.status,p.amount_minor,o.order_no,o.currency FROM payments p JOIN orders o ON o.id=p.order_id WHERE p.provider='toyyibpay' AND p.provider_reference=? LIMIT 1").bind(billCode).first();
+ const paid=payment?.status==='paid',url=new URL('https://shop.reqoo.co/');url.searchParams.set('payment',paid?'success':'pending');if(payment?.order_no)url.searchParams.set('order',payment.order_no);if(paid&&Number(payment?.amount_minor)>0){url.searchParams.set('value',(Number(payment.amount_minor)/100).toFixed(2));url.searchParams.set('currency',S(payment.currency||'MYR')||'MYR')}return new Response(null,{status:302,headers:{Location:url.toString(),'cache-control':'no-store'}});
 }
 
 export async function onRequest({request,env}){
