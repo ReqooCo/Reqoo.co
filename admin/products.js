@@ -1,14 +1,13 @@
 (()=>{'use strict';
-const API='/api/shop-admin',TOKEN_KEY='reqoo_admin_token';
+const API='/api/shop-admin';
 let products=[],insights=new Map(),editing=null,imageUrls=[];
 const $=id=>document.getElementById(id);
-const token=()=>localStorage.getItem(TOKEN_KEY)||localStorage.getItem('REQOO_ADMIN_TOKEN')||'';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const moneyMinor=n=>'RM'+(Number(n||0)/100).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2});
 const money=n=>'RM'+Number(n||0).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2});
 function toast(m,e=false){const x=$('productsToast');x.textContent=m;x.className='rqProductsToast show'+(e?' err':'');clearTimeout(toast.t);toast.t=setTimeout(()=>x.className='rqProductsToast',2400)}
-async function get(action,extra={}){const u=new URL(API,location.origin);u.searchParams.set('action',action);Object.entries(extra).forEach(([k,v])=>u.searchParams.set(k,v));const r=await fetch(u,{headers:{'X-Admin-Token':token()},cache:'no-store'}),d=await r.json().catch(()=>({}));if(r.status===401){location.href='/admin/?return='+encodeURIComponent(location.pathname);throw Error('Sesi Admin tamat.')}if(!r.ok||!d.ok)throw Error(d.error||'Request gagal');return d}
-async function post(action,data={}){const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','X-Admin-Token':token()},body:JSON.stringify({action,...data}),cache:'no-store'}),d=await r.json().catch(()=>({}));if(r.status===401){location.href='/admin/?return='+encodeURIComponent(location.pathname);throw Error('Sesi Admin tamat.')}if(!r.ok||!d.ok)throw Error(d.error||'Request gagal');return d}
+async function get(action,extra={}){const u=new URL(API,location.origin);u.searchParams.set('action',action);Object.entries(extra).forEach(([k,v])=>u.searchParams.set(k,v));const r=await fetch(u,{cache:'no-store'}),d=await r.json().catch(()=>({}));if(r.status===401){location.href='/admin/?return='+encodeURIComponent(location.pathname+location.search);throw Error('Sesi Admin tamat.')}if(!r.ok||!d.ok)throw Error(d.error||'Request gagal');return d}
+async function post(action,data={}){const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...data}),cache:'no-store'}),d=await r.json().catch(()=>({}));if(r.status===401){location.href='/admin/?return='+encodeURIComponent(location.pathname+location.search);throw Error('Sesi Admin tamat.')}if(!r.ok||!d.ok)throw Error(d.error||'Request gagal');return d}
 function info(p){const v=p.variants||[],tracked=v.filter(x=>x.stock!==null&&x.stock!==''&&x.stock!==undefined),units=tracked.reduce((a,x)=>a+Math.max(0,Number(x.stock||0)),0),out=tracked.length>0&&tracked.every(x=>Number(x.stock||0)<=0),low=tracked.length>0&&!out&&tracked.some(x=>Number(x.stock||0)<=5),untracked=tracked.length===0;return{tracked,units,out,low,untracked}}
 function insight(p){return insights.get(String(p.id))||{revenue_minor:0,units_sold:0,paid_orders:0}}
 function filtered(){const q=$('productSearch').value.trim().toLowerCase(),f=$('productFilter').value;return products.filter(p=>{const i=info(p),hay=[p.name,p.category,p.sku,...(p.variants||[]).map(v=>v.sku||'')].join(' ').toLowerCase();if(q&&!hay.includes(q))return false;if(f==='active'&&!p.active)return false;if(f==='hidden'&&p.active)return false;if(f==='low'&&!i.low)return false;if(f==='out'&&!i.out)return false;if(f==='untracked'&&!i.untracked)return false;return true})}
@@ -49,5 +48,5 @@ $('toggleProduct').addEventListener('click',async()=>{if(!editing?.id)return;awa
 $('deleteProduct').addEventListener('click',deleteCurrent);
 $('productDrawer').addEventListener('click',e=>{if(e.target===$('productDrawer'))closeEditor()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('productDrawer').classList.contains('open'))closeEditor()});
-if(!token())location.href='/admin/?return='+encodeURIComponent(location.pathname);else load();
+load();
 })();
