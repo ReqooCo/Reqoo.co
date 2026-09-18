@@ -2,7 +2,7 @@
 'use strict';
 const API='/api/shop-admin';
 let rows=[],stats={customers:0,repeatCustomers:0,collectedMinor:0,outstandingMinor:0},loadSeq=0,detailSeq=0;
-const deepParams=new URLSearchParams(location.search),initialCustomer=deepParams.get('customer')||'',initialQuery=deepParams.get('q')||'';
+const deepParams=new URLSearchParams(location.search),initialCustomer=deepParams.get('customer')||'',initialCustomerQuery=deepParams.get('q')||'';
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>'RM'+(Number(n||0)/100).toFixed(2),normPhone=v=>String(v||'').replace(/\D/g,'');
 function toast(msg,err=false){const el=$('customerToast');el.textContent=msg;el.className='rqCustomerToast show'+(err?' err':'');clearTimeout(toast.t);toast.t=setTimeout(()=>el.className='rqCustomerToast',2400)}
@@ -26,7 +26,7 @@ async function openCustomer(id){const seq=++detailSeq;$('customerDrawer').classL
 function closeDrawer(){detailSeq++;$('customerDrawer').classList.remove('open');$('customerDrawer').setAttribute('aria-hidden','true')}
 async function load(){const seq=++loadSeq;try{$('customerState').textContent='Memuatkan pelanggan…';const d=await api('customerDashboard',{q:$('customerSearch').value.trim(),sort:$('customerSort').value,limit:160});if(seq!==loadSeq)return;rows=Array.isArray(d.customers)?d.customers:[];stats=d.stats||stats;renderStats();render();$('customerState').textContent=`${rows.length} customer dipaparkan · ${Number(stats.customers||0)} keseluruhan · detail dimuat bila dibuka.`}catch(e){if(seq!==loadSeq)return;$('customerState').textContent=e.message;toast(e.message,true)}}
 let searchTimer;function queueLoad(){clearTimeout(searchTimer);searchTimer=setTimeout(load,260)}
-if(initialQuery)$('customerSearch').value=initialQuery;
+if(initialCustomerQuery)$('customerSearch').value=initialCustomerQuery;
 $('refreshCustomers').addEventListener('click',load);$('customerSearch').addEventListener('input',queueLoad);$('customerSort').addEventListener('change',load);$('drawerClose').addEventListener('click',closeDrawer);$('customerDrawer').addEventListener('click',e=>{if(e.target.id==='customerDrawer')closeDrawer()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer()});
 load().then(()=>{if(initialCustomer)openCustomer(initialCustomer)});
 })();
