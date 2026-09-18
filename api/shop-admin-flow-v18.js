@@ -181,9 +181,10 @@ async function ordersDashboard(d,env){
   const stats=await env.DB.prepare("SELECT COUNT(*) total,"+
     " SUM(CASE WHEN NOT "+ORDER_CLOSED_SQL+" AND NOT "+ORDER_READY_SQL+" THEN 1 ELSE 0 END) pending,"+
     " SUM(CASE WHEN NOT "+ORDER_CLOSED_SQL+" AND "+ORDER_READY_SQL+" AND o.fulfillment_status='pending' THEN 1 ELSE 0 END) paid,"+
-    " SUM(CASE WHEN NOT "+ORDER_CLOSED_SQL+" AND "+ORDER_READY_SQL+" AND o.fulfillment_status='processing' THEN 1 ELSE 0 END) processing"+
+    " SUM(CASE WHEN NOT "+ORDER_CLOSED_SQL+" AND "+ORDER_READY_SQL+" AND o.fulfillment_status='processing' THEN 1 ELSE 0 END) processing,"+
+    " SUM(CASE WHEN NOT "+ORDER_CLOSED_SQL+" AND "+ORDER_READY_SQL+" THEN 1 ELSE 0 END) payment_ready"+
     " FROM orders o").first();
-  return J({ok:true,orders:rows.map(o=>({...o,orderNo:S(o.order_no)||('RQ-'+String(o.id).replace(/[^A-Za-z0-9]/g,'').slice(-12).toUpperCase()),order_ref:S(o.order_no)||o.id,name:o.customer_name||'',total:Number(o.total_minor||0)/100,status:o.fulfillment_status,payment:o.payment_status,timestamp:o.created_at})),total:Number(totalRow?.n||0),offset,limit,hasMore:offset+rows.length<Number(totalRow?.n||0),stats:{total:Number(stats?.total||0),pending:Number(stats?.pending||0),paid:Number(stats?.paid||0),processing:Number(stats?.processing||0)}});
+  return J({ok:true,orders:rows.map(o=>({...o,orderNo:S(o.order_no)||('RQ-'+String(o.id).replace(/[^A-Za-z0-9]/g,'').slice(-12).toUpperCase()),order_ref:S(o.order_no)||o.id,name:o.customer_name||'',total:Number(o.total_minor||0)/100,status:o.fulfillment_status,payment:o.payment_status,timestamp:o.created_at})),total:Number(totalRow?.n||0),offset,limit,hasMore:offset+rows.length<Number(totalRow?.n||0),stats:{total:Number(stats?.total||0),pending:Number(stats?.pending||0),paid:Number(stats?.paid||0),processing:Number(stats?.processing||0),paymentReady:Number(stats?.payment_ready||0)}});
 }
 const CUSTOMER_ROLLUP_CTE="WITH order_rollup AS ("+
 " SELECT o.customer_id,COUNT(*) order_count,MAX(o.created_at) last_order_at,"+
