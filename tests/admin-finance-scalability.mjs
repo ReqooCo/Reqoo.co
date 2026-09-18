@@ -21,16 +21,16 @@ await call('financeDashboard',{range:'30'});
 
 sqlite.prepare("INSERT INTO customers(id,name,phone,email,status,created_at,updated_at) VALUES('c1','Finance Buyer','0123456789','finance@example.com','active',datetime('now'),datetime('now'))").run();
 const orderStmt=sqlite.prepare("INSERT INTO orders(id,order_no,customer_id,source,currency,subtotal_minor,discount_minor,shipping_minor,tax_minor,total_minor,payment_status,fulfillment_status,created_at,updated_at) VALUES(?,?,?,'shop','MYR',1000,0,0,0,1000,?,?,datetime('now',?),datetime('now',?))");
-const itemStmt=sqlite.prepare("INSERT INTO order_items(id,order_id,product_id,product_name_snapshot,quantity,unit_price_minor,line_total_minor,created_at) VALUES(?,?,?,'Scalable Product',1,1000,1000,datetime('now'))");
+const itemStmt=sqlite.prepare("INSERT INTO order_items(id,order_id,product_id,product_name_snapshot,quantity,unit_price_minor,line_total_minor,created_at) VALUES(?,?,NULL,?,1,1000,1000,datetime('now'))");
 const payStmt=sqlite.prepare("INSERT INTO reqoo_payments(id,order_id,invoice_document_id,receipt_number,share_token,payment_type,method,reference,note,amount_minor,status,paid_at,created_at,updated_at) VALUES(?,?,NULL,?,?,?,'bank_transfer',NULL,NULL,?,'confirmed',datetime('now',?),datetime('now',?),datetime('now',?))");
 for(let i=0;i<2105;i++){
   const id='o'+i,failed=i>=2000,full=i<1000,partial=i>=1000&&i<1500,payment=failed?'failed':full?'paid':partial?'partial':'pending';
   orderStmt.run(id,'RQ-F-'+String(i).padStart(5,'0'),'c1',payment,'pending','-'+(i%20)+' hours','-'+(i%20)+' hours');
-  itemStmt.run('item_'+id,id,'prod_scalable');
+  itemStmt.run('item_'+id,id,'Scalable Product');
   if(full||partial)payStmt.run('p'+i,id,'RC-F-'+String(i).padStart(5,'0'),'share-p'+i,full?'full':'deposit',full?1000:500,'-'+(i%20)+' hours','-'+(i%20)+' hours','-'+(i%20)+' hours');
 }
 orderStmt.run('old1','RQ-OLD','c1','paid','pending','-120 days','-120 days');
-itemStmt.run('item_old1','old1','prod_old');
+itemStmt.run('item_old1','old1','Old Product');
 payStmt.run('p_old','old1','RC-OLD','share-old','full',2000,'-120 days','-120 days','-120 days');
 sqlite.prepare("UPDATE orders SET subtotal_minor=2000,total_minor=2000 WHERE id='old1'").run();
 sqlite.prepare("UPDATE order_items SET unit_price_minor=2000,line_total_minor=2000 WHERE order_id='old1'").run();
