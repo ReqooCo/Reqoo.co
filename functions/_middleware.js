@@ -8,6 +8,7 @@ function themed(response){
 export async function onRequest(context){
   const {request,env}=context;
   const url=new URL(request.url),host=url.hostname;
+  if(host==='reqoo.co'&&(url.pathname==='/admin'||url.pathname==='/admin/'||url.pathname.startsWith('/admin/'))){const target=new URL(request.url);target.hostname='admin.reqoo.co';return Response.redirect(target.toString(),308)}
 
   // V2 API is the only canonical PKSK backend. This compatibility rewrite keeps
   // any stale cached client from reaching a deleted legacy function.
