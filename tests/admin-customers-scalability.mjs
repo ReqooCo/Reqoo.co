@@ -55,12 +55,15 @@ assert.equal(documentRecords.records.length,1);
 
 const ui=fs.readFileSync(new URL('../admin/customers.js',import.meta.url),'utf8');
 assert.match(ui,/customerDashboard/);
-assert.match(ui,/customerDetail/);\nassert.match(ui,/customerRecords/);
+assert.match(ui,/customerDetail/);
+assert.match(ui,/customerRecords/);
 assert.doesNotMatch(ui,/listCustomers/);
 assert.doesNotMatch(ui,/listOrders/);
 assert.doesNotMatch(ui,/listDocuments/);
 assert.doesNotMatch(ui,/listPayments/);
 assert.doesNotMatch(ui,/paymentSummary/);
-assert.match(ui,/setTimeout\(load,260\)/);\nassert.match(ui,/limit:40/);\nassert.match(ui,/data-crm-more/);
+assert.match(ui,/setTimeout\(load,260\)/);
+assert.match(ui,/limit:40/);
+assert.match(ui,/data-crm-more/);
 console.log('PASS: CRM list and profile KPIs stay complete while customer detail records are loaded in bounded pages.');
 sqlite.close();
