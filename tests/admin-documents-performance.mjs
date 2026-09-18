@@ -15,14 +15,14 @@ assert.match(main,/__REQOO_DOCUMENTS__/,'loaded document headers should be share
 
 assert.match(payment,/rq:documents-ready/,'payment enhancement must wait for document first paint');
 assert.match(payment,/__REQOO_DOCUMENTS__/,'payment enhancement must reuse the already-loaded document list');
-assert.match(payment,/rq:documents-finance-ready/,'payment enhancement must publish one shared finance snapshot');
+assert.match(payment,/rq:documents-finance-ready/,'payment enhancement must publish one shared finance snapshot');assert.match(payment,/documentsFinanceDashboard/);assert.doesNotMatch(payment,/paymentSummary/);assert.doesNotMatch(payment,/listPayments/);assert.doesNotMatch(payment,/api\('listDocuments'/);
 
 assert.match(overdue,/rq:documents-finance-ready/,'overdue UI must consume the shared finance snapshot');
-assert.match(overdue,/__REQOO_DOCS_FINANCE__/,'overdue UI must reuse finance data before falling back to its own requests');
+assert.match(overdue,/__REQOO_DOCS_FINANCE__/,'overdue UI must reuse finance data from the shared snapshot');assert.match(overdue,/documentsFinanceDashboard/);assert.doesNotMatch(overdue,/paymentSummary/);assert.doesNotMatch(overdue,/listPayments/);assert.doesNotMatch(overdue,/listDocuments/);
 assert.doesNotMatch(overdue,/schedule\(50\)/,'overdue calculations must not compete with the first document request');
 
-assert.match(html,/documents\.js\?v=6/);
-assert.match(html,/documents-payment-v1\.js\?v=3/);
-assert.match(html,/documents-overdue-v1\.js\?v=3/);
+assert.match(html,/documents\.js\?v=7/);
+assert.match(html,/documents-payment-v1\.js\?v=4/);
+assert.match(html,/documents-overdue-v1\.js\?v=4/);
 
 console.log('PASS: Documents first paint is isolated from slow Orders/settings and finance widgets reuse shared data.');
