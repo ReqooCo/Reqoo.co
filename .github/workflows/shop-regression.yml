@@ -99,6 +99,7 @@ jobs:
           node tests/admin-documents-performance.mjs
           node tests/admin-documents-overdue.mjs
           node tests/admin-customers-crm.mjs
+          node tests/admin-customers-scalability.mjs
           node tests/admin-finance-dashboard.mjs
       - run: npm install --no-save --no-package-lock jsdom@30.0.1
       - name: Run Documents fast-load DOM regression
