@@ -8,7 +8,7 @@ const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8'
 assert.match(html,/CUSTOMER CRM/);assert.match(html,/LIFETIME COLLECTED/);assert.match(html,/statOutstanding/);assert.match(html,/customers\.js\?v=3/);assert.match(html,/customers\.css\?v=1/);
 assert.match(js,/listCustomers/);assert.match(js,/listOrders/);assert.match(js,/listDocuments/);assert.match(js,/listPayments/);assert.match(js,/paymentSummary/);
 assert.match(js,/LIFETIME COLLECTED/);assert.match(js,/OUTSTANDING/);assert.match(js,/Customer Timeline/);assert.match(js,/Payment History/);assert.match(js,/WhatsApp Customer/);
-assert.match(js,/customerOutstanding/);assert.match(js,/collectedValue/);assert.match(js,/activityFor/);
+assert.match(js,/customerOutstanding/);assert.match(js,/collectedValue/);assert.match(js,/activityFor/);assert.match(js,/initialCustomer/);assert.match(js,/initialCustomerQuery/);assert.match(js,/\/admin\/orders\.html\?order=/);assert.match(js,/\/admin\/documents\.html\?q=/);assert.doesNotMatch(js,/X-Admin-Token/);assert.doesNotMatch(js,/localStorage\.getItem/);
 assert.match(css,/\.rqCrmTabs/);assert.match(css,/\.rqCrmEvent/);assert.match(css,/\.rqCustomerBadge\.owes/);assert.match(css,/@media\(max-width:700px\)/);
 assert.match(shell,/Customers/);assert.match(shell,/\/admin\/customers\.html/);
 assert.match(worker,/settings\|documents\|customers/);assert.match(worker,/admin-shell\.js\?v=3/);
