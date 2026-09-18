@@ -16,7 +16,7 @@ sqlite.prepare("INSERT INTO orders(id,order_no,customer_id,payment_status,fulfil
 sqlite.prepare("INSERT INTO orders(id,order_no,customer_id,payment_status,fulfillment_status,total_minor,subtotal_minor,currency,created_at,updated_at) VALUES('o2','RQ-2','c0','partial','pending',2000,2000,'MYR',datetime('now'),datetime('now'))").run();
 
 const warm=await call('customerDashboard',{limit:20});assert.equal(warm.ok,true);
-sqlite.prepare("INSERT INTO reqoo_payments(id,order_id,invoice_document_id,receipt_number,share_token,payment_type,method,reference,note,amount_minor,currency,status,paid_at,created_at,updated_at) VALUES('p2','o2',NULL,'RC-2026-00001','share-p2','deposit','bank_transfer','ref','','500','MYR','confirmed',datetime('now'),datetime('now'),datetime('now'))").run();
+sqlite.prepare("INSERT INTO reqoo_payments(id,order_id,invoice_document_id,receipt_number,share_token,payment_type,method,reference,note,amount_minor,status,paid_at,created_at,updated_at) VALUES('p2','o2',NULL,'RC-2026-00001','share-p2','deposit','bank_transfer','ref','','500','confirmed',datetime('now'),datetime('now'),datetime('now'))").run();
 sqlite.prepare("INSERT INTO reqoo_documents(id,type,number,order_id,status,currency,subtotal_minor,discount_minor,shipping_minor,tax_minor,total_minor,issued_at,due_at,customer_name,customer_phone,customer_email,company_json,payment_status,share_token,created_at,updated_at) VALUES('inv2','invoice','INV-2026-00001','o2','issued','MYR',2000,0,0,0,2000,datetime('now'),datetime('now','+14 day'),'Customer 0','0100000000','c0@example.com','{}','partial','share-inv2',datetime('now'),datetime('now'))").run();
 
 const dash=await call('customerDashboard',{limit:120,sort:'spend'});
