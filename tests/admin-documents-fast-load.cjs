@@ -25,9 +25,9 @@ window.fetch=async input=>{
       total_minor:10000,created_at:'2026-09-18T10:00:00Z',issued_at:'2026-09-18T10:00:00Z'
     }]}),{status:200,headers:{'content-type':'application/json'}});
   }
-  if(action==='listOrders'){
+  if(action==='ordersDashboard'){
     orderCalls++;await sleep(500);
-    return new Response(JSON.stringify({ok:true,orders:[{id:'RQ-FAST',order_no:'RQ-FAST',payment_status:'paid',total_minor:10000,customer_name:'Fast Customer'}]}),{status:200,headers:{'content-type':'application/json'}});
+    return new Response(JSON.stringify({ok:true,orders:[{id:'RQ-FAST',order_no:'RQ-FAST',payment_status:'paid',fulfillment_status:'pending',total_minor:10000,customer_name:'Fast Customer'}],total:1,offset:0,limit:80,hasMore:false,stats:{total:1,pending:0,paid:1,processing:0,paymentReady:1}}),{status:200,headers:{'content-type':'application/json'}});
   }
   if(action==='documentSettings'){
     settingsCalls++;await sleep(500);
