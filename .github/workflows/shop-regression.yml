@@ -27,26 +27,26 @@ jobs:
           node --check _web_worker.js
           node --check functions/_middleware.js
           node --check admin/admin-shell.js
-          node --check admin/overview-v2.js
-          node --check admin/orders-v1.js
-          node --check admin/production-v1.js
-          node --check admin/products-v1.js
-          node --check admin/product-option-matrix-v1.js
-          node --check admin/documents-v2.js
+          node --check admin/overview.js
+          node --check admin/orders.js
+          node --check admin/production.js
+          node --check admin/products.js
+          node --check admin/product-option-matrix.js
+          node --check admin/documents.js
           node --check admin/documents-unified-v1.js
           node --check admin/documents-payment-v1.js
           node --check admin/documents-drawer-v1.js
           node --check admin/documents-overdue-v1.js
           node --check admin/document-public-v1.js
-          node --check admin/customers-v2.js
-          node --check admin/finance-v1.js
+          node --check admin/customers.js
+          node --check admin/finance.js
           node --check shop/shop-core-v1.js
           node --check shop/order-whatsapp-v1.js
           node --check shop/shop-inventory-v1.js
           node --check shop/admin-inventory-v2.js
           node --check shop/admin-fulfillment-v1.js
           node --check shop/admin-production-queue-safe-v1.js
-          node --check shop/admin-order-production-v1.js
+          node --check shop/admin-order-production.js
           node --check shop/account-premium-v1.js
           node --check shop/postpurchase-v1.js
           node --check tumbler/tumbler-order.js
