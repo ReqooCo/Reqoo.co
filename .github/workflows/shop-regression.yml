@@ -50,6 +50,8 @@ jobs:
           node --check shop/account-premium-v1.js
           node --check shop/postpurchase-v1.js
           node --check tumbler/tumbler-order.js
+          node --check plaque/plaque-store.js
+          node --check landing-runtime.js
           for file in api/shop-flow-v*.js api/shop-admin-flow-v*.js api/worker.js; do node --check "$file"; done
       - name: Run Shop backend and routing regressions
         run: |
