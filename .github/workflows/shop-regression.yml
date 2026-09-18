@@ -3,43 +3,13 @@ on:
   pull_request:
     paths:
       - '_web_worker.js'
-      - 'shop/shop-core-v1.js'
-      - 'shop/order-whatsapp-v1.js'
-      - 'shop/shop-inventory-v*.js'
-      - 'shop/admin-inventory-v*.js'
-      - 'shop/admin-fulfillment-v*.js'
-      - 'shop/admin-production-queue-v*.js'
-      - 'shop/admin-order-production-v*.js'
-      - 'shop/account-premium-v*.js'
-      - 'shop/postpurchase-v*.js'
-      - 'shop/shop-inventory-v*.css'
-      - 'shop/account-premium-v*.css'
-      - 'shop/index.html'
-      - 'shop/account.html'
-      - 'shop/shop-premium.css'
-      - 'tumbler/index.html'
-      - 'tumbler/tumbler-order-v*.js'
-      - 'tumbler/tumbler-v*.css'
-      - 'admin/shop-*.css'
-      - 'admin/admin-shell-v*.css'
-      - 'admin/admin-shell-v*.js'
-      - 'admin/admin-theme-v*.css'
-      - 'admin/overview*'
-      - 'admin/orders*'
-      - 'admin/production*'
-      - 'admin/products*'
-      - 'admin/product-option-matrix-v*.js'
-      - 'admin/documents*'
-      - 'admin/document-public*'
-      - 'admin/customers*'
-      - 'admin/finance*'
-      - 'api/shop-flow-v*.js'
-      - 'api/shop-admin-flow-v*.js'
-      - 'api/worker.js'
-      - 'migrations/*.sql'
-      - 'tests/shop-*'
-      - 'tests/admin-*'
-      - 'tests/tumbler-*'
+      - 'functions/_middleware.js'
+      - 'admin/**'
+      - 'shop/**'
+      - 'tumbler/**'
+      - 'api/**'
+      - 'migrations/**'
+      - 'tests/**'
       - '.github/workflows/shop-regression.yml'
   workflow_dispatch:
 permissions:
@@ -55,29 +25,27 @@ jobs:
       - name: Check Shop JavaScript syntax
         run: |
           node --check _web_worker.js
-          node --check admin/admin-shell-v2.js
+          node --check functions/_middleware.js
+          node --check admin/admin-shell.js
           node --check admin/overview-v2.js
           node --check admin/orders-v1.js
           node --check admin/production-v1.js
           node --check admin/products-v1.js
           node --check admin/product-option-matrix-v1.js
-          node --check admin/documents-v1.js
           node --check admin/documents-v2.js
           node --check admin/documents-unified-v1.js
           node --check admin/documents-payment-v1.js
           node --check admin/documents-drawer-v1.js
           node --check admin/documents-overdue-v1.js
           node --check admin/document-public-v1.js
-          node --check admin/customers-v1.js
           node --check admin/customers-v2.js
           node --check admin/finance-v1.js
           node --check shop/shop-core-v1.js
           node --check shop/order-whatsapp-v1.js
           node --check shop/shop-inventory-v1.js
-          node --check shop/admin-inventory-v1.js
           node --check shop/admin-inventory-v2.js
           node --check shop/admin-fulfillment-v1.js
-          node --check shop/admin-production-queue-v2.js
+          node --check shop/admin-production-queue-safe-v1.js
           node --check shop/admin-order-production-v1.js
           node --check shop/account-premium-v1.js
           node --check shop/postpurchase-v1.js
@@ -109,6 +77,8 @@ jobs:
           node tests/shop-order-status-consistency.mjs
           node tests/shop-order-production-detail.mjs
           node tests/shop-size-color-ux.mjs
+          node tests/admin-asset-integrity.mjs
+          node tests/api-version-chain.mjs
           node tests/admin-premium-shell.mjs
           node tests/admin-premium-theme-v3.mjs
           node tests/admin-overview-v2.mjs
