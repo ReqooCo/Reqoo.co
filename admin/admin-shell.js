@@ -28,7 +28,7 @@ const groups=[
 const item=([k,i,t,u],mobile=false)=>`<a href="${u}" class="${A===k?'active':''}" data-rq-admin="${k}">${mobile?`<span>${i}</span>${t}`:`<span class="rqAdminIcon">${i}</span><span>${t}</span>`}</a>`;
 const side=document.createElement('aside');
 side.className='rqAdminSide';
-side.innerHTML=`<div class="rqAdminBrand">REQOO<span>.ADMIN</span><small>BUSINESS CONTROL CENTRE</small></div>${groups.map(([g,links])=>`<div class="rqAdminGroup"><div class="rqAdminGroupTitle">${g}</div><nav class="rqAdminNav">${links.map(x=>item(x)).join('')}</nav></div>`).join('')}<div class="rqAdminSideFoot">REQOO.CO<br>Quality · Design · Innovation</div>`;
+side.innerHTML=`<div class="rqAdminBrand">REQOO<span>.ADMIN</span><small>BUSINESS CONTROL CENTRE</small></div>${groups.map(([g,links])=>`<div class="rqAdminGroup"><div class="rqAdminGroupTitle">${g}</div><nav class="rqAdminNav">${links.map(x=>item(x)).join('')}</nav></div>`).join('')}<div class="rqAdminSideFoot">REQOO.CO<br>Quality · Design · Innovation<button type="button" class="rqAdminLogout" data-rq-logout>Log out</button></div>`;
 document.body.appendChild(side);
 
 const mobilePrimary=[
@@ -49,13 +49,14 @@ more.className='rqAdminMoreBackdrop';
 more.id='rqAdminMore';
 more.setAttribute('aria-hidden','true');
 const moreItems=groups.flatMap(g=>g[1]).filter(x=>moreKeys.includes(x[0]));
-more.innerHTML=`<section class="rqAdminMoreSheet" role="dialog" aria-modal="true" aria-label="More admin sections"><div class="rqAdminMoreHead"><div><small>MORE</small><b>Admin workspace</b></div><button type="button" class="rqAdminMoreClose" aria-label="Close">×</button></div><nav class="rqAdminMoreList">${moreItems.map(x=>item(x)).join('')}</nav></section>`;
+more.innerHTML=`<section class="rqAdminMoreSheet" role="dialog" aria-modal="true" aria-label="More admin sections"><div class="rqAdminMoreHead"><div><small>MORE</small><b>Admin workspace</b></div><button type="button" class="rqAdminMoreClose" aria-label="Close">×</button></div><nav class="rqAdminMoreList">${moreItems.map(x=>item(x)).join('')}</nav><button type="button" class="rqAdminLogout rqAdminLogoutMobile" data-rq-logout>Log out Admin</button></section>`;
 document.body.appendChild(more);
 const trigger=mobile.querySelector('.rqAdminMoreTrigger'),close=()=>{more.classList.remove('open');more.setAttribute('aria-hidden','true');trigger?.setAttribute('aria-expanded','false')},open=()=>{more.classList.add('open');more.setAttribute('aria-hidden','false');trigger?.setAttribute('aria-expanded','true');more.querySelector('.rqAdminMoreClose')?.focus()};
 trigger?.addEventListener('click',()=>more.classList.contains('open')?close():open());
 more.querySelector('.rqAdminMoreClose')?.addEventListener('click',close);
 more.addEventListener('click',e=>{if(e.target===more)close()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&more.classList.contains('open'))close()});
+function logout(){localStorage.removeItem('reqoo_admin_token');localStorage.removeItem('REQOO_ADMIN_TOKEN');localStorage.removeItem('reqoo_shop_admin_token');document.cookie='reqoo_admin_token=; Domain=.reqoo.co; Path=/; Max-Age=0; Secure; SameSite=Lax';document.cookie='reqoo_admin_token=; Path=/; Max-Age=0; Secure; SameSite=Lax';sessionStorage.removeItem('reqoo_admin_return');location.replace('/admin/')}document.querySelectorAll('[data-rq-logout]').forEach(b=>b.addEventListener('click',logout));
 
 if(isShop){const root=document.querySelector('main.wrap.app');if(root&&!document.getElementById('rqAdminContext')){const c=document.createElement('div');c.id='rqAdminContext';c.className='rqAdminContext';c.innerHTML='<div><h2>Shop Admin Legacy</h2><p>Editor lama dikekalkan untuk recovery. Gunakan Products dalam Control Centre untuk pengurusan katalog harian.</p></div><a class="rqAdminContextBadge" href="/admin/products.html">OPEN PRODUCTS →</a>';root.prepend(c)}}
 if(isOverview){const hero=document.querySelector('.hero');if(hero&&!document.getElementById('rqAdminContext')){const c=document.createElement('div');c.id='rqAdminContext';c.className='rqAdminContext';c.innerHTML='<div><h2>Business Command Center</h2><p>Orders → Production → Documents. Fokus pada kerja yang perlu dibuat sekarang.</p></div><span class="rqAdminContextBadge">CONTROL CENTRE</span>';hero.parentNode.insertBefore(c,hero)}}
