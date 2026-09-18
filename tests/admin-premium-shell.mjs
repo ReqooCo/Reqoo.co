@@ -11,6 +11,7 @@ const canonicalRuntimes=['overview.js','orders.js','production.js','products.js'
 const settings=fs.readFileSync(new URL('../admin/settings.html',import.meta.url),'utf8');
 const shopContent=fs.readFileSync(new URL('../admin/shop-content.html',import.meta.url),'utf8');
 const pkskAdmin=fs.readFileSync(new URL('../admin/sim-v2.html',import.meta.url),'utf8');
+const legacyAdmin=fs.readFileSync(new URL('../shop/admin.html',import.meta.url),'utf8');
 assert.match(worker,/admin-base\.css\?v=1/,'canonical Admin base CSS must be injected');
 assert.match(worker,/admin-flow\.css\?v=2/,'canonical Admin flow CSS must be injected last');
 assert.match(worker,/admin-shell\.js\?v=3/,'canonical Admin shell runtime must be injected');
@@ -42,6 +43,7 @@ new Function(inlineScript(index));
 new Function(inlineScript(settings));
 new Function(inlineScript(shopContent));
 new Function(inlineScript(pkskAdmin));
+assert.doesNotMatch(legacyAdmin,/localStorage\.setItem\(TOKEN_KEY/,'Legacy recovery must not persist the Admin secret');assert.doesNotMatch(legacyAdmin,/document\.cookie='reqoo_admin_token='\+encodeURIComponent/,'Legacy recovery must not write the old cross-subdomain token cookie');
 assert.doesNotMatch(pkskAdmin,/localStorage\.getItem/,'PKSK Admin must not read the Admin secret from localStorage');assert.doesNotMatch(pkskAdmin,/X-Admin-Token/,'PKSK Admin must rely on the shared secure session');assert.match(apiWorker,/path==='\/api\/sim-admin'/,'PKSK Admin API must pass through session authorization');assert.doesNotMatch(worker,/https:\/\/api\.reqoo\.co\/api\/sim-admin/,'PKSK Admin must stay same-origin so the host-only session cookie is sent');
 const {default:apiRuntime}=await import('../api/worker.js');
 const sessionEnv={DB:{prepare(){return{first:async()=>({admin_token:'admin-test-secret'})}}}};
