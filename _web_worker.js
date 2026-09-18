@@ -7,6 +7,29 @@ async function proxyApi(request,url){
   return fetch(proxied);
 }
 
+function metaEsc(v){return String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]))}
+function docPreviewLabel(type){return({quotation:'Quotation',invoice:'Invoice',receipt:'Official Receipt',delivery_order:'Delivery Order'})[String(type||'').toLowerCase()]||'Document'}
+function rm(v){return 'RM'+(Number(v||0)/100).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2})}
+async function injectDocumentPreview(response,request,token){
+  const type=response.headers.get('content-type')||'';
+  if(!type.toLowerCase().includes('text/html'))return response;
+  let html=await response.text(),title='REQOO.CO — Official Document',description='Dokumen rasmi REQOO.CO. Semak melalui domain rasmi reqoo.co.',label='Document';
+  try{
+    const api=new URL(API_ORIGIN+'/api/shop-admin');api.searchParams.set('action','publicDocument');api.searchParams.set('shareToken',token);
+    const r=await fetch(api,{headers:{accept:'application/json','user-agent':'REQOO document preview'}});
+    const d=r.ok?await r.json():null,doc=d?.ok?d.document:null;
+    if(doc){
+      label=docPreviewLabel(doc.type);title=`${label} ${doc.number||''} | REQOO.CO`.trim();
+      const total=doc.type==='delivery_order'?'':rm(doc.total_minor),status=String(doc.payment_status||doc.status||'').toUpperCase();
+      description=[`Dokumen rasmi REQOO.CO`,doc.number||'',total,status&&status!=='ISSUED'?status:''].filter(Boolean).join(' • ');
+    }
+  }catch{}
+  const pageUrl=new URL(request.url).toString(),meta=`<meta name="description" content="${metaEsc(description)}"><meta property="og:site_name" content="REQOO.CO"><meta property="og:title" content="${metaEsc(title)}"><meta property="og:description" content="${metaEsc(description)}"><meta property="og:image" content="https://reqoo.co/og-image.jpg"><meta property="og:image:alt" content="REQOO.CO official document"><meta property="og:url" content="${metaEsc(pageUrl)}"><meta property="og:type" content="website"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${metaEsc(title)}"><meta name="twitter:description" content="${metaEsc(description)}"><meta name="twitter:image" content="https://reqoo.co/og-image.jpg">`;
+  html=html.replace(/<title>[\s\S]*?<\/title>/i,`<title>${metaEsc(title)}</title>`).replace('</head>',meta+'</head>');
+  const headers=new Headers(response.headers);headers.set('cache-control','no-store, no-cache, must-revalidate, max-age=0');headers.set('x-robots-tag','noindex, nofollow');headers.set('x-reqoo-document-preview','v1');
+  return new Response(html,{status:response.status,statusText:response.statusText,headers});
+}
+
 async function injectBotanical(response){
   const type=response.headers.get('content-type')||'';
   if(!type.toLowerCase().includes('text/html'))return response;
@@ -131,11 +154,8 @@ export default{
     if(url.pathname==='/api'||url.pathname.startsWith('/api/'))return proxyApi(request,url);
 
     if(host==='reqoo.co'&&/^\/d\/[A-Za-z0-9-]+\/?$/.test(url.pathname)){
-      const response=await env.ASSETS.fetch(assetRequest('/admin/document-public.html',request));
-      const headers=new Headers(response.headers);
-      headers.set('cache-control','no-store, no-cache, must-revalidate, max-age=0');
-      headers.set('x-robots-tag','noindex, nofollow');
-      return new Response(response.body,{status:response.status,statusText:response.statusText,headers});
+      const token=decodeURIComponent(url.pathname.split('/').filter(Boolean).pop()||''),response=await env.ASSETS.fetch(assetRequest('/admin/document-public.html',request));
+      return injectDocumentPreview(response,request,token);
     }
 
     if(['reqoo.co','shop.reqoo.co'].includes(host)&&['/shop/assets/maybank-qr.jpeg','/shop/maybank-qr.jpg','/maybank-qr.jpg','/assets/maybank-qr.jpeg'].includes(url.pathname))return env.ASSETS.fetch(assetRequest('/shop/assets/maybank-qr.jpeg',request));
