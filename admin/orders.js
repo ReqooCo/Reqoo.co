@@ -1,14 +1,13 @@
 (()=>{
 'use strict';
-const API='/api/shop-admin',TOKEN_KEY='reqoo_admin_token';
+const API='/api/shop-admin';
 let orders=[],current=null,drawerSeq=0,initialOrder='';
 const $=id=>document.getElementById(id);
-const token=()=>localStorage.getItem(TOKEN_KEY)||'';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>'RM'+(Number(n||0)/100).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2});
 function toast(m,e=false){const x=$('ordersToast');x.textContent=m;x.className='rqOrdersToast show'+(e?' err':'');clearTimeout(toast.t);toast.t=setTimeout(()=>x.className='rqOrdersToast',e?4200:2400)}
-async function get(action,extra={}){const u=new URL(API,location.origin);u.searchParams.set('action',action);Object.entries(extra).forEach(([k,v])=>u.searchParams.set(k,v));const r=await fetch(u,{headers:{'X-Admin-Token':token()},cache:'no-store'}),d=await r.json().catch(()=>({}));if(r.status===401){location.href='/admin/?return='+encodeURIComponent(location.pathname);throw Error('Sesi Admin tamat.')}if(!r.ok||!d.ok)throw Error(d.error||'Request gagal');return d}
-async function post(action,data={}){const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','X-Admin-Token':token()},body:JSON.stringify({action,...data}),cache:'no-store'}),d=await r.json().catch(()=>({}));if(r.status===401){location.href='/admin/?return='+encodeURIComponent(location.pathname);throw Error('Sesi Admin tamat.')}if(!r.ok||!d.ok)throw Error(d.error||'Request gagal');return d}
+async function get(action,extra={}){const u=new URL(API,location.origin);u.searchParams.set('action',action);Object.entries(extra).forEach(([k,v])=>u.searchParams.set(k,v));const r=await fetch(u,{cache:'no-store'}),d=await r.json().catch(()=>({}));if(r.status===401){location.href='/admin/?return='+encodeURIComponent(location.pathname+location.search);throw Error('Sesi Admin tamat.')}if(!r.ok||!d.ok)throw Error(d.error||'Request gagal');return d}
+async function post(action,data={}){const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...data}),cache:'no-store'}),d=await r.json().catch(()=>({}));if(r.status===401){location.href='/admin/?return='+encodeURIComponent(location.pathname+location.search);throw Error('Sesi Admin tamat.')}if(!r.ok||!d.ok)throw Error(d.error||'Request gagal');return d}
 const pstat=o=>String(o?.payment_status||o?.paymentStatus||o?.payment||'pending').toLowerCase();
 const fstat=o=>String(o?.fulfillment_status||o?.fulfillmentStatus||o?.status||'pending').toLowerCase();
 const key=o=>String(o?.id||o?.orderId||o?.orderNo||o?.order_ref||'');
@@ -46,5 +45,5 @@ $('refreshOrders').addEventListener('click',load);
 $('orderSearch').addEventListener('input',render);
 $('orderFilter').addEventListener('change',render);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('orderDrawer').classList.contains('open'))closeDrawer()});
-const initialParams=new URLSearchParams(location.search),initialQ=initialParams.get('q')||'';initialOrder=initialParams.get('order')||'';if(initialQ)$('orderSearch').value=initialQ;if(!token())location.href='/admin/?return='+encodeURIComponent(location.pathname+location.search);else load();
+const initialParams=new URLSearchParams(location.search),initialQ=initialParams.get('q')||'';initialOrder=initialParams.get('order')||'';if(initialQ)$('orderSearch').value=initialQ;load();
 })();
