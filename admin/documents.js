@@ -1,21 +1,20 @@
 (()=>{
 'use strict';
-const API='/api/shop-admin',TOKEN_KEY='reqoo_admin_token';
+const API='/api/shop-admin';
 let orders=[],documents=[],activeDoc=null,docSettings={},ordersLoaded=false,ordersLoading=null,settingsLoaded=false,settingsLoading=null,docsLoading=null,documentsReady=false;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>'RM'+(Number(n||0)/100).toFixed(2);
 const toMinor=v=>Math.max(0,Math.round((Number(v)||0)*100));
-const token=()=>localStorage.getItem(TOKEN_KEY)||'';
 const LEGAL_NAME='AB ART TRADING',SSM_NO='201903337879 (003053605-X)';
 function cleanField(v){const s=String(v??'').trim();return !s||/^(?:-|—|n\/?a|none|null)$/i.test(s)?'':s}
 function toast(msg,err=false){const el=$('docsToast');el.textContent=msg;el.className='rqDocsToast show'+(err?' err':'');clearTimeout(toast.t);toast.t=setTimeout(()=>el.className='rqDocsToast',2600)}
 async function api(action,extra={},method='GET'){
-  let url=new URL(API,location.origin),opt={method,headers:{'X-Admin-Token':token()},cache:'no-store'};
+  let url=new URL(API,location.origin),opt={method,headers:{},cache:'no-store'};
   if(method==='GET'){url.searchParams.set('action',action);Object.entries(extra).forEach(([k,v])=>{if(v!==undefined&&v!==null&&v!=='')url.searchParams.set(k,v)});}
   else{opt.headers['Content-Type']='application/json';opt.body=JSON.stringify({action,...extra});}
   const r=await fetch(url,opt);let d={};try{d=await r.json()}catch{}
-  if(r.status===401){location.href='/admin/?return='+encodeURIComponent(location.pathname);throw Error('Sesi Admin tamat.');}
+  if(r.status===401){location.href='/admin/?return='+encodeURIComponent(location.pathname+location.search);throw Error('Sesi Admin tamat.');}
   if(!r.ok||!d.ok)throw Error(d.error||'Request gagal');return d;
 }
 function orderStatus(o){return String(o.payment_status||o.paymentStatus||o.payment||'pending').toLowerCase()}
@@ -168,5 +167,5 @@ function quotePayload(){const items=quoteRows().map(row=>({description:row.query
 async function createCustomQuote(){const payload=quotePayload();if(!payload.customerName)return toast('Masukkan nama pelanggan / syarikat.',true);if(!payload.items.length)return toast('Masukkan sekurang-kurangnya satu item.',true);const btn=$('qCreate'),old=btn.textContent;btn.disabled=true;btn.textContent='Creating…';try{const d=await api('createCustomQuotation',payload,'POST');activeDoc=d.document;documents.unshift(activeDoc);renderHistory();toast(activeDoc.number+' berjaya dibuat');showDocument();resetQuoteForm();$('quoteBuilderBody').classList.remove('open');$('toggleQuoteBuilder').textContent='+ Quotation Baru'}catch(e){toast(e.message,true)}finally{btn.disabled=false;btn.textContent=old}}
 $('refreshDocs').addEventListener('click',()=>{load(true);if(ordersLoaded)loadOrders(true);if(settingsLoaded)loadSettings(true)});$('docSearch').addEventListener('input',renderOrders);$('toggleOrderDrawer').addEventListener('click',()=>{if(!ordersLoaded)loadOrders()});$('toggleSettings').addEventListener('click',()=>{const panel=$('docsSettings');panel.classList.toggle('open');if(panel.classList.contains('open'))loadSettings()});$('saveSettings').addEventListener('click',saveSettings);$('toggleQuoteBuilder').addEventListener('click',()=>{const body=$('quoteBuilderBody');body.classList.toggle('open');if(body.classList.contains('open'))loadSettings();$('toggleQuoteBuilder').textContent=body.classList.contains('open')?'Tutup':'+ Quotation Baru'});$('qAddItem').addEventListener('click',()=>addQuoteItem());$('qReset').addEventListener('click',resetQuoteForm);$('qCreate').addEventListener('click',createCustomQuote);$('qDiscount').addEventListener('input',recalcQuote);$('qShipping').addEventListener('input',recalcQuote);$('docClose').addEventListener('click',close);$('docCloseBottom').addEventListener('click',close);$('docPrint').addEventListener('click',printDoc);$('docWhatsapp').addEventListener('click',shareWhatsApp);$('docConvert').addEventListener('click',convertActiveQuote);$('docModal').addEventListener('click',e=>{if(e.target.id==='docModal')close()});
 addQuoteItem();
-if(!token())location.href='/admin/?return='+encodeURIComponent(location.pathname);else load();
+load();
 })();
