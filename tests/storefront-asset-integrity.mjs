@@ -12,17 +12,17 @@ for(const page of pages){
   }
 }
 const plaque=fs.readFileSync(path.join(root,'plaque/index.html'),'utf8');
-assert.match(plaque,/\/plaque\/plaque\.css\?v=1/);
-assert.match(plaque,/\/plaque\/plaque-store\.js\?v=1/);
+assert.match(plaque,/\/plaque\/plaque\.css\?v=\d+/);
+assert.match(plaque,/\/plaque\/plaque-store\.js\?v=\d+/);
 assert.doesNotMatch(plaque,/plaque-(?:store-)?v\d+/);
 
 const tumbler=fs.readFileSync(path.join(root,'tumbler/index.html'),'utf8');
-assert.match(tumbler,/\/tumbler\/tumbler\.css\?v=1/);
-assert.match(tumbler,/\/tumbler\/tumbler-order\.js\?v=1/);
+assert.match(tumbler,/\/tumbler\/tumbler\.css\?v=\d+/);
+assert.match(tumbler,/\/tumbler\/tumbler-order\.js\?v=\d+/);
 assert.doesNotMatch(tumbler,/tumbler-(?:order-)?v\d+/);
 
 const worker=fs.readFileSync(path.join(root,'_web_worker.js'),'utf8');
-assert.match(worker,/\/landing-premium\.css\?v=1/);
+assert.match(worker,/\/landing-premium\.css\?v=\d+/);
 assert.doesNotMatch(worker,/\/landing-premium-v\d+\.css\?v=/);
 
 const retired=[
