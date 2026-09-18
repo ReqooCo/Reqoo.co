@@ -9,7 +9,7 @@ const html=fs.readFileSync(new URL('../admin/documents.html',import.meta.url),'u
 assert.match(main,/api\('listDocuments',\{limit:150\}\)/,'initial Documents load must request documents directly');
 assert.doesNotMatch(main,/Promise\.all\(\[api\('listOrders'/,'initial Documents load must not wait for Orders');
 assert.match(main,/toggleOrderDrawer.*loadOrders/s,'Orders must load only when Create from Order is opened');
-assert.match(main,/requestIdleCallback/,'settings should be deferred until the browser is idle');
+assert.doesNotMatch(main,/idleSettings/,'settings must not be requested in the initial background path');assert.match(main,/toggleSettings.*loadSettings/s,'settings should load only when settings UI is opened');assert.match(main,/toggleQuoteBuilder.*loadSettings/s,'quotation settings should load on demand');
 assert.match(main,/rq:documents-ready/,'main document list must signal first-paint readiness');
 assert.match(main,/__REQOO_DOCUMENTS__/,'loaded document headers should be shared with enhancement modules');
 
