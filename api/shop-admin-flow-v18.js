@@ -156,6 +156,38 @@ async function getPaymentReceipt(d,env){
 }
 
 
+
+function financeDays(range){const r=S(range||'30').toLowerCase();return r==='all'?0:r==='365'?365:r==='90'?90:30}
+function financeRangeSql(range,expr){const days=financeDays(range);return days?("datetime("+expr+")>=datetime('now','-"+days+" days')"):'1=1'}
+function financeOrderCte(range){
+  const orderRange=financeRangeSql(range,'o.created_at');
+  return "WITH order_finance AS ("+
+    " SELECT o.id,o.created_at,o.payment_status,o.fulfillment_status,o.total_minor,"+
+    " COALESCE((SELECT d.total_minor FROM reqoo_documents d WHERE d.order_id=o.id AND d.type='invoice' ORDER BY d.created_at,d.id LIMIT 1),o.total_minor) billing_total_minor,"+
+    " COALESCE((SELECT SUM(p.amount_minor) FROM reqoo_payments p WHERE p.order_id=o.id AND p.status='confirmed'),0) ledger_paid_minor"+
+    " FROM orders o WHERE "+orderRange+" AND NOT "+ORDER_CLOSED_SQL+"),"+
+    " normalized AS (SELECT *,CASE WHEN ledger_paid_minor>0 THEN ledger_paid_minor WHEN payment_status='paid' THEN billing_total_minor ELSE 0 END raw_paid_minor FROM order_finance),"+
+    " final AS (SELECT *,MIN(billing_total_minor,raw_paid_minor) paid_minor,MAX(0,billing_total_minor-raw_paid_minor) balance_minor FROM normalized)";
+}
+async function financeTransactionData(d,env){
+  const range=S(d.range||'30').toLowerCase(),limit=Math.min(100,Math.max(10,Number(d.limit||20))),offset=Math.max(0,Math.min(1000000,Number(d.offset||0))),payRange=financeRangeSql(range,"COALESCE(p.paid_at,p.created_at)");
+  const rows=(await env.DB.prepare("SELECT p.*,o.order_no,c.name customer_name FROM reqoo_payments p JOIN orders o ON o.id=p.order_id LEFT JOIN customers c ON c.id=o.customer_id WHERE p.status='confirmed' AND "+payRange+" ORDER BY COALESCE(p.paid_at,p.created_at) DESC,p.id DESC LIMIT ? OFFSET ?").bind(limit+1,offset).all()).results||[];
+  return{transactions:rows.slice(0,limit),offset,limit,hasMore:rows.length>limit};
+}
+async function financeTransactions(d,env){
+  await ensure(env);await syncLegacyPaidPayments(env);
+  return J({ok:true,...await financeTransactionData(d,env)});
+}
+async function financeDashboard(d,env){
+  await ensure(env);await syncLegacyPaidPayments(env);
+  const range=S(d.range||'30').toLowerCase(),cte=financeOrderCte(range),payRange=financeRangeSql(range,"COALESCE(p.paid_at,p.created_at)");
+  const collection=await env.DB.prepare("SELECT COALESCE(SUM(p.amount_minor),0) collected_minor,COUNT(DISTINCT p.order_id) paid_orders FROM reqoo_payments p WHERE p.status='confirmed' AND "+payRange).first();
+  const state=await env.DB.prepare(cte+" SELECT COUNT(*) valid_orders,COALESCE(SUM(balance_minor),0) outstanding_minor,COALESCE(SUM(CASE WHEN balance_minor>0 THEN 1 ELSE 0 END),0) outstanding_orders,COALESCE(SUM(CASE WHEN paid_minor>0 THEN 1 ELSE 0 END),0) orders_with_payment,COALESCE(SUM(CASE WHEN balance_minor=0 AND billing_total_minor>0 THEN 1 ELSE 0 END),0) paid_full,COALESCE(SUM(CASE WHEN paid_minor>0 AND balance_minor>0 THEN 1 ELSE 0 END),0) partial,COALESCE(SUM(CASE WHEN paid_minor=0 THEN 1 ELSE 0 END),0) unpaid FROM final").first();
+  const trend=(await env.DB.prepare("SELECT * FROM (SELECT strftime('%Y-%m',COALESCE(p.paid_at,p.created_at)) month,COALESCE(SUM(p.amount_minor),0) collected_minor FROM reqoo_payments p WHERE p.status='confirmed' AND "+payRange+" GROUP BY month ORDER BY month DESC LIMIT 12) ORDER BY month ASC").all()).results||[];
+  const products=(await env.DB.prepare(cte+" SELECT COALESCE(NULLIF(oi.product_id,''),oi.product_name_snapshot) product_key,MAX(oi.product_name_snapshot) product_name,COALESCE(SUM(oi.quantity),0) units_sold,COUNT(DISTINCT oi.order_id) orders,CAST(ROUND(COALESCE(SUM(oi.line_total_minor*CASE WHEN f.billing_total_minor>0 THEN MIN(1.0,f.raw_paid_minor*1.0/f.billing_total_minor) ELSE 0 END),0)) AS INTEGER) collected_minor FROM order_items oi JOIN final f ON f.id=oi.order_id WHERE f.paid_minor>0 GROUP BY product_key ORDER BY collected_minor DESC LIMIT 6").all()).results||[];
+  const tx=await financeTransactionData({range,limit:12,offset:0},env),collected=Number(collection?.collected_minor||0),paidOrders=Number(collection?.paid_orders||0),validOrders=Number(state?.valid_orders||0),withPayment=Number(state?.orders_with_payment||0);
+  return J({ok:true,range,summary:{collectedMinor:collected,paidOrders,outstandingMinor:Number(state?.outstanding_minor||0),outstandingOrders:Number(state?.outstanding_orders||0),averageCollectedMinor:paidOrders?Math.round(collected/paidOrders):0,ordersWithPaymentRate:validOrders?Math.round(withPayment/validOrders*100):0,validOrders},breakdown:{paid:Number(state?.paid_full||0),partial:Number(state?.partial||0),pending:Number(state?.unpaid||0)},trend,products,transactions:tx.transactions,transactionsHasMore:tx.hasMore});
+}
 const ORDER_CLOSED_SQL="(o.fulfillment_status='cancelled' OR o.payment_status IN ('failed','cancelled','refunded'))";
 const ORDER_READY_SQL="(o.payment_status IN ('paid','partial'))";
 function orderFilterSql(filter){
@@ -253,7 +285,7 @@ export async function onRequest({request,env}){
   if(!env.DB)return J({ok:false,error:'D1 binding DB tidak dijumpai'},503);
   try{
     const d=await data(request),action=S(d.action);
-    if(['recordPayment','listPayments','paymentSummary','getPaymentReceipt','listDocuments','documentIntegrityAudit','customerDashboard','customerDetail','ordersDashboard'].includes(action)){
+    if(['recordPayment','listPayments','paymentSummary','getPaymentReceipt','listDocuments','documentIntegrityAudit','customerDashboard','customerDetail','ordersDashboard','financeDashboard','financeTransactions'].includes(action)){
       if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);
       if(action==='recordPayment')return await recordPayment(d,request,env);
       if(action==='listPayments')return await listPayments(d,env);
@@ -264,6 +296,8 @@ export async function onRequest({request,env}){
       if(action==='customerDashboard')return await customerDashboard(d,env);
       if(action==='customerDetail')return await customerDetail(d,env);
       if(action==='ordersDashboard')return await ordersDashboard(d,env);
+      if(action==='financeDashboard')return await financeDashboard(d,env);
+      if(action==='financeTransactions')return await financeTransactions(d,env);
     }
     if(action==='dashboardSummary'){
       if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);
