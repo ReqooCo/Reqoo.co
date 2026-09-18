@@ -173,7 +173,7 @@ async function ordersDashboard(d,env){
   const where=[orderFilterSql(filter)],args=[];
   if(q){
     where.push("(LOWER(COALESCE(o.order_no,o.id,'')) LIKE ? OR LOWER(COALESCE(c.name,'')) LIKE ? OR REPLACE(REPLACE(REPLACE(COALESCE(c.phone,''),' ',''),'-',''),'+','') LIKE ? OR LOWER(COALESCE(c.email,'')) LIKE ?)");
-    const phone=q.replace(/[^0-9]/g,'');args.push('%'+q+'%','%'+q+'%','%'+phone+'%','%'+q+'%');
+    const phone=q.replace(/[^0-9]/g,'');args.push('%'+q+'%','%'+q+'%',phone?'%'+phone+'%':'__NO_PHONE_MATCH__','%'+q+'%');
   }
   const whereSql=' WHERE '+where.join(' AND ');
   const rows=(await env.DB.prepare("SELECT o.*,c.name customer_name,c.phone,c.email FROM orders o LEFT JOIN customers c ON c.id=o.customer_id"+whereSql+" ORDER BY o.created_at DESC,o.id DESC LIMIT ? OFFSET ?").bind(...args,limit,offset).all()).results||[];
@@ -204,7 +204,7 @@ async function customerDashboard(d,env){
   await ensure(env);
   const q=S(d.q).toLowerCase(),sort=S(d.sort||'recent').toLowerCase(),limit=Math.min(300,Math.max(20,Number(d.limit||120)));
   const where=q?" WHERE LOWER(COALESCE(c.name,'')) LIKE ? OR REPLACE(REPLACE(REPLACE(COALESCE(c.phone,''),' ',''),'-',''),'+','') LIKE ? OR LOWER(COALESCE(c.email,'')) LIKE ?":'';
-  const args=q?['%'+q+'%','%'+q.replace(/[^0-9]/g,'')+'%','%'+q+'%']:[];
+  const digits=q.replace(/[^0-9]/g,'');const args=q?['%'+q+'%',digits?'%'+digits+'%':'__NO_PHONE_MATCH__','%'+q+'%']:[];
   const sql=CUSTOMER_ROLLUP_CTE+
     " SELECT c.id,c.name,c.phone,c.email,c.created_at,c.updated_at,COALESCE(o.order_count,0) order_count,COALESCE(o.collected_minor,0) collected_minor,COALESCE(o.outstanding_minor,0) outstanding_minor,COALESCE(doc.document_count,0) document_count,COALESCE(doc.quotation_count,0) quotation_count,COALESCE(doc.receipt_count,0) receipt_count,MAX(COALESCE(c.updated_at,''),COALESCE(c.created_at,''),COALESCE(o.last_order_at,''),COALESCE(doc.last_doc_at,''),COALESCE(pay.last_payment_at,'')) last_activity"+
     " FROM customers c LEFT JOIN order_rollup o ON o.customer_id=c.id LEFT JOIN doc_rollup doc ON doc.customer_id=c.id LEFT JOIN pay_rollup pay ON pay.customer_id=c.id"+
