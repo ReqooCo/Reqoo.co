@@ -154,6 +154,49 @@ async function getPaymentReceipt(d,env){
   const companyRows=(await env.DB.prepare("SELECT key,value FROM shop_settings WHERE key IN ('document_company_name','document_registration_no','document_address','document_phone','document_email')").all()).results||[],m=Object.fromEntries(companyRows.map(r=>[r.key,r.value||'']));
   const o=await orderByKey(p.order_id,env),summary=await summaryForOrder(o,env);return J({ok:true,receipt:{...p,company:{companyName:m.document_company_name||'REQOO.CO',registrationNo:m.document_registration_no||'',address:m.document_address||'',phone:m.document_phone||'',email:m.document_email||''},summary}});
 }
+
+const CUSTOMER_ROLLUP_CTE="WITH order_rollup AS ("+
+" SELECT o.customer_id,COUNT(*) order_count,MAX(o.created_at) last_order_at,"+
+" COALESCE(SUM(CASE WHEN EXISTS(SELECT 1 FROM reqoo_payments p0 WHERE p0.order_id=o.id AND p0.status='confirmed') THEN COALESCE((SELECT SUM(p1.amount_minor) FROM reqoo_payments p1 WHERE p1.order_id=o.id AND p1.status='confirmed'),0) WHEN o.payment_status='paid' THEN o.total_minor ELSE 0 END),0) collected_minor,"+
+" COALESCE(SUM(CASE WHEN o.fulfillment_status='cancelled' OR o.payment_status IN ('failed','cancelled','refunded') THEN 0 ELSE MAX(0,COALESCE((SELECT d.total_minor FROM reqoo_documents d WHERE d.order_id=o.id AND d.type='invoice' ORDER BY d.created_at,d.id LIMIT 1),o.total_minor)-CASE WHEN EXISTS(SELECT 1 FROM reqoo_payments p2 WHERE p2.order_id=o.id AND p2.status='confirmed') THEN COALESCE((SELECT SUM(p3.amount_minor) FROM reqoo_payments p3 WHERE p3.order_id=o.id AND p3.status='confirmed'),0) WHEN o.payment_status='paid' THEN COALESCE((SELECT d2.total_minor FROM reqoo_documents d2 WHERE d2.order_id=o.id AND d2.type='invoice' ORDER BY d2.created_at,d2.id LIMIT 1),o.total_minor) ELSE 0 END) END),0) outstanding_minor"+
+" FROM orders o WHERE o.customer_id IS NOT NULL GROUP BY o.customer_id),"+
+" doc_rollup AS (SELECT o.customer_id,COUNT(d.id) document_count,SUM(CASE WHEN d.type='quotation' THEN 1 ELSE 0 END) quotation_count,SUM(CASE WHEN d.type='receipt' THEN 1 ELSE 0 END) receipt_count,MAX(COALESCE(d.updated_at,d.created_at,d.issued_at)) last_doc_at FROM reqoo_documents d JOIN orders o ON o.id=d.order_id WHERE o.customer_id IS NOT NULL GROUP BY o.customer_id),"+
+" pay_rollup AS (SELECT o.customer_id,MAX(COALESCE(p.paid_at,p.updated_at,p.created_at)) last_payment_at FROM reqoo_payments p JOIN orders o ON o.id=p.order_id WHERE p.status='confirmed' AND o.customer_id IS NOT NULL GROUP BY o.customer_id)";
+function customerSortExpr(sort){
+  if(sort==='spend')return 'collected_minor DESC,last_activity DESC';
+  if(sort==='orders')return 'order_count DESC,last_activity DESC';
+  if(sort==='outstanding')return 'outstanding_minor DESC,last_activity DESC';
+  if(sort==='name')return "LOWER(COALESCE(c.name,'')) ASC,c.id ASC";
+  return 'last_activity DESC,c.id DESC';
+}
+async function customerDashboard(d,env){
+  await ensure(env);
+  const q=S(d.q).toLowerCase(),sort=S(d.sort||'recent').toLowerCase(),limit=Math.min(300,Math.max(20,Number(d.limit||120)));
+  const where=q?" WHERE LOWER(COALESCE(c.name,'')) LIKE ? OR REPLACE(REPLACE(REPLACE(COALESCE(c.phone,''),' ',''),'-',''),'+','') LIKE ? OR LOWER(COALESCE(c.email,'')) LIKE ?":'';
+  const args=q?['%'+q+'%','%'+q.replace(/[^0-9]/g,'')+'%','%'+q+'%']:[];
+  const sql=CUSTOMER_ROLLUP_CTE+
+    " SELECT c.id,c.name,c.phone,c.email,c.created_at,c.updated_at,COALESCE(o.order_count,0) order_count,COALESCE(o.collected_minor,0) collected_minor,COALESCE(o.outstanding_minor,0) outstanding_minor,COALESCE(doc.document_count,0) document_count,COALESCE(doc.quotation_count,0) quotation_count,COALESCE(doc.receipt_count,0) receipt_count,MAX(COALESCE(c.updated_at,''),COALESCE(c.created_at,''),COALESCE(o.last_order_at,''),COALESCE(doc.last_doc_at,''),COALESCE(pay.last_payment_at,'')) last_activity"+
+    " FROM customers c LEFT JOIN order_rollup o ON o.customer_id=c.id LEFT JOIN doc_rollup doc ON doc.customer_id=c.id LEFT JOIN pay_rollup pay ON pay.customer_id=c.id"+
+    where+" ORDER BY "+customerSortExpr(sort)+" LIMIT ?";
+  const rows=(await env.DB.prepare(sql).bind(...args,limit).all()).results||[];
+  const stats=await env.DB.prepare(CUSTOMER_ROLLUP_CTE+" SELECT COUNT(c.id) customers,COALESCE(SUM(CASE WHEN COALESCE(o.order_count,0)>1 THEN 1 ELSE 0 END),0) repeat_customers,COALESCE(SUM(COALESCE(o.collected_minor,0)),0) collected_minor,COALESCE(SUM(COALESCE(o.outstanding_minor,0)),0) outstanding_minor FROM customers c LEFT JOIN order_rollup o ON o.customer_id=c.id").first();
+  return J({ok:true,customers:rows,stats:{customers:Number(stats?.customers||0),repeatCustomers:Number(stats?.repeat_customers||0),collectedMinor:Number(stats?.collected_minor||0),outstandingMinor:Number(stats?.outstanding_minor||0)},query:q,limit});
+}
+async function customerDetail(d,env){
+  await ensure(env);
+  const key=S(d.customerId||d.id);if(!key)return J({ok:false,error:'Customer diperlukan'},400);
+  const customer=await env.DB.prepare('SELECT * FROM customers WHERE id=? LIMIT 1').bind(key).first();
+  if(!customer)return J({ok:false,error:'Customer tidak dijumpai'},404);
+  const orders=(await env.DB.prepare("SELECT o.*,c.name customer_name,c.phone,c.email FROM orders o LEFT JOIN customers c ON c.id=o.customer_id WHERE o.customer_id=? ORDER BY o.created_at DESC LIMIT 500").bind(customer.id).all()).results||[];
+  const documents=(await env.DB.prepare("SELECT d.* FROM reqoo_documents d WHERE d.order_id IN (SELECT id FROM orders WHERE customer_id=?) OR (TRIM(COALESCE(d.customer_phone,''))<>'' AND REPLACE(REPLACE(REPLACE(d.customer_phone,' ',''),'-',''),'+','')=REPLACE(REPLACE(REPLACE(COALESCE(?,''),' ',''),'-',''),'+','')) OR (TRIM(COALESCE(d.customer_email,''))<>'' AND LOWER(d.customer_email)=LOWER(COALESCE(?,''))) ORDER BY d.created_at DESC LIMIT 500").bind(customer.id,customer.phone,customer.email).all()).results||[];
+  const payments=(await env.DB.prepare("SELECT p.*,o.order_no,rd.number invoice_number FROM reqoo_payments p JOIN orders o ON o.id=p.order_id LEFT JOIN reqoo_documents rd ON rd.id=p.invoice_document_id WHERE o.customer_id=? AND p.status='confirmed' ORDER BY p.paid_at DESC,p.created_at DESC LIMIT 500").bind(customer.id).all()).results||[];
+  const summaries=(await env.DB.prepare("SELECT o.id order_id,o.order_no,o.total_minor order_total_minor,o.payment_status,COALESCE((SELECT d.total_minor FROM reqoo_documents d WHERE d.order_id=o.id AND d.type='invoice' ORDER BY d.created_at,d.id LIMIT 1),o.total_minor) billing_total_minor,COALESCE(SUM(CASE WHEN p.status='confirmed' THEN p.amount_minor ELSE 0 END),0) paid_minor FROM orders o LEFT JOIN reqoo_payments p ON p.order_id=o.id WHERE o.customer_id=? GROUP BY o.id,o.order_no,o.total_minor,o.payment_status ORDER BY o.created_at DESC LIMIT 500").bind(customer.id).all()).results||[];
+  const paymentSummaries=summaries.map(r=>{const total=Number(r.billing_total_minor||0),rawPaid=Number(r.paid_minor||0),paid=Math.min(total,rawPaid),balance=Math.max(0,total-rawPaid),overpaid=Math.max(0,rawPaid-total);return{orderId:r.order_id,orderNo:r.order_no||r.order_id,totalMinor:total,paidMinor:paid,rawPaidMinor:rawPaid,balanceMinor:balance,overpaidMinor:overpaid,paymentStatus:overpaid>0?'paid':balance===0&&total>0?'paid':paid>0?'partial':S(r.payment_status||'pending').toLowerCase()}});
+  const paidOrders=new Set(payments.map(p=>S(p.order_id)));
+  const collectedMinor=payments.reduce((s,p)=>s+Number(p.amount_minor||0),0)+orders.filter(o=>S(o.payment_status).toLowerCase()==='paid'&&!paidOrders.has(S(o.id))).reduce((s,o)=>s+Number(o.total_minor||0),0);
+  const outstandingMinor=paymentSummaries.reduce((s,x)=>s+Number(x.balanceMinor||0),0);
+  return J({ok:true,customer,orders,documents,payments,paymentSummaries,summary:{collectedMinor,outstandingMinor,orderCount:orders.length,documentCount:documents.length,quotationCount:documents.filter(x=>x.type==='quotation').length,receiptCount:payments.length||documents.filter(x=>x.type==='receipt').length}});
+}
 async function canonicalDocuments(d,request,env){
   await ensure(env);
   await syncLegacyPaidPayments(env,S(d.orderId||d.orderRef||d.orderNo));
@@ -179,7 +222,7 @@ export async function onRequest({request,env}){
   if(!env.DB)return J({ok:false,error:'D1 binding DB tidak dijumpai'},503);
   try{
     const d=await data(request),action=S(d.action);
-    if(['recordPayment','listPayments','paymentSummary','getPaymentReceipt','listDocuments','documentIntegrityAudit'].includes(action)){
+    if(['recordPayment','listPayments','paymentSummary','getPaymentReceipt','listDocuments','documentIntegrityAudit','customerDashboard','customerDetail'].includes(action)){
       if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);
       if(action==='recordPayment')return await recordPayment(d,request,env);
       if(action==='listPayments')return await listPayments(d,env);
@@ -187,6 +230,8 @@ export async function onRequest({request,env}){
       if(action==='getPaymentReceipt')return await getPaymentReceipt(d,env);
       if(action==='listDocuments')return await canonicalDocuments(d,request,env);
       if(action==='documentIntegrityAudit')return await documentIntegrityAudit(env);
+      if(action==='customerDashboard')return await customerDashboard(d,env);
+      if(action==='customerDetail')return await customerDetail(d,env);
     }
     if(action==='dashboardSummary'){
       if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);
