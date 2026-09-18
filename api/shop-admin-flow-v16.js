@@ -21,7 +21,7 @@ async function productionDashboard(env){
       LEFT JOIN shop_production_meta m ON m.order_id=o.id
       WHERE o.payment_status NOT IN ('failed','cancelled','refunded') AND o.fulfillment_status!='cancelled'
       ORDER BY CASE o.fulfillment_status WHEN 'processing' THEN 0 WHEN 'pending' THEN 1 WHEN 'fulfilled' THEN 2 ELSE 3 END,o.created_at DESC
-      LIMIT 200`).all()
+      LIMIT 1000`).all()
   ]);
   return J({ok:true,counts:{pending:Number(counts?.pending||0),paid:Number(counts?.paid||0),processing:Number(counts?.processing||0),fulfilled:Number(counts?.fulfilled||0)},orders:(rows?.results||[]).map(mapRow)});
 }
