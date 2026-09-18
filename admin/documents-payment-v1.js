@@ -82,7 +82,7 @@ function init(){
  document.addEventListener('rq:documents-changed',()=>scheduleRefresh(260));
  $('#docUnifiedSearch')?.addEventListener('input',()=>{if(document.documentElement.dataset.rqFinanceMode==='1')return;clearTimeout(searchTimer);searchTimer=setTimeout(()=>refreshData(true),260)});
  document.addEventListener('rq:documents-finance-mode-exit',()=>refreshData(true));
- document.addEventListener('rq:documents-record-payment',e=>{const doc=e?.detail?.document,summary=e?.detail?.summary;if(doc&&summary)openPayment(doc,summary)});
+ document.addEventListener('rq:documents-record-payment',e=>{const doc=e?.detail?.document,summary=e?.detail?.summary;if(doc&&summary)openPayment(doc,summary)});document.addEventListener('rq:documents-open-payment',e=>{const id=e?.detail?.id;if(id)openReceipt(id)});
  document.getElementById('refreshDocs')?.addEventListener('click',()=>{if(initialReady)setTimeout(()=>refreshData(true),500)})
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
