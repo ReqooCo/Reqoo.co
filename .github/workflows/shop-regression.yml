@@ -105,6 +105,7 @@ jobs:
           node tests/admin-documents-finance-scalability.mjs
           node tests/admin-customers-crm.mjs
           node tests/admin-customers-scalability.mjs
+          node tests/admin-customer-detail-scalability.mjs
           node tests/admin-finance-dashboard.mjs
           node tests/admin-finance-scalability.mjs
       - run: npm install --no-save --no-package-lock jsdom@30.0.1

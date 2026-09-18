@@ -5,11 +5,11 @@ const js=fs.readFileSync(new URL('../admin/customers.js',import.meta.url),'utf8'
 const css=fs.readFileSync(new URL('../admin/customers.css',import.meta.url),'utf8');
 const shell=fs.readFileSync(new URL('../admin/admin-shell.js',import.meta.url),'utf8');
 const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8');
-assert.match(html,/CUSTOMER CRM/);assert.match(html,/LIFETIME COLLECTED/);assert.match(html,/statOutstanding/);assert.match(html,/customers\.js\?v=4/);assert.match(html,/customers\.css\?v=1/);
-assert.match(js,/customerDashboard/);assert.match(js,/customerDetail/);assert.doesNotMatch(js,/listCustomers/);assert.doesNotMatch(js,/listOrders/);assert.doesNotMatch(js,/listDocuments/);assert.doesNotMatch(js,/listPayments/);assert.doesNotMatch(js,/paymentSummary/);
+assert.match(html,/CUSTOMER CRM/);assert.match(html,/LIFETIME COLLECTED/);assert.match(html,/statOutstanding/);assert.match(html,/customers\.js\?v=5/);assert.match(html,/customers\.css\?v=2/);
+assert.match(js,/customerDashboard/);assert.match(js,/customerDetail/);assert.match(js,/customerRecords/);assert.match(js,/limit:40/);assert.match(js,/data-crm-more/);assert.match(js,/customerDetailSearch/);assert.doesNotMatch(js,/listCustomers/);assert.doesNotMatch(js,/listOrders/);assert.doesNotMatch(js,/listDocuments/);assert.doesNotMatch(js,/listPayments/);assert.doesNotMatch(js,/paymentSummary/);
 assert.match(js,/LIFETIME COLLECTED/);assert.match(js,/OUTSTANDING/);assert.match(js,/Customer Timeline/);assert.match(js,/Payment History/);assert.match(js,/WhatsApp Customer/);
-assert.match(js,/activityFor/);assert.match(js,/setTimeout\(load,260\)/);assert.match(js,/detail dimuat bila dibuka/);assert.match(js,/initialCustomer/);assert.match(js,/initialCustomerQuery/);assert.match(js,/\/admin\/orders\.html\?order=/);assert.match(js,/\/admin\/documents\.html\?q=/);assert.doesNotMatch(js,/X-Admin-Token/);assert.doesNotMatch(js,/localStorage\.getItem/);
-assert.match(css,/\.rqCrmTabs/);assert.match(css,/\.rqCrmEvent/);assert.match(css,/\.rqCustomerBadge\.owes/);assert.match(css,/@media\(max-width:700px\)/);
+assert.match(js,/Recent Customer Timeline/);assert.match(js,/setTimeout\(load,260\)/);assert.match(js,/detail dimuat bila dibuka/);assert.match(js,/initialCustomer/);assert.match(js,/initialCustomerQuery/);assert.match(js,/\/admin\/orders\.html\?order=/);assert.match(js,/\/admin\/documents\.html\?q=/);assert.doesNotMatch(js,/X-Admin-Token/);assert.doesNotMatch(js,/localStorage\.getItem/);
+assert.match(css,/\.rqCrmTabs/);assert.match(css,/\.rqCrmEvent/);assert.match(css,/\.rqCustomerBadge\.owes/);assert.match(css,/\.rqCrmDetailSearch/);assert.match(css,/\.rqCrmMore/);assert.match(css,/@media\(max-width:700px\)/);
 assert.match(shell,/Customers/);assert.match(shell,/\/admin\/customers\.html/);
 assert.match(worker,/settings\|documents\|customers/);assert.match(worker,/admin-shell\.js\?v=3/);
-console.log('PASS: Customers CRM uses one aggregate list request and lazy detail while preserving linked orders, documents, payment and balances.');
+console.log('PASS: Customers CRM uses an aggregate list, full profile summary and paged lazy detail tabs with server-side search.');
