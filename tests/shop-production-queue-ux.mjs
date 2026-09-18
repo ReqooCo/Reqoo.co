@@ -7,6 +7,6 @@ assert.match(worker,/shop-production-queue-v2\.css\?v=1/);assert.match(worker,/a
 assert.match(runtime,/listOrders/);assert.match(runtime,/listProductionMeta/);assert.doesNotMatch(runtime,/MutationObserver/);assert.doesNotMatch(runtime,/setInterval/);assert.doesNotMatch(runtime,/addEventListener\('focus'/);
 assert.match(runtime,/saveProductionMeta/);assert.match(runtime,/dueDate/);assert.match(runtime,/priority/);assert.match(runtime,/assignedTo/);assert.match(runtime,/internalNote/);assert.match(runtime,/Due Hari Ini/);assert.match(runtime,/Overdue/);
 assert.match(runtime,/verifyPayment/);assert.match(runtime,/status/);assert.match(runtime,/processing/);assert.match(runtime,/fulfilled/);assert.match(runtime,/confirm\(/);
-assert.match(api,/productionDashboard/);assert.match(api,/shop-admin-flow-v15\.js/);
+assert.match(api,/productionDashboard/);assert.match(api,/payment_status IN \('paid','partial'\)/,'Dashboard must count deposits as ready');assert.match(api,/shop-admin-flow-v15\.js/);
 assert.match(css,/\.rqPlanner/);assert.match(css,/\.rqPriority-urgent/);assert.match(css,/\.rqDue-overdue/);
 console.log('PASS: Production queue uses loop-free runtime with manual refresh and guarded status workflow.');
