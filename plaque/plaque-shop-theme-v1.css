@@ -33,3 +33,76 @@ body.rqBotPlaque{background:radial-gradient(circle at 88% 3%,rgba(168,199,178,.2
 .summaryBox{border-color:#d8cfc1}.btnPay{background:#7b4d33}.modalStatus{color:#497257}
 .mobileBuyBar{background:rgba(246,241,231,.97);color:var(--ink);border:1px solid #d8cfc1}.mobileBuyBar button{background:linear-gradient(135deg,#a8c7b2,#c6d9cc);color:#213128;border-radius:8px}.mobileBuyBar b{color:#5d3a29}
 @media(max-width:700px){.brandMark{border-radius:4px}.navCta,.btn,.btnGhost,.productBtn{border-radius:8px}}
+
+
+/* conversion-v8 */
+.conversionHero{padding-top:48px}
+.heroOffer{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.heroOffer>div{min-width:145px;padding:12px 14px;border:1px solid #d8cbbb;background:rgba(255,253,248,.78);border-radius:12px}
+.heroOffer small{display:block;font-size:8px;letter-spacing:1.2px;font-weight:900;color:#6f957d}
+.heroOffer b{display:block;margin-top:4px;font:600 20px Georgia,serif;color:#4b2b20}
+.heroPrimary{border:0}
+.shopPriority{padding-top:58px}
+.shopReassurance{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.shopReassurance span{padding:9px 11px;border:1px solid #d8cbbb;background:#fffaf2;border-radius:10px;font-size:9px;font-weight:750;color:#62564f}
+.compactSection{padding-top:58px;padding-bottom:58px}
+.orderSteps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.orderSteps article{background:#fbf8f1;border:1px solid #ded4c4;border-radius:16px;padding:18px;box-shadow:0 10px 26px rgba(66,47,38,.05)}
+.orderSteps article>span{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#e6efe8;color:#4d6f60;font-size:9px;font-weight:950}
+.orderSteps b{display:block;margin-top:13px;font:600 21px Georgia,serif;color:#4b2b20}
+.orderSteps p{margin:6px 0 0;color:#75685e;font-size:10px;line-height:1.6}
+.productMediaBtn{display:block;width:100%;border:0;padding:0;cursor:pointer;background:transparent;text-align:inherit}
+.productMiniDesc{margin:7px 0 0;color:#75685e;font-size:9px;line-height:1.5}
+.productBtn{min-height:38px;padding-left:15px;padding-right:15px}
+.galleryCta{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:24px}
+.fastNote{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:11px 0 5px;padding:10px 11px;background:#e9f0ea;border:1px solid #cbdace;border-radius:10px}
+.fastNote b{font-size:9px;color:#355547}
+.fastNote span{font-size:8px;color:#62746a;text-align:right}
+.optionalOrderDetails{margin-top:12px;border:1px solid #d7ccbd;border-radius:12px;background:#f8f3ea;overflow:hidden}
+.optionalOrderDetails summary{padding:12px 13px;cursor:pointer;font-size:9px;font-weight:900;color:#5d4335;list-style:none}
+.optionalOrderDetails summary::-webkit-details-marker{display:none}
+.optionalOrderDetails summary span{font-weight:700;color:#8a7b70}
+.optionalGrid{padding:0 12px 12px}
+.mutedLabel{font-weight:700;color:#9b8c81}
+.modalWa{display:flex;align-items:center;justify-content:center;margin-top:8px;min-height:40px;border:1px solid #c8b9a7;border-radius:9px;background:#fffaf3;color:#5d4335;font-size:9px;font-weight:900}
+.mobileLandingBar{display:none}
+.mobileLandingBar.hiddenByModal{display:none!important}
+
+@media(max-width:900px){
+  .orderSteps{grid-template-columns:1fr}
+}
+
+@media(max-width:700px){
+  body.rqBotPlaque{padding-bottom:76px}
+  .conversionHero{padding-top:28px}
+  .heroCopy h1{font-size:41px;line-height:.98}
+  .heroOffer{margin-top:16px}
+  .heroOffer>div{flex:1;min-width:0;padding:10px 11px}
+  .heroOffer b{font-size:17px}
+  .heroActions{display:grid;grid-template-columns:1fr}
+  .heroActions .btn,.heroActions .btnGhost{width:100%}
+  .heroMeta{display:grid;grid-template-columns:1fr 1fr}
+  .heroMeta span:last-child{grid-column:1/-1}
+  .shopPriority{padding-top:42px}
+  .shopReassurance{display:grid}
+  .productBottom{align-items:stretch;flex-direction:column}
+  .productPrice{font-size:14px}
+  .productBtn{width:100%;min-height:44px;font-size:10px}
+  .orderSteps article{padding:16px}
+  .galleryCta{display:grid}
+  .galleryCta .btn,.galleryCta .btnGhost{width:100%}
+  .fastNote{display:block}
+  .fastNote span{display:block;text-align:left;margin-top:3px}
+  .modalMedia{padding-bottom:8px}
+  .modalMainImg{height:230px}
+  .modalContent{padding-top:12px}
+  .field textarea{min-height:62px}
+  .summaryRow.total b{font-size:22px}
+  .btnPay{min-height:48px}
+  .mobileLandingBar{position:fixed;display:flex;z-index:80;left:8px;right:8px;bottom:8px;align-items:center;gap:10px;padding:9px 10px calc(9px + env(safe-area-inset-bottom));background:rgba(246,241,231,.97);border:1px solid #d8cfc1;border-radius:14px;box-shadow:0 14px 36px rgba(70,48,36,.18);backdrop-filter:blur(14px)}
+  .mobileLandingBar div{min-width:0}
+  .mobileLandingBar small{display:block;font-size:8px;color:#75685e}
+  .mobileLandingBar b{display:block;margin-top:2px;font-size:12px;color:#5d3a29}
+  .mobileLandingBar button{margin-left:auto;border:0;border-radius:8px;background:#7b4d33;color:#fff;padding:11px 14px;font-size:9px;font-weight:950}
+  .mobileBuyBar{z-index:110}
+}
