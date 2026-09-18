@@ -14,19 +14,24 @@ async function verify(request,data,e,reject=false){
     if(reject)return J({ok:false,error:'Gunakan aliran penolakan bayaran semasa'},409);
     if(['failed','cancelled','refunded'].includes(o.payment_status)||o.fulfillment_status==='cancelled')return J({ok:false,error:'Order dibatalkan atau bayaran ditolak. Jangan sahkan semula order ini.'},409);
     const p=await e.DB.prepare('SELECT * FROM payments WHERE order_id=? ORDER BY created_at DESC LIMIT 1').bind(o.id).first();
-    if(!p)return J({ok:false,error:'Rekod bayaran tidak dijumpai. Semak order sebelum pengesahan.'},409);
-    const t=NOW();
-    // D1 batch rolls back both writes together. Retrying also repairs older split states.
+    const t=NOW(),paymentId=p?.id||ID('pay');
+    // Manual/admin-created orders may legitimately have no payment row yet.
+    // Confirming payment creates that missing row atomically instead of blocking the workflow.
+    const paymentWrite=p
+      ?e.DB.prepare("UPDATE payments SET status='paid',paid_at=COALESCE(paid_at,?),updated_at=? WHERE id=? AND EXISTS(SELECT 1 FROM orders WHERE id=? AND payment_status='paid' AND fulfillment_status!='cancelled')").bind(t,t,p.id,o.id)
+      :e.DB.prepare("INSERT INTO payments(id,order_id,provider,provider_reference,method,amount_minor,currency,status,metadata_json,paid_at,created_at,updated_at) SELECT ?,id,'manual',NULL,'admin_verify',total_minor,currency,'paid',?,?,?,? FROM orders WHERE id=? AND payment_status='paid' AND fulfillment_status!='cancelled'").bind(paymentId,JSON.stringify({source:'admin_verify'}),t,t,t,o.id);
+    // Payment confirmation must not start production automatically. Paid orders become READY first.
     await e.DB.batch([
-      e.DB.prepare("UPDATE orders SET payment_status='paid',fulfillment_status=CASE WHEN payment_status='paid' THEN fulfillment_status ELSE 'processing' END,updated_at=? WHERE id=? AND payment_status NOT IN ('failed','cancelled','refunded') AND fulfillment_status!='cancelled'").bind(t,o.id),
-      e.DB.prepare("UPDATE payments SET status='paid',paid_at=COALESCE(paid_at,?),updated_at=? WHERE id=? AND EXISTS(SELECT 1 FROM orders WHERE id=? AND payment_status='paid' AND fulfillment_status!='cancelled')").bind(t,t,p.id,o.id)
+      e.DB.prepare("UPDATE orders SET payment_status='paid',updated_at=? WHERE id=? AND payment_status NOT IN ('failed','cancelled','refunded') AND fulfillment_status!='cancelled'").bind(t,o.id),
+      paymentWrite
     ]);
     const fresh=await e.DB.prepare('SELECT * FROM orders WHERE id=? OR order_no=? LIMIT 1').bind(o.id,o.id).first();
-    if(fresh?.payment_status!=='paid'||fresh.fulfillment_status==='cancelled')return J({ok:false,error:'Status order telah berubah. Muat semula sebelum mencuba lagi.'},409);
+    const freshPayment=await e.DB.prepare('SELECT * FROM payments WHERE id=? LIMIT 1').bind(paymentId).first();
+    if(fresh?.payment_status!=='paid'||fresh.fulfillment_status==='cancelled'||freshPayment?.status!=='paid')return J({ok:false,error:'Status order telah berubah. Muat semula sebelum mencuba lagi.'},409);
     let documentsPending=false;
     try{await makeDocs(e,fresh)}catch(err){documentsPending=true;console.error('REQOO verify documents:',err)}
-    if(o.payment_status!=='paid'||p.status!=='paid')try{await event(e,o.id,'payment.verified',{paymentId:p.id,verifiedAt:t});}catch(err){console.error('REQOO verify audit:',err)}
-    return J({ok:true,status:'PAID',already:o.payment_status==='paid',documentsPending});
+    if(o.payment_status!=='paid'||p?.status!=='paid')try{await event(e,o.id,'payment.verified',{paymentId,verifiedAt:t,source:p?'existing_payment':'admin_verify'});}catch(err){console.error('REQOO verify audit:',err)}
+    return J({ok:true,status:'PAID',already:o.payment_status==='paid',paymentCreated:!p,documentsPending});
   }catch(err){console.error('REQOO verifyPayment:',err);return J({ok:false,error:'Bayaran belum dapat disahkan. Sila cuba semula.'},500)}
 }
 async function event(e,oid,type,meta){return e.DB.prepare('INSERT INTO activity_events(id,order_id,event_type,trace_id,metadata_json,created_at) VALUES(?,?,?,?,?,?)').bind(ID('evt'),oid,type,oid,JSON.stringify(meta),NOW()).run()}
