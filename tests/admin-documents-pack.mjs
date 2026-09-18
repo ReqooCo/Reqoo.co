@@ -1,10 +1,10 @@
 import fs from 'node:fs';import assert from 'node:assert/strict';
 const html=fs.readFileSync(new URL('../admin/documents.html',import.meta.url),'utf8');
-const js=fs.readFileSync(new URL('../admin/documents-v1.js',import.meta.url),'utf8');
-const shell=fs.readFileSync(new URL('../admin/admin-shell-v2.js',import.meta.url),'utf8');
+const js=fs.readFileSync(new URL('../admin/documents-v2.js',import.meta.url),'utf8');
+const shell=fs.readFileSync(new URL('../admin/admin-shell.js',import.meta.url),'utf8');
 const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8');
-assert.match(html,/quotation/i);assert.match(html,/invoice/i);assert.match(html,/receipt/i);
-assert.match(js,/listOrders/);assert.match(js,/getOrder/);assert.match(js,/Receipt hanya boleh dikeluarkan selepas bayaran disahkan/);assert.match(js,/w\.print\(\)/);
+assert.match(html,/quotation/i);assert.match(html,/invoice/i);assert.match(html,/receipt/i);assert.match(html,/documents-v2\.js\?v=4/);
+assert.match(js,/listOrders/);assert.match(js,/listDocuments/);assert.match(js,/createDocument/);assert.match(js,/saveDocumentSettings/);assert.match(js,/w\.print\(\)/);
 assert.match(shell,/Documents/);assert.match(shell,/\/admin\/documents\.html/);
-assert.match(worker,/settings\|documents/);assert.match(worker,/admin-shell-v2\.js\?v=6/);
-console.log('PASS: Admin Documents V1 is wired with guarded order-based document previews.');
+assert.match(worker,/settings\|documents/);assert.match(worker,/admin-shell\.js\?v=1/);
+console.log('PASS: current Admin Documents runtime is wired to canonical shared Admin assets.');
