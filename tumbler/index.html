@@ -24,10 +24,10 @@
 <section class="wrap hero">
   <div class="heroCopy">
     <div class="eyebrow">CUSTOM TUMBLER · HADIAH YANG BOLEH DIGUNA SETIAP HARI</div>
-    <h1>Satu hadiah yang <em>praktikal</em> dan tetap terasa personal.</h1>
-    <p class="lead">Sesuai untuk staf, sekolah, event, marathon atau hadiah korporat. Pilih saiz dan warna, kemudian custom dengan nama, logo atau identiti acara anda.</p>
-    <div class="heroActions"><a class="btn" href="#jenis">Kenali Pilihan</a><a class="btnGhost" href="#pilih">Pilih & Tempah</a></div>
-    <div class="benefits"><span class="pill">✓ 300ml & 600ml</span><span class="pill">✓ Boleh campur warna</span><span class="pill">✓ Nama / logo custom</span></div>
+    <h1>Tumbler custom yang <em>senang ditempah</em> dan memang orang guna.</h1>
+    <p class="lead">Pilih saiz, warna dan kuantiti dahulu. Untuk mula tempahan, nama + WhatsApp sahaja wajib — teks, logo dan detail rekaan boleh dilengkapkan kemudian.</p>
+    <div class="heroActions"><a class="btn" href="#pilih">Pilih Tumbler Sekarang →</a><a class="btnGhost js-wa-contact" href="https://wa.me/60103982803?text=Hi%20Reqoo%2C%20saya%20nak%20tanya%20tentang%20tumbler%20custom." target="_blank" rel="noopener">Tanya di WhatsApp</a></div>
+    <div class="benefits"><span class="pill">✓ Harga terus dikira</span><span class="pill">✓ Boleh campur warna</span><span class="pill">✓ Bayaran ToyyibPay</span></div>
   </div>
   <div class="visual">
     <img id="heroImg" alt="Custom Tumbler REQOO">
@@ -83,7 +83,7 @@
 <section class="section alt">
   <div class="wrap finalCta">
     <div><div class="eyebrow">ADA KUANTITI BESAR?</div><h3>Tempahan event atau organisasi pun boleh.</h3><p>Untuk kuantiti besar, kombinasi warna khas atau keperluan rekaan tertentu, terus bincang dengan REQOO.</p></div>
-    <a class="btn" href="https://wa.me/60103982803?text=Hi%20Reqoo%2C%20saya%20nak%20bincang%20tempahan%20tumbler%20custom." target="_blank" rel="noopener">WhatsApp REQOO →</a>
+    <a class="btn js-wa-contact" href="https://wa.me/60103982803?text=Hi%20Reqoo%2C%20saya%20nak%20bincang%20tempahan%20tumbler%20custom." target="_blank" rel="noopener">WhatsApp REQOO →</a>
   </div>
 </section>
 </main>
@@ -94,7 +94,7 @@
   <div class="orderBackdrop" data-close-order></div>
   <div class="orderDialog" role="dialog" aria-modal="true" aria-labelledby="orderTitle">
     <button class="modalClose" type="button" data-close-order aria-label="Tutup">×</button>
-    <div class="modalHead"><div class="eyebrow">TEMPAHAN TUMBLER</div><h2 id="orderTitle">Pilih saiz, warna & kuantiti</h2><p>Pilih kombinasi yang anda mahu. Jumlah dikira automatik sebelum terus ke bayaran.</p></div>
+    <div class="modalHead"><div class="eyebrow">TEMPAHAN TUMBLER</div><h2 id="orderTitle">Pilih saiz, warna & kuantiti</h2><p>Jumlah dikira automatik. Nama + WhatsApp sahaja wajib untuk mula; detail custom boleh dilengkapkan kemudian.</p></div>
     <div id="loading" class="card loading">Sedang memuatkan pilihan Tumbler…</div>
     <div id="orderGrid" class="orderGrid" hidden>
       <div class="card">
@@ -107,7 +107,7 @@
           <div class="hint">Kuantiti kekal bila anda tukar saiz. Contohnya, Hitam 5 pada satu saiz + Putih 3 pada saiz lain boleh dibuat dalam satu order.</div>
         </div>
         <div class="step">
-          <div class="stepTitle"><span class="num">2</span>Maklumat custom</div>
+          <div class="stepTitle"><span class="num">2</span>Maklumat custom <small>(pilihan)</small></div>
           <div class="field"><label for="customText">NAMA / TEKS</label><input id="customText" maxlength="120" placeholder="Contoh: Ahmad / Unit Operasi"></div>
           <div class="field"><label for="note">CATATAN REKAAN</label><textarea id="note" maxlength="800" placeholder="Contoh: Logo depan, nama staf belakang"></textarea></div>
           <div class="field file"><label for="artwork">ARTWORK / LOGO</label><input id="artwork" type="file" accept="image/png,image/jpeg,image/webp"><div class="fileHint">PNG, JPG atau WEBP · maksimum 2MB. Fail dihantar bersama order.</div></div>
@@ -137,6 +137,8 @@
 
 <div class="mobileBar" id="mobileBar" hidden><div class="mobileTotal"><small>JUMLAH</small><b id="mobileTotal">RM0.00</b></div><button id="mobileBuy" type="button">Terus ke Bayaran</button></div>
 
+<noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=2273189430133124&ev=PageView&noscript=1"></noscript>
+<script src="/shared/meta-pixel-v1.js?v=1"></script>
 <script>window.REQOO_TUMBLER_CHECKOUT_COMPAT={action:'createOrder',payment:'toyyibpay',expectedTotalMinor:true,billUrlFallback:'d.billUrl||d.payment?.billUrl'};</script>
-<script src="/tumbler/tumbler-order.js?v=1"></script>
+<script src="/tumbler/tumbler-order.js?v=2"></script>
 </body></html>
