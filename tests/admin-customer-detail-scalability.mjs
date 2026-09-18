@@ -18,6 +18,8 @@ async function call(action,data={}){
   return{status:r.status,...await r.json()};
 }
 
+await call('customerDashboard',{limit:20});
+
 sqlite.prepare("INSERT INTO customers(id,name,phone,email,status,created_at,updated_at) VALUES('big','Big Corporate','0123456789','big@example.com','active',datetime('now'),datetime('now'))").run();
 const orderStmt=sqlite.prepare("INSERT INTO orders(id,order_no,customer_id,source,currency,subtotal_minor,discount_minor,shipping_minor,tax_minor,total_minor,payment_status,fulfillment_status,created_at,updated_at) VALUES(?,?, 'big','shop','MYR',1000,0,0,0,1000,?,'pending',datetime('now',?),datetime('now',?))");
 const docStmt=sqlite.prepare("INSERT INTO reqoo_documents(id,type,number,order_id,status,currency,subtotal_minor,discount_minor,shipping_minor,tax_minor,total_minor,issued_at,due_at,customer_name,customer_phone,customer_email,company_json,payment_status,share_token,created_at,updated_at) VALUES(?,'invoice',?,?,?,'MYR',1000,0,0,0,1000,datetime('now',?),NULL,'Big Corporate','0123456789','big@example.com','{}',?,?,datetime('now',?),datetime('now',?))");
