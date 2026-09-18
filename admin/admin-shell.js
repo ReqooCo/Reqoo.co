@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-if(!document.querySelector('link[href*="/admin/admin-flow-v1.css"]')){const l=document.createElement('link');l.rel='stylesheet';l.href='/admin/admin-flow.css?v=1';document.head.appendChild(l)}
+if(!document.querySelector('link[href*="/admin/admin-flow-v1.css"]')){const l=document.createElement('link');l.rel='stylesheet';l.href='/admin/admin-flow.css?v=2';document.head.appendChild(l)}
 const path=location.pathname,hash=location.hash;
 const isShop=/\/shop\/admin\.html$/i.test(path),isOverview=/\/admin\/?$/i.test(path),isOrders=/\/admin\/orders\.html$/i.test(path),isProduction=/\/admin\/production\.html$/i.test(path),isProducts=/\/admin\/products\.html$/i.test(path),isDocuments=/\/admin\/documents\.html$/i.test(path),isCustomers=/\/admin\/customers\.html$/i.test(path),isFinance=/\/admin\/finance\.html$/i.test(path);
 document.body.classList.add('rq-admin-shell');
