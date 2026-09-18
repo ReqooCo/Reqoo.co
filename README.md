@@ -36,3 +36,18 @@ Plaque, Tumbler and campaign landing pages use stable filenames. New visual revi
 - `landing-premium.css` + `landing-runtime.js`
 
 `tests/storefront-asset-integrity.mjs` prevents old numbered storefront copies from returning.
+
+
+### Admin page assets
+
+Admin feature pages also use stable filenames. Update the same file and bump only the query-string cache version; do not create new `-v2/-v3` copies for routine revisions.
+
+- `overview.css/js`
+- `orders.css/js`
+- `production.css/js`
+- `products.css/js` + `product-options.css` + `product-option-matrix.js`
+- `documents.css/js`
+- `customers.css/js`
+- `finance.css/js`
+
+Specialized document/shop compatibility modules may remain versioned until their dependency chains are flattened separately.
