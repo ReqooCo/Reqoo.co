@@ -17,6 +17,6 @@ assert.match(js,/sameCount/,'Renaming options should preserve matching variant i
 assert.match(js,/if\(secondActive&&!secondary\.length\)/,'Incomplete second options must not destroy existing variants');
 assert.match(js,/looksLikeSize/,'Existing options must identify size-like values');
 assert.match(js,/swapDimensions/,'Legacy color-first combinations must normalize to size-first display');
-assert.match(js,/Stok & SKU/,'Generated variant details should remain secondary/collapsible');
+assert.match(js,/Stok & SKU/,'Generated variant details should remain secondary/collapsible');\nassert.match(js,/reqoo:product-editor-hydrate/,'Options UI must hydrate after lazy product detail finishes');
 assert.match(css,/\.rqOptionHero/,'Options-first UI must have dedicated responsive styling');
 console.log('PASS: size-first options editor present with safe automatic combinations.');
