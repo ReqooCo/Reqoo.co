@@ -45,7 +45,7 @@ try{
  const links=await call('documentLinks',{orderId:'atomic'});assert.equal(links.ok,true);assert.ok(links.invoiceUrl.startsWith('https://reqoo.co/d/'));
  const publicDoc=await call('publicDocument',{shareToken:links.receiptUrl.split('/').pop()});assert.equal(publicDoc.document.type,'receipt');assert.equal(publicDoc.document.items.length,1);
  // More than 12 overdue rows plus today's rows must all contribute to the KPIs.
- for(let i=0;i<20;i++){seed('due_'+i,'paid','processing');sqlite.prepare("INSERT INTO shop_production_meta(order_id,due_date,updated_at) VALUES(?,date('now',?),datetime('now'))").run('due_'+i,i<15?'-1 day':'+0 day')}
+ for(let i=0;i<20;i++){seed('due_'+i,'paid','processing');sqlite.prepare("INSERT INTO shop_production_meta(order_id,due_date,updated_at) VALUES(?,date('now','+8 hours',?),datetime('now'))").run('due_'+i,i<15?'-1 day':'+0 day')}
  const dashboard=await call('dashboardSummary');assert.equal(dashboard.ok,true);assert.equal(dashboard.due.length,12);assert.equal(dashboard.kpis.overdue,15);assert.equal(dashboard.kpis.due_today,5);
  console.log('PASS: payment confirmation is atomic, creates a manual payment row when needed, leaves paid work READY, allows deposit-paid work to start, repairs legacy state, and preserves production KPIs.');
 }finally{console.error=originalError;sqlite.close()}
