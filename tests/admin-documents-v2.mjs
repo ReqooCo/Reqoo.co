@@ -100,7 +100,7 @@ assert.match(publicUi,/quoteMeta/);assert.match(publicUi,/function paymentTerms/
 assert.match(publicUi,/AB ART TRADING/);
 assert.match(publicUi,/201903337879 \(003053605-X\)/);
 assert.match(publicUi,/window\.print/);
-assert.match(web,/document-public\.html/);assert.match(web,/x-reqoo-document-preview','Public document route should explicitly disable rich social cards');assert.doesNotMatch(web,/og-image\.jpg/,'Document route must not force the generic REQOO social image');
+assert.match(web,/document-public\.html/);assert.match(web,/x-reqoo-document-preview/,'Public document route should explicitly disable rich social cards');assert.doesNotMatch(web,/og-image\.jpg/,'Document route must not force the generic REQOO social image');
 assert.match(web,/\/d\\\//);
 
 console.log('PASS: Documents supports custom quotations, payment ledger integrity, linked document flow drawer and receipt timeline.');
