@@ -75,14 +75,14 @@ body.rqBotPlaque{background:radial-gradient(circle at 88% 3%,rgba(168,199,178,.2
 @media(max-width:700px){
   body.rqBotPlaque{padding-bottom:76px}
   .conversionHero{padding-top:28px}
-  .heroCopy h1{font-size:41px;line-height:.98}
-  .heroOffer{margin-top:16px}
+  .heroCopy h1{font-size:34px;line-height:1.05;letter-spacing:-1px;margin:10px 0 12px}
+  .heroLead{font-size:12px;line-height:1.58}.heroOffer{margin-top:14px;gap:8px}
   .heroOffer>div{flex:1;min-width:0;padding:10px 11px}
-  .heroOffer b{font-size:17px}
+  .heroOffer b{font-size:16px}
   .heroActions{display:grid;grid-template-columns:1fr}
   .heroActions .btn,.heroActions .btnGhost{width:100%}
-  .heroMeta{display:grid;grid-template-columns:1fr 1fr}
-  .heroMeta span:last-child{grid-column:1/-1}
+  .heroMeta{display:grid;grid-template-columns:1fr;gap:8px;margin-top:14px}
+  .heroMeta span{width:100%}.heroMeta span:last-child{grid-column:auto}
   .shopPriority{padding-top:42px}
   .shopReassurance{display:grid}
   .productBottom{align-items:stretch;flex-direction:column}
@@ -99,8 +99,8 @@ body.rqBotPlaque{background:radial-gradient(circle at 88% 3%,rgba(168,199,178,.2
   .field textarea{min-height:62px}
   .summaryRow.total b{font-size:22px}
   .btnPay{min-height:48px}
-  .mobileLandingBar{position:fixed;display:flex;z-index:80;left:8px;right:8px;bottom:8px;align-items:center;gap:10px;padding:9px 10px calc(9px + env(safe-area-inset-bottom));background:rgba(246,241,231,.97);border:1px solid #d8cfc1;border-radius:14px;box-shadow:0 14px 36px rgba(70,48,36,.18);backdrop-filter:blur(14px)}
-  .mobileLandingBar div{min-width:0}
+  .mobileLandingBar{position:fixed;display:none;z-index:80;left:8px;right:8px;bottom:8px;align-items:center;gap:10px;padding:9px 10px calc(9px + env(safe-area-inset-bottom));background:rgba(246,241,231,.97);border:1px solid #d8cfc1;border-radius:14px;box-shadow:0 14px 36px rgba(70,48,36,.18);backdrop-filter:blur(14px)}
+  .mobileLandingBar.is-visible{display:flex}\n  .mobileLandingBar div{min-width:0}
   .mobileLandingBar small{display:block;font-size:8px;color:#75685e}
   .mobileLandingBar b{display:block;margin-top:2px;font-size:12px;color:#5d3a29}
   .mobileLandingBar button{margin-left:auto;border:0;border-radius:8px;background:#7b4d33;color:#fff;padding:11px 14px;font-size:9px;font-weight:950}
