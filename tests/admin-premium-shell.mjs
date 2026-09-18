@@ -4,9 +4,13 @@ const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8'
 const shell=fs.readFileSync(new URL('../admin/admin-shell.js',import.meta.url),'utf8');
 const base=fs.readFileSync(new URL('../admin/admin-base.css',import.meta.url),'utf8');
 const flow=fs.readFileSync(new URL('../admin/admin-flow.css',import.meta.url),'utf8');
+const apiWorker=fs.readFileSync(new URL('../api/worker.js',import.meta.url),'utf8');
+const index=fs.readFileSync(new URL('../admin/index.html',import.meta.url),'utf8');
+const middleware=fs.readFileSync(new URL('../functions/_middleware.js',import.meta.url),'utf8');
+const canonicalRuntimes=['overview.js','orders.js','production.js','products.js','documents.js','documents-drawer-v1.js','documents-payment-v1.js','documents-overdue-v1.js','customers.js','finance.js'].map(f=>fs.readFileSync(new URL('../admin/'+f,import.meta.url),'utf8'));
 assert.match(worker,/admin-base\.css\?v=1/,'canonical Admin base CSS must be injected');
 assert.match(worker,/admin-flow\.css\?v=2/,'canonical Admin flow CSS must be injected last');
-assert.match(worker,/admin-shell\.js\?v=2/,'canonical Admin shell runtime must be injected');
+assert.match(worker,/admin-shell\.js\?v=3/,'canonical Admin shell runtime must be injected');
 assert.match(worker,/admin-ui-v1/,'Admin response must advertise the canonical UI runtime');
 assert.match(worker,/assetRequest\('\/shop\/admin\.html',request\)\);\s*return injectShopAdminSafe\(response\)/,'Shop Admin must remain isolated in safe mode');
 assert.match(worker,/shop-admin-safe-mode-v1/,'Shop Admin safe mode marker must remain active');
@@ -17,7 +21,19 @@ assert.match(shell,/mobilePrimary/,'mobile dock must have an explicit primary se
 assert.match(shell,/rqAdminMoreTrigger/,'mobile dock must move secondary destinations under More');
 assert.match(shell,/moreKeys=\['products','customers','finance','pksk','settings'\]/,'secondary mobile destinations must stay available');
 assert.match(shell,/admin-flow\.css\?v=2/,'shell fallback must point at the canonical flow stylesheet');
-assert.match(shell,/Orders → Production → Documents/,'overview context must communicate the core operational flow');assert.match(shell,/data-rq-logout/,'Admin shell must expose logout');assert.match(shell,/localStorage\.removeItem\('reqoo_admin_token'\)/,'Logout must clear the persistent Admin token');
+assert.match(shell,/Orders → Production → Documents/,'overview context must communicate the core operational flow');assert.match(shell,/data-rq-logout/,'Admin shell must expose logout');assert.match(shell,/\/api\/admin-session/,'Logout must revoke the server-side Admin session');assert.match(shell,/method:'DELETE'/,'Logout must explicitly delete the secure session');assert.match(shell,/localStorage\.removeItem\('reqoo_admin_token'\)/,'Logout must clean up migrated legacy secrets');
+assert.match(apiWorker,/ADMIN_SESSION_COOKIE='rq_admin_session'/,'API worker must own the signed Admin session');
+assert.match(apiWorker,/HttpOnly; Secure; SameSite=Strict/,'Admin session cookie must be HttpOnly, Secure and Strict');
+assert.match(apiWorker,/Path=\/api\//,'Admin session cookie must be scoped to API paths');
+assert.match(apiWorker,/hmacHex/,'Admin session must be signed server-side');
+assert.match(apiWorker,/authorizeAdminRequest/,'Admin API requests must accept the signed session');
+assert.match(apiWorker,/path==='\/api\/admin-session'/,'API worker must expose the session endpoint');
+assert.match(index,/safeReturn/,'Login return targets must be validated before navigation');
+assert.match(index,/createSession/,'Admin login must exchange the secret for a signed session');
+assert.doesNotMatch(index,/localStorage\.setItem\([^\n]*reqoo_admin_token/,'Admin login must never persist the secret in localStorage');
+assert.match(worker,/target\.hostname='admin\.reqoo\.co'/,'Web worker must canonicalize Admin UI to admin.reqoo.co');
+assert.match(middleware,/target\.hostname='admin\.reqoo\.co'/,'Pages middleware must canonicalize Admin UI to admin.reqoo.co');
+for(const src of canonicalRuntimes){assert.doesNotMatch(src,/localStorage\.getItem/,'Canonical Admin runtime must not read an Admin secret from localStorage');assert.doesNotMatch(src,/X-Admin-Token/,'Canonical Admin runtime must rely on HttpOnly session auth');}
 assert.match(base,/--rq-sidebar:#151515/,'canonical base must include premium sidebar tokens');
 assert.match(base,/\.rqAdminSide/,'desktop navigation must stay in the canonical base');
 assert.match(base,/\.rqAdminMobile/,'mobile navigation must stay in the canonical base');
