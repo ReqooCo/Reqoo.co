@@ -6,6 +6,6 @@ const css=fs.readFileSync('admin/products.css','utf8');
 assert.match(html,/product-option-matrix\.js\?v=2/);
 assert.match(js,/Pilihan produk/);
 assert.match(js,/Saiz & harga/);
-assert.match(js,/Bina pilihan/);
+assert.doesNotMatch(js,/Bina pilihan/);assert.match(js,/reqoo:product-editor-hydrate/);
 assert.match(css,/\.rqSimpleOptions/);
 console.log('admin simple product options: ok');
