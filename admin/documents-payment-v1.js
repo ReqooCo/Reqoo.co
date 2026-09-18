@@ -79,8 +79,9 @@ function init(){
  ensureModal();
  const start=()=>{if(initialReady)return;initialReady=true;setTimeout(()=>refreshData(true),120)};
  if(document.documentElement.dataset.rqDocumentsReady==='1')start();else document.addEventListener('rq:documents-ready',start,{once:true});
- const h=$('#docHistory');if(h)new MutationObserver(()=>scheduleRefresh(260)).observe(h,{childList:true,subtree:true});
- $('#docUnifiedSearch')?.addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>refreshData(true),260)});
+ document.addEventListener('rq:documents-changed',()=>scheduleRefresh(260));
+ $('#docUnifiedSearch')?.addEventListener('input',()=>{if(document.documentElement.dataset.rqFinanceMode==='1')return;clearTimeout(searchTimer);searchTimer=setTimeout(()=>refreshData(true),260)});
+ document.addEventListener('rq:documents-finance-mode-exit',()=>refreshData(true));
  document.addEventListener('rq:documents-record-payment',e=>{const doc=e?.detail?.document,summary=e?.detail?.summary;if(doc&&summary)openPayment(doc,summary)});
  document.getElementById('refreshDocs')?.addEventListener('click',()=>{if(initialReady)setTimeout(()=>refreshData(true),500)})
 }
