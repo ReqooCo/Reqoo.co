@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 const html=fs.readFileSync(new URL('../admin/customers.html',import.meta.url),'utf8');
-const js=fs.readFileSync(new URL('../admin/customers-v2.js',import.meta.url),'utf8');
-const css=fs.readFileSync(new URL('../admin/customers-crm-v2.css',import.meta.url),'utf8');
+const js=fs.readFileSync(new URL('../admin/customers.js',import.meta.url),'utf8');
+const css=fs.readFileSync(new URL('../admin/customers.css',import.meta.url),'utf8');
 const shell=fs.readFileSync(new URL('../admin/admin-shell.js',import.meta.url),'utf8');
 const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8');
 assert.match(html,/CUSTOMER CRM/);assert.match(html,/LIFETIME COLLECTED/);assert.match(html,/statOutstanding/);assert.match(html,/customers-v2\.js\?v=1/);assert.match(html,/customers-crm-v2\.css\?v=1/);
