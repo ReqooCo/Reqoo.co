@@ -1,7 +1,7 @@
 import fs from 'node:fs';import assert from 'node:assert/strict';
 const html=fs.readFileSync(new URL('../admin/production.html',import.meta.url),'utf8');
-const js=fs.readFileSync(new URL('../admin/production-v1.js',import.meta.url),'utf8');
-const css=fs.readFileSync(new URL('../admin/production-v1.css',import.meta.url),'utf8');
+const js=fs.readFileSync(new URL('../admin/production.js',import.meta.url),'utf8');
+const css=fs.readFileSync(new URL('../admin/production.css',import.meta.url),'utf8');
 const shell=fs.readFileSync(new URL('../admin/admin-shell.js',import.meta.url),'utf8');
 const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8');
 assert.match(html,/PRODUCTION CONTROL/);assert.match(html,/production-v1\.js/);
