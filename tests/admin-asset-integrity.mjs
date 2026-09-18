@@ -35,7 +35,7 @@ const middleware=fs.readFileSync(path.join(root,'functions/_middleware.js'),'utf
 for(const source of [worker,middleware]){
   assert.match(source,/admin-base\.css\?v=1/);
   assert.match(source,/admin-flow\.css\?v=2/);
-  assert.match(source,/admin-shell\.js\?v=2/);
+  assert.match(source,/admin-shell\.js\?v=3/);
   for(const old of ['reqoo-admin-universal.css','admin-shell-v2.css','admin-theme-v3.css','admin-flow-v1.css','admin-shell-v2.js','reqoo-admin-premium-v2.css','reqoo-admin-shell.js']){
     assert.ok(!source.includes(old),'routing layer still references retired '+old);
   }

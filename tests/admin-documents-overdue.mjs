@@ -7,7 +7,7 @@ const overdueCss=fs.readFileSync(new URL('../admin/documents-overdue-v1.css',imp
 const unified=fs.readFileSync(new URL('../admin/documents-unified-v1.js',import.meta.url),'utf8');
 
 assert.match(html,/documents-overdue-v1\.css\?v=1/);
-assert.match(html,/documents-overdue-v1\.js\?v=2/);
+assert.match(html,/documents-overdue-v1\.js\?v=3/);
 assert.match(html,/documents-unified-v1\.js\?v=2/);
 
 assert.match(overdue,/paymentSummary/);assert.match(overdue,/rq:documents-finance-ready/);assert.match(overdue,/__REQOO_DOCS_FINANCE__/);

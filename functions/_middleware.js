@@ -8,6 +8,8 @@ function themed(response){
 export async function onRequest(context){
   const {request,env}=context;
   const url=new URL(request.url),host=url.hostname;
+  if(host==='reqoo.co'&&(url.pathname==='/admin'||url.pathname==='/admin/'||url.pathname.startsWith('/admin/'))){const target=new URL(request.url);target.hostname='admin.reqoo.co';return Response.redirect(target.toString(),308)}
+  if(host==='reqoo.co'&&url.pathname==='/shop/admin.html'){const target=new URL(request.url);target.hostname='admin.reqoo.co';return Response.redirect(target.toString(),308)}
 
   // V2 API is the only canonical PKSK backend. This compatibility rewrite keeps
   // any stale cached client from reaching a deleted legacy function.
@@ -77,7 +79,7 @@ export async function onRequest(context){
     if(!type.includes('text/html'))return response;
     return new HTMLRewriter()
       .on('head',{element(el){el.prepend('<link rel="stylesheet" href="/admin/admin-base.css?v=1">',{html:true});el.append('<link rel="stylesheet" href="/admin/admin-flow.css?v=2">',{html:true})}})
-      .on('body',{element(el){el.append('<script src="/admin/admin-shell.js?v=2"></script>',{html:true})}})
+      .on('body',{element(el){el.append('<script src="/admin/admin-shell.js?v=3"></script>',{html:true})}})
       .transform(response);
   }
 

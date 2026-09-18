@@ -1,9 +1,8 @@
 (()=>{
 'use strict';
-const API='/api/shop-admin',TOKEN_KEY='reqoo_admin_token',FRESH_MS=30000;
+const API='/api/shop-admin',FRESH_MS=30000;
 const $=s=>document.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const token=()=>localStorage.getItem(TOKEN_KEY)||document.cookie.match(/(?:^|;\s*)reqoo_admin_token=([^;]+)/)?.[1]||'';
 const money=n=>'RM'+(Number(n||0)/100).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2});
 let busy=false,lastLoad=0,data=null;
 
@@ -68,15 +67,15 @@ function render(){
   <a class="rqKpi ok" href="/admin/finance.html"><small>PAID REVENUE · 30D</small><b>${money(k.paid_revenue_30)}</b><span>${plural(k.paid_orders_30,'paid order')}</span></a>`;
  renderFollowups(cc);renderCustomers(customers);
  const max=Math.max(1,...trend.map(x=>Number(x.revenue_minor||0)));$('#rqTrend').innerHTML=trend.length?trend.map(x=>{const d=new Date(String(x.month)+'-01T00:00:00'),v=Number(x.revenue_minor||0);return `<div class="rqTrendCol"><span>${money(v).replace('.00','')}</span><div class="rqTrendBar" style="height:${Math.max(2,Math.round(v/max*100))}px"></div><small>${d.toLocaleDateString('ms-MY',{month:'short'})}</small></div>`}).join(''):'<div class="rqDashEmpty">Belum ada paid revenue.</div>';
- $('#rqLatest').innerHTML=latest.length?`<div class="rqOpsList">${latest.map(o=>{const p=String(o.payment_status||o.payment||'pending').toLowerCase(),f=String(o.fulfillment_status||o.status||'pending').toLowerCase(),lab=f==='fulfilled'?'SIAP':f==='processing'?'PROSES':p==='paid'?'PAID':p==='partial'?'DEPOSIT':'PENDING',cls=f==='fulfilled'||p==='paid'?'green':f==='processing'?'blue':p==='partial'?'gold':'';return `<a class="rqOpsRow rqOpsLink" href="/admin/orders.html"><div><b>${esc(ref(o))}</b><small>${esc(customer(o))} · ${fmtDate(created(o))}</small></div><div class="rqOpsRight"><strong>${amount(o)}</strong><span class="rqBadge ${cls}">${lab}</span></div></a>`}).join('')}</div>`:'<div class="rqDashEmpty">Belum ada order.</div>';
+ $('#rqLatest').innerHTML=latest.length?`<div class="rqOpsList">${latest.map(o=>{const p=String(o.payment_status||o.payment||'pending').toLowerCase(),f=String(o.fulfillment_status||o.status||'pending').toLowerCase(),lab=f==='fulfilled'?'SIAP':f==='processing'?'PROSES':p==='paid'?'PAID':p==='partial'?'DEPOSIT':'PENDING',cls=f==='fulfilled'||p==='paid'?'green':f==='processing'?'blue':p==='partial'?'gold':'';return `<a class="rqOpsRow rqOpsLink" href="/admin/orders.html?order=${encodeURIComponent(o.id||o.orderId||o.order_no||o.orderNo||o.order_ref||'')}"><div><b>${esc(ref(o))}</b><small>${esc(customer(o))} · ${fmtDate(created(o))}</small></div><div class="rqOpsRight"><strong>${amount(o)}</strong><span class="rqBadge ${cls}">${lab}</span></div></a>`}).join('')}</div>`:'<div class="rqDashEmpty">Belum ada order.</div>';
  $('#rqDashFoot').textContent=`Business date ${cc.business_date||'—'} · ${Number(cc.followup_whatsapp_count||0)} WhatsApp follow-up tersedia · Dikemas kini ${new Date(lastLoad).toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'})}.`;
 }
 async function load(force=false){
- ensure();if(!token()||busy)return;if(!force&&data&&Date.now()-lastLoad<FRESH_MS){render();return}busy=true;$('#rqDashRefresh').disabled=true;$('#rqDashFoot').textContent='Memuatkan command center…';
- try{const r=await fetch(`${API}?action=dashboardSummary`,{headers:{'X-Admin-Token':decodeURIComponent(token())},cache:'no-store'}),j=await r.json().catch(()=>({}));if(!r.ok||!j.ok)throw Error(j.error||'Gagal memuatkan dashboard');data=j;lastLoad=Date.now();render()}catch(e){$('#rqDashFoot').textContent=e.message||'Dashboard gagal dimuatkan.'}finally{busy=false;$('#rqDashRefresh').disabled=false}
+ ensure();if(busy)return;if(!force&&data&&Date.now()-lastLoad<FRESH_MS){render();return}busy=true;$('#rqDashRefresh').disabled=true;$('#rqDashFoot').textContent='Memuatkan command center…';
+ try{const r=await fetch(`${API}?action=dashboardSummary`,{cache:'no-store'}),j=await r.json().catch(()=>({}));if(!r.ok||!j.ok)throw Error(j.error||'Gagal memuatkan dashboard');data=j;lastLoad=Date.now();render()}catch(e){$('#rqDashFoot').textContent=e.message||'Dashboard gagal dimuatkan.'}finally{busy=false;$('#rqDashRefresh').disabled=false}
 }
-function boot(){ensure();if(token())load()}
+function boot(){ensure();load()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-window.addEventListener('focus',()=>{if(token()&&Date.now()-lastLoad>=FRESH_MS)load()});
+window.addEventListener('focus',()=>{if(Date.now()-lastLoad>=FRESH_MS)load()});
 window.addEventListener('reqoo:admin-ready',()=>load(true));
 })();

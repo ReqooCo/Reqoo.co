@@ -78,8 +78,8 @@ async function injectAdminUI(response){
   if(isShopAdmin&&!body.includes('/admin/shop-admin-v1.css'))body=body.replace('</head>','<link rel="stylesheet" href="/admin/shop-admin-v1.css?v=1"><link rel="stylesheet" href="/admin/shop-orders-premium-v1.css?v=1"><link rel="stylesheet" href="/admin/shop-products-premium-v1.css?v=1"><link rel="stylesheet" href="/admin/shop-inventory-v1.css?v=1"><link rel="stylesheet" href="/admin/shop-inventory-v2.css?v=2"><link rel="stylesheet" href="/admin/shop-fulfillment-v1.css?v=1"><link rel="stylesheet" href="/admin/shop-production-queue-v1.css?v=3"><link rel="stylesheet" href="/admin/shop-production-queue-v2.css?v=1"><link rel="stylesheet" href="/admin/shop-order-production-v1.css?v=1"></head>');
   if(/id=["']orderModal["']/.test(body))body=body.replace('</body>','<script src="/shop/admin-whatsapp-docs-v1.js?v=2"></script><script src="/shop/admin-fulfillment-v1.js?v=2"></script><script src="/shop/admin-production-queue-safe-v1.js?v=1"></script><script src="/shop/admin-order-production-v1.js?v=1"></script></body>');
   if(isShopAdmin&&!body.includes('/shop/admin-inventory-v2.js'))body=body.replace('</body>','<script src="/shop/admin-inventory-v2.js?v=3"></script></body>');
-  if(isOverview&&!body.includes('/admin/overview.js'))body=body.replace('</body>','<script src="/admin/overview.js?v=2"></script></body>');
-  if(!body.includes('/admin/admin-shell.js'))body=body.replace('</body>','<script src="/admin/admin-shell.js?v=2"></script></body>');
+  if(isOverview&&!body.includes('/admin/overview.js'))body=body.replace('</body>','<script src="/admin/overview.js?v=3"></script></body>');
+  if(!body.includes('/admin/admin-shell.js'))body=body.replace('</body>','<script src="/admin/admin-shell.js?v=3"></script></body>');
   const headers=new Headers(response.headers);
   headers.set('cache-control','no-store, no-cache, must-revalidate, max-age=0');
   headers.set('pragma','no-cache');
@@ -118,7 +118,7 @@ async function adminPkskV2(request,env){
   const type=response.headers.get('content-type')||'';
   const source=type.toLowerCase().includes('text/html')?await response.text():null;
   if(source===null)return response;
-  const body=source.replace(/API='\/api\/sim-admin'/g,"API='https://api.reqoo.co/api/sim-admin'");
+  const body=source;
   const headers=new Headers(response.headers);
   headers.set('cache-control','no-store, no-cache, must-revalidate, max-age=0');
   headers.set('pragma','no-cache');
@@ -140,6 +140,8 @@ export default{
   async fetch(request,env,ctx){
     const url=new URL(request.url),host=url.hostname.toLowerCase();
     if(url.pathname==='/api'||url.pathname.startsWith('/api/'))return proxyApi(request,url);
+    if(host==='reqoo.co'&&(url.pathname==='/admin'||url.pathname==='/admin/'||url.pathname.startsWith('/admin/'))){const target=new URL(request.url);target.hostname='admin.reqoo.co';return Response.redirect(target.toString(),308)}
+    if(host==='reqoo.co'&&url.pathname==='/shop/admin.html'){const target=new URL(request.url);target.hostname='admin.reqoo.co';return Response.redirect(target.toString(),308)}
 
     if(host==='reqoo.co'&&/^\/d\/[A-Za-z0-9-]+\/?$/.test(url.pathname)){
       const response=await env.ASSETS.fetch(assetRequest('/admin/document-public.html',request));

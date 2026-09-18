@@ -1,16 +1,16 @@
 (()=>{
 'use strict';
-const API='/api/shop-admin',TOKEN_KEY='reqoo_admin_token';
+const API='/api/shop-admin';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>'RM'+(Number(n||0)/100).toFixed(2);
 let docs=[],summaries=new Map(),payments=[],activeInvoice=null,activeReceipt=null,refreshTimer=0,loading=false,initialReady=false;
 async function api(action,extra={},method='GET'){
-  const url=new URL(API,location.origin),opt={method,headers:{'X-Admin-Token':localStorage.getItem(TOKEN_KEY)||''},cache:'no-store'};
+  const url=new URL(API,location.origin),opt={method,headers:{},cache:'no-store'};
   if(method==='GET'){url.searchParams.set('action',action);Object.entries(extra).forEach(([k,v])=>{if(v!==undefined&&v!==null&&v!=='')url.searchParams.set(k,v)});}
   else{opt.headers['Content-Type']='application/json';opt.body=JSON.stringify({action,...extra});}
   const r=await fetch(url,opt);let d={};try{d=await r.json()}catch{}
-  if(r.status===401){location.href='/admin/?return='+encodeURIComponent(location.pathname);throw Error('Sesi Admin tamat.');}
+  if(r.status===401){location.href='/admin/?return='+encodeURIComponent(location.pathname+location.search);throw Error('Sesi Admin tamat.');}
   if(!r.ok||d.ok===false)throw Error(d.error||'Request gagal');return d;
 }
 function dateFmt(v){if(!v)return'—';const d=new Date(v);return Number.isNaN(d.getTime())?String(v):d.toLocaleDateString('ms-MY',{day:'2-digit',month:'short',year:'numeric'})}

@@ -6,5 +6,5 @@ const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8'
 assert.match(html,/COLLECTED/);assert.match(html,/OUTSTANDING/);assert.match(html,/COLLECTION TREND/);assert.match(html,/Top products/i);assert.match(html,/\/admin\/orders\.html/);assert.doesNotMatch(html,/\/shop\/admin\.html#orders/);
 assert.match(js,/listOrders/);assert.match(js,/listPayments/);assert.match(js,/paymentSummary/);assert.match(js,/productsDashboard/);assert.match(js,/confirmed/);assert.match(js,/amount_minor/);assert.match(js,/balanceMinor/);assert.match(js,/Deposit \/ partial/);assert.match(js,/Kutipan berdasarkan payment ledger/);assert.doesNotMatch(js,/Revenue hanya payment PAID/);
 assert.match(shell,/Finance/);assert.match(shell,/\/admin\/finance\.html/);
-assert.match(worker,/settings\|documents\|customers\|finance/);assert.match(worker,/admin-shell\.js\?v=2/);
+assert.match(worker,/settings\|documents\|customers\|finance/);assert.match(worker,/admin-shell\.js\?v=3/);
 console.log('PASS: Finance uses confirmed payment ledger for collections and payment summaries for outstanding balances.');
