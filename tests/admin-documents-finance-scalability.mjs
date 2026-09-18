@@ -92,7 +92,7 @@ const paymentUi=fs.readFileSync(new URL('../admin/documents-payment-v1.js',impor
 const overdueUi=fs.readFileSync(new URL('../admin/documents-overdue-v1.js',import.meta.url),'utf8');
 const drawerUi=fs.readFileSync(new URL('../admin/documents-drawer-v1.js',import.meta.url),'utf8');
 assert.match(paymentUi,/documentsFinanceDashboard/);assert.match(paymentUi,/loadMorePayments/);assert.doesNotMatch(paymentUi,/paymentSummary/);assert.doesNotMatch(paymentUi,/listPayments/);assert.doesNotMatch(paymentUi,/api\('listDocuments'/);
-assert.match(overdueUi,/documentsFinanceDashboard/);assert.match(overdueUi,/loadMoreFinanceInvoices/);assert.match(overdueUi,/financeSeq/);assert.doesNotMatch(overdueUi,/paymentSummary/);assert.doesNotMatch(overdueUi,/listPayments/);assert.doesNotMatch(overdueUi,/listDocuments/);
+assert.match(overdueUi,/documentsFinanceDashboard/);assert.match(overdueUi,/rqLoadMoreFinanceInvoices/);assert.match(overdueUi,/financeSeq/);assert.doesNotMatch(overdueUi,/paymentSummary/);assert.doesNotMatch(overdueUi,/listPayments/);assert.doesNotMatch(overdueUi,/listDocuments/);
 assert.match(drawerUi,/documentFlow/);assert.doesNotMatch(drawerUi,/paymentSummary/);assert.doesNotMatch(drawerUi,/listPayments/);assert.doesNotMatch(drawerUi,/listDocuments/);
 
 console.log('PASS: Documents Finance V2 aggregates >2,000 invoices globally, pages invoices/payments, searches server-side, and loads drawer flow in one exact request.');
