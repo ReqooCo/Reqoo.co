@@ -30,7 +30,7 @@ assert.doesNotMatch(landingBody,/\/landing-runtime\.js/,'retired landing runtime
 const oldFetch=globalThis.fetch;
 try{
   globalThis.fetch=async input=>{
-    const u=new URL(typeof input==='string'?input:input.url);
+    const u=input instanceof URL?input:new URL(typeof input==='string'?input:input.url);
     if(u.hostname==='api.reqoo.co'&&u.pathname==='/api/shop-admin'&&u.searchParams.get('action')==='publicDocument'){
       return new Response(JSON.stringify({ok:true,document:{type:'receipt',number:'RCT-PREVIEW-001',total_minor:12900,payment_status:'paid'}}),{status:200,headers:{'content-type':'application/json'}});
     }
