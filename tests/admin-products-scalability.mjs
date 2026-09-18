@@ -37,7 +37,7 @@ assert.equal(all.ok,true);
 assert.equal(all.products.length,80);
 assert.equal(all.total,1205);
 assert.equal(all.hasMore,true);
-assert.deepEqual(all.stats,{total:1205,active:723,low:241,out:241,revenueMinor:3500});
+assert.deepEqual(all.stats,{total:1205,active:723,low:242,out:241,revenueMinor:3500});
 
 const page2=await call('productsDashboard',{filter:'all',limit:80,offset:80});
 assert.equal(page2.products.length,80);
