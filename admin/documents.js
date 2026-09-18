@@ -101,8 +101,7 @@ function waPhone(v){let n=String(v||'').replace(/\D/g,'');if(n.startsWith('0'))n
 function shareWhatsApp(){
   if(!activeDoc)return;
   const n=waPhone(activeDoc.customer_phone);if(!n)return toast('Nombor WhatsApp pelanggan tiada.',true);
-  const rev=encodeURIComponent(String(activeDoc.updated_at||activeDoc.number||'1').replace(/[^A-Za-z0-9]/g,'').slice(-24)||'1');
-  const link=location.origin.replace('admin.','')+'/d/'+encodeURIComponent(activeDoc.share_token)+'?v='+rev;
+  const link=location.origin.replace('admin.','')+'/d/'+encodeURIComponent(activeDoc.share_token);
   const amount=activeDoc.type==='delivery_order'?'':money(activeDoc.total_minor),kind=typeLabel(activeDoc.type);
   const text=`Salam ${activeDoc.customer_name||''},\n\nREQOO.CO telah mengeluarkan ${kind} ${activeDoc.number}.${amount?'\nJumlah: '+amount:''}\n\nPautan rasmi REQOO.CO untuk semak dokumen:\n${link}\n\nPautan ini menggunakan domain rasmi reqoo.co. Boleh tekan untuk lihat dokumen penuh atau simpan PDF.`;
   window.open('https://wa.me/'+n+'?text='+encodeURIComponent(text),'_blank','noopener');
