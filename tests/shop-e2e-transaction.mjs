@@ -162,7 +162,7 @@ try{
   assert.equal(publicInvoice.document.total_minor,100);
 
   const orders=await adminCall('listOrders',{limit:50});
-  assert.equal(orders.ok,true);
+  assert.equal(orders.ok,true,JSON.stringify(orders));
   assert.ok(orders.orders.some(o=>o.id===created.orderId&&o.payment_status==='paid'));
 
   const dashboard=await adminCall('dashboardSummary');
