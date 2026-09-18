@@ -8,6 +8,8 @@ const apiWorker=fs.readFileSync(new URL('../api/worker.js',import.meta.url),'utf
 const index=fs.readFileSync(new URL('../admin/index.html',import.meta.url),'utf8');
 const middleware=fs.readFileSync(new URL('../functions/_middleware.js',import.meta.url),'utf8');
 const canonicalRuntimes=['overview.js','orders.js','production.js','products.js','documents.js','documents-drawer-v1.js','documents-payment-v1.js','documents-overdue-v1.js','customers.js','finance.js'].map(f=>fs.readFileSync(new URL('../admin/'+f,import.meta.url),'utf8'));
+const settings=fs.readFileSync(new URL('../admin/settings.html',import.meta.url),'utf8');
+const shopContent=fs.readFileSync(new URL('../admin/shop-content.html',import.meta.url),'utf8');
 assert.match(worker,/admin-base\.css\?v=1/,'canonical Admin base CSS must be injected');
 assert.match(worker,/admin-flow\.css\?v=2/,'canonical Admin flow CSS must be injected last');
 assert.match(worker,/admin-shell\.js\?v=3/,'canonical Admin shell runtime must be injected');
@@ -34,6 +36,24 @@ assert.doesNotMatch(index,/localStorage\.setItem\([^\n]*reqoo_admin_token/,'Admi
 assert.match(worker,/target\.hostname='admin\.reqoo\.co'/,'Web worker must canonicalize Admin UI to admin.reqoo.co');
 assert.match(middleware,/target\.hostname='admin\.reqoo\.co'/,'Pages middleware must canonicalize Admin UI to admin.reqoo.co');
 for(const src of canonicalRuntimes){assert.doesNotMatch(src,/localStorage\.getItem/,'Canonical Admin runtime must not read an Admin secret from localStorage');assert.doesNotMatch(src,/X-Admin-Token/,'Canonical Admin runtime must rely on HttpOnly session auth');}
+const inlineScript=html=>html.match(/<script>([\s\S]*?)<\/script>/)?.[1]||'';
+new Function(inlineScript(index));
+new Function(inlineScript(settings));
+new Function(inlineScript(shopContent));
+const {default:apiRuntime}=await import('../api/worker.js');
+const sessionEnv={DB:{prepare(){return{first:async()=>({admin_token:'admin-test-secret'})}}}};
+const loginResponse=await apiRuntime.fetch(new Request('https://api.reqoo.co/api/admin-session',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({token:'admin-test-secret'})}),sessionEnv,{});
+assert.equal(loginResponse.status,200,'valid Admin secret must create a secure session');
+const setCookie=loginResponse.headers.get('set-cookie')||'';
+assert.match(setCookie,/rq_admin_session=/);assert.match(setCookie,/HttpOnly/);assert.match(setCookie,/Secure/);assert.match(setCookie,/SameSite=Strict/);assert.match(setCookie,/Path=\/api\//);
+const cookiePair=setCookie.split(';')[0];
+const sessionResponse=await apiRuntime.fetch(new Request('https://api.reqoo.co/api/admin-session',{headers:{cookie:cookiePair}}),sessionEnv,{});
+assert.equal(sessionResponse.status,200,'signed session cookie must authenticate');
+const tampered=cookiePair.replace(/.$/,x=>x==='0'?'1':'0');
+const tamperedResponse=await apiRuntime.fetch(new Request('https://api.reqoo.co/api/admin-session',{headers:{cookie:tampered}}),sessionEnv,{});
+assert.equal(tamperedResponse.status,401,'tampered Admin session must be rejected');
+const logoutResponse=await apiRuntime.fetch(new Request('https://api.reqoo.co/api/admin-session',{method:'DELETE',headers:{cookie:cookiePair}}),sessionEnv,{});
+assert.equal(logoutResponse.status,200);assert.match(logoutResponse.headers.get('set-cookie')||'',/Max-Age=0/);
 assert.match(base,/--rq-sidebar:#151515/,'canonical base must include premium sidebar tokens');
 assert.match(base,/\.rqAdminSide/,'desktop navigation must stay in the canonical base');
 assert.match(base,/\.rqAdminMobile/,'mobile navigation must stay in the canonical base');
