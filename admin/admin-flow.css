@@ -126,3 +126,8 @@ body.rq-admin-shell :is(.rqOrderDrawerHead,.rqProductionDrawerHead,.rqProductDra
  body.rq-admin-shell :is(.rqOrdersStats,.rqProductionStats,.rqProductsStats,.rqDocsStats,.rqCustomerStats,.rqFinanceStats)>article strong{font-size:19px!important}
  .rqAdminMoreList{grid-template-columns:1fr 1fr}
 }
+
+body.rq-admin-shell .rqAdminLogout{display:block;width:100%;margin-top:11px;padding:8px 9px;border:1px solid #353535!important;border-radius:8px!important;background:#1d1d1d!important;color:#b8bbc1!important;font-size:9px!important;font-weight:800!important;text-align:left;box-shadow:none!important}
+body.rq-admin-shell .rqAdminLogout:hover{background:#272727!important;color:#fff!important;border-color:#4a4a4a!important}
+body.rq-admin-shell .rqAdminLogoutMobile{display:none}
+@media(max-width:900px){body.rq-admin-shell .rqAdminLogoutMobile{display:block;width:100%;margin-top:10px;padding:12px;border:1px solid #e2e2dc!important;background:#f7f7f4!important;color:#6c3030!important;text-align:center!important}}

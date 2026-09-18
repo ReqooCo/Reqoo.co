@@ -3,8 +3,8 @@ const html=fs.readFileSync(new URL('../admin/finance.html',import.meta.url),'utf
 const js=fs.readFileSync(new URL('../admin/finance.js',import.meta.url),'utf8');
 const shell=fs.readFileSync(new URL('../admin/admin-shell.js',import.meta.url),'utf8');
 const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8');
-assert.match(html,/PAID REVENUE/);assert.match(html,/PENDING VALUE/);assert.match(html,/REVENUE TREND/);assert.match(html,/Top products/i);
-assert.match(js,/listOrders/);assert.match(js,/status\(o\)==='paid'/);assert.match(js,/cancelled/);assert.match(js,/Revenue hanya payment PAID/);
+assert.match(html,/COLLECTED/);assert.match(html,/OUTSTANDING/);assert.match(html,/COLLECTION TREND/);assert.match(html,/Top products/i);assert.match(html,/\/admin\/orders\.html/);assert.doesNotMatch(html,/\/shop\/admin\.html#orders/);
+assert.match(js,/listOrders/);assert.match(js,/listPayments/);assert.match(js,/paymentSummary/);assert.match(js,/productsDashboard/);assert.match(js,/confirmed/);assert.match(js,/amount_minor/);assert.match(js,/balanceMinor/);assert.match(js,/Deposit \/ partial/);assert.match(js,/Kutipan berdasarkan payment ledger/);assert.doesNotMatch(js,/Revenue hanya payment PAID/);
 assert.match(shell,/Finance/);assert.match(shell,/\/admin\/finance\.html/);
-assert.match(worker,/settings\|documents\|customers\|finance/);assert.match(worker,/admin-shell\.js\?v=1/);
-console.log('PASS: Finance V1 is read-only, paid-revenue based, and wired into premium Admin.');
+assert.match(worker,/settings\|documents\|customers\|finance/);assert.match(worker,/admin-shell\.js\?v=2/);
+console.log('PASS: Finance uses confirmed payment ledger for collections and payment summaries for outstanding balances.');

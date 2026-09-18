@@ -28,7 +28,8 @@ async function saveImages(request,d,env){
   if(!product)return J({ok:false,error:'Produk tidak dijumpai'},404);
   const incoming=[];for(const value of raw)incoming.push(await persistImage(value,productId,env));
   const existing=(await env.DB.prepare('SELECT url FROM product_images WHERE product_id=? ORDER BY is_cover DESC,sort_order,id').bind(productId).all()).results||[];
-  const preserved=existing.map(x=>S(x.url)).filter(url=>url&&!raw.includes(url));
+  const replace=d.replace===true||S(d.mode).toLowerCase()==='replace';
+  const preserved=replace?[]:existing.map(x=>S(x.url)).filter(url=>url&&!raw.includes(url));
   const images=[...new Set([...incoming,...preserved])].slice(0,12),t=NOW();
   const statements=[env.DB.prepare('DELETE FROM product_images WHERE product_id=?').bind(productId),...images.map((url,i)=>env.DB.prepare('INSERT INTO product_images(id,product_id,url,alt_text,sort_order,is_cover,created_at) VALUES(?,?,?,?,?,?,?)').bind(ID('img'),productId,url,product.name,i,i===0?1:0,t))];
   if(typeof env.DB.batch==='function')await env.DB.batch(statements);

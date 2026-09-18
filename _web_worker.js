@@ -74,12 +74,12 @@ async function injectAdminUI(response){
   let body=routed;
   if(!body.includes('/admin/admin-base.css'))body=body.replace('</head>','<link rel="stylesheet" href="/admin/admin-base.css?v=1"></head>');
   if(isOverview&&!body.includes('/admin/overview.css'))body=body.replace('</head>','<link rel="stylesheet" href="/admin/overview.css?v=1"></head>');
-  if(!body.includes('/admin/admin-flow.css'))body=body.replace('</head>','<link rel="stylesheet" href="/admin/admin-flow.css?v=1"></head>');
+  if(!body.includes('/admin/admin-flow.css'))body=body.replace('</head>','<link rel="stylesheet" href="/admin/admin-flow.css?v=2"></head>');
   if(isShopAdmin&&!body.includes('/admin/shop-admin-v1.css'))body=body.replace('</head>','<link rel="stylesheet" href="/admin/shop-admin-v1.css?v=1"><link rel="stylesheet" href="/admin/shop-orders-premium-v1.css?v=1"><link rel="stylesheet" href="/admin/shop-products-premium-v1.css?v=1"><link rel="stylesheet" href="/admin/shop-inventory-v1.css?v=1"><link rel="stylesheet" href="/admin/shop-inventory-v2.css?v=2"><link rel="stylesheet" href="/admin/shop-fulfillment-v1.css?v=1"><link rel="stylesheet" href="/admin/shop-production-queue-v1.css?v=3"><link rel="stylesheet" href="/admin/shop-production-queue-v2.css?v=1"><link rel="stylesheet" href="/admin/shop-order-production-v1.css?v=1"></head>');
   if(/id=["']orderModal["']/.test(body))body=body.replace('</body>','<script src="/shop/admin-whatsapp-docs-v1.js?v=2"></script><script src="/shop/admin-fulfillment-v1.js?v=2"></script><script src="/shop/admin-production-queue-safe-v1.js?v=1"></script><script src="/shop/admin-order-production-v1.js?v=1"></script></body>');
   if(isShopAdmin&&!body.includes('/shop/admin-inventory-v2.js'))body=body.replace('</body>','<script src="/shop/admin-inventory-v2.js?v=3"></script></body>');
-  if(isOverview&&!body.includes('/admin/overview.js'))body=body.replace('</body>','<script src="/admin/overview.js?v=1"></script></body>');
-  if(!body.includes('/admin/admin-shell.js'))body=body.replace('</body>','<script src="/admin/admin-shell.js?v=1"></script></body>');
+  if(isOverview&&!body.includes('/admin/overview.js'))body=body.replace('</body>','<script src="/admin/overview.js?v=2"></script></body>');
+  if(!body.includes('/admin/admin-shell.js'))body=body.replace('</body>','<script src="/admin/admin-shell.js?v=2"></script></body>');
   const headers=new Headers(response.headers);
   headers.set('cache-control','no-store, no-cache, must-revalidate, max-age=0');
   headers.set('pragma','no-cache');

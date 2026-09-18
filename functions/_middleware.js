@@ -76,8 +76,8 @@ export async function onRequest(context){
     const response=await env.ASSETS.fetch(url),type=response.headers.get('content-type')||'';
     if(!type.includes('text/html'))return response;
     return new HTMLRewriter()
-      .on('head',{element(el){el.prepend('<link rel="stylesheet" href="/admin/admin-base.css?v=1">',{html:true});el.append('<link rel="stylesheet" href="/admin/admin-flow.css?v=1">',{html:true})}})
-      .on('body',{element(el){el.append('<script src="/admin/admin-shell.js?v=1"></script>',{html:true})}})
+      .on('head',{element(el){el.prepend('<link rel="stylesheet" href="/admin/admin-base.css?v=1">',{html:true});el.append('<link rel="stylesheet" href="/admin/admin-flow.css?v=2">',{html:true})}})
+      .on('body',{element(el){el.append('<script src="/admin/admin-shell.js?v=2"></script>',{html:true})}})
       .transform(response);
   }
 

@@ -5,8 +5,8 @@ const shell=fs.readFileSync(new URL('../admin/admin-shell.js',import.meta.url),'
 const base=fs.readFileSync(new URL('../admin/admin-base.css',import.meta.url),'utf8');
 const flow=fs.readFileSync(new URL('../admin/admin-flow.css',import.meta.url),'utf8');
 assert.match(worker,/admin-base\.css\?v=1/,'canonical Admin base CSS must be injected');
-assert.match(worker,/admin-flow\.css\?v=1/,'canonical Admin flow CSS must be injected last');
-assert.match(worker,/admin-shell\.js\?v=1/,'canonical Admin shell runtime must be injected');
+assert.match(worker,/admin-flow\.css\?v=2/,'canonical Admin flow CSS must be injected last');
+assert.match(worker,/admin-shell\.js\?v=2/,'canonical Admin shell runtime must be injected');
 assert.match(worker,/admin-ui-v1/,'Admin response must advertise the canonical UI runtime');
 assert.match(worker,/assetRequest\('\/shop\/admin\.html',request\)\);\s*return injectShopAdminSafe\(response\)/,'Shop Admin must remain isolated in safe mode');
 assert.match(worker,/shop-admin-safe-mode-v1/,'Shop Admin safe mode marker must remain active');
@@ -16,8 +16,8 @@ assert.match(shell,/Overview/);assert.match(shell,/Orders/);assert.match(shell,/
 assert.match(shell,/mobilePrimary/,'mobile dock must have an explicit primary set');
 assert.match(shell,/rqAdminMoreTrigger/,'mobile dock must move secondary destinations under More');
 assert.match(shell,/moreKeys=\['products','customers','finance','pksk','settings'\]/,'secondary mobile destinations must stay available');
-assert.match(shell,/admin-flow\.css\?v=1/,'shell fallback must point at the canonical flow stylesheet');
-assert.match(shell,/Orders → Production → Documents/,'overview context must communicate the core operational flow');
+assert.match(shell,/admin-flow\.css\?v=2/,'shell fallback must point at the canonical flow stylesheet');
+assert.match(shell,/Orders → Production → Documents/,'overview context must communicate the core operational flow');assert.match(shell,/data-rq-logout/,'Admin shell must expose logout');assert.match(shell,/localStorage\.removeItem\('reqoo_admin_token'\)/,'Logout must clear the persistent Admin token');
 assert.match(base,/--rq-sidebar:#151515/,'canonical base must include premium sidebar tokens');
 assert.match(base,/\.rqAdminSide/,'desktop navigation must stay in the canonical base');
 assert.match(base,/\.rqAdminMobile/,'mobile navigation must stay in the canonical base');
