@@ -55,6 +55,33 @@ async function nextReceiptNumber(env){
   }
   throw new Error('Nombor receipt unik gagal dijana.');
 }
+
+async function syncLegacyPaidPayments(env,orderId=''){
+  let sql="SELECT p.id,p.order_id,p.provider,p.provider_reference,p.method,p.amount_minor,p.paid_at,p.created_at,p.updated_at,o.total_minor FROM payments p JOIN orders o ON o.id=p.order_id WHERE p.status='paid' AND o.payment_status='paid'",args=[];
+  if(orderId){sql+=' AND p.order_id=?';args.push(orderId)}
+  sql+=' ORDER BY COALESCE(p.paid_at,p.updated_at,p.created_at),p.id LIMIT 500';
+  const rows=(await env.DB.prepare(sql).bind(...args).all()).results||[];
+  let imported=0;
+  for(const row of rows){
+    const legacyId=`legacy_${S(row.id)}`,reference=S(row.provider_reference)||S(row.id);
+    const invoice=await invoiceForOrder(row.order_id,env);
+    const existing=await env.DB.prepare('SELECT id,invoice_document_id FROM reqoo_payments WHERE id=? OR (order_id=? AND reference=?) LIMIT 1').bind(legacyId,row.order_id,reference).first();
+    if(existing){
+      if(invoice?.id&&!S(existing.invoice_document_id))await env.DB.prepare('UPDATE reqoo_payments SET invoice_document_id=?,updated_at=? WHERE id=?').bind(invoice.id,NOW(),existing.id).run();
+      continue;
+    }
+    const totals=await env.DB.prepare("SELECT COALESCE(SUM(CASE WHEN status='confirmed' THEN amount_minor ELSE 0 END),0) paid_minor FROM reqoo_payments WHERE order_id=?").bind(row.order_id).first();
+    const orderTotal=Number(invoice?.total_minor??row.total_minor??0),already=Math.max(0,Number(totals?.paid_minor||0));
+    if(orderTotal>0&&already>=orderTotal)continue;
+    let amount=money(row.amount_minor);
+    if(orderTotal>0)amount=Math.min(amount,Math.max(0,orderTotal-already));
+    if(amount<=0)continue;
+    const receiptNumber=await nextReceiptNumber(env),paidAt=S(row.paid_at||row.updated_at||row.created_at)||NOW(),remaining=Math.max(0,orderTotal-already),type=already===0&&orderTotal>0&&amount>=orderTotal?'full':amount>=remaining?'final':already===0?'deposit':'partial',method=S(row.method||row.provider||'provider').slice(0,80)||'provider',note=`Imported from ${S(row.provider)||'legacy'} payment`,shareToken=`${crypto.randomUUID()}${crypto.randomUUID().replaceAll('-','')}`,now=NOW();
+    await env.DB.prepare('INSERT OR IGNORE INTO reqoo_payments(id,order_id,invoice_document_id,receipt_number,amount_minor,payment_type,method,reference,note,paid_at,status,share_token,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(legacyId,row.order_id,invoice?.id||null,receiptNumber,amount,type,method,reference,note,paidAt,'confirmed',shareToken,now,now).run();
+    imported++;
+  }
+  return imported;
+}
 async function orderByKey(key,env){
   return env.DB.prepare('SELECT o.*,c.name customer_name,c.phone customer_phone,c.email customer_email FROM orders o LEFT JOIN customers c ON c.id=o.customer_id WHERE o.id=? OR o.order_no=? LIMIT 1').bind(key,key).first();
 }
@@ -65,12 +92,14 @@ async function invoiceForOrder(orderId,env){
   try{return await env.DB.prepare("SELECT id,number,total_minor FROM reqoo_documents WHERE order_id=? AND type='invoice' ORDER BY created_at,id LIMIT 1").bind(orderId).first()}catch{return null}
 }
 async function summaryForOrder(o,env){
+  await syncLegacyPaidPayments(env,o.id);
   const payments=await paymentsFor(o.id,env),invoice=await invoiceForOrder(o.id,env),rawPaid=payments.reduce((s,p)=>s+Number(p.amount_minor||0),0),total=Number(invoice?.total_minor??o.total_minor??0),paid=Math.min(total,rawPaid),balance=Math.max(0,total-rawPaid),overpaid=Math.max(0,rawPaid-total);
   const paymentStatus=overpaid>0?'paid':balance<=0&&total>0?'paid':paid>0?'partial':S(o.payment_status||'pending').toLowerCase()==='paid'?'paid':'pending';
   return {orderId:o.id,orderNo:o.order_no||o.id,invoiceId:invoice?.id||null,invoiceNumber:invoice?.number||null,totalMinor:total,paidMinor:paid,rawPaidMinor:rawPaid,balanceMinor:balance,overpaidMinor:overpaid,paymentStatus,payments};
 }
 async function ensureInvoice(request,o,env){
-  let invoice=await env.DB.prepare("SELECT * FROM reqoo_documents WHERE order_id=? AND type='invoice' LIMIT 1").bind(o.id).first();
+  let invoice=null;
+  try{invoice=await env.DB.prepare("SELECT * FROM reqoo_documents WHERE order_id=? AND type='invoice' LIMIT 1").bind(o.id).first()}catch{}
   if(invoice)return invoice;
   const headers=new Headers(request.headers);headers.set('content-type','application/json');
   const r=await legacy({request:new Request(request.url,{method:'POST',headers,body:JSON.stringify({action:'createDocument',type:'invoice',orderId:o.id})}),env});
@@ -108,12 +137,13 @@ async function recordPayment(d,request,env){
   return J({ok:true,payment:{id,order_id:o.id,invoice_document_id:invoice.id,receipt_number:receiptNumber,amount_minor:amount,payment_type:type,method,reference,note,paid_at:paidAt,status:'confirmed',share_token:shareToken},invoice:{id:invoice.id,number:invoice.number,totalMinor:summary.totalMinor,paidMinor:summary.paidMinor,balanceMinor:summary.balanceMinor,paymentStatus:summary.paymentStatus},summary});
 }
 async function listPayments(d,env){
-  await ensure(env);const orderId=S(d.orderId),invoiceId=S(d.invoiceId),limit=Math.min(500,Math.max(1,Number(d.limit||200)));let sql="SELECT p.*,o.order_no,o.total_minor,c.name customer_name,c.phone customer_phone,c.email customer_email,rd.number invoice_number FROM reqoo_payments p JOIN orders o ON o.id=p.order_id LEFT JOIN customers c ON c.id=o.customer_id LEFT JOIN reqoo_documents rd ON rd.id=p.invoice_document_id WHERE p.status='confirmed'",args=[];
+  await ensure(env);const orderId=S(d.orderId),invoiceId=S(d.invoiceId),limit=Math.min(500,Math.max(1,Number(d.limit||200)));await syncLegacyPaidPayments(env,orderId);let sql="SELECT p.*,o.order_no,o.total_minor,c.name customer_name,c.phone customer_phone,c.email customer_email,rd.number invoice_number FROM reqoo_payments p JOIN orders o ON o.id=p.order_id LEFT JOIN customers c ON c.id=o.customer_id LEFT JOIN reqoo_documents rd ON rd.id=p.invoice_document_id WHERE p.status='confirmed'",args=[];
   if(orderId){sql+=' AND p.order_id=?';args.push(orderId)}if(invoiceId){sql+=' AND p.invoice_document_id=?';args.push(invoiceId)}sql+=' ORDER BY p.paid_at DESC,p.created_at DESC LIMIT ?';args.push(limit);
   const payments=(await env.DB.prepare(sql).bind(...args).all()).results||[];return J({ok:true,payments});
 }
 async function paymentSummary(d,env){
   await ensure(env);const key=S(d.orderId||d.orderNo||d.orderRef);if(key){const o=await orderByKey(key,env);if(!o)return J({ok:false,error:'Order tidak dijumpai.'},404);return J({ok:true,summary:await summaryForOrder(o,env)});}
+  await syncLegacyPaidPayments(env);
   const rows=(await env.DB.prepare("SELECT o.id,o.order_no,o.total_minor order_total_minor,o.payment_status,COALESCE((SELECT d.total_minor FROM reqoo_documents d WHERE d.order_id=o.id AND d.type='invoice' ORDER BY d.created_at,d.id LIMIT 1),o.total_minor) billing_total_minor,COALESCE(SUM(CASE WHEN p.status='confirmed' THEN p.amount_minor ELSE 0 END),0) paid_minor FROM orders o LEFT JOIN reqoo_payments p ON p.order_id=o.id GROUP BY o.id,o.order_no,o.total_minor,o.payment_status ORDER BY o.created_at DESC LIMIT 500").all()).results||[];
   return J({ok:true,summaries:rows.map(r=>{const total=Number(r.billing_total_minor||0),rawPaid=Number(r.paid_minor||0),paid=Math.min(total,rawPaid),balance=Math.max(0,total-rawPaid),overpaid=Math.max(0,rawPaid-total);return{orderId:r.id,orderNo:r.order_no||r.id,totalMinor:total,paidMinor:paid,rawPaidMinor:rawPaid,balanceMinor:balance,overpaidMinor:overpaid,paymentStatus:overpaid>0?'paid':balance===0&&total>0?'paid':paid>0?'partial':S(r.payment_status||'pending').toLowerCase()}})});
 }
@@ -126,6 +156,7 @@ async function getPaymentReceipt(d,env){
 }
 async function canonicalDocuments(d,request,env){
   await ensure(env);
+  await syncLegacyPaidPayments(env,S(d.orderId||d.orderRef||d.orderNo));
   const r=await legacy({request,env});if(!r.ok)return r;
   let out={};try{out=await r.clone().json()}catch{return r}
   if(!out.ok||!Array.isArray(out.documents))return r;
@@ -136,6 +167,7 @@ async function canonicalDocuments(d,request,env){
 }
 async function documentIntegrityAudit(env){
   await ensure(env);
+  await syncLegacyPaidPayments(env);
   const collisions=(await env.DB.prepare("SELECT d.id document_id,d.number,p.id payment_id,p.order_id FROM reqoo_documents d JOIN reqoo_payments p ON p.receipt_number=d.number WHERE d.type='receipt' AND p.status='confirmed' ORDER BY d.created_at DESC").all()).results||[];
   const mismatches=(await env.DB.prepare("SELECT d.id document_id,d.number,d.order_id,d.total_minor invoice_total_minor,o.total_minor order_total_minor FROM reqoo_documents d JOIN orders o ON o.id=d.order_id WHERE d.type='invoice' AND d.total_minor<>o.total_minor ORDER BY d.created_at DESC LIMIT 200").all()).results||[];
   const overpaid=(await env.DB.prepare("SELECT d.id document_id,d.number,d.order_id,d.total_minor invoice_total_minor,COALESCE(SUM(CASE WHEN p.status='confirmed' THEN p.amount_minor ELSE 0 END),0) paid_minor FROM reqoo_documents d LEFT JOIN reqoo_payments p ON p.order_id=d.order_id WHERE d.type='invoice' GROUP BY d.id,d.number,d.order_id,d.total_minor HAVING paid_minor>d.total_minor ORDER BY paid_minor-d.total_minor DESC LIMIT 200").all()).results||[];
