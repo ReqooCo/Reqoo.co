@@ -8,6 +8,43 @@ async function ensureShopSchema(env) {
   if (!(cols.results || []).some(x => x.name === 'order_no')) {
     await env.DB.prepare(`ALTER TABLE orders ADD COLUMN order_no TEXT`).run();
   }
+
+  const now = new Date().toISOString();
+
+  // Keep storefront shipping options consistent across Plaque/Tumbler/Shop.
+  await env.DB.prepare(
+    `UPDATE shipping_methods
+     SET name='Semenanjung Malaysia', price_minor=800, active=1, sort_order=10, updated_at=?
+     WHERE lower(name) LIKE 'semenanjung%'`
+  ).bind(now).run();
+
+  const peninsular = await env.DB.prepare(
+    `SELECT id FROM shipping_methods WHERE lower(name) LIKE 'semenanjung%' LIMIT 1`
+  ).first();
+  if (!peninsular) {
+    await env.DB.prepare(
+      `INSERT INTO shipping_methods(id,name,price_minor,active,sort_order,created_at,updated_at)
+       VALUES('ship_semenanjung','Semenanjung Malaysia',800,1,10,?,?)`
+    ).bind(now, now).run();
+  }
+
+  await env.DB.prepare(
+    `UPDATE shipping_methods
+     SET name='Sabah & Sarawak', price_minor=1200, active=1, sort_order=20, updated_at=?
+     WHERE lower(name) LIKE '%sabah%' OR lower(name) LIKE '%sarawak%'`
+  ).bind(now).run();
+
+  const eastMalaysia = await env.DB.prepare(
+    `SELECT id FROM shipping_methods
+     WHERE lower(name) LIKE '%sabah%' OR lower(name) LIKE '%sarawak%'
+     LIMIT 1`
+  ).first();
+  if (!eastMalaysia) {
+    await env.DB.prepare(
+      `INSERT INTO shipping_methods(id,name,price_minor,active,sort_order,created_at,updated_at)
+       VALUES('ship_sabah_sarawak','Sabah & Sarawak',1200,1,20,?,?)`
+    ).bind(now, now).run();
+  }
 }
 
 export async function handle(request, env) {
