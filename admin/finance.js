@@ -1,9 +1,9 @@
 (()=>{'use strict';
-const API='/api/shop-admin',TOKEN_KEY='reqoo_admin_token';
+const API='/api/shop-admin';
 let orders=[],payments=[],summaries=[],productInsights=[];
-const $=id=>document.getElementById(id),token=()=>localStorage.getItem(TOKEN_KEY)||'',esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),money=n=>'RM'+(Number(n||0)/100).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2});
+const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),money=n=>'RM'+(Number(n||0)/100).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2});
 function toast(m,e=false){const x=$('financeToast');x.textContent=m;x.className='rqFinanceToast show'+(e?' err':'');clearTimeout(toast.t);toast.t=setTimeout(()=>x.className='rqFinanceToast',2400)}
-async function api(action,extra={}){const u=new URL(API,location.origin);u.searchParams.set('action',action);Object.entries(extra).forEach(([k,v])=>u.searchParams.set(k,v));const r=await fetch(u,{headers:{'X-Admin-Token':token()},cache:'no-store'});let d={};try{d=await r.json()}catch{}if(r.status===401){location.href='/admin/?return='+encodeURIComponent(location.pathname);throw Error('Sesi Admin tamat.')}if(!r.ok||!d.ok)throw Error(d.error||'Request gagal');return d}
+async function api(action,extra={}){const u=new URL(API,location.origin);u.searchParams.set('action',action);Object.entries(extra).forEach(([k,v])=>u.searchParams.set(k,v));const r=await fetch(u,{cache:'no-store'});let d={};try{d=await r.json()}catch{}if(r.status===401){location.href='/admin/?return='+encodeURIComponent(location.pathname+location.search);throw Error('Sesi Admin tamat.')}if(!r.ok||!d.ok)throw Error(d.error||'Request gagal');return d}
 const status=o=>String(o.payment_status||o.paymentStatus||o.payment||'pending').toLowerCase(),cancelled=o=>['cancelled','failed','refunded','rejected'].includes(String(o.status||o.order_status||'').toLowerCase())||['cancelled','failed','refunded','rejected'].includes(status(o)),minor=o=>o.total_minor!=null?Number(o.total_minor||0):o.totalMinor!=null?Number(o.totalMinor||0):Math.round(Number(o.total||0)*100),created=o=>o.created_at||o.createdAt||o.timestamp||'',paidAt=p=>p.paid_at||p.created_at||'',fmt=v=>{const d=new Date(v);return Number.isNaN(d.getTime())?'—':d.toLocaleDateString('ms-MY',{day:'2-digit',month:'short',year:'numeric'})};
 function inRange(v){const r=$('financeRange').value;if(r==='all')return true;const t=new Date(v).getTime();return !Number.isNaN(t)&&t>=Date.now()-Number(r)*86400000}
 function filteredOrders(){return orders.filter(o=>inRange(created(o)))}
@@ -25,5 +25,5 @@ function render(){
  $('financeState').textContent=`${valid.length} order dianalisis · ${pays.length} confirmed payment · Kutipan berdasarkan payment ledger.`;
 }
 async function load(){try{$('financeState').textContent='Memuatkan data kewangan…';const [o,p,s,pr]=await Promise.all([api('listOrders',{limit:2000}),api('listPayments',{limit:2000}),api('paymentSummary'),api('productsDashboard')]);orders=Array.isArray(o.orders)?o.orders:[];payments=Array.isArray(p.payments)?p.payments:[];summaries=Array.isArray(s.summaries)?s.summaries:[];productInsights=Array.isArray(pr.insights)?pr.insights:[];render()}catch(e){$('financeState').textContent=e.message;toast(e.message,true)}}
-$('refreshFinance').addEventListener('click',load);$('financeRange').addEventListener('change',render);if(!token())location.href='/admin/?return='+encodeURIComponent(location.pathname);else load();
+$('refreshFinance').addEventListener('click',load);$('financeRange').addEventListener('change',render);load();
 })();
