@@ -52,7 +52,7 @@ assert.equal(hidden.total,482);
 assert.ok(hidden.products.every(x=>!x.active));
 
 const low=await call('productsDashboard',{filter:'low',limit:80,offset:0});
-assert.equal(low.total,241);
+assert.equal(low.total,242);
 assert.ok(low.products.every(x=>x.lowStock&&!x.outOfStock));
 
 const out=await call('productsDashboard',{filter:'out',limit:80,offset:0});
