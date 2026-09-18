@@ -11,7 +11,7 @@
 <main class="wrap" id="adminApp"><section><div class="hero"><div><h1>Business Command Center</h1><p>Sales, collection, production dan customer Reqoo dalam satu dashboard.</p></div><div class="date">LIVE CONTROL CENTRE</div></div></section></main>
 <script>
 const LEGACY_KEYS=['reqoo_admin_token','REQOO_ADMIN_TOKEN','reqoo_shop_admin_token'],RETURN_KEY='reqoo_admin_return';
-function legacyCookie(name){const m=document.cookie.match(new RegExp('(?:^|; )'+name.replace(/[.*+?^$()|[\\]\\]/g,'\\$&')+'=([^;]*)'));return m?decodeURIComponent(m[1]):''}
+function legacyCookie(name){for(const part of document.cookie.split(';')){const i=part.indexOf('=');if(i>=0&&part.slice(0,i).trim()===name)return decodeURIComponent(part.slice(i+1).trim())}return''}
 function clearLegacySecrets(){for(const k of LEGACY_KEYS)localStorage.removeItem(k);document.cookie='reqoo_admin_token=; Domain=.reqoo.co; Path=/; Max-Age=0; Secure; SameSite=Lax';document.cookie='reqoo_admin_token=; Path=/; Max-Age=0; Secure; SameSite=Lax'}
 function safeReturn(v){if(!v)return'';try{const u=new URL(v,location.origin);if(u.origin!==location.origin)return'';if(u.pathname==='/'||u.pathname.startsWith('/admin/')||u.pathname==='/admin'||u.pathname.startsWith('/sim/pksk/admin'))return u.pathname+u.search+u.hash}catch{}return''}
 function toggleLogin(){const i=document.getElementById('loginToken');i.type=i.type==='password'?'text':'password'}
