@@ -118,7 +118,7 @@ async function adminPkskV2(request,env){
   const type=response.headers.get('content-type')||'';
   const source=type.toLowerCase().includes('text/html')?await response.text():null;
   if(source===null)return response;
-  const body=source.replace(/API='\/api\/sim-admin'/g,"API='https://api.reqoo.co/api/sim-admin'");
+  const body=source;
   const headers=new Headers(response.headers);
   headers.set('cache-control','no-store, no-cache, must-revalidate, max-age=0');
   headers.set('pragma','no-cache');
