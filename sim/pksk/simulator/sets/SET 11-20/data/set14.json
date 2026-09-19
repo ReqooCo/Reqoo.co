@@ -777,7 +777,7 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Urutan berikut menggunakan aturan ×2 + 1: 4, 9, 19, 39, ... Apakah nombor seterusnya?",
+      "question": "Sebuah mesin nombor menghasilkan 4 pada langkah pertama. Setiap keluaran baharu ialah dua kali keluaran sebelumnya ditambah 1. Apakah keluaran kelima?",
       "options": [
         "79",
         "69",
@@ -787,11 +787,11 @@
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "recursive_rule",
+      "constructFamily": "recursive_machine_rule",
       "levelSignal": 3,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S14-B02",
@@ -1071,7 +1071,7 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Berapakah 12.5% daripada 320?",
+      "question": "Sebuah dewan mempunyai 320 kerusi. Sebanyak 12.5% daripadanya dikhaskan untuk tetamu. Berapakah kerusi tetamu?",
       "options": [
         "32",
         "36",
@@ -1081,11 +1081,11 @@
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "percentage",
+      "constructFamily": "percentage_capacity",
       "levelSignal": 3,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S14-B16",
@@ -1113,7 +1113,7 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Tukarkan 2.64 km kepada meter.",
+      "question": "Jarak antara dua lokasi ialah 2.64 km. Nyatakan jarak itu dalam meter.",
       "options": [
         "2,640 m",
         "264 m",
@@ -1123,11 +1123,11 @@
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "distance_conversion",
+      "constructFamily": "distance_context_conversion",
       "levelSignal": 2,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S14-B18",
@@ -1160,21 +1160,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Rajah kuboid menunjukkan ukuran 9 cm, 8 cm dan 4 cm. Berapakah isipadunya?",
+      "question": "Rajah kuboid menunjukkan ukuran 9 cm, 8 cm dan 4 cm. Jika satu pertiga ruang digunakan, berapakah isipadu ruang yang masih kosong?",
       "options": [
-        "72 cm³",
+        "96 cm³",
         "144 cm³",
-        "288 cm³",
-        "576 cm³"
+        "192 cm³",
+        "288 cm³"
       ],
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "visual_volume",
+      "constructFamily": "visual_cuboid_remaining_volume",
       "levelSignal": 2,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "visual": {
         "kind": "cuboid",
         "length_cm": 9,
@@ -1187,21 +1187,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Rajah mempunyai 15 bahagian sama besar dan 6 berlorek. Apakah pecahan tidak berlorek dalam bentuk termudah?",
+      "question": "Rajah menunjukkan 15 bahagian sama besar dengan 6 bahagian berlorek. Apakah nisbah bahagian berlorek kepada bahagian tidak berlorek dalam bentuk termudah?",
       "options": [
-        "2/5",
-        "3/15",
-        "5/3",
-        "3/5"
+        "6 : 15",
+        "3 : 5",
+        "3 : 2",
+        "2 : 3"
       ],
       "answerIndex": 3,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "visual_fraction",
+      "constructFamily": "visual_shaded_unshaded_ratio",
       "levelSignal": 3,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "visual": {
         "kind": "fraction_bar",
         "parts": 15,
@@ -1269,7 +1269,7 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Titik pada rajah bermula di (5, 7) dan bergerak 4 unit ke kanan. Apakah koordinat baharu?",
+      "question": "Pada rajah koordinat, sebuah penanda bermula pada (5, 7) lalu bergerak mendatar 4 unit ke kanan. Kedudukan akhirnya ialah ___.",
       "options": [
         "(5, 11)",
         "(1, 7)",
@@ -1279,11 +1279,11 @@
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "visual_coordinate",
+      "constructFamily": "coordinate_horizontal_move",
       "levelSignal": 2,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "visual": {
         "kind": "coordinate_move",
         "start": [
@@ -1450,21 +1450,21 @@
       "section": "BAHAGIAN B",
       "category": "Bahasa Melayu",
       "format": "MCQ",
-      "question": "Pilih ayat yang menggunakan kata hubung dengan tepat.",
+      "question": "Ayat manakah menggunakan kata hubung untuk menunjukkan tempoh menunggu dengan tepat?",
       "options": [
-        "Mereka menunggu kerana sehingga guru.",
-        "Mereka sehingga menunggu guru arahan.",
+        "Mereka menunggu kerana sehingga guru memberikan arahan.",
+        "Mereka sehingga menunggu guru memberikan arahan.",
         "Mereka menunggu sehingga guru memberikan arahan.",
         "Mereka menunggu tetapi kerana arahan."
       ],
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 1,
-      "constructFamily": "conjunction",
+      "constructFamily": "conjunction_until",
       "levelSignal": 1,
       "contentDomain": "Bahasa Melayu",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S14-B32",
@@ -2345,7 +2345,7 @@
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
     "answerBalanceTarget": "18/18/17/17",
-    "manualEditorialReview": "B10 constraint logic corrected; unique valid arrangement at option B"
+    "manualEditorialReview": "B01/B15/B17/B19/B20/B23/B31 rewritten for global uniqueness; B10 constraint logic corrected"
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
