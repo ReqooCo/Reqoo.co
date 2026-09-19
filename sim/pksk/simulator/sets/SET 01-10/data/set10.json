@@ -223,12 +223,12 @@
       "section": "BAHAGIAN A",
       "category": "SSQ",
       "format": "SITUATIONAL",
-      "question": "Satu carta dalam media sosial menunjukkan perubahan besar tetapi paksi graf dipotong dan sumber data tidak dinyatakan. Apakah tindakan terbaik?",
+      "question": "Satu paparan data dalam media sosial menunjukkan perubahan besar, tetapi skala menegak bermula hampir pada nilai maksimum dan sumber data tidak dinyatakan. Apakah tindakan terbaik?",
       "options": [
-        "Terima carta kerana nampak meyakinkan",
-        "Semak skala, sumber data dan cari graf asal sebelum membuat kesimpulan",
-        "Kongsi kerana bentuk graf jelas",
-        "Anggap visual itu mungkin mengelirukan sehingga konteks dan data asal disahkan"
+        "Terima paparan itu kerana nampak meyakinkan",
+        "Semak skala, sumber data dan cari data asal sebelum membuat kesimpulan",
+        "Kongsi kerana perbezaannya nampak besar",
+        "Anggap paparan itu mungkin mengelirukan sehingga konteks dan data asal disahkan"
       ],
       "weights": [
         0,
@@ -238,11 +238,11 @@
       ],
       "type": "graded",
       "plannedLevel": 4,
-      "constructFamily": "graph_literacy",
+      "constructFamily": "visual_data_literacy",
       "levelSignal": 4,
       "contentDomain": "SSQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
     },
     {
@@ -685,7 +685,7 @@
       "section": "BAHAGIAN A",
       "category": "SQ",
       "format": "AGREE_DISAGREE",
-      "question": "Setuju atau Tidak setuju: Bahan visual seperti graf perlu diperiksa skala dan sumbernya sebelum kita membuat kesimpulan.",
+      "question": "Setuju atau Tidak setuju: Paparan data perlu diperiksa skala dan sumbernya sebelum kita membuat kesimpulan.",
       "options": [
         "Setuju",
         "Tidak setuju"
@@ -696,11 +696,11 @@
       ],
       "type": "graded",
       "plannedLevel": 3,
-      "constructFamily": "visual_literacy",
+      "constructFamily": "data_display_literacy",
       "levelSignal": 3,
       "contentDomain": "SQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
     },
     {
@@ -777,7 +777,7 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Pola nombor ialah 10, 19, 37, 73, ... Apakah nombor seterusnya?",
+      "question": "Satu mesin menghasilkan 10 pada langkah pertama. Setiap langkah seterusnya ialah dua kali nilai sebelumnya tolak 1. Selepas 10, 19, 37 dan 73, apakah nilai kelima?",
       "options": [
         "145",
         "109",
@@ -787,11 +787,11 @@
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "double_minus_one_pattern",
+      "constructFamily": "recursive_machine_double_minus_one",
       "levelSignal": 3,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S10-B02",
@@ -819,7 +819,7 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Yang manakah berbeza daripada yang lain?",
+      "question": "Tiga nombor berikut ialah kuasa dua bagi nombor ganjil: 9, 25 dan 49. Nombor manakah tidak mengikuti ciri itu?",
       "options": [
         "9",
         "25",
@@ -829,32 +829,32 @@
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "odd_square_classification",
+      "constructFamily": "odd_square_exception",
       "levelSignal": 2,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S10-B04",
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Semua ahli Kumpulan Delta membawa tag nama. Iman tidak membawa tag nama. Apakah kesimpulan pasti berdasarkan maklumat itu?",
+      "question": "Semua ahli Pasukan Melur membawa tag nama. Iman tidak membawa tag nama. Berdasarkan maklumat itu sahaja, apakah kesimpulan pasti?",
       "options": [
         "Iman kehilangan tag",
-        "Iman ahli Kumpulan Gamma",
+        "Iman ahli pasukan lain",
         "Tag nama tidak diperlukan",
-        "Iman bukan ahli Kumpulan Delta"
+        "Iman bukan ahli Pasukan Melur"
       ],
       "answerIndex": 3,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "deduction",
+      "constructFamily": "deduction_named_team",
       "levelSignal": 3,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S10-B05",
@@ -1113,7 +1113,7 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Tukarkan 0.85 L kepada mililiter.",
+      "question": "Sebuah botol kecil mengandungi 0.85 L air. Berapakah isipadu air itu dalam mililiter?",
       "options": [
         "850 mL",
         "85 mL",
@@ -1123,11 +1123,11 @@
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 1,
-      "constructFamily": "volume_conversion",
+      "constructFamily": "volume_context_conversion",
       "levelSignal": 1,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S10-B18",
@@ -1597,21 +1597,21 @@
       "section": "BAHAGIAN B",
       "category": "Bahasa Melayu",
       "format": "MCQ",
-      "question": "Baca ayat: 'Nabil memeriksa unit ukuran pada paksi sebelum mentafsir graf.' Apakah sebab tindakan itu?",
+      "question": "Nabil memeriksa unit ukuran dan sela nilai pada paksi sebelum mentafsir satu paparan data. Mengapakah langkah itu penting?",
       "options": [
-        "Supaya graf kelihatan lebih cantik",
-        "Supaya nilai pada graf tidak disalah tafsir",
+        "Supaya nilai tidak disalah tafsir",
+        "Supaya paparan kelihatan lebih cantik",
         "Supaya semua data menjadi sama",
-        "Supaya sumber graf tidak perlu diketahui"
+        "Supaya sumber data tidak perlu diketahui"
       ],
-      "answerIndex": 1,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "graph_literacy",
+      "constructFamily": "axis_interpretation",
       "levelSignal": 3,
       "contentDomain": "Bahasa Melayu",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S10-B39",
@@ -2344,7 +2344,8 @@
   "qa": {
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
-    "answerBalanceTarget": "18/18/17/17"
+    "answerBalanceTarget": "18/18/17/17",
+    "manualEditorialReview": "A09/A27/B38 false visual cues removed; B01/B03/B04/B17 rewritten for global uniqueness"
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
