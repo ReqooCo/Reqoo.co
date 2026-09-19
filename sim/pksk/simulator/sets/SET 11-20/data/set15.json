@@ -61,12 +61,12 @@
       "section": "BAHAGIAN A",
       "category": "SSQ",
       "format": "SITUATIONAL",
-      "question": "Dua ahli tidak bersetuju tentang pembahagian tugas. Apakah tindakan terbaik?",
+      "question": "Dua ahli sama-sama mahu mengendalikan bahagian reka bentuk, tetapi bahagian dokumentasi masih belum berpenghuni. Apakah tindakan terbaik?",
       "options": [
-        "Ketua tentukan tanpa mendengar",
-        "Semak keperluan tugas, kekuatan ahli dan beban kerja sebelum membahagikan semula",
-        "Bahagi secara sama banyak walaupun tugas berbeza",
-        "Bincang matlamat setiap tugas dan cari pembahagian yang seimbang"
+        "Ketua pilih seorang tanpa penjelasan",
+        "Semak kemahiran dan minat kedua-duanya, kemudian bincang pembahagian yang memastikan semua bahagian penting dijaga",
+        "Beri kedua-duanya tugas reka bentuk dan abaikan dokumentasi",
+        "Bahagikan tugas reka bentuk kepada dua bahagian dan tetapkan seorang lagi membantu dokumentasi jika beban masih seimbang"
       ],
       "weights": [
         0,
@@ -76,11 +76,11 @@
       ],
       "type": "graded",
       "plannedLevel": 4,
-      "constructFamily": "workload_allocation",
+      "constructFamily": "role_allocation",
       "levelSignal": 4,
       "contentDomain": "SSQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
     },
     {
@@ -819,7 +819,7 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Antara 22, 33, 44 dan 58, yang manakah bukan gandaan 11?",
+      "question": "Antara nombor berikut, yang manakah memberikan baki 3 apabila dibahagi dengan 11?",
       "options": [
         "22",
         "33",
@@ -829,11 +829,11 @@
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "multiple_exception",
+      "constructFamily": "remainder_classification",
       "levelSignal": 2,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S15-B04",
@@ -1244,21 +1244,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Rajah garis lurus menunjukkan satu sudut 128°. Berapakah sudut bersebelahan?",
+      "question": "Pada rajah garis lurus, satu sudut ialah 128° dan sudut bersebelahan ialah x. Berapakah nilai 3x?",
       "options": [
-        "42°",
-        "52°",
-        "62°",
+        "146°",
+        "156°",
+        "166°",
         "128°"
       ],
       "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "visual_angle",
+      "constructFamily": "straight_angle_triple_unknown",
       "levelSignal": 2,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "visual": {
         "kind": "straight_line_angle",
         "known_angle_deg": 128
@@ -1345,21 +1345,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Purata tujuh nombor ialah 26. Jumlah enam nombor pertama ialah 151. Berapakah nombor ketujuh?",
+      "question": "Purata tujuh nombor ialah 26 dan jumlah enam nombor pertama ialah 151. Berapakah beza antara nombor ketujuh dengan purata itu?",
       "options": [
-        "26",
-        "31",
-        "29",
-        "33"
+        "3",
+        "5",
+        "7",
+        "31"
       ],
       "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "missing_mean",
+      "constructFamily": "mean_difference",
       "levelSignal": 3,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S15-B27",
@@ -2344,7 +2344,8 @@
   "qa": {
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
-    "answerBalanceTarget": "18/18/17/17"
+    "answerBalanceTarget": "18/18/17/17",
+    "manualEditorialReview": "A03/B03/B22/B26 rewritten for global uniqueness"
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
