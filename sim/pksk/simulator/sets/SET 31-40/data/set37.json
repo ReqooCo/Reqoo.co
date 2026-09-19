@@ -1897,19 +1897,19 @@
       "format": "MCQ",
       "question": "A pupil changes screen brightness and measures battery percentage lost in one hour. What is the responding variable?",
       "options": [
-        "battery percentage lost",
         "screen brightness",
         "device model kept constant",
-        "test duration"
+        "test duration",
+        "battery percentage lost"
       ],
-      "answerIndex": 0,
+      "answerIndex": 3,
       "type": "objective",
       "plannedLevel": 3,
       "constructFamily": "responding_variable",
       "levelSignal": 3,
       "contentDomain": "Sains",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S37-B54",
@@ -1981,19 +1981,19 @@
       "format": "MCQ",
       "question": "Why use regular backups for project files?",
       "options": [
-        "To make recovery possible after loss, corruption or accidental changes.",
         "To guarantee no mistake ever occurs.",
         "To avoid permissions.",
+        "To make recovery possible after loss, corruption or accidental changes.",
         "To make files larger."
       ],
-      "answerIndex": 0,
+      "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 3,
       "constructFamily": "backup_purpose",
       "levelSignal": 3,
       "contentDomain": "Teknologi/RBT",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S37-B58",
@@ -2065,19 +2065,19 @@
       "format": "MCQ",
       "question": "Apakah maksud pengesahan dua faktor?",
       "options": [
-        "Kaedah keselamatan yang menggunakan lebih daripada satu bentuk pengesahan identiti",
         "Dua kata laluan yang sama",
         "Dua akaun berbeza",
+        "Kaedah keselamatan yang menggunakan lebih daripada satu bentuk pengesahan identiti",
         "Dua fail sandaran"
       ],
-      "answerIndex": 0,
+      "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 3,
       "constructFamily": "mfa",
       "levelSignal": 3,
       "contentDomain": "Pengetahuan Am",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S37-B62",
@@ -2149,19 +2149,19 @@
       "format": "MCQ",
       "question": "Mengapakah nama versi yang jelas penting?",
       "options": [
-        "Supaya pengguna dapat mengenal pasti fail atau status yang betul",
         "Supaya semua fail sama saiz",
+        "Supaya pengguna dapat mengenal pasti fail atau status yang betul",
         "Supaya tarikh tidak diperlukan",
         "Supaya akses terbuka kepada semua"
       ],
-      "answerIndex": 0,
+      "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 2,
       "constructFamily": "version_naming",
       "levelSignal": 2,
       "contentDomain": "Pengetahuan Am",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S37-B66",
@@ -2233,19 +2233,19 @@
       "format": "MCQ",
       "question": "Ahli A menyiapkan 6 tugasan daripada 8 tugasan diberi. Ahli B menyiapkan 8 daripada 12. Berdasarkan kadar penyelesaian sahaja, siapa lebih tinggi?",
       "options": [
-        "Ahli A",
         "Ahli B",
+        "Ahli A",
         "Kedua-duanya sama",
         "Maklumat tidak cukup"
       ],
-      "answerIndex": 0,
+      "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 4,
       "constructFamily": "completion_rate_compare",
       "levelSignal": 4,
       "contentDomain": "Penyelesaian Masalah",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S37-B70",
@@ -2328,7 +2328,16 @@
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
     "answerBalanceTarget": "18/18/17/17",
-    "manualEditorialReview": "B03 rebuilt to quotient-remainder product"
+    "manualEditorialReview": "B03 rebuilt to quotient-remainder product",
+    "answerBalance": "18/18/17/17",
+    "balanceRepair": "option-order only",
+    "balanceRepairItems": [
+      "S37-B69",
+      "S37-B65",
+      "S37-B61",
+      "S37-B57",
+      "S37-B53"
+    ]
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
