@@ -819,7 +819,7 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Antara 21, 28, 35 dan 46, yang manakah bukan gandaan 7?",
+      "question": "Apabila 46 dibahagi dengan 7, bakinya 4. Antara 21, 28, 35 dan 46, nombor manakah mempunyai baki bukan sifar apabila dibahagi 7?",
       "options": [
         "21",
         "28",
@@ -829,11 +829,11 @@
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "multiple_classification",
+      "constructFamily": "remainder_mod7",
       "levelSignal": 2,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S36-B04",
@@ -861,21 +861,21 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Satu pola ialah 3, 7, 12, 18, 25. Apakah nombor seterusnya?",
+      "question": "Urutan 3, 7, 12, 18, 25 mempunyai pertambahan +4,+5,+6,+7. Jika pola diteruskan, apakah pertambahan seterusnya?",
       "options": [
-        "33",
-        "31",
-        "32",
-        "34"
+        "8",
+        "7",
+        "9",
+        "10"
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "increasing_difference",
+      "constructFamily": "next_difference_rule",
       "levelSignal": 3,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S36-B06",
@@ -903,21 +903,21 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Jika A = B + 4 dan A + B = 22, berapakah B?",
+      "question": "Pasukan A mempunyai 4 pemain lebih ramai daripada Pasukan B. Jumlah kedua-duanya 22 pemain. Berapakah pemain Pasukan B?",
       "options": [
+        "9",
         "7",
         "11",
-        "9",
         "13"
       ],
-      "answerIndex": 2,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "two_variable_relation",
+      "constructFamily": "sum_difference_team_context",
       "levelSignal": 3,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S36-B08",
@@ -945,21 +945,21 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Sebuah aturan menukar x kepada 3x − 5. Jika output 28, apakah input?",
+      "question": "Satu sistem memberi skor 3x − 5. Berapakah beza skor bagi input 15 dengan input 11?",
       "options": [
-        "11",
-        "9",
+        "12",
+        "8",
         "10",
-        "12"
+        "16"
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "reverse_linear",
+      "constructFamily": "linear_output_difference",
       "levelSignal": 3,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S36-B10",
@@ -1244,21 +1244,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Dua sudut bersebelahan pada garis lurus mempunyai nisbah 3 : 7. Berapakah sudut yang lebih kecil?",
+      "question": "Dua sudut berjumlah 90°. Sudut A ialah dua kali sudut B. Berapakah sudut B?",
       "options": [
+        "30°",
         "45°",
-        "54°",
-        "63°",
-        "126°"
+        "60°",
+        "90°"
       ],
-      "answerIndex": 1,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "supplementary_angle_ratio",
+      "constructFamily": "complementary_angle_ratio",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S36-B23",
@@ -1370,21 +1370,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Pemain A menjaringkan 24 mata dalam 16 minit. Pemain B 30 mata dalam 25 minit. Siapakah mempunyai kadar mata per minit lebih tinggi?",
+      "question": "Pemain A menjaringkan 24 mata dalam 16 minit. Pemain B 30 mata dalam 25 minit. Berapakah beza kadar mata per minit mereka?",
       "options": [
-        "Pemain B",
-        "Kedua-duanya sama",
-        "Maklumat tidak cukup",
-        "Pemain A"
+        "0.3 mata/minit",
+        "0.2 mata/minit",
+        "0.5 mata/minit",
+        "1.2 mata/minit"
       ],
-      "answerIndex": 3,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "normalized_performance_rate",
+      "constructFamily": "difference_in_scoring_rates",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S36-B29",
@@ -2126,21 +2126,21 @@
       "section": "BAHAGIAN B",
       "category": "Pengetahuan Am",
       "format": "MCQ",
-      "question": "Apakah tujuan jadual pertandingan?",
+      "question": "Apakah tujuan susunan masa dan urutan perlawanan yang telah ditetapkan untuk kejohanan?",
       "options": [
-        "Menentukan keputusan awal",
-        "Menggantikan pengadil",
-        "Mengukur suhu",
-        "Menyusun masa, tempat dan urutan perlawanan supaya acara dapat diurus"
+        "Mengatur masa, tempat dan urutan perlawanan supaya acara dapat diurus.",
+        "Menentukan keputusan awal.",
+        "Menggantikan pengadil.",
+        "Mengukur suhu."
       ],
-      "answerIndex": 3,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "competition_schedule",
+      "constructFamily": "competition_schedule_function",
       "levelSignal": 2,
       "contentDomain": "Pengetahuan Am",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S36-B65",
@@ -2231,7 +2231,7 @@
       "section": "BAHAGIAN B",
       "category": "Penyelesaian Masalah",
       "format": "MCQ",
-      "question": "Pemain A menjaringkan 36 mata dalam 24 minit. Pemain B 40 mata dalam 32 minit. Siapakah mempunyai kadar mata per minit lebih tinggi?",
+      "question": "Pemain A berjaya 18 daripada 24 percubaan. Pemain B berjaya 20 daripada 32 percubaan. Siapakah mempunyai kadar kejayaan lebih tinggi?",
       "options": [
         "Pemain A",
         "Pemain B",
@@ -2241,11 +2241,11 @@
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "normalized_performance_compare",
+      "constructFamily": "success_rate_compare",
       "levelSignal": 4,
       "contentDomain": "Penyelesaian Masalah",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S36-B70",
@@ -2327,7 +2327,8 @@
   "qa": {
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
-    "answerBalanceTarget": "18/18/17/17"
+    "answerBalanceTarget": "18/18/17/17",
+    "manualEditorialReview": "B03/B05/B07/B09/B22/B28/B69 rebuilt; B64 false visual cue removed"
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
