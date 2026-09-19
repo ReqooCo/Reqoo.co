@@ -903,21 +903,21 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Dalam kod, △ = 5 dan □ = 7. Berapakah 3△ + □ − 4?",
+      "question": "Satu token merah bernilai dua kali token biru. Tiga token merah dan dua token biru bernilai 32 mata. Berapakah nilai satu token biru?",
       "options": [
-        "14",
-        "16",
-        "18",
-        "22"
+        "2",
+        "3",
+        "4",
+        "5"
       ],
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "symbolic_expression",
+      "constructFamily": "ratio_symbol_equation",
       "levelSignal": 3,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S21-B08",
@@ -1269,29 +1269,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Rajah koordinat menunjukkan titik pada (1, 5). Titik bergerak 8 unit ke kanan dan 2 unit ke atas. Apakah koordinat akhir?",
+      "question": "Satu titik bermula pada (1, 5), bergerak 8 unit ke kanan dan 2 unit ke atas. Berapakah hasil darab koordinat x dan y pada kedudukan akhir?",
       "options": [
-        "(9, 3)",
-        "(3, 13)",
-        "(9, 7)",
-        "(7, 9)"
+        "54",
+        "56",
+        "63",
+        "72"
       ],
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "two_axis_translation",
+      "constructFamily": "coordinate_product_after_translation",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
-      "visual": {
-        "kind": "coordinate_move",
-        "start": [
-          1,
-          5
-        ],
-        "move_right": 8
-      }
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S21-B24",
@@ -1340,42 +1332,42 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Purata 7 nombor ialah 24. Jika satu nombor 18 diganti dengan 32, berapakah purata baharu?",
+      "question": "Tujuh nombor mempunyai purata 24. Jika satu nilai 18 diganti dengan 32, berapakah jumlah baharu ketujuh-tujuh nombor?",
       "options": [
-        "25",
-        "26",
-        "27",
-        "28"
+        "178",
+        "182",
+        "184",
+        "192"
       ],
       "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "mean_replacement",
+      "constructFamily": "corrected_total_from_mean",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S21-B27",
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Tangki 1,800 L berisi 70%. Selepas 360 L digunakan, berapakah peratus kapasiti yang masih berisi?",
+      "question": "Tangki 1,800 L berisi 70%. Selepas 360 L digunakan, berapakah beza baki air dengan separuh kapasiti tangki?",
       "options": [
-        "40%",
-        "55%",
-        "50%",
-        "60%"
+        "180 L kurang",
+        "90 L lebih",
+        "0 L",
+        "360 L kurang"
       ],
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "capacity_after_use",
+      "constructFamily": "capacity_half_difference",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S21-B28",
@@ -2201,21 +2193,21 @@
       "section": "BAHAGIAN B",
       "category": "Penyelesaian Masalah",
       "format": "MCQ",
-      "question": "Tugas A mengambil 20 minit dan mesti siap sebelum B 25 minit. Tugas C 35 minit boleh dibuat serentak oleh orang kedua. Jika dua orang bekerja, berapakah masa minimum?",
+      "question": "Tugas A mengambil 20 minit dan mesti siap sebelum B 25 minit. Tugas C mengambil 35 minit. B dan C memerlukan alat yang sama, manakala A tidak. Dengan dua orang pekerja dan satu alat itu sahaja, berapakah masa minimum menyiapkan semua tugas?",
       "options": [
-        "35 minit",
-        "55 minit",
         "45 minit",
+        "55 minit",
+        "60 minit",
         "80 minit"
       ],
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "parallel_schedule",
+      "constructFamily": "parallel_schedule_shared_resource",
       "levelSignal": 4,
       "contentDomain": "Penyelesaian Masalah",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S21-B68",
@@ -2340,7 +2332,7 @@
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
     "answerBalanceTarget": "18/18/17/17",
-    "manualEditorialReview": "B22/B31/B37 rewritten after global collision audit; B25 redundant visual removed"
+    "manualEditorialReview": "Second-pass collisions B07/B23/B26/B27/B67 rebuilt to distinct reasoning constructs"
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
