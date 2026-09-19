@@ -1866,12 +1866,12 @@
       "format": "MCQ",
       "question": "A wet cloth becomes dry when liquid water leaves its surface as water vapour. Which process is occurring?",
       "options": [
-        "evaporation",
         "condensation",
         "freezing",
-        "melting"
+        "melting",
+        "evaporation"
       ],
-      "answerIndex": 0,
+      "answerIndex": 3,
       "type": "objective",
       "plannedLevel": 1,
       "constructFamily": "evaporation_context",
@@ -1887,19 +1887,19 @@
       "format": "MCQ",
       "question": "A pupil changes fan speed and measures time for a wet cloth to dry. What is the responding variable?",
       "options": [
-        "drying time",
         "fan speed",
         "cloth type kept constant",
-        "room name"
+        "room name",
+        "drying time"
       ],
-      "answerIndex": 0,
+      "answerIndex": 3,
       "type": "objective",
       "plannedLevel": 3,
       "constructFamily": "responding_variable",
       "levelSignal": 3,
       "contentDomain": "Sains",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S35-B54",
@@ -1971,19 +1971,19 @@
       "format": "MCQ",
       "question": "Why collect readings during normal room use?",
       "options": [
-        "To evaluate how the system performs under realistic occupancy conditions.",
         "To guarantee no fault.",
         "To remove need for users.",
-        "To make readings larger."
+        "To make readings larger.",
+        "To evaluate how the system performs under realistic occupancy conditions."
       ],
-      "answerIndex": 0,
+      "answerIndex": 3,
       "type": "objective",
       "plannedLevel": 3,
       "constructFamily": "real_use_monitoring",
       "levelSignal": 3,
       "contentDomain": "Teknologi/RBT",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S35-B58",
@@ -2055,19 +2055,19 @@
       "format": "MCQ",
       "question": "Apakah maksud pengudaraan?",
       "options": [
-        "Pergerakan atau pertukaran udara dalam sesuatu ruang",
         "Pengukuran cahaya",
         "Penyimpanan tenaga",
+        "Pergerakan atau pertukaran udara dalam sesuatu ruang",
         "Penghasilan air"
       ],
-      "answerIndex": 0,
+      "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 2,
       "constructFamily": "ventilation",
       "levelSignal": 2,
       "contentDomain": "Pengetahuan Am",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S35-B62",
@@ -2139,19 +2139,19 @@
       "format": "MCQ",
       "question": "Mengapakah masa pengukuran penting?",
       "options": [
-        "Keadaan boleh berubah mengikut masa dan aktiviti pengguna",
         "Supaya unit tidak diperlukan",
         "Supaya semua bacaan sama",
+        "Keadaan boleh berubah mengikut masa dan aktiviti pengguna",
         "Supaya graf sentiasa meningkat"
       ],
-      "answerIndex": 0,
+      "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 2,
       "constructFamily": "time_context",
       "levelSignal": 2,
       "contentDomain": "Pengetahuan Am",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S35-B66",
@@ -2223,19 +2223,19 @@
       "format": "MCQ",
       "question": "Bilik A menggunakan 4 kipas untuk 40 orang. Bilik B menggunakan 5 kipas untuk 60 orang. Bilik manakah mempunyai kipas per orang lebih rendah?",
       "options": [
-        "Bilik B",
         "Bilik A",
+        "Bilik B",
         "Kedua-duanya sama",
         "Maklumat tidak cukup"
       ],
-      "answerIndex": 0,
+      "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 4,
       "constructFamily": "normalized_resource_compare",
       "levelSignal": 4,
       "contentDomain": "Penyelesaian Masalah",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S35-B70",
@@ -2318,7 +2318,17 @@
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
     "answerBalanceTarget": "18/18/17/17",
-    "manualEditorialReview": "B03/B05/B07/B09/B20/B21/B36/B39/B42/B45/B52 rebuilt after global collision audit"
+    "manualEditorialReview": "B03/B05/B07/B09/B20/B21/B36/B39/B42/B45/B52 rebuilt after global collision audit",
+    "answerBalance": "18/18/17/17",
+    "balanceRepair": "option-order only",
+    "balanceRepairItems": [
+      "S35-B69",
+      "S35-B65",
+      "S35-B61",
+      "S35-B57",
+      "S35-B53",
+      "S35-B52"
+    ]
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
