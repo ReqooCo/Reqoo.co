@@ -1,0 +1,35 @@
+name: PKSK Item Standard V2 Audit
+
+on:
+  push:
+    branches:
+      - audit/pksk-live-50set-clone-v1
+    paths:
+      - 'scripts/audit_pksk_item_standard_v2.py'
+      - 'sim/pksk/simulator/sets/**'
+      - 'sim/pksk/curation/REQOO_ITEM_STANDARD_V2.md'
+      - '.github/workflows/pksk-item-standard-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout clone branch
+        uses: actions/checkout@v4
+
+      - name: Run Item Standard V2 audit
+        run: |
+          python scripts/audit_pksk_item_standard_v2.py
+          cat sim/pksk/curation/item_audit_v2.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: pksk-item-audit-v2
+          path: |
+            sim/pksk/curation/item_audit_v2.md
+            sim/pksk/curation/item_audit_v2.json
