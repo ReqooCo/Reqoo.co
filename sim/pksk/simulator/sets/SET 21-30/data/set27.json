@@ -115,7 +115,7 @@
       "section": "BAHAGIAN A",
       "category": "SQ",
       "format": "SITUATIONAL",
-      "question": "Aplikasi meminta akses lokasi tepat walaupun hanya menunjukkan jadual sekolah. Apakah tindakan terbaik?",
+      "question": "Aplikasi meminta akses lokasi tepat walaupun hanya menunjukkan waktu aktiviti sekolah. Apakah tindakan terbaik?",
       "options": [
         "Benarkan semua",
         "Gunakan tetapan lokasi yang minimum atau tolak jika fungsi itu tidak memerlukannya",
@@ -134,7 +134,7 @@
       "levelSignal": 4,
       "contentDomain": "SQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
     },
     {
@@ -777,21 +777,21 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Urutan 7, 17, 37, 77 dibina dengan aturan yang sama. Apakah nombor seterusnya?",
+      "question": "Sebuah nombor berubah mengikut pola: tambah 5, kemudian darab 2 secara berselang-seli. Bermula dengan 6, urutannya ialah 6, 11, 22, 27, 54, ... Apakah nilai seterusnya?",
       "options": [
-        "157",
-        "151",
-        "155",
-        "159"
+        "59",
+        "108",
+        "56",
+        "64"
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "recursive_double_plus_three",
+      "constructFamily": "alternating_add5_double",
       "levelSignal": 3,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S27-B02",
@@ -819,7 +819,7 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Antara 22, 33, 44 dan 57, yang manakah bukan gandaan 11?",
+      "question": "Antara 22, 33, 44 dan 57, nombor manakah menghasilkan baki 2 apabila dibahagi dengan 11?",
       "options": [
         "22",
         "33",
@@ -829,11 +829,11 @@
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "multiple_classification",
+      "constructFamily": "remainder_mod11",
       "levelSignal": 2,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S27-B04",
@@ -945,21 +945,21 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Sebuah mesin menggunakan aturan 4x − 3. Jika output 41, apakah input?",
+      "question": "Sebuah mesin memberikan output 41 apabila inputnya 11. Jika aturan mesin ialah 4x − 3, berapakah beza antara output bagi input 15 dengan output bagi input 11?",
       "options": [
-        "11",
-        "9",
-        "10",
-        "12"
+        "16",
+        "12",
+        "18",
+        "20"
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "reverse_linear",
+      "constructFamily": "function_output_difference",
       "levelSignal": 3,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S27-B10",
@@ -987,21 +987,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Sebanyak 18,225 unit dibahagi sama rata kepada 45 kumpulan. Berapakah unit setiap kumpulan?",
+      "question": "Sebanyak 18,225 unit hendak dibahagi sama rata kepada 45 kumpulan. Selepas setiap kumpulan menerima bahagian yang sama, 5 unit tambahan diberi kepada setiap kumpulan. Berapakah jumlah unit yang diterima satu kumpulan?",
       "options": [
-        "385",
-        "395",
-        "405",
+        "390",
+        "400",
+        "410",
         "415"
       ],
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "division_context",
+      "constructFamily": "division_then_add_per_group",
       "levelSignal": 3,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S27-B12",
@@ -1134,21 +1134,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Rajah menunjukkan segi empat tepat 17 cm × 12 cm. Jika panjang bertambah 3 cm dan lebar bertambah 2 cm, berapakah pertambahan luas?",
+      "question": "Rajah menunjukkan segi empat tepat 17 cm × 12 cm. Panjangnya ditambah 3 cm dan lebarnya ditambah 2 cm. Berapakah nisbah luas baharu kepada luas asal dalam bentuk termudah?",
       "options": [
-        "56 cm²",
-        "76 cm²",
-        "64 cm²",
-        "280 cm²"
+        "20 : 17",
+        "70 : 51",
+        "17 : 12",
+        "35 : 24"
       ],
       "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "visual_area_increase",
+      "constructFamily": "visual_area_ratio_after_resize",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "visual": {
         "kind": "rectangle",
         "length_cm": 17,
@@ -1424,21 +1424,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Skala peta ialah 5 cm : 20 km. Jarak sebenar 34 km. Berapakah panjang pada peta?",
+      "question": "Pada peta, 5 cm mewakili 20 km. Laluan sebenar 34 km dan laluan kedua 26 km. Berapakah beza panjang kedua-dua laluan pada peta?",
       "options": [
-        "7.5 cm",
-        "8.5 cm",
-        "10 cm",
-        "12 cm"
+        "1.5 cm",
+        "2 cm",
+        "4 cm",
+        "8 cm"
       ],
       "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "reverse_scale",
+      "constructFamily": "scale_map_length_difference",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S27-B31",
@@ -1676,9 +1676,9 @@
       "section": "BAHAGIAN B",
       "category": "English",
       "format": "MCQ",
-      "question": "Choose the correct sentence using 'because'.",
+      "question": "Which sentence correctly explains why a measurement was repeated?",
       "options": [
-        "We repeated because measurement unusual first.",
+        "We repeated because the reading unusual first.",
         "We repeated the measurement because the first reading seemed unusual.",
         "Because repeated measurement reading.",
         "We measurement repeated because unusual it."
@@ -1686,11 +1686,11 @@
       "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "cause_clause",
+      "constructFamily": "because_measurement_reason",
       "levelSignal": 2,
       "contentDomain": "English",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S27-B43",
@@ -1886,7 +1886,7 @@
       "section": "BAHAGIAN B",
       "category": "Sains",
       "format": "MCQ",
-      "question": "Which process changes gas into liquid?",
+      "question": "Water vapour forms droplets on the outside of a cold surface. Which change of state is occurring?",
       "options": [
         "melting",
         "freezing",
@@ -1896,11 +1896,11 @@
       "answerIndex": 3,
       "type": "objective",
       "plannedLevel": 1,
-      "constructFamily": "state_change",
+      "constructFamily": "condensation_context",
       "levelSignal": 1,
       "contentDomain": "Sains",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S27-B53",
@@ -2339,7 +2339,8 @@
   "qa": {
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
-    "answerBalanceTarget": "18/18/17/17"
+    "answerBalanceTarget": "18/18/17/17",
+    "manualEditorialReview": "A05 false visual cue removed; B01/B03/B09/B11/B18/B30/B42/B52 rebuilt to eliminate global collisions"
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
