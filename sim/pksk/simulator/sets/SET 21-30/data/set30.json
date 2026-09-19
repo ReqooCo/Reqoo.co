@@ -1550,7 +1550,7 @@
       "section": "BAHAGIAN B",
       "category": "Bahasa Melayu",
       "format": "MCQ",
-      "question": "Pilih ayat yang menunjukkan urutan tindakan dengan jelas.",
+      "question": "Dalam laporan aliran tetamu, ayat manakah paling jelas menunjukkan urutan selepas proses pendaftaran?",
       "options": [
         "Pendaftaran kerana tetamu ruang.",
         "Tetamu selepas dewan walaupun daftar.",
@@ -1560,11 +1560,11 @@
       "answerIndex": 3,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "sequence_clause",
+      "constructFamily": "sequence_clause_event_flow",
       "levelSignal": 2,
       "contentDomain": "Bahasa Melayu",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S30-B37",
@@ -1676,7 +1676,7 @@
       "section": "BAHAGIAN B",
       "category": "English",
       "format": "MCQ",
-      "question": "Choose the correct sentence using 'while'.",
+      "question": "Which sentence correctly uses 'while' to describe two registration tasks happening at the same time?",
       "options": [
         "One counter while tickets another tags issued.",
         "One counter checked tickets while another issued name tags.",
@@ -1686,11 +1686,11 @@
       "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "simultaneous_actions",
+      "constructFamily": "while_parallel_event_tasks",
       "levelSignal": 3,
       "contentDomain": "English",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S30-B43",
@@ -2339,7 +2339,8 @@
   "qa": {
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
-    "answerBalanceTarget": "18/18/17/17"
+    "answerBalanceTarget": "18/18/17/17",
+    "manualEditorialReview": "B36/B42 contextualized to remove exact/template collisions"
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
