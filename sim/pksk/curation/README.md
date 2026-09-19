@@ -11,3 +11,18 @@ Workflow:
 6. Assemble Sets 01-50 only after the bank is final-approved.
 
 Bahagian A is first priority because the audit found 90 KEEP candidates and 1,410 items requiring rewrite/conversion, with zero automatic drops.
+
+
+## Item Standard V2
+
+The curation workspace is governed by sim/pksk/curation/REQOO_ITEM_STANDARD_V2.md.
+
+Run the read-only triage audit with:
+
+python scripts/audit_pksk_item_standard_v2.py
+
+The audit writes:
+- sim/pksk/curation/item_audit_v2.json
+- sim/pksk/curation/item_audit_v2.md
+
+These outputs are review aids only. They do not modify simulator question files and do not auto-approve items.
