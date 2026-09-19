@@ -819,7 +819,7 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Antara 15, 25, 35 dan 44, yang manakah tidak berakhir dengan digit 5?",
+      "question": "Antara 15, 25, 35 dan 44, nombor manakah mempunyai jumlah digit paling besar?",
       "options": [
         "15",
         "25",
@@ -829,11 +829,11 @@
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 1,
-      "constructFamily": "digit_classification",
+      "constructFamily": "digit_sum_classification",
       "levelSignal": 1,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S35-B04",
@@ -861,21 +861,21 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Satu pola ialah 2, 6, 12, 20, 30. Apakah nombor seterusnya?",
+      "question": "Urutan 2, 6, 12, 20, 30 boleh ditulis sebagai n(n+1) untuk n = 1,2,3,... Apakah sebutan keenam?",
       "options": [
         "42",
-        "38",
+        "36",
         "40",
-        "44"
+        "48"
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "increasing_even_difference",
+      "constructFamily": "formula_sequence",
       "levelSignal": 3,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S35-B06",
@@ -903,21 +903,21 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Jika A = B + 6 dan A + B = 26, berapakah A?",
+      "question": "Bilangan pengguna Bilik A ialah 6 lebih ramai daripada Bilik B. Jumlah kedua-duanya 26 orang. Berapakah pengguna Bilik B?",
       "options": [
         "10",
-        "13",
-        "16",
-        "20"
+        "8",
+        "12",
+        "16"
       ],
-      "answerIndex": 2,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "two_variable_relation",
+      "constructFamily": "sum_difference_context",
       "levelSignal": 3,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S35-B08",
@@ -945,21 +945,21 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Sebuah aturan menukar x kepada 2x + 9. Jika output 31, apakah input?",
+      "question": "Sebuah sistem memberi skor 2x + 9. Berapakah beza skor bagi input 15 dengan input 11?",
       "options": [
-        "11",
-        "9",
+        "8",
+        "6",
         "10",
         "12"
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "reverse_linear",
+      "constructFamily": "linear_output_difference",
       "levelSignal": 3,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S35-B10",
@@ -1187,21 +1187,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Rajah menunjukkan 20 bahagian sama besar dan 7 berlorek. Berapakah peratus bahagian tidak berlorek?",
+      "question": "Rajah menunjukkan 20 bahagian sama besar dan 7 berlorek. Berapakah beza bilangan bahagian tidak berlorek dengan bahagian berlorek?",
       "options": [
-        "35%",
-        "60%",
-        "70%",
-        "65%"
+        "6",
+        "7",
+        "13",
+        "14"
       ],
-      "answerIndex": 3,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "visual_unshaded_percentage",
+      "constructFamily": "visual_count_difference",
       "levelSignal": 3,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "visual": {
         "kind": "fraction_bar",
         "parts": 20,
@@ -1213,31 +1213,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Gunakan lima bacaan pada rajah. Berapakah median?",
+      "question": "Lima bacaan bunyi ialah 40, 44, 48, 52 dan 56 dB. Jika bacaan tertinggi 56 dB dibuang, berapakah median empat bacaan yang tinggal?",
       "options": [
-        "48",
-        "44",
-        "52",
-        "56"
+        "46 dB",
+        "44 dB",
+        "48 dB",
+        "50 dB"
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "visual_median",
+      "constructFamily": "median_after_removal",
       "levelSignal": 2,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
-      "visual": {
-        "kind": "five_value_data",
-        "values": [
-          40,
-          44,
-          48,
-          52,
-          56
-        ]
-      }
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S35-B22",
@@ -1538,21 +1528,21 @@
       "section": "BAHAGIAN B",
       "category": "Bahasa Melayu",
       "format": "MCQ",
-      "question": "Pilih ayat yang menunjukkan sebab dengan jelas.",
+      "question": "Dalam laporan pengudaraan, ayat manakah paling jelas menerangkan sebab bukaan udara perlu bebas daripada halangan?",
       "options": [
+        "Bukaan udara dikosongkan kerana halangan boleh mengurangkan aliran udara.",
         "Udara kerana walaupun halangan.",
         "Bukaan supaya aliran kerana.",
-        "Dikosongkan tetapi kerana udara.",
-        "Bukaan udara dikosongkan kerana halangan boleh mengurangkan aliran udara."
+        "Dikosongkan tetapi kerana udara."
       ],
-      "answerIndex": 3,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "cause_clause",
+      "constructFamily": "cause_clause_ventilation",
       "levelSignal": 2,
       "contentDomain": "Bahasa Melayu",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S35-B37",
@@ -1601,21 +1591,21 @@
       "section": "BAHAGIAN B",
       "category": "English",
       "format": "MCQ",
-      "question": "Choose the correct sentence using 'before'.",
+      "question": "Which sentence correctly uses 'before' in an environmental measurement instruction?",
       "options": [
+        "Check the room conditions before starting the measurement.",
         "Check conditions before starting room the measurement.",
         "Before room conditions starting measured.",
-        "Check the room conditions before starting the measurement.",
         "The conditions before measurement checked room."
       ],
-      "answerIndex": 2,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "time_clause",
+      "constructFamily": "before_environment_measurement",
       "levelSignal": 2,
       "contentDomain": "English",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S35-B40",
@@ -1664,21 +1654,21 @@
       "section": "BAHAGIAN B",
       "category": "English",
       "format": "MCQ",
-      "question": "Choose the correct sentence using 'while'.",
+      "question": "Which sentence correctly uses 'while' to describe two environmental measurements happening at the same time?",
       "options": [
-        "One pupil while noise another time.",
         "One pupil measured noise while another recorded the time.",
-        "While measured because time.",
-        "One pupil measured noise while another recorded the time."
+        "One pupil measured noise, another because time.",
+        "While noise one pupil and time another.",
+        "One pupil while measured because another recorded."
       ],
-      "answerIndex": 1,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "simultaneous_actions",
+      "constructFamily": "while_parallel_environment_tasks",
       "levelSignal": 3,
       "contentDomain": "English",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S35-B43",
@@ -1727,7 +1717,7 @@
       "section": "BAHAGIAN B",
       "category": "English",
       "format": "MCQ",
-      "question": "Which sentence makes a cautious claim?",
+      "question": "Which sentence makes the most careful conclusion after measurements taken on only a few days?",
       "options": [
         "The changes appear to have improved comfort during the periods observed.",
         "The room will always be comfortable.",
@@ -1737,11 +1727,11 @@
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "cautious_claim",
+      "constructFamily": "cautious_claim_environment_window",
       "levelSignal": 3,
       "contentDomain": "English",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S35-B46",
@@ -1874,21 +1864,21 @@
       "section": "BAHAGIAN B",
       "category": "Sains",
       "format": "MCQ",
-      "question": "Which process changes liquid water into water vapour?",
+      "question": "A wet cloth becomes dry when liquid water leaves its surface as water vapour. Which process is occurring?",
       "options": [
+        "evaporation",
         "condensation",
         "freezing",
-        "melting",
-        "evaporation"
+        "melting"
       ],
-      "answerIndex": 3,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 1,
-      "constructFamily": "state_change",
+      "constructFamily": "evaporation_context",
       "levelSignal": 1,
       "contentDomain": "Sains",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S35-B53",
@@ -2327,7 +2317,8 @@
   "qa": {
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
-    "answerBalanceTarget": "18/18/17/17"
+    "answerBalanceTarget": "18/18/17/17",
+    "manualEditorialReview": "B03/B05/B07/B09/B20/B21/B36/B39/B42/B45/B52 rebuilt after global collision audit"
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
