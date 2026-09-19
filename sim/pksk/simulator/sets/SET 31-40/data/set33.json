@@ -1897,19 +1897,19 @@
       "format": "MCQ",
       "question": "A pupil changes water amount and records plant height after two weeks. What is the responding variable?",
       "options": [
-        "plant height after two weeks",
         "water amount",
         "pot colour",
-        "ruler type"
+        "ruler type",
+        "plant height after two weeks"
       ],
-      "answerIndex": 0,
+      "answerIndex": 3,
       "type": "objective",
       "plannedLevel": 3,
       "constructFamily": "responding_variable",
       "levelSignal": 3,
       "contentDomain": "Sains",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S33-B54",
@@ -1981,19 +1981,19 @@
       "format": "MCQ",
       "question": "Why log moisture readings over several days?",
       "options": [
-        "To identify patterns and evaluate whether watering rules match actual conditions.",
         "To make soil wetter.",
         "To remove need for sensors.",
+        "To identify patterns and evaluate whether watering rules match actual conditions.",
         "To guarantee plant growth."
       ],
-      "answerIndex": 0,
+      "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 3,
       "constructFamily": "monitoring",
       "levelSignal": 3,
       "contentDomain": "Teknologi/RBT",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S33-B58",
@@ -2065,19 +2065,19 @@
       "format": "MCQ",
       "question": "Apakah maksud kompos?",
       "options": [
-        "Bahan organik terurai yang boleh digunakan untuk memperbaiki tanah",
         "Baja kimia sahaja",
         "Plastik kitar semula",
+        "Bahan organik terurai yang boleh digunakan untuk memperbaiki tanah",
         "Air hujan"
       ],
-      "answerIndex": 0,
+      "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 2,
       "constructFamily": "compost",
       "levelSignal": 2,
       "contentDomain": "Pengetahuan Am",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S33-B62",
@@ -2149,19 +2149,19 @@
       "format": "MCQ",
       "question": "Mengapakah rekod tarikh penting dalam data pertumbuhan?",
       "options": [
-        "Supaya perubahan boleh dikaitkan dengan tempoh masa yang betul",
         "Supaya semua tanaman sama tinggi",
+        "Supaya perubahan boleh dikaitkan dengan tempoh masa yang betul",
         "Supaya unit tidak perlu",
         "Supaya graf sentiasa meningkat"
       ],
-      "answerIndex": 0,
+      "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 2,
       "constructFamily": "date_metadata",
       "levelSignal": 2,
       "contentDomain": "Pengetahuan Am",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S33-B66",
@@ -2233,19 +2233,19 @@
       "format": "MCQ",
       "question": "Petak A menggunakan 84 L untuk 28 tanaman. Petak B menggunakan 100 L untuk 40 tanaman. Petak manakah menggunakan air per tanaman lebih rendah?",
       "options": [
-        "Petak B",
         "Petak A",
+        "Petak B",
         "Kedua-duanya sama",
         "Maklumat tidak cukup"
       ],
-      "answerIndex": 0,
+      "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 4,
       "constructFamily": "normalized_resource_compare",
       "levelSignal": 4,
       "contentDomain": "Penyelesaian Masalah",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S33-B70",
@@ -2328,7 +2328,16 @@
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
     "answerBalanceTarget": "18/18/17/17",
-    "manualEditorialReview": "A12 false visual cue removed; B01/B03/B22/B23/B36/B39/B42/B45 rebuilt after global audit"
+    "manualEditorialReview": "A12 false visual cue removed; B01/B03/B22/B23/B36/B39/B42/B45 rebuilt after global audit",
+    "answerBalance": "18/18/17/17",
+    "balanceRepair": "option-order only",
+    "balanceRepairItems": [
+      "S33-B69",
+      "S33-B65",
+      "S33-B61",
+      "S33-B57",
+      "S33-B53"
+    ]
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
