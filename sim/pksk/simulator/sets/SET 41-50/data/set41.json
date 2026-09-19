@@ -3,2812 +3,2331 @@
   "difficulty": 4,
   "questions": [
     {
-      "id": "PKSK-V47-S41-A01",
-      "section": "BAHAGIAN A",
-      "category": "Setuju/Tidak Setuju",
-      "format": "AGREE_DISAGREE",
-      "question": "Menyemak bukti sebelum membuat keputusan membantu mengurangkan kesilapan. Konteks: data kelas.",
-      "options": [
-        "Tidak setuju kerana keputusan boleh dibuat tanpa bukti.",
-        "Setuju kerana bukti membolehkan alasan dinilai.",
-        "Setuju hanya jika semua orang bersetuju.",
-        "Tidak setuju kerana semakan tidak diperlukan."
-      ],
-      "answerIndex": 1,
-      "weights": [
-        0,
-        3,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "evidence",
-      "levelSignal": 4,
-      "contentDomain": "Setuju/Tidak Setuju",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-A02",
+      "id": "S41-A01",
       "section": "BAHAGIAN A",
       "category": "EQ",
       "format": "SITUATIONAL",
-      "question": "Rakan tersalah memahami arahan tugasan. Apakah respons terbaik? Konteks: pembungkusan.",
+      "question": "Rakan kamu tersalah kira baki wang pelanggan dan nampak cemas. Apakah tindakan terbaik?",
       "options": [
-        "Abaikan kesilapan supaya kerja cepat selesai.",
-        "Terus mengambil alih tugasan itu.",
-        "Terangkan bahagian mengelirukan dan bantu menyemak arahan.",
-        "Tukar topik supaya masalah tidak dibincangkan."
+        "Suruh dia bayar daripada duit sendiri terus",
+        "Semak resit dan pengiraan bersama, betulkan dengan jujur dan kenal pasti punca kesilapan",
+        "Abaikan jika beza kecil",
+        "Bantu dia menggunakan langkah semakan yang sama untuk transaksi seterusnya"
       ],
-      "answerIndex": 2,
       "weights": [
         0,
+        3,
+        1,
+        2
+      ],
+      "type": "graded",
+      "plannedLevel": 3,
+      "constructFamily": "cash_error_recovery",
+      "levelSignal": 3,
+      "contentDomain": "EQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
+    },
+    {
+      "id": "S41-A02",
+      "section": "BAHAGIAN A",
+      "category": "SQ",
+      "format": "SITUATIONAL",
+      "question": "Kotak stok berat diletakkan di laluan pelanggan koperasi. Apakah tindakan terbaik?",
+      "options": [
+        "Biarkan jika orang masih boleh lalu",
+        "Alih ke tempat simpanan selamat supaya laluan kekal bebas",
+        "Letak tanda sahaja",
+        "Minta bantuan jika kotak terlalu berat untuk dialih dengan selamat"
+      ],
+      "weights": [
         0,
         3,
-        0
+        1,
+        2
       ],
       "type": "graded",
       "plannedLevel": 4,
-      "constructFamily": "support",
+      "constructFamily": "stock_trip_hazard",
+      "levelSignal": 4,
+      "contentDomain": "SQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
+    },
+    {
+      "id": "S41-A03",
+      "section": "BAHAGIAN A",
+      "category": "SSQ",
+      "format": "SITUATIONAL",
+      "question": "Koperasi mahu memilih pembekal: A lebih murah tetapi sering lewat, B sedikit mahal tetapi penghantaran stabil. Apakah cara menilai?",
+      "options": [
+        "Pilih A kerana paling murah",
+        "Banding harga, ketepatan penghantaran, kualiti dan kesan kehabisan stok",
+        "Pilih B tanpa data",
+        "Kira kos keseluruhan termasuk gangguan operasi"
+      ],
+      "weights": [
+        0,
+        3,
+        1,
+        2
+      ],
+      "type": "graded",
+      "plannedLevel": 4,
+      "constructFamily": "supplier_total_cost",
       "levelSignal": 4,
       "contentDomain": "SSQ",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
     },
     {
-      "id": "PKSK-V47-S41-A03",
+      "id": "S41-A04",
       "section": "BAHAGIAN A",
       "category": "EQ",
       "format": "SITUATIONAL",
-      "question": "Rakan tersalah memahami arahan tugasan. Apakah respons terbaik? Konteks: alam sekitar.",
+      "question": "Kamu mendapat untung tetapi tidak tahu produk mana paling membantu. Apakah tindakan terbaik?",
       "options": [
-        "Abaikan kesilapan supaya kerja cepat selesai.",
-        "Terus mengambil alih tugasan itu.",
-        "Tukar topik supaya masalah tidak dibincangkan.",
-        "Terangkan bahagian mengelirukan dan bantu menyemak arahan."
+        "Lihat hasil jualan tertinggi sahaja",
+        "Banding hasil, kos dan untung bagi setiap produk",
+        "Pilih produk paling mahal",
+        "Gunakan data beberapa tempoh sebelum membuat keputusan stok"
       ],
-      "answerIndex": 3,
       "weights": [
         0,
+        3,
+        1,
+        2
+      ],
+      "type": "graded",
+      "plannedLevel": 4,
+      "constructFamily": "profit_interpretation",
+      "levelSignal": 4,
+      "contentDomain": "EQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
+    },
+    {
+      "id": "S41-A05",
+      "section": "BAHAGIAN A",
+      "category": "SQ",
+      "format": "SITUATIONAL",
+      "question": "Aplikasi jualan meminta akses semua foto peribadi walaupun hanya digunakan untuk merekod transaksi. Apakah tindakan terbaik?",
+      "options": [
+        "Benarkan semua",
+        "Tolak akses yang tidak diperlukan",
+        "Benarkan seminggu",
+        "Gunakan pilihan lain jika akses berlebihan diwajibkan"
+      ],
+      "weights": [
         0,
+        3,
+        1,
+        2
+      ],
+      "type": "graded",
+      "plannedLevel": 4,
+      "constructFamily": "permission_relevance",
+      "levelSignal": 4,
+      "contentDomain": "SQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
+    },
+    {
+      "id": "S41-A06",
+      "section": "BAHAGIAN A",
+      "category": "SSQ",
+      "format": "SITUATIONAL",
+      "question": "Dua produk mempunyai jumlah untung sama tetapi jumlah unit terjual berbeza. Apakah perbandingan tambahan yang berguna?",
+      "options": [
+        "Jumlah unit sahaja",
+        "Untung per unit bersama kadar jualan dan risiko stok",
+        "Warna pembungkusan",
+        "Banding margin dan kelajuan stok bergerak"
+      ],
+      "weights": [
+        0,
+        3,
+        1,
+        2
+      ],
+      "type": "graded",
+      "plannedLevel": 4,
+      "constructFamily": "normalized_profit",
+      "levelSignal": 4,
+      "contentDomain": "SSQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
+    },
+    {
+      "id": "S41-A07",
+      "section": "BAHAGIAN A",
+      "category": "EQ",
+      "format": "SITUATIONAL",
+      "question": "Kamu hafal formula untung tetapi keliru apabila ada diskaun dan kos tambahan. Apakah strategi terbaik?",
+      "options": [
+        "Hafal lebih banyak formula",
+        "Kenal pasti urutan: kos, harga selepas diskaun, hasil dan untung",
+        "Terus masukkan semua nombor",
+        "Tulis maksud setiap nilai sebelum mengira"
+      ],
+      "weights": [
+        0,
+        3,
+        1,
+        2
+      ],
+      "type": "graded",
+      "plannedLevel": 3,
+      "constructFamily": "multi_step_finance_reasoning",
+      "levelSignal": 3,
+      "contentDomain": "EQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
+    },
+    {
+      "id": "S41-A08",
+      "section": "BAHAGIAN A",
+      "category": "SQ",
+      "format": "SITUATIONAL",
+      "question": "Kamu melihat soket sambungan digunakan untuk terlalu banyak peralatan kaunter. Apakah tindakan terbaik?",
+      "options": [
+        "Teruskan jika masih berfungsi",
+        "Kurangkan beban dan ikut had keselamatan elektrik",
+        "Tambah adaptor lagi",
+        "Minta guru atau petugas semak susunan kuasa"
+      ],
+      "weights": [
+        0,
+        3,
+        1,
+        2
+      ],
+      "type": "graded",
+      "plannedLevel": 4,
+      "constructFamily": "counter_electrical_load",
+      "levelSignal": 4,
+      "contentDomain": "SQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
+    },
+    {
+      "id": "S41-A09",
+      "section": "BAHAGIAN A",
+      "category": "SSQ",
+      "format": "SITUATIONAL",
+      "question": "Satu laporan mendakwa jualan meningkat 50%, tetapi minggu asal ialah minggu cuti dan sangat rendah. Apakah tindakan terbaik?",
+      "options": [
+        "Terima 50% sebagai bukti kuat",
+        "Semak nilai asas dan banding tempoh yang lebih setara",
+        "Abaikan semua peratus",
+        "Nyatakan konteks asas sebelum membuat kesimpulan"
+      ],
+      "weights": [
+        0,
+        3,
+        1,
+        2
+      ],
+      "type": "graded",
+      "plannedLevel": 4,
+      "constructFamily": "baseline_effect",
+      "levelSignal": 4,
+      "contentDomain": "SSQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
+    },
+    {
+      "id": "S41-A10",
+      "section": "BAHAGIAN A",
+      "category": "EQ",
+      "format": "SITUATIONAL",
+      "question": "Seorang ahli baru lambat menggunakan sistem kaunter. Apakah tindakan terbaik?",
+      "options": [
+        "Gantikan dia terus",
+        "Beri latihan langkah demi langkah dan peluang mencuba dengan pengawasan",
+        "Biarkan dia sendiri",
+        "Sediakan panduan ringkas untuk transaksi biasa"
+      ],
+      "weights": [
+        0,
+        3,
+        1,
+        2
+      ],
+      "type": "graded",
+      "plannedLevel": 3,
+      "constructFamily": "onboarding_support",
+      "levelSignal": 3,
+      "contentDomain": "EQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
+    },
+    {
+      "id": "S41-A11",
+      "section": "BAHAGIAN A",
+      "category": "SQ",
+      "format": "SITUATIONAL",
+      "question": "Kamu menerima mesej meminta OTP untuk 'batalkan transaksi koperasi'. Apakah tindakan terbaik?",
+      "options": [
+        "Berikan supaya cepat batal",
+        "Jangan kongsi OTP dan semak melalui saluran rasmi",
+        "Hantar separuh kod",
+        "Minta rakan cuba dahulu"
+      ],
+      "weights": [
+        0,
+        3,
+        1,
+        2
+      ],
+      "type": "graded",
+      "plannedLevel": 4,
+      "constructFamily": "otp_security",
+      "levelSignal": 4,
+      "contentDomain": "SQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
+    },
+    {
+      "id": "S41-A12",
+      "section": "BAHAGIAN A",
+      "category": "EQ",
+      "format": "SITUATIONAL",
+      "question": "Rakan kamu mempunyai rekod jualan tetapi kesimpulannya hanya berdasarkan satu hari. Apakah bantuan terbaik?",
+      "options": [
+        "Tambah lebih banyak ayat",
+        "Gunakan beberapa hari atau tempoh yang sesuai sebelum membuat kesimpulan umum",
+        "Pilih hari paling tinggi",
+        "Nyatakan batasan jika sampel kecil"
+      ],
+      "weights": [
+        0,
+        3,
+        1,
+        2
+      ],
+      "type": "graded",
+      "plannedLevel": 3,
+      "constructFamily": "sales_sample_window",
+      "levelSignal": 3,
+      "contentDomain": "EQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
+    },
+    {
+      "id": "S41-A13",
+      "section": "BAHAGIAN A",
+      "category": "SSQ",
+      "format": "SITUATIONAL",
+      "question": "Koperasi bergantung pada satu pencetak resit. Apakah perancangan terbaik?",
+      "options": [
+        "Tunggu sehingga rosak",
+        "Sediakan prosedur sandaran dan bahan penting seperti kertas atau kaedah resit alternatif",
+        "Beli pencetak paling mahal",
+        "Uji proses sandaran sebelum waktu sibuk"
+      ],
+      "weights": [
+        0,
+        3,
+        1,
+        2
+      ],
+      "type": "graded",
+      "plannedLevel": 4,
+      "constructFamily": "receipt_resilience",
+      "levelSignal": 4,
+      "contentDomain": "SSQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
+    },
+    {
+      "id": "S41-A14",
+      "section": "BAHAGIAN A",
+      "category": "SQ",
+      "format": "SITUATIONAL",
+      "question": "Kamu tersalah masukkan harga RM2.50 sebagai RM25.00. Apakah tindakan terbaik?",
+      "options": [
+        "Betulkan transaksi itu sahaja",
+        "Betulkan, semak resit berkaitan dan periksa punca seperti titik perpuluhan",
+        "Padam semua rekod",
+        "Semak harga produk lain yang dimasukkan pada sesi sama"
+      ],
+      "weights": [
+        0,
+        3,
+        1,
+        2
+      ],
+      "type": "graded",
+      "plannedLevel": 4,
+      "constructFamily": "price_decimal_error",
+      "levelSignal": 4,
+      "contentDomain": "SQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
+    },
+    {
+      "id": "S41-A15",
+      "section": "BAHAGIAN A",
+      "category": "SSQ",
+      "format": "SITUATIONAL",
+      "question": "Dua rekod stok memberi jumlah berbeza. Apakah langkah terbaik?",
+      "options": [
+        "Pilih jumlah lebih tinggi",
+        "Buat kiraan fizikal, semak masa kemas kini dan rekod keluar masuk",
+        "Ambil purata",
+        "Kenal pasti transaksi yang belum direkod"
+      ],
+      "weights": [
+        0,
+        3,
+        1,
+        2
+      ],
+      "type": "graded",
+      "plannedLevel": 4,
+      "constructFamily": "inventory_reconciliation",
+      "levelSignal": 4,
+      "contentDomain": "SSQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
+    },
+    {
+      "id": "S41-A16",
+      "section": "BAHAGIAN A",
+      "category": "EQ",
+      "format": "SITUATIONAL",
+      "question": "Papan harga sukar dibaca dari tempat pelanggan beratur. Apakah tindakan terbaik?",
+      "options": [
+        "Tambah lebih banyak maklumat",
+        "Besarkan teks penting, tingkatkan kontras dan uji dari jarak sebenar",
+        "Gunakan font hiasan",
+        "Susun maklumat mengikut keutamaan"
+      ],
+      "weights": [
+        0,
+        3,
+        1,
+        2
+      ],
+      "type": "graded",
+      "plannedLevel": 3,
+      "constructFamily": "price_sign_readability",
+      "levelSignal": 3,
+      "contentDomain": "EQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
+    },
+    {
+      "id": "S41-A17",
+      "section": "BAHAGIAN A",
+      "category": "SQ",
+      "format": "SITUATIONAL",
+      "question": "Sebuah laman meminta gambar kad bank untuk bayaran stok. Apakah tindakan terbaik?",
+      "options": [
+        "Hantar jika pembekal mendesak",
+        "Jangan hantar; gunakan kaedah pembayaran rasmi dan selamat",
+        "Kaburkan separuh",
+        "Minta rakan hantar"
+      ],
+      "weights": [
+        0,
+        3,
+        1,
+        2
+      ],
+      "type": "graded",
+      "plannedLevel": 4,
+      "constructFamily": "payment_privacy",
+      "levelSignal": 4,
+      "contentDomain": "SQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
+    },
+    {
+      "id": "S41-A18",
+      "section": "BAHAGIAN A",
+      "category": "SSQ",
+      "format": "SITUATIONAL",
+      "question": "Bekalan terhad dan dua kelas mahu membeli produk sama. Satu untuk aktiviti wajib, satu untuk hadiah tambahan. Apakah keputusan paling adil?",
+      "options": [
+        "Bahagi sama rata tanpa semak",
+        "Gunakan kriteria keperluan, kuantiti dan pilihan alternatif secara telus",
+        "Beri kelas lebih besar",
+        "Simpan semua stok"
+      ],
+      "weights": [
+        0,
+        3,
+        1,
+        2
+      ],
+      "type": "graded",
+      "plannedLevel": 4,
+      "constructFamily": "scarce_stock_allocation",
+      "levelSignal": 4,
+      "contentDomain": "SSQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
+    },
+    {
+      "id": "S41-A19",
+      "section": "BAHAGIAN A",
+      "category": "EQ",
+      "format": "SITUATIONAL",
+      "question": "Kamu sedar kamu mahu terus menjual produk kurang laku kerana kamu sendiri menyukainya. Apakah tindakan terbaik?",
+      "options": [
+        "Teruskan kerana pilihan sendiri penting",
+        "Semak data jualan dan maklum balas sebelum menentukan stok seterusnya",
+        "Buang produk terus",
+        "Bezakan citarasa peribadi daripada permintaan pelanggan"
+      ],
+      "weights": [
+        0,
+        3,
+        1,
+        2
+      ],
+      "type": "graded",
+      "plannedLevel": 3,
+      "constructFamily": "demand_bias",
+      "levelSignal": 3,
+      "contentDomain": "EQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
+    },
+    {
+      "id": "S41-A20",
+      "section": "BAHAGIAN A",
+      "category": "SQ",
+      "format": "SITUATIONAL",
+      "question": "Lampu dan kipas koperasi terus hidup selepas kedai ditutup. Apakah tindakan terbaik?",
+      "options": [
+        "Biarkan hingga esok",
+        "Gunakan senarai penutupan atau kawalan sesuai untuk mematikan peralatan yang tidak diperlukan",
+        "Tutup bekalan utama sekolah",
+        "Tetapkan petugas akhir membuat semakan"
+      ],
+      "weights": [
+        0,
+        3,
+        1,
+        2
+      ],
+      "type": "graded",
+      "plannedLevel": 2,
+      "constructFamily": "shop_shutdown",
+      "levelSignal": 2,
+      "contentDomain": "SQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
+    },
+    {
+      "id": "S41-A21",
+      "section": "BAHAGIAN A",
+      "category": "SQ",
+      "format": "AGREE_DISAGREE",
+      "question": "Setuju atau Tidak setuju: OTP tidak patut dikongsi dengan pihak yang menghubungi kita meminta kod tersebut.",
+      "options": [
+        "Setuju",
+        "Tidak setuju"
+      ],
+      "weights": [
+        3,
+        0
+      ],
+      "type": "graded",
+      "plannedLevel": 2,
+      "constructFamily": "otp_security",
+      "levelSignal": 2,
+      "contentDomain": "SQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
+    },
+    {
+      "id": "S41-A22",
+      "section": "BAHAGIAN A",
+      "category": "EQ",
+      "format": "AGREE_DISAGREE",
+      "question": "Setuju atau Tidak setuju: Untung tidak sama dengan jumlah hasil jualan.",
+      "options": [
+        "Setuju",
+        "Tidak setuju"
+      ],
+      "weights": [
+        3,
+        0
+      ],
+      "type": "graded",
+      "plannedLevel": 2,
+      "constructFamily": "profit_concept",
+      "levelSignal": 2,
+      "contentDomain": "EQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
+    },
+    {
+      "id": "S41-A23",
+      "section": "BAHAGIAN A",
+      "category": "SSQ",
+      "format": "AGREE_DISAGREE",
+      "question": "Setuju atau Tidak setuju: Harga pembekal sahaja belum cukup untuk menilai kos sebenar pembelian.",
+      "options": [
+        "Setuju",
+        "Tidak setuju"
+      ],
+      "weights": [
+        3,
+        0
+      ],
+      "type": "graded",
+      "plannedLevel": 3,
+      "constructFamily": "supplier_total_cost",
+      "levelSignal": 3,
+      "contentDomain": "SSQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
+    },
+    {
+      "id": "S41-A24",
+      "section": "BAHAGIAN A",
+      "category": "SQ",
+      "format": "AGREE_DISAGREE",
+      "question": "Setuju atau Tidak setuju: Gambar kad bank wajar dihantar melalui mesej jika urusan nampak rasmi.",
+      "options": [
+        "Setuju",
+        "Tidak setuju"
+      ],
+      "weights": [
         0,
         3
       ],
       "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "support",
-      "levelSignal": 4,
-      "contentDomain": "EQ",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "plannedLevel": 2,
+      "constructFamily": "payment_security",
+      "levelSignal": 2,
+      "contentDomain": "SQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
     },
     {
-      "id": "PKSK-V47-S41-A04",
-      "section": "BAHAGIAN A",
-      "category": "Setuju/Tidak Setuju",
-      "format": "AGREE_DISAGREE",
-      "question": "Mengakui kesilapan membantu memperbaiki hasil kerja. Konteks: inovasi.",
-      "options": [
-        "Setuju kerana punca kesilapan boleh dikenal pasti dan diperbetulkan.",
-        "Tidak setuju kerana kesilapan perlu disembunyikan.",
-        "Setuju hanya apabila orang lain mengetahuinya.",
-        "Tidak setuju kerana pembetulan tidak penting."
-      ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "accountability",
-      "levelSignal": 4,
-      "contentDomain": "Setuju/Tidak Setuju",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-A05",
-      "section": "BAHAGIAN A",
-      "category": "SSQ",
-      "format": "SITUATIONAL",
-      "question": "Dua cadangan mempunyai kelebihan berbeza. Apakah asas perbandingan wajar? Konteks: gotong-royong.",
-      "options": [
-        "Pilih cadangan paling popular.",
-        "Bandingkan objektif, kos, manfaat, risiko dan kesesuaian.",
-        "Ikut ahli paling lantang.",
-        "Pilih secara rawak."
-      ],
-      "answerIndex": 1,
-      "weights": [
-        0,
-        3,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "decision",
-      "levelSignal": 4,
-      "contentDomain": "SSQ",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-A06",
-      "section": "BAHAGIAN A",
-      "category": "SSQ",
-      "format": "SITUATIONAL",
-      "question": "Dua cadangan mempunyai kelebihan berbeza. Apakah asas perbandingan wajar? Konteks: robotik.",
-      "options": [
-        "Pilih cadangan paling popular.",
-        "Ikut ahli paling lantang.",
-        "Bandingkan objektif, kos, manfaat, risiko dan kesesuaian.",
-        "Pilih secara rawak."
-      ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "decision",
-      "levelSignal": 4,
-      "contentDomain": "EQ",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-A07",
-      "section": "BAHAGIAN A",
-      "category": "Setuju/Tidak Setuju",
-      "format": "AGREE_DISAGREE",
-      "question": "Maklumat tular di media sosial wajar disemak sebelum dipercayai. Konteks: perpustakaan digital.",
-      "options": [
-        "Tidak setuju kerana maklumat tular pasti benar.",
-        "Setuju hanya jika gambar meyakinkan.",
-        "Tidak setuju kerana semakan mengambil masa.",
-        "Setuju kerana sumber asal dan bukti perlu diperiksa."
-      ],
-      "answerIndex": 3,
-      "weights": [
-        0,
-        0,
-        0,
-        3
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "media_literacy",
-      "levelSignal": 4,
-      "contentDomain": "Setuju/Tidak Setuju",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-A08",
+      "id": "S41-A25",
       "section": "BAHAGIAN A",
       "category": "EQ",
-      "format": "SITUATIONAL",
-      "question": "Rakan kecewa kerana hasil percubaan tidak mencapai sasaran. Apakah tindakan membina? Konteks: kantin sihat.",
+      "format": "AGREE_DISAGREE",
+      "question": "Setuju atau Tidak setuju: Data beberapa hari biasanya lebih kukuh daripada satu hari untuk menilai corak jualan.",
       "options": [
-        "Dengar masalah dan bantu merancang percubaan penambahbaikan.",
-        "Beritahu kegagalan itu tidak penting.",
-        "Buat keputusan bagi pihaknya.",
-        "Minta dia berhenti."
+        "Setuju",
+        "Tidak setuju"
       ],
-      "answerIndex": 0,
       "weights": [
         3,
-        0,
-        0,
         0
       ],
       "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "empathy",
-      "levelSignal": 4,
-      "contentDomain": "SSQ",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "plannedLevel": 2,
+      "constructFamily": "sales_window",
+      "levelSignal": 2,
+      "contentDomain": "EQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
     },
     {
-      "id": "PKSK-V47-S41-A09",
+      "id": "S41-A26",
+      "section": "BAHAGIAN A",
+      "category": "SSQ",
+      "format": "AGREE_DISAGREE",
+      "question": "Setuju atau Tidak setuju: Sistem kaunter penting patut mempunyai proses sandaran.",
+      "options": [
+        "Setuju",
+        "Tidak setuju"
+      ],
+      "weights": [
+        3,
+        0
+      ],
+      "type": "graded",
+      "plannedLevel": 3,
+      "constructFamily": "operational_resilience",
+      "levelSignal": 3,
+      "contentDomain": "SSQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
+    },
+    {
+      "id": "S41-A27",
+      "section": "BAHAGIAN A",
+      "category": "SQ",
+      "format": "AGREE_DISAGREE",
+      "question": "Setuju atau Tidak setuju: Kesilapan titik perpuluhan pada harga boleh menghasilkan caj sepuluh kali ganda.",
+      "options": [
+        "Setuju",
+        "Tidak setuju"
+      ],
+      "weights": [
+        3,
+        0
+      ],
+      "type": "graded",
+      "plannedLevel": 3,
+      "constructFamily": "decimal_accuracy",
+      "levelSignal": 3,
+      "contentDomain": "SQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
+    },
+    {
+      "id": "S41-A28",
       "section": "BAHAGIAN A",
       "category": "EQ",
-      "format": "SITUATIONAL",
-      "question": "Rakan kecewa kerana hasil percubaan tidak mencapai sasaran. Apakah tindakan membina? Konteks: kokurikulum.",
-      "options": [
-        "Beritahu kegagalan itu tidak penting.",
-        "Dengar masalah dan bantu merancang percubaan penambahbaikan.",
-        "Buat keputusan bagi pihaknya.",
-        "Minta dia berhenti."
-      ],
-      "answerIndex": 1,
-      "weights": [
-        0,
-        3,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "empathy",
-      "levelSignal": 4,
-      "contentDomain": "EQ",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-A10",
-      "section": "BAHAGIAN A",
-      "category": "Setuju/Tidak Setuju",
       "format": "AGREE_DISAGREE",
-      "question": "Peraturan keselamatan perlu dipatuhi walaupun seseorang berpengalaman. Konteks: hidroponik.",
+      "question": "Setuju atau Tidak setuju: Papan harga perlu mudah dibaca sebelum pelanggan membuat pilihan.",
       "options": [
-        "Tidak setuju kerana orang berpengalaman tidak perlu berhati-hati.",
-        "Setuju hanya apabila guru berada berhampiran.",
-        "Setuju kerana pengalaman tidak menghapuskan risiko.",
-        "Tidak setuju kerana peraturan boleh diabaikan."
+        "Setuju",
+        "Tidak setuju"
       ],
-      "answerIndex": 2,
       "weights": [
-        0,
-        0,
         3,
         0
       ],
       "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "safety",
-      "levelSignal": 4,
-      "contentDomain": "Setuju/Tidak Setuju",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-A11",
-      "section": "BAHAGIAN A",
-      "category": "SSQ",
-      "format": "SITUATIONAL",
-      "question": "Dua sumber memberikan fakta bercanggah. Apakah langkah seterusnya? Konteks: kelab bahasa.",
-      "options": [
-        "Pilih tajuk paling menarik.",
-        "Pilih maklumat paling mudah dipercayai.",
-        "Gabungkan tanpa semakan.",
-        "Semak sumber asal dan cari bukti sokongan."
-      ],
-      "answerIndex": 3,
-      "weights": [
-        0,
-        0,
-        0,
-        3
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "verification",
-      "levelSignal": 4,
-      "contentDomain": "SSQ",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-A12",
-      "section": "BAHAGIAN A",
-      "category": "SSQ",
-      "format": "SITUATIONAL",
-      "question": "Dua sumber memberikan fakta bercanggah. Apakah langkah seterusnya? Konteks: makmal sains.",
-      "options": [
-        "Semak sumber asal dan cari bukti sokongan.",
-        "Pilih tajuk paling menarik.",
-        "Pilih maklumat paling mudah dipercayai.",
-        "Gabungkan tanpa semakan."
-      ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "verification",
-      "levelSignal": 4,
+      "plannedLevel": 2,
+      "constructFamily": "price_readability",
+      "levelSignal": 2,
       "contentDomain": "EQ",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
     },
     {
-      "id": "PKSK-V47-S41-A13",
+      "id": "S41-A29",
       "section": "BAHAGIAN A",
-      "category": "Setuju/Tidak Setuju",
+      "category": "SSQ",
       "format": "AGREE_DISAGREE",
-      "question": "Pembahagian tugasan mengikut kekuatan ahli boleh meningkatkan keberkesanan kumpulan. Konteks: lampu cekap tenaga.",
+      "question": "Setuju atau Tidak setuju: Rekod stok digital masih perlu dibanding dengan kiraan fizikal dari semasa ke semasa.",
       "options": [
-        "Tidak setuju kerana semua ahli mesti melakukan tugasan sama.",
-        "Setuju kerana peranan sesuai membantu kerja diselesaikan.",
-        "Setuju hanya jika tugasan mudah.",
-        "Tidak setuju kerana pembahagian tidak penting."
+        "Setuju",
+        "Tidak setuju"
       ],
-      "answerIndex": 1,
       "weights": [
-        0,
-        3,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "collaboration",
-      "levelSignal": 4,
-      "contentDomain": "Setuju/Tidak Setuju",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-A14",
-      "section": "BAHAGIAN A",
-      "category": "EQ",
-      "format": "SITUATIONAL",
-      "question": "Seorang ahli kurang bercakap ketika perbincangan. Apakah tindakan sesuai? Konteks: sudut bacaan.",
-      "options": [
-        "Biarkan sahaja.",
-        "Buat keputusan tanpa melibatkannya.",
-        "Beri ruang berkongsi pandangan dan tanyakan pendapatnya.",
-        "Suruh ikut majoriti."
-      ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
         3,
         0
       ],
       "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "inclusion",
-      "levelSignal": 4,
+      "plannedLevel": 3,
+      "constructFamily": "stock_reconciliation",
+      "levelSignal": 3,
       "contentDomain": "SSQ",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
     },
     {
-      "id": "PKSK-V47-S41-A15",
+      "id": "S41-A30",
       "section": "BAHAGIAN A",
-      "category": "EQ",
-      "format": "SITUATIONAL",
-      "question": "Seorang ahli kurang bercakap ketika perbincangan. Apakah tindakan sesuai? Konteks: air bersih.",
-      "options": [
-        "Biarkan sahaja.",
-        "Buat keputusan tanpa melibatkannya.",
-        "Suruh ikut majoriti.",
-        "Beri ruang berkongsi pandangan dan tanyakan pendapatnya."
-      ],
-      "answerIndex": 3,
-      "weights": [
-        0,
-        0,
-        0,
-        3
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "inclusion",
-      "levelSignal": 4,
-      "contentDomain": "EQ",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-A16",
-      "section": "BAHAGIAN A",
-      "category": "Setuju/Tidak Setuju",
+      "category": "SQ",
       "format": "AGREE_DISAGREE",
-      "question": "Pandangan berbeza boleh membantu kumpulan membuat keputusan lebih baik. Konteks: pameran sejarah.",
+      "question": "Setuju atau Tidak setuju: Peralatan koperasi yang tidak digunakan boleh membazir tenaga jika dibiarkan hidup.",
       "options": [
-        "Setuju kerana perbezaan pandangan mendedahkan perkara yang terlepas pandang.",
-        "Tidak setuju kerana hanya pandangan ketua penting.",
-        "Setuju hanya apabila semua pandangan sama.",
-        "Tidak setuju kerana perbincangan mengganggu kerja."
+        "Setuju",
+        "Tidak setuju"
       ],
-      "answerIndex": 0,
       "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "open_mindedness",
-      "levelSignal": 4,
-      "contentDomain": "Setuju/Tidak Setuju",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-A17",
-      "section": "BAHAGIAN A",
-      "category": "SSQ",
-      "format": "SITUATIONAL",
-      "question": "Masa projek semakin singkat tetapi tugasan belum selesai. Apakah strategi terbaik? Konteks: aktiviti seni.",
-      "options": [
-        "Kerjakan secara rawak.",
-        "Susun tugasan mengikut keutamaan, tempoh dan kebergantungan.",
-        "Serahkan semua kepada seorang ahli.",
-        "Tangguhkan keputusan."
-      ],
-      "answerIndex": 1,
-      "weights": [
-        0,
-        3,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "planning",
-      "levelSignal": 4,
-      "contentDomain": "SSQ",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-A18",
-      "section": "BAHAGIAN A",
-      "category": "SSQ",
-      "format": "SITUATIONAL",
-      "question": "Masa projek semakin singkat tetapi tugasan belum selesai. Apakah strategi terbaik? Konteks: keselamatan jalan raya.",
-      "options": [
-        "Kerjakan secara rawak.",
-        "Serahkan semua kepada seorang ahli.",
-        "Susun tugasan mengikut keutamaan, tempoh dan kebergantungan.",
-        "Tangguhkan keputusan."
-      ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
         3,
         0
       ],
       "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "planning",
-      "levelSignal": 4,
-      "contentDomain": "EQ",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "plannedLevel": 2,
+      "constructFamily": "energy_awareness",
+      "levelSignal": 2,
+      "contentDomain": "SQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
     },
     {
-      "id": "PKSK-V47-S41-A19",
-      "section": "BAHAGIAN A",
-      "category": "Setuju/Tidak Setuju",
-      "format": "AGREE_DISAGREE",
-      "question": "Menilai hasil selepas projek membantu merancang penambahbaikan. Konteks: anti pembaziran.",
-      "options": [
-        "Tidak setuju kerana projek tamat tidak perlu dinilai.",
-        "Setuju hanya apabila projek gagal.",
-        "Tidak setuju kerana hasil akhir mencukupi.",
-        "Setuju kerana refleksi menunjukkan perkara yang berkesan dan perlu dibaiki."
-      ],
-      "answerIndex": 3,
-      "weights": [
-        0,
-        0,
-        0,
-        3
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "reflection",
-      "levelSignal": 4,
-      "contentDomain": "Setuju/Tidak Setuju",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-A20",
-      "section": "BAHAGIAN A",
-      "category": "EQ",
-      "format": "SITUATIONAL",
-      "question": "Kamu menerima kritikan yang mempunyai alasan dan bukti. Apakah respons matang? Konteks: kebun sekolah.",
-      "options": [
-        "Nilai kritikan dan gunakan bahagian munasabah untuk menambah baik.",
-        "Tolak semua kritikan.",
-        "Marah kepada pemberi kritikan.",
-        "Ubah hasil secara rawak."
-      ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "resilience",
-      "levelSignal": 4,
-      "contentDomain": "SSQ",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-A21",
-      "section": "BAHAGIAN A",
-      "category": "EQ",
-      "format": "SITUATIONAL",
-      "question": "Kamu menerima kritikan yang mempunyai alasan dan bukti. Apakah respons matang? Konteks: pameran STEM.",
-      "options": [
-        "Tolak semua kritikan.",
-        "Nilai kritikan dan gunakan bahagian munasabah untuk menambah baik.",
-        "Marah kepada pemberi kritikan.",
-        "Ubah hasil secara rawak."
-      ],
-      "answerIndex": 1,
-      "weights": [
-        0,
-        3,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "resilience",
-      "levelSignal": 4,
-      "contentDomain": "EQ",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-A22",
-      "section": "BAHAGIAN A",
-      "category": "Setuju/Tidak Setuju",
-      "format": "AGREE_DISAGREE",
-      "question": "Meminta penjelasan apabila arahan tidak jelas ialah tindakan bertanggungjawab. Konteks: kempen membaca.",
-      "options": [
-        "Tidak setuju kerana bertanya menunjukkan kelemahan.",
-        "Setuju hanya apabila markah diberikan.",
-        "Setuju kerana penjelasan mengurangkan salah faham dan kesilapan.",
-        "Tidak setuju kerana arahan tidak boleh ditanya."
-      ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "communication",
-      "levelSignal": 4,
-      "contentDomain": "Setuju/Tidak Setuju",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-A23",
-      "section": "BAHAGIAN A",
-      "category": "SSQ",
-      "format": "SITUATIONAL",
-      "question": "Satu alat perlu dipilih untuk kerja yang memerlukan ketepatan. Apakah kriteria utama? Konteks: aktiviti kelab.",
-      "options": [
-        "Pilih alat paling mahal.",
-        "Pilih berdasarkan warna.",
-        "Pilih alat yang digunakan rakan.",
-        "Bandingkan fungsi, keselamatan, ketepatan dan kesesuaian."
-      ],
-      "answerIndex": 3,
-      "weights": [
-        0,
-        0,
-        0,
-        3
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "practical_reasoning",
-      "levelSignal": 4,
-      "contentDomain": "SSQ",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-A24",
-      "section": "BAHAGIAN A",
-      "category": "SSQ",
-      "format": "SITUATIONAL",
-      "question": "Satu alat perlu dipilih untuk kerja yang memerlukan ketepatan. Apakah kriteria utama? Konteks: bengkel RBT.",
-      "options": [
-        "Bandingkan fungsi, keselamatan, ketepatan dan kesesuaian.",
-        "Pilih alat paling mahal.",
-        "Pilih berdasarkan warna.",
-        "Pilih alat yang digunakan rakan."
-      ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "practical_reasoning",
-      "levelSignal": 4,
-      "contentDomain": "EQ",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-A25",
-      "section": "BAHAGIAN A",
-      "category": "Setuju/Tidak Setuju",
-      "format": "AGREE_DISAGREE",
-      "question": "Strategi boleh diubah apabila data baharu menunjukkan pendekatan asal kurang berkesan. Konteks: hari sukan.",
-      "options": [
-        "Tidak setuju kerana strategi asal mesti dikekalkan.",
-        "Setuju kerana data membantu memilih pendekatan lebih sesuai.",
-        "Setuju hanya selepas projek selesai.",
-        "Tidak setuju kerana data tidak mempengaruhi keputusan."
-      ],
-      "answerIndex": 1,
-      "weights": [
-        0,
-        3,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "adaptability",
-      "levelSignal": 4,
-      "contentDomain": "Setuju/Tidak Setuju",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-A26",
-      "section": "BAHAGIAN A",
-      "category": "EQ",
-      "format": "SITUATIONAL",
-      "question": "Kamu sedar terdapat kesilapan dalam kerja yang telah disiapkan. Apakah tindakan bertanggungjawab? Konteks: kitar semula.",
-      "options": [
-        "Sembunyikannya.",
-        "Salahkan ahli lain.",
-        "Akui kesilapan, kenal pasti punca dan cadangkan pembetulan.",
-        "Padam semua kerja."
-      ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "responsibility",
-      "levelSignal": 4,
-      "contentDomain": "SSQ",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-A27",
-      "section": "BAHAGIAN A",
-      "category": "EQ",
-      "format": "SITUATIONAL",
-      "question": "Kamu sedar terdapat kesilapan dalam kerja yang telah disiapkan. Apakah tindakan bertanggungjawab? Konteks: minggu bahasa.",
-      "options": [
-        "Sembunyikannya.",
-        "Salahkan ahli lain.",
-        "Padam semua kerja.",
-        "Akui kesilapan, kenal pasti punca dan cadangkan pembetulan."
-      ],
-      "answerIndex": 3,
-      "weights": [
-        0,
-        0,
-        0,
-        3
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "responsibility",
-      "levelSignal": 4,
-      "contentDomain": "EQ",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-A28",
-      "section": "BAHAGIAN A",
-      "category": "Setuju/Tidak Setuju",
-      "format": "AGREE_DISAGREE",
-      "question": "Keputusan kumpulan patut mengambil kira kesan terhadap semua ahli. Konteks: penjimatan elektrik.",
-      "options": [
-        "Setuju kerana keputusan adil mempertimbangkan keperluan dan kesan.",
-        "Tidak setuju kerana hanya keputusan ketua penting.",
-        "Setuju hanya jika semua ahli mendapat manfaat sama rata.",
-        "Tidak setuju kerana kesan kepada ahli bukan urusan kumpulan."
-      ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "fairness",
-      "levelSignal": 4,
-      "contentDomain": "Setuju/Tidak Setuju",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-A29",
-      "section": "BAHAGIAN A",
-      "category": "SSQ",
-      "format": "SITUATIONAL",
-      "question": "Selepas ujian, satu kaedah memberikan hasil lebih baik. Apakah tindakan seterusnya? Konteks: pembentangan kelas.",
-      "options": [
-        "Pilih tanpa melihat data.",
-        "Bandingkan data, kenal pasti sebab dan tentukan penambahbaikan.",
-        "Abaikan keputusan ujian.",
-        "Tukar semua pemboleh ubah serentak."
-      ],
-      "answerIndex": 1,
-      "weights": [
-        0,
-        3,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "experimental_reasoning",
-      "levelSignal": 4,
-      "contentDomain": "SSQ",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-A30",
-      "section": "BAHAGIAN A",
-      "category": "SSQ",
-      "format": "SITUATIONAL",
-      "question": "Selepas ujian, satu kaedah memberikan hasil lebih baik. Apakah tindakan seterusnya? Konteks: makanan sihat.",
-      "options": [
-        "Pilih tanpa melihat data.",
-        "Abaikan keputusan ujian.",
-        "Bandingkan data, kenal pasti sebab dan tentukan penambahbaikan.",
-        "Tukar semua pemboleh ubah serentak."
-      ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "experimental_reasoning",
-      "levelSignal": 4,
-      "contentDomain": "EQ",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B15",
+      "id": "S41-B01",
       "section": "BAHAGIAN B",
-      "category": "Matematik",
+      "category": "IQ",
       "format": "MCQ",
-      "question": "32 buku dibahagi sama rata kepada 4 rak. Berapakah buku setiap rak? Konteks: perpustakaan digital.",
+      "question": "Satu kod menggunakan aturan 3x + x². Jika input 5, apakah output?",
       "options": [
-        "10",
-        "8",
-        "7",
-        "28"
-      ],
-      "answerIndex": 1,
-      "weights": [
-        0,
-        3,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "division",
-      "levelSignal": 4,
-      "contentDomain": "Matematik",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B16",
-      "section": "BAHAGIAN B",
-      "category": "Matematik",
-      "format": "MCQ",
-      "question": "Daripada 5 bahagian sama besar, 2 digunakan. Apakah pecahan? Konteks: kantin sihat.",
-      "options": [
-        "3/5",
-        "2/6",
-        "2/5",
-        "5/2"
-      ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "fraction",
-      "levelSignal": 4,
-      "contentDomain": "Matematik",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION",
-      "visual": {
-        "kind": "fraction_bar",
-        "parts": 5,
-        "selected": 2
-      }
-    },
-    {
-      "id": "PKSK-V47-S41-B17",
-      "section": "BAHAGIAN B",
-      "category": "Matematik",
-      "format": "MCQ",
-      "question": "Berapakah hasil 1.3 + 0.9? Konteks: kokurikulum.",
-      "options": [
-        "2.4",
-        "2.1",
-        "1.2",
-        "2.2"
-      ],
-      "answerIndex": 3,
-      "weights": [
-        0,
-        0,
-        0,
-        3
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "decimal",
-      "levelSignal": 4,
-      "contentDomain": "Matematik",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B18",
-      "section": "BAHAGIAN B",
-      "category": "Matematik",
-      "format": "MCQ",
-      "question": "20% daripada 60 murid menyertai aktiviti. Berapakah murid? Konteks: hidroponik.",
-      "options": [
-        "12",
-        "17",
-        "48",
-        "20"
-      ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "percent",
-      "levelSignal": 4,
-      "contentDomain": "Matematik",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B19",
-      "section": "BAHAGIAN B",
-      "category": "Matematik",
-      "format": "MCQ",
-      "question": "Nisbah buku cerita kepada sains ialah 3:4. Jika ada 12 buku cerita, berapakah buku sains? Konteks: kelab bahasa.",
-      "options": [
-        "20",
-        "16",
-        "12",
-        "18"
-      ],
-      "answerIndex": 1,
-      "weights": [
-        0,
-        3,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "ratio",
-      "levelSignal": 4,
-      "contentDomain": "Matematik",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B20",
-      "section": "BAHAGIAN B",
-      "category": "Matematik",
-      "format": "MCQ",
-      "question": "Nilai lima hari ialah 9, 11, 8, 10, 12. Berapakah purata? Konteks: makmal sains.",
-      "options": [
-        "11",
-        "9",
-        "10",
+        "40",
+        "35",
+        "45",
         "50"
       ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "average",
-      "levelSignal": 4,
-      "contentDomain": "Matematik",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION",
-      "visual": {
-        "kind": "five_value_data",
-        "values": [
-          9,
-          11,
-          8,
-          10,
-          12
-        ],
-        "mean": 10.0
-      }
-    },
-    {
-      "id": "PKSK-V47-S41-B21",
-      "section": "BAHAGIAN B",
-      "category": "Matematik",
-      "format": "MCQ",
-      "question": "Segi empat tepat 12 cm × 4 cm. Berapakah perimeter? Konteks: lampu cekap tenaga.",
-      "options": [
-        "48",
-        "16",
-        "34",
-        "32"
-      ],
-      "answerIndex": 3,
-      "weights": [
-        0,
-        0,
-        0,
-        3
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "perimeter",
-      "levelSignal": 4,
-      "contentDomain": "Matematik",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION",
-      "visual": {
-        "kind": "rectangle",
-        "length_cm": 12,
-        "width_cm": 4
-      }
-    },
-    {
-      "id": "PKSK-V47-S41-B22",
-      "section": "BAHAGIAN B",
-      "category": "Matematik",
-      "format": "MCQ",
-      "question": "Segi empat tepat 13 cm × 5 cm. Berapakah luas? Konteks: sudut bacaan.",
-      "options": [
-        "65 cm²",
-        "36 cm",
-        "71 cm²",
-        "61 cm²"
-      ],
       "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "area",
-      "levelSignal": 4,
-      "contentDomain": "Matematik",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION",
-      "visual": {
-        "kind": "rectangle",
-        "length_cm": 13,
-        "width_cm": 5
-      }
+      "type": "objective",
+      "plannedLevel": 3,
+      "constructFamily": "quadratic_linear_rule",
+      "levelSignal": 3,
+      "contentDomain": "IQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B23",
+      "id": "S41-B02",
       "section": "BAHAGIAN B",
-      "category": "Matematik",
+      "category": "IQ",
       "format": "MCQ",
-      "question": "Kuboid 4 cm × 3 cm × 4 cm. Berapakah isipadu? Konteks: air bersih.",
+      "question": "Barcode scanner berkaitan dengan kod produk. Calculator berkaitan dengan ___.",
       "options": [
-        "12 cm³",
-        "48 cm³",
-        "52 cm³",
-        "44 cm³"
+        "menyimpan stok fizikal",
+        "pengiraan nombor",
+        "mengukur suhu",
+        "mencetak resit"
       ],
       "answerIndex": 1,
-      "weights": [
-        0,
-        3,
-        0,
-        0
+      "type": "objective",
+      "plannedLevel": 1,
+      "constructFamily": "tool_function",
+      "levelSignal": 1,
+      "contentDomain": "IQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B03",
+      "section": "BAHAGIAN B",
+      "category": "IQ",
+      "format": "MCQ",
+      "question": "Pasangan (2,12), (3,18), (4,24) mengikut aturan sama. Pasangan manakah tidak sepadan?",
+      "options": [
+        "(6,36)",
+        "(7,42)",
+        "(5,28)",
+        "(8,48)"
       ],
-      "type": "graded",
+      "answerIndex": 2,
+      "type": "objective",
+      "plannedLevel": 2,
+      "constructFamily": "pair_rule_classification",
+      "levelSignal": 2,
+      "contentDomain": "IQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B04",
+      "section": "BAHAGIAN B",
+      "category": "IQ",
+      "format": "MCQ",
+      "question": "Semua transaksi yang selesai mempunyai nombor resit. Transaksi T tiada nombor resit. Apakah kesimpulan pasti?",
+      "options": [
+        "Transaksi T palsu",
+        "Transaksi T dibatalkan",
+        "Resit tidak penting",
+        "Transaksi T belum disahkan selesai"
+      ],
+      "answerIndex": 3,
+      "type": "objective",
+      "plannedLevel": 3,
+      "constructFamily": "deduction",
+      "levelSignal": 3,
+      "contentDomain": "IQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B05",
+      "section": "BAHAGIAN B",
+      "category": "IQ",
+      "format": "MCQ",
+      "question": "Satu kod harga bergerak +2, +4, +6, +8 daripada 5: 5,7,11,17,25. Apakah nilai seterusnya?",
+      "options": [
+        "35",
+        "31",
+        "33",
+        "37"
+      ],
+      "answerIndex": 0,
+      "type": "objective",
+      "plannedLevel": 3,
+      "constructFamily": "increasing_even_difference",
+      "levelSignal": 3,
+      "contentDomain": "IQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B06",
+      "section": "BAHAGIAN B",
+      "category": "IQ",
+      "format": "MCQ",
+      "question": "Anak panah menghala ke timur. Selepas pusingan 135° lawan arah jam, arahnya paling hampir ialah ___.",
+      "options": [
+        "timur laut",
+        "barat laut",
+        "tenggara",
+        "barat daya"
+      ],
+      "answerIndex": 1,
+      "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "volume",
+      "constructFamily": "rotation_angle",
+      "levelSignal": 4,
+      "contentDomain": "IQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B07",
+      "section": "BAHAGIAN B",
+      "category": "IQ",
+      "format": "MCQ",
+      "question": "Jika A+B=24, B+C=20 dan A+C=18, berapakah B?",
+      "options": [
+        "11",
+        "12",
+        "13",
+        "14"
+      ],
+      "answerIndex": 2,
+      "type": "objective",
+      "plannedLevel": 4,
+      "constructFamily": "pair_sum_system",
+      "levelSignal": 4,
+      "contentDomain": "IQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B08",
+      "section": "BAHAGIAN B",
+      "category": "IQ",
+      "format": "MCQ",
+      "question": "P sebelum Q. R selepas Q. S sebelum P. Siapakah kedua?",
+      "options": [
+        "S",
+        "Q",
+        "R",
+        "P"
+      ],
+      "answerIndex": 3,
+      "type": "objective",
+      "plannedLevel": 2,
+      "constructFamily": "ordering",
+      "levelSignal": 2,
+      "contentDomain": "IQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B09",
+      "section": "BAHAGIAN B",
+      "category": "IQ",
+      "format": "MCQ",
+      "question": "Sebuah mesin memberi output x/2 + 6. Jika output 15, apakah input?",
+      "options": [
+        "18",
+        "16",
+        "20",
+        "30"
+      ],
+      "answerIndex": 0,
+      "type": "objective",
+      "plannedLevel": 3,
+      "constructFamily": "reverse_fraction_rule",
+      "levelSignal": 3,
+      "contentDomain": "IQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B10",
+      "section": "BAHAGIAN B",
+      "category": "IQ",
+      "format": "MCQ",
+      "question": "Empat kotak stok A, B, C, D disusun. B mesti tepat selepas A, D sebelum C, dan C bukan pertama. Susunan manakah mungkin?",
+      "options": [
+        "A, B, C, D",
+        "D, A, B, C",
+        "C, A, B, D",
+        "A, D, C, B"
+      ],
+      "answerIndex": 1,
+      "type": "objective",
+      "plannedLevel": 4,
+      "constructFamily": "adjacency_constraint",
+      "levelSignal": 4,
+      "contentDomain": "IQ",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B11",
+      "section": "BAHAGIAN B",
+      "category": "Matematik",
+      "format": "MCQ",
+      "question": "Sebanyak 1,512 pensel dibahagi sama rata kepada 36 kotak. Berapakah pensel setiap kotak?",
+      "options": [
+        "38",
+        "40",
+        "42",
+        "44"
+      ],
+      "answerIndex": 2,
+      "type": "objective",
+      "plannedLevel": 3,
+      "constructFamily": "equal_distribution",
+      "levelSignal": 3,
+      "contentDomain": "Matematik",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B12",
+      "section": "BAHAGIAN B",
+      "category": "Matematik",
+      "format": "MCQ",
+      "question": "Sebanyak 3/4 stok telah dijual. Kemudian 1/6 daripada keseluruhan stok dipulangkan. Berapakah bahagian stok yang kekal terjual?",
+      "options": [
+        "1/2",
+        "2/3",
+        "3/4",
+        "7/12"
+      ],
+      "answerIndex": 3,
+      "type": "objective",
+      "plannedLevel": 4,
+      "constructFamily": "fraction_adjustment",
       "levelSignal": 4,
       "contentDomain": "Matematik",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B13",
+      "section": "BAHAGIAN B",
+      "category": "Matematik",
+      "format": "MCQ",
+      "question": "Harga 8 buku nota ialah RM60. Berapakah harga 14 buku pada kadar sama?",
+      "options": [
+        "RM105",
+        "RM98",
+        "RM100",
+        "RM112"
+      ],
+      "answerIndex": 0,
+      "type": "objective",
+      "plannedLevel": 3,
+      "constructFamily": "unit_rate_money",
+      "levelSignal": 3,
+      "contentDomain": "Matematik",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B14",
+      "section": "BAHAGIAN B",
+      "category": "Matematik",
+      "format": "MCQ",
+      "question": "Nisbah jualan produk A : B = 4 : 7. Jika jumlah 242 unit, berapakah produk B?",
+      "options": [
+        "88",
+        "154",
+        "132",
+        "176"
+      ],
+      "answerIndex": 1,
+      "type": "objective",
+      "plannedLevel": 3,
+      "constructFamily": "ratio_total",
+      "levelSignal": 3,
+      "contentDomain": "Matematik",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B15",
+      "section": "BAHAGIAN B",
+      "category": "Matematik",
+      "format": "MCQ",
+      "question": "Harga RM80 diberi diskaun 15%. Berapakah harga selepas diskaun?",
+      "options": [
+        "RM65",
+        "RM72",
+        "RM68",
+        "RM75"
+      ],
+      "answerIndex": 2,
+      "type": "objective",
+      "plannedLevel": 3,
+      "constructFamily": "percentage_discount",
+      "levelSignal": 3,
+      "contentDomain": "Matematik",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B16",
+      "section": "BAHAGIAN B",
+      "category": "Matematik",
+      "format": "MCQ",
+      "question": "Koperasi dibuka 9:10 pagi. Sesi pertama 1 jam 25 minit, rehat 20 minit, sesi kedua 55 minit. Pukul berapakah selesai?",
+      "options": [
+        "11:40 pagi",
+        "12:00 tengah hari",
+        "12:10 tengah hari",
+        "11:50 pagi"
+      ],
+      "answerIndex": 3,
+      "type": "objective",
+      "plannedLevel": 4,
+      "constructFamily": "multi_stage_time",
+      "levelSignal": 4,
+      "contentDomain": "Matematik",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B17",
+      "section": "BAHAGIAN B",
+      "category": "Matematik",
+      "format": "MCQ",
+      "question": "Satu gulung pita 2.6 m ditambah sambungan 450 mm. Berapakah jumlah dalam meter?",
+      "options": [
+        "3.05 m",
+        "2.645 m",
+        "2.95 m",
+        "7.1 m"
+      ],
+      "answerIndex": 0,
+      "type": "objective",
+      "plannedLevel": 3,
+      "constructFamily": "length_unit_addition",
+      "levelSignal": 3,
+      "contentDomain": "Matematik",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B18",
+      "section": "BAHAGIAN B",
+      "category": "Matematik",
+      "format": "MCQ",
+      "question": "Rajah menunjukkan segi empat tepat 20 cm × 9 cm. Jika panjang dikurangkan 10%, berapakah luas baharu?",
+      "options": [
+        "144 cm²",
+        "162 cm²",
+        "180 cm²",
+        "198 cm²"
+      ],
+      "answerIndex": 1,
+      "type": "objective",
+      "plannedLevel": 4,
+      "constructFamily": "visual_percentage_dimension",
+      "levelSignal": 4,
+      "contentDomain": "Matematik",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "visual": {
+        "kind": "rectangle",
+        "length_cm": 20,
+        "width_cm": 9
+      }
+    },
+    {
+      "id": "S41-B19",
+      "section": "BAHAGIAN B",
+      "category": "Matematik",
+      "format": "MCQ",
+      "question": "Rajah kuboid berukuran 8 cm × 5 cm × 6 cm. Jika lebarnya bertambah 40%, berapakah isipadu baharu?",
+      "options": [
+        "240 cm³",
+        "288 cm³",
+        "336 cm³",
+        "384 cm³"
+      ],
+      "answerIndex": 2,
+      "type": "objective",
+      "plannedLevel": 4,
+      "constructFamily": "visual_volume_percentage",
+      "levelSignal": 4,
+      "contentDomain": "Matematik",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
       "visual": {
         "kind": "cuboid",
-        "length_cm": 4,
-        "width_cm": 3,
-        "height_cm": 4
+        "length_cm": 8,
+        "width_cm": 5,
+        "height_cm": 6
       }
     },
     {
-      "id": "PKSK-V47-S41-B24",
+      "id": "S41-B20",
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Aktiviti bermula 10:30 dan berlangsung 70 minit. Bilakah tamat? Konteks: pameran sejarah.",
+      "question": "Rajah menunjukkan 20 unit stok dan 14 telah terjual. Berapakah peratus stok yang masih ada?",
       "options": [
-        "11:55",
-        "12:40",
-        "11:40",
-        "11:10"
-      ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "time",
-      "levelSignal": 4,
-      "contentDomain": "Matematik",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B25",
-      "section": "BAHAGIAN B",
-      "category": "Matematik",
-      "format": "MCQ",
-      "question": "Buku RM10, fail RM3. Berapakah harga 3 buku dan 3 fail? Konteks: aktiviti seni.",
-      "options": [
-        "RM41.00",
-        "RM37.00",
-        "RM13.00",
-        "RM39.00"
+        "25%",
+        "35%",
+        "70%",
+        "30%"
       ],
       "answerIndex": 3,
-      "weights": [
-        0,
-        0,
-        0,
-        3
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "money",
-      "levelSignal": 4,
+      "type": "objective",
+      "plannedLevel": 3,
+      "constructFamily": "visual_remaining_percentage",
+      "levelSignal": 3,
       "contentDomain": "Matematik",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
+      "visual": {
+        "kind": "fraction_bar",
+        "parts": 20,
+        "selected": 14
+      }
     },
     {
-      "id": "PKSK-V47-S41-B26",
+      "id": "S41-B21",
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Bilangan buku dipinjam pada lima hari ialah 26, 29, 32, 35, 38. Berapakah purata pinjaman sehari? Konteks: keselamatan jalan raya.",
+      "question": "Gunakan lima nilai jualan pada rajah. Berapakah median?",
       "options": [
+        "28",
+        "24",
         "32",
-        "33",
-        "31",
-        "160"
+        "36"
       ],
       "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "data_average",
-      "levelSignal": 4,
+      "type": "objective",
+      "plannedLevel": 2,
+      "constructFamily": "visual_median",
+      "levelSignal": 2,
       "contentDomain": "Matematik",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED",
       "visual": {
         "kind": "five_value_data",
         "values": [
-          26,
-          29,
+          20,
+          24,
+          28,
           32,
-          35,
-          38
-        ],
-        "mean": 32.0
-      }
-    },
-    {
-      "id": "PKSK-V47-S41-B27",
-      "section": "BAHAGIAN B",
-      "category": "Matematik",
-      "format": "MCQ",
-      "question": "Satu sudut pada garis lurus ialah 45°. Berapakah sudut yang satu lagi? Konteks: anti pembaziran.",
-      "options": [
-        "45°",
-        "135°",
-        "137°",
-        "145°"
-      ],
-      "answerIndex": 1,
-      "weights": [
-        0,
-        3,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "angle",
-      "levelSignal": 4,
-      "contentDomain": "Matematik",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION",
-      "visual": {
-        "kind": "straight_line_angle",
-        "known_angle_deg": 45,
-        "unknown_angle_deg": 135,
-        "sum_deg": 180
-      }
-    },
-    {
-      "id": "PKSK-V47-S41-B28",
-      "section": "BAHAGIAN B",
-      "category": "Matematik",
-      "format": "MCQ",
-      "question": "Titik (6,3) bergerak 3 unit ke kanan. Apakah koordinat baharu? Konteks: kebun sekolah.",
-      "options": [
-        "(6,6)",
-        "(9,2)",
-        "(9,3)",
-        "(3,3)"
-      ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "coordinate",
-      "levelSignal": 4,
-      "contentDomain": "Matematik",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION",
-      "visual": {
-        "kind": "coordinate_move",
-        "start": [
-          6,
-          3
-        ],
-        "move_right": 3,
-        "end": [
-          9,
-          3
+          36
         ]
       }
     },
     {
-      "id": "PKSK-V47-S41-B44",
+      "id": "S41-B22",
       "section": "BAHAGIAN B",
-      "category": "Bahasa Melayu",
+      "category": "Matematik",
       "format": "MCQ",
-      "question": "Apakah fungsi tajuk sesebuah petikan? Situasi projek alam sekitar; fokus pada komunikasi Konteks: pameran STEM.",
+      "question": "Dua sudut bersebelahan pada garis lurus mempunyai nisbah 3 : 5. Berapakah sudut yang lebih kecil?",
       "options": [
-        "Menggantikan semua isi",
-        "Menentukan bilangan perenggan",
-        "Memberi gambaran tentang isi utama",
-        "Menunjukkan nama pembaca"
+        "60°",
+        "67.5°",
+        "72°",
+        "112.5°"
+      ],
+      "answerIndex": 1,
+      "type": "objective",
+      "plannedLevel": 4,
+      "constructFamily": "supplementary_angle_ratio",
+      "levelSignal": 4,
+      "contentDomain": "Matematik",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B23",
+      "section": "BAHAGIAN B",
+      "category": "Matematik",
+      "format": "MCQ",
+      "question": "Sebuah titik bermula pada (3,2), bergerak 4 unit ke kanan dan 5 unit ke atas. Berapakah hasil darab koordinat akhir?",
+      "options": [
+        "35",
+        "42",
+        "49",
+        "56"
       ],
       "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
+      "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "kefahaman",
+      "constructFamily": "coordinate_product",
       "levelSignal": 4,
-      "contentDomain": "Bahasa Melayu",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "contentDomain": "Matematik",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B45",
+      "id": "S41-B24",
       "section": "BAHAGIAN B",
-      "category": "Bahasa Melayu",
+      "category": "Matematik",
       "format": "MCQ",
-      "question": "Hujan turun lebat. ____ aktiviti diteruskan di dalam dewan. Situasi projek makanan sihat; fokus pada penyelesaian masalah Konteks: kempen membaca.",
+      "question": "Kaunter memproses 20 transaksi dalam 5 minit. Pada kadar sama, berapakah transaksi dalam 18 minit?",
       "options": [
-        "Namun begitu",
-        "Contohnya",
-        "Selain itu",
-        "Akhirnya"
+        "60",
+        "68",
+        "80",
+        "72"
+      ],
+      "answerIndex": 3,
+      "type": "objective",
+      "plannedLevel": 3,
+      "constructFamily": "transaction_rate",
+      "levelSignal": 3,
+      "contentDomain": "Matematik",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B25",
+      "section": "BAHAGIAN B",
+      "category": "Matematik",
+      "format": "MCQ",
+      "question": "Sebuah stor 12 m × 10 m. Rak mengambil 36 m². Berapakah luas lantai yang tinggal?",
+      "options": [
+        "84 m²",
+        "72 m²",
+        "90 m²",
+        "120 m²"
       ],
       "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "penanda_wacana",
-      "levelSignal": 4,
-      "contentDomain": "Bahasa Melayu",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "type": "objective",
+      "plannedLevel": 3,
+      "constructFamily": "area_subtraction",
+      "levelSignal": 3,
+      "contentDomain": "Matematik",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B46",
+      "id": "S41-B26",
       "section": "BAHAGIAN B",
-      "category": "Bahasa Melayu",
+      "category": "Matematik",
       "format": "MCQ",
-      "question": "Pilih ayat yang gramatis. Situasi projek kebun sekolah; fokus pada kebolehlaksanaan Konteks: aktiviti kelab.",
+      "question": "Purata lima jualan harian ialah 44 unit. Empat hari ialah 39,42,45 dan 47. Berapakah hari kelima?",
       "options": [
-        "Murid-murid sedang membaca kepada perpustakaan.",
-        "Murid-murid membaca sedang di perpustakaan.",
-        "Murid-murid sedang membaca di perpustakaan.",
-        "Murid-murid sedang dibaca di perpustakaan."
+        "44",
+        "47",
+        "48",
+        "51"
+      ],
+      "answerIndex": 1,
+      "type": "objective",
+      "plannedLevel": 3,
+      "constructFamily": "missing_mean",
+      "levelSignal": 3,
+      "contentDomain": "Matematik",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B27",
+      "section": "BAHAGIAN B",
+      "category": "Matematik",
+      "format": "MCQ",
+      "question": "Sebuah peti sejuk minuman 300 W digunakan 8 jam. Berapakah tenaga digunakan?",
+      "options": [
+        "1.8 kWh",
+        "3.0 kWh",
+        "2.4 kWh",
+        "24 kWh"
       ],
       "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
+      "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "ayat",
+      "constructFamily": "power_energy",
       "levelSignal": 4,
-      "contentDomain": "Bahasa Melayu",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "contentDomain": "Matematik",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B47",
+      "id": "S41-B28",
       "section": "BAHAGIAN B",
-      "category": "Bahasa Melayu",
+      "category": "Matematik",
       "format": "MCQ",
-      "question": "____ sekolah itu sangat luas. Situasi kempen membaca; fokus pada pemerhatian Konteks: bengkel RBT.",
+      "question": "Produk A untung RM180 daripada 60 unit. Produk B untung RM240 daripada 100 unit. Produk manakah mempunyai untung per unit lebih tinggi?",
       "options": [
-        "Perpustakaan",
-        "Membaca",
-        "Berjalan",
-        "Cantik"
+        "Produk B",
+        "Kedua-duanya sama",
+        "Maklumat tidak cukup",
+        "Produk A"
+      ],
+      "answerIndex": 3,
+      "type": "objective",
+      "plannedLevel": 4,
+      "constructFamily": "profit_per_unit",
+      "levelSignal": 4,
+      "contentDomain": "Matematik",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B29",
+      "section": "BAHAGIAN B",
+      "category": "Matematik",
+      "format": "MCQ",
+      "question": "Harga naik daripada RM20 kepada RM23. Berapakah peratus kenaikan?",
+      "options": [
+        "15%",
+        "10%",
+        "20%",
+        "30%"
       ],
       "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "kata_nama",
-      "levelSignal": 4,
-      "contentDomain": "Bahasa Melayu",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "type": "objective",
+      "plannedLevel": 3,
+      "constructFamily": "percentage_increase",
+      "levelSignal": 3,
+      "contentDomain": "Matematik",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B48",
+      "id": "S41-B30",
+      "section": "BAHAGIAN B",
+      "category": "Matematik",
+      "format": "MCQ",
+      "question": "Sebuah kotak mempunyai 4 pen hitam, 3 biru dan 3 merah. Apakah kebarangkalian memilih pen biru?",
+      "options": [
+        "1/5",
+        "3/10",
+        "2/5",
+        "1/2"
+      ],
+      "answerIndex": 1,
+      "type": "objective",
+      "plannedLevel": 3,
+      "constructFamily": "simple_probability",
+      "levelSignal": 3,
+      "contentDomain": "Matematik",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B31",
       "section": "BAHAGIAN B",
       "category": "Bahasa Melayu",
       "format": "MCQ",
-      "question": "Pilih kata adjektif yang sesuai: Bilik itu kelihatan ____ selepas dihias. Situasi projek kitar semula; fokus pada keadilan penilaian Konteks: hari sukan.",
+      "question": "Dalam papan harga, ayat manakah paling jelas?",
       "options": [
-        "menceriakan",
-        "keceriaan",
-        "ceria",
-        "menceriakanlah"
+        "Harga dipaparkan bayar diskaun.",
+        "Harga kerana bayaran dipaparkan.",
+        "Harga yang dipaparkan ialah harga yang perlu dibayar sebelum sebarang diskaun dinyatakan.",
+        "Diskaun harga supaya bayar."
       ],
       "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "kata_adjektif",
-      "levelSignal": 4,
+      "type": "objective",
+      "plannedLevel": 2,
+      "constructFamily": "price_instruction",
+      "levelSignal": 2,
       "contentDomain": "Bahasa Melayu",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B49",
+      "id": "S41-B32",
       "section": "BAHAGIAN B",
       "category": "Bahasa Melayu",
       "format": "MCQ",
-      "question": "Lengkapkan ayat: Murid itu sedang ____ poster. Situasi projek komuniti; fokus pada kreativiti Konteks: kitar semula.",
+      "question": "Pilih perkataan paling tepat: Petugas perlu ___ jumlah stok selepas setiap penghantaran.",
       "options": [
-        "menghasilkan",
-        "penghasilan",
-        "terhasil",
-        "hasilan"
+        "kemas kini",
+        "dikemas kini",
+        "pengemas kini",
+        "mengemas kini"
       ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "imbuhan",
-      "levelSignal": 4,
+      "answerIndex": 3,
+      "type": "objective",
+      "plannedLevel": 2,
+      "constructFamily": "morphology",
+      "levelSignal": 2,
       "contentDomain": "Bahasa Melayu",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B50",
+      "id": "S41-B33",
       "section": "BAHAGIAN B",
       "category": "Bahasa Melayu",
       "format": "MCQ",
-      "question": "Aina ____ laporan sebelum dihantar. Situasi aktiviti kelab; fokus pada pengurusan risiko Konteks: minggu bahasa.",
+      "question": "Seseorang yang membetulkan caj salah kepada pelanggan menunjukkan sikap ___.",
       "options": [
-        "semakan",
-        "penyemak",
-        "menyemak",
-        "tersemak"
+        "jujur",
+        "cuai",
+        "degil",
+        "gopoh"
       ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "kata_kerja",
-      "levelSignal": 4,
+      "answerIndex": 0,
+      "type": "objective",
+      "plannedLevel": 2,
+      "constructFamily": "value_vocabulary",
+      "levelSignal": 2,
       "contentDomain": "Bahasa Melayu",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B51",
+      "id": "S41-B34",
       "section": "BAHAGIAN B",
       "category": "Bahasa Melayu",
       "format": "MCQ",
-      "question": "Pilih ejaan yang betul. Situasi minggu bahasa; fokus pada keutamaan tugasan Konteks: penjimatan elektrik.",
+      "question": "Dalam ayat “Stok perlu diselaraskan”, apakah maksud “diselaraskan”?",
       "options": [
-        "kerjasama",
-        "kerja samaa",
-        "kerja-sama",
-        "kerjasamaa"
+        "ditambah tanpa kiraan",
+        "dikemaskini supaya sepadan dengan keadaan atau rekod sebenar",
+        "dibuang semua",
+        "dibiarkan berbeza"
       ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "ejaan",
-      "levelSignal": 4,
-      "contentDomain": "Bahasa Melayu",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B52",
-      "section": "BAHAGIAN B",
-      "category": "Bahasa Melayu",
-      "format": "MCQ",
-      "question": "Peribahasa yang bermaksud bekerjasama ialah... Situasi aktiviti data kelas; fokus pada refleksi Konteks: pembentangan kelas.",
-      "options": [
-        "besar pasak daripada tiang",
-        "bagai pinang dibelah dua",
-        "bagai aur dengan tebing",
-        "bagai mencurah air ke daun keladi"
-      ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "peribahasa",
-      "levelSignal": 4,
-      "contentDomain": "Bahasa Melayu",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B53",
-      "section": "BAHAGIAN B",
-      "category": "Bahasa Melayu",
-      "format": "MCQ",
-      "question": "Ringan tulang bermaksud... Situasi reka bentuk pembungkusan; fokus pada teknologi bertanggungjawab Konteks: makanan sihat.",
-      "options": [
-        "rajin membantu",
-        "suka berehat",
-        "mudah terluka",
-        "cepat marah"
-      ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "simpulan_bahasa",
-      "levelSignal": 4,
-      "contentDomain": "Bahasa Melayu",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B54",
-      "section": "BAHAGIAN B",
-      "category": "Bahasa Inggeris",
-      "format": "MCQ",
-      "question": "Best informal email opening: Situasi projek alam sekitar; fokus pada komunikasi Konteks: data kelas.",
-      "options": [
-        "Hi Amir, I hope you are well.",
-        "Dear Sir/Madam, I wish to apply...",
-        "Attention: all pupils.",
-        "To whom it may concern..."
-      ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "writing",
-      "levelSignal": 4,
-      "contentDomain": "Bahasa Inggeris",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B55",
-      "section": "BAHAGIAN B",
-      "category": "Bahasa Inggeris",
-      "format": "MCQ",
-      "question": "A person who designs and builds things is an... Situasi projek makanan sihat; fokus pada penyelesaian masalah Konteks: pembungkusan.",
-      "options": [
-        "audience",
-        "artist",
-        "engineer",
-        "athlete"
-      ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "word_class",
-      "levelSignal": 4,
-      "contentDomain": "Bahasa Inggeris",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B56",
-      "section": "BAHAGIAN B",
-      "category": "Bahasa Inggeris",
-      "format": "MCQ",
-      "question": "Choose the correct sentence. Situasi projek kebun sekolah; fokus pada kebolehlaksanaan Konteks: alam sekitar.",
-      "options": [
-        "The pupils are preparing a model.",
-        "The pupils is preparing a model.",
-        "The pupils preparing a model.",
-        "The pupils are prepare a model."
-      ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "grammar",
-      "levelSignal": 4,
-      "contentDomain": "Bahasa Inggeris",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B57",
-      "section": "BAHAGIAN B",
-      "category": "Bahasa Inggeris",
-      "format": "MCQ",
-      "question": "Yesterday, Faris ____ his project. Situasi kempen membaca; fokus pada pemerhatian Konteks: inovasi.",
-      "options": [
-        "complete",
-        "completing",
-        "completed",
-        "completes"
-      ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "tense",
-      "levelSignal": 4,
-      "contentDomain": "Bahasa Inggeris",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B58",
-      "section": "BAHAGIAN B",
-      "category": "Bahasa Inggeris",
-      "format": "MCQ",
-      "question": "The books are ____ the shelf. Situasi projek kitar semula; fokus pada keadilan penilaian Konteks: gotong-royong.",
-      "options": [
-        "on",
-        "at",
-        "to",
-        "by"
-      ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "preposition",
-      "levelSignal": 4,
-      "contentDomain": "Bahasa Inggeris",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B59",
-      "section": "BAHAGIAN B",
-      "category": "Bahasa Inggeris",
-      "format": "MCQ",
-      "question": "The word careful is closest in meaning to... Situasi projek komuniti; fokus pada kreativiti Konteks: robotik.",
-      "options": [
-        "noisy",
-        "rapid",
-        "cautious",
-        "hungry"
-      ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
+      "answerIndex": 1,
+      "type": "objective",
+      "plannedLevel": 3,
       "constructFamily": "vocabulary",
-      "levelSignal": 4,
-      "contentDomain": "Bahasa Inggeris",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "levelSignal": 3,
+      "contentDomain": "Bahasa Melayu",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B60",
+      "id": "S41-B35",
       "section": "BAHAGIAN B",
-      "category": "Bahasa Inggeris",
+      "category": "Bahasa Melayu",
       "format": "MCQ",
-      "question": "Choose the correct plural form. Situasi aktiviti kelab; fokus pada pengurusan risiko Konteks: perpustakaan digital.",
+      "question": "Jualan naik banyak kerana minggu sebelumnya sangat rendah. Apakah inferens paling berhati-hati?",
       "options": [
-        "children",
-        "childs",
-        "childes",
-        "childrens"
-      ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "plural",
-      "levelSignal": 4,
-      "contentDomain": "Bahasa Inggeris",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B61",
-      "section": "BAHAGIAN B",
-      "category": "Bahasa Inggeris",
-      "format": "MCQ",
-      "question": "Choose the correct question. Situasi minggu bahasa; fokus pada keutamaan tugasan Konteks: kantin sihat.",
-      "options": [
-        "Where do the exhibition takes place?",
-        "Where the exhibition does take place?",
-        "Where does the exhibition take place?",
-        "Where are the exhibition take place?"
+        "Peratus kenaikan membuktikan kejayaan besar.",
+        "Nilai asas tidak penting.",
+        "Nilai asas perlu diperiksa sebelum menganggap peningkatan itu luar biasa.",
+        "Jualan pasti terus naik."
       ],
       "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
+      "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "question",
+      "constructFamily": "baseline_inference",
       "levelSignal": 4,
-      "contentDomain": "Bahasa Inggeris",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "contentDomain": "Bahasa Melayu",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B62",
+      "id": "S41-B36",
       "section": "BAHAGIAN B",
-      "category": "Bahasa Inggeris",
+      "category": "Bahasa Melayu",
       "format": "MCQ",
-      "question": "If it rains tomorrow, we ____ indoors. Situasi aktiviti data kelas; fokus pada refleksi Konteks: kokurikulum.",
+      "question": "Pilih ayat yang menunjukkan tujuan dengan jelas.",
       "options": [
-        "will move",
-        "moved",
-        "moving",
-        "moves"
+        "Stok kerana rekod dikira.",
+        "Rekod walaupun stok.",
+        "Dibuat tetapi supaya fizikal.",
+        "Kiraan stok dibuat supaya rekod dapat dibandingkan dengan jumlah fizikal."
+      ],
+      "answerIndex": 3,
+      "type": "objective",
+      "plannedLevel": 2,
+      "constructFamily": "purpose_clause",
+      "levelSignal": 2,
+      "contentDomain": "Bahasa Melayu",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B37",
+      "section": "BAHAGIAN B",
+      "category": "Bahasa Melayu",
+      "format": "MCQ",
+      "question": "Ayat manakah paling sesuai sebagai cadangan laporan koperasi?",
+      "options": [
+        "Dicadangkan supaya produk kurang laku dinilai berdasarkan beberapa minggu jualan sebelum stok baharu dipesan.",
+        "Rak berwarna putih.",
+        "Koperasi dibuka Isnin.",
+        "Terdapat tiga kaunter."
       ],
       "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
+      "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "conditional",
+      "constructFamily": "report_recommendation",
       "levelSignal": 4,
-      "contentDomain": "Bahasa Inggeris",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "contentDomain": "Bahasa Melayu",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B63",
+      "id": "S41-B38",
       "section": "BAHAGIAN B",
-      "category": "Bahasa Inggeris",
+      "category": "Bahasa Melayu",
       "format": "MCQ",
-      "question": "Which sentence gives the main idea? Situasi reka bentuk pembungkusan; fokus pada teknologi bertanggungjawab Konteks: hidroponik.",
+      "question": "Aina membanding untung per unit antara dua produk. Mengapakah tindakan itu berguna?",
       "options": [
-        "The longest sentence",
-        "The first name mentioned",
-        "The sentence that summarises the central message",
-        "A sentence with a number"
+        "kerana semua untung menjadi sama",
+        "kerana jumlah unit terjual yang berbeza telah diambil kira",
+        "kerana hasil jualan tidak penting",
+        "kerana unit tidak perlu direkod"
+      ],
+      "answerIndex": 1,
+      "type": "objective",
+      "plannedLevel": 4,
+      "constructFamily": "normalized_profit_literacy",
+      "levelSignal": 4,
+      "contentDomain": "Bahasa Melayu",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B39",
+      "section": "BAHAGIAN B",
+      "category": "English",
+      "format": "MCQ",
+      "question": "Which sentence correctly uses 'before' in a shop instruction?",
+      "options": [
+        "Check price before confirming transaction the.",
+        "Before price confirming checked.",
+        "Check the price before confirming the transaction.",
+        "The price before transaction checked."
       ],
       "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "reading",
-      "levelSignal": 4,
-      "contentDomain": "Bahasa Inggeris",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "type": "objective",
+      "plannedLevel": 2,
+      "constructFamily": "before_shop_instruction",
+      "levelSignal": 2,
+      "contentDomain": "English",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B64",
+      "id": "S41-B40",
+      "section": "BAHAGIAN B",
+      "category": "English",
+      "format": "MCQ",
+      "question": "A message asks for your OTP to cancel a transaction. What should you do?",
+      "options": [
+        "Share it quickly.",
+        "Send a screenshot.",
+        "Give only half the code.",
+        "Do not share the OTP; verify through the official service."
+      ],
+      "answerIndex": 3,
+      "type": "objective",
+      "plannedLevel": 4,
+      "constructFamily": "security_instruction",
+      "levelSignal": 4,
+      "contentDomain": "English",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B41",
+      "section": "BAHAGIAN B",
+      "category": "English",
+      "format": "MCQ",
+      "question": "In the sentence 'The stock record is accurate,' what does 'accurate' mean?",
+      "options": [
+        "correct and matching the facts closely",
+        "always large",
+        "always cheap",
+        "never updated"
+      ],
+      "answerIndex": 0,
+      "type": "objective",
+      "plannedLevel": 2,
+      "constructFamily": "vocabulary",
+      "levelSignal": 2,
+      "contentDomain": "English",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B42",
+      "section": "BAHAGIAN B",
+      "category": "English",
+      "format": "MCQ",
+      "question": "Which sentence correctly uses 'while' to describe two counter tasks happening at the same time?",
+      "options": [
+        "One pupil while items another packed.",
+        "One pupil scanned items while another packed them.",
+        "While scanned because packed.",
+        "Pupil scanned items while because another."
+      ],
+      "answerIndex": 1,
+      "type": "objective",
+      "plannedLevel": 3,
+      "constructFamily": "simultaneous_actions",
+      "levelSignal": 3,
+      "contentDomain": "English",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B43",
+      "section": "BAHAGIAN B",
+      "category": "English",
+      "format": "MCQ",
+      "question": "A product earns the same total profit as another but sells fewer units. What is a useful additional measure?",
+      "options": [
+        "Only total profit.",
+        "Only product colour.",
+        "Profit per unit, together with sales rate and stock risk.",
+        "Only shelf position."
+      ],
+      "answerIndex": 2,
+      "type": "objective",
+      "plannedLevel": 4,
+      "constructFamily": "normalized_comparison",
+      "levelSignal": 4,
+      "contentDomain": "English",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B44",
+      "section": "BAHAGIAN B",
+      "category": "English",
+      "format": "MCQ",
+      "question": "Choose the best connector: 'Supplier A was cheaper; ___, deliveries were less reliable.'",
+      "options": [
+        "therefore",
+        "because",
+        "unless",
+        "however"
+      ],
+      "answerIndex": 3,
+      "type": "objective",
+      "plannedLevel": 2,
+      "constructFamily": "contrast",
+      "levelSignal": 2,
+      "contentDomain": "English",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B45",
+      "section": "BAHAGIAN B",
+      "category": "English",
+      "format": "MCQ",
+      "question": "Which sentence makes a cautious claim?",
+      "options": [
+        "Sales appear stronger over the weeks measured, but more data may be useful.",
+        "Sales will rise forever.",
+        "This product can never fail.",
+        "No more data are needed."
+      ],
+      "answerIndex": 0,
+      "type": "objective",
+      "plannedLevel": 3,
+      "constructFamily": "cautious_claim",
+      "levelSignal": 3,
+      "contentDomain": "English",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B46",
+      "section": "BAHAGIAN B",
+      "category": "English",
+      "format": "MCQ",
+      "question": "A passage compares selling price, cost and profit. Which title is best?",
+      "options": [
+        "A Rainy Day",
+        "Sales Are Not the Same as Profit",
+        "My Favourite Animal",
+        "Learning to Swim"
+      ],
+      "answerIndex": 1,
+      "type": "objective",
+      "plannedLevel": 4,
+      "constructFamily": "main_idea",
+      "levelSignal": 4,
+      "contentDomain": "English",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B47",
       "section": "BAHAGIAN B",
       "category": "Sains",
       "format": "MCQ",
-      "question": "Bahagian yang menyerap air dan garam mineral ialah... Situasi projek alam sekitar; fokus pada komunikasi Konteks: kelab bahasa.",
+      "question": "A pupil investigates how refrigerator door-opening time affects internal temperature. Which variable should be changed?",
       "options": [
-        "Bunga",
-        "Buah",
-        "Akar",
-        "Daun"
+        "thermometer type",
+        "food amount kept constant",
+        "door-opening time",
+        "recording sheet"
       ],
       "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "tumbuhan",
-      "levelSignal": 4,
+      "type": "objective",
+      "plannedLevel": 3,
+      "constructFamily": "manipulated_variable",
+      "levelSignal": 3,
       "contentDomain": "Sains",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B65",
+      "id": "S41-B48",
       "section": "BAHAGIAN B",
       "category": "Sains",
       "format": "MCQ",
-      "question": "Dalam rumput → belalang → katak, belalang ialah... Situasi projek makanan sihat; fokus pada penyelesaian masalah Konteks: makmal sains.",
+      "question": "In a food chain, plant → insect → bird. If birds decrease greatly, what may happen to insects?",
       "options": [
-        "Pengguna primer",
-        "Pengeluar",
-        "Pengguna tertier",
-        "Pengurai"
+        "Insects must disappear.",
+        "Plants produce birds.",
+        "Birds increase immediately.",
+        "Insect numbers may increase because fewer are eaten."
       ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "rantaian_makanan",
-      "levelSignal": 4,
+      "answerIndex": 3,
+      "type": "objective",
+      "plannedLevel": 3,
+      "constructFamily": "food_chain",
+      "levelSignal": 3,
       "contentDomain": "Sains",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B66",
+      "id": "S41-B49",
       "section": "BAHAGIAN B",
       "category": "Sains",
       "format": "MCQ",
-      "question": "Apakah fungsi utama jantung? Situasi projek kebun sekolah; fokus pada kebolehlaksanaan Konteks: lampu cekap tenaga.",
+      "question": "Why can a refrigerator feel warm at its back?",
       "options": [
-        "Menghadam makanan",
-        "Menghasilkan air kencing",
-        "Mengepam darah ke seluruh badan",
-        "Mengawal suhu bilik"
+        "It releases heat removed from the inside plus energy used by the system.",
+        "It creates cold at the back.",
+        "Gravity increases.",
+        "Food produces electricity."
       ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
+      "answerIndex": 0,
+      "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "sistem_manusia",
+      "constructFamily": "refrigerator_heat_transfer",
       "levelSignal": 4,
       "contentDomain": "Sains",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B67",
+      "id": "S41-B50",
       "section": "BAHAGIAN B",
       "category": "Sains",
       "format": "MCQ",
-      "question": "Yang manakah mikroorganisma? Situasi kempen membaca; fokus pada pemerhatian Konteks: sudut bacaan.",
+      "question": "What is the purpose of insulation around an electrical wire?",
       "options": [
-        "Bakteria",
-        "Kucing",
-        "Pokok",
-        "Batu"
+        "To store money",
+        "To reduce unwanted contact with the conducting core.",
+        "To increase current without limit",
+        "To measure mass"
       ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "mikroorganisma",
-      "levelSignal": 4,
+      "answerIndex": 1,
+      "type": "objective",
+      "plannedLevel": 2,
+      "constructFamily": "electrical_insulation",
+      "levelSignal": 2,
       "contentDomain": "Sains",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B68",
+      "id": "S41-B51",
       "section": "BAHAGIAN B",
       "category": "Sains",
       "format": "MCQ",
-      "question": "Daya yang menarik objek ke arah Bumi ialah... Situasi projek kitar semula; fokus pada keadilan penilaian Konteks: air bersih.",
+      "question": "Why can rubber feet help a display stand stay in place?",
       "options": [
-        "Geseran",
-        "Magnet",
-        "Graviti",
-        "Apungan"
+        "They reduce gravity.",
+        "They remove mass.",
+        "They can increase friction with the floor.",
+        "They create electricity."
       ],
       "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "daya",
-      "levelSignal": 4,
+      "type": "objective",
+      "plannedLevel": 2,
+      "constructFamily": "friction",
+      "levelSignal": 2,
       "contentDomain": "Sains",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B69",
+      "id": "S41-B52",
       "section": "BAHAGIAN B",
       "category": "Sains",
       "format": "MCQ",
-      "question": "Sebuah bas bergerak 150 km dalam 3 jam. Berapakah kelajuannya? Situasi projek komuniti; fokus pada kreativiti Konteks: pameran sejarah.",
+      "question": "Which process changes liquid water into water vapour?",
       "options": [
-        "50 km/j",
-        "45 km/j",
-        "153 km/j",
-        "450 km/j"
+        "condensation",
+        "freezing",
+        "melting",
+        "evaporation"
       ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "kelajuan",
-      "levelSignal": 4,
+      "answerIndex": 3,
+      "type": "objective",
+      "plannedLevel": 1,
+      "constructFamily": "state_change",
+      "levelSignal": 1,
       "contentDomain": "Sains",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B70",
+      "id": "S41-B53",
       "section": "BAHAGIAN B",
       "category": "Sains",
       "format": "MCQ",
-      "question": "Litar lengkap membolehkan... Situasi aktiviti kelab; fokus pada pengurusan risiko Konteks: aktiviti seni.",
+      "question": "A pupil changes refrigerator door-opening time and measures temperature rise. What is the responding variable?",
       "options": [
-        "Bateri menjadi besar",
-        "Wayar hilang",
-        "Arus elektrik mengalir",
-        "Mentol tidak berfungsi"
+        "temperature rise",
+        "door-opening time",
+        "thermometer type",
+        "room name"
       ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "elektrik",
-      "levelSignal": 4,
+      "answerIndex": 0,
+      "type": "objective",
+      "plannedLevel": 3,
+      "constructFamily": "responding_variable",
+      "levelSignal": 3,
       "contentDomain": "Sains",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B71",
+      "id": "S41-B54",
       "section": "BAHAGIAN B",
       "category": "Sains",
       "format": "MCQ",
-      "question": "Bahan yang menghalang pemindahan haba ialah... Situasi minggu bahasa; fokus pada keutamaan tugasan Konteks: keselamatan jalan raya.",
+      "question": "Why should frequently handled payment devices be cleaned appropriately?",
       "options": [
-        "Penebat",
-        "Konduktor",
-        "Logam",
-        "Wayar"
+        "To increase battery voltage.",
+        "To reduce transfer of dirt and microorganisms from contact surfaces.",
+        "To make them heavier.",
+        "To improve Wi-Fi."
       ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "haba",
-      "levelSignal": 4,
+      "answerIndex": 1,
+      "type": "objective",
+      "plannedLevel": 2,
+      "constructFamily": "surface_hygiene",
+      "levelSignal": 2,
       "contentDomain": "Sains",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B72",
+      "id": "S41-B55",
       "section": "BAHAGIAN B",
-      "category": "Sains",
+      "category": "Teknologi/RBT",
       "format": "MCQ",
-      "question": "Perubahan pepejal kepada cecair disebut... Situasi aktiviti data kelas; fokus pada refleksi Konteks: anti pembaziran.",
+      "question": "Before designing a simple stock system, what information is most useful?",
       "options": [
-        "Pembekuan",
-        "Penyejatan",
-        "Peleburan",
-        "Pemeluwapan"
+        "wall colour",
+        "logo size",
+        "product IDs, quantities, transaction steps, users, backup and error handling",
+        "poster count"
       ],
       "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
+      "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "jirim",
+      "constructFamily": "stock_system_requirements",
       "levelSignal": 4,
-      "contentDomain": "Sains",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "contentDomain": "Teknologi/RBT",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B73",
+      "id": "S41-B56",
       "section": "BAHAGIAN B",
-      "category": "Sains",
+      "category": "Teknologi/RBT",
       "format": "MCQ",
-      "question": "Bulan kelihatan bercahaya kerana... Situasi reka bentuk pembungkusan; fokus pada teknologi bertanggungjawab Konteks: kebun sekolah.",
+      "question": "Users often enter the wrong price manually. What improvement should be tested?",
       "options": [
-        "Memantulkan cahaya Matahari",
-        "Menghasilkan cahaya sendiri",
-        "Menyimpan api",
-        "Mengelilingi lampu"
+        "Smaller text",
+        "More manual typing",
+        "Hidden prices",
+        "Barcode or product selection that fills the approved price automatically"
+      ],
+      "answerIndex": 3,
+      "type": "objective",
+      "plannedLevel": 4,
+      "constructFamily": "input_error_reduction",
+      "levelSignal": 4,
+      "contentDomain": "Teknologi/RBT",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B57",
+      "section": "BAHAGIAN B",
+      "category": "Teknologi/RBT",
+      "format": "MCQ",
+      "question": "Why compare digital stock with physical stock?",
+      "options": [
+        "To detect missing, duplicated or unrecorded transactions.",
+        "To make stock heavier.",
+        "To avoid counting.",
+        "To remove product IDs."
       ],
       "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "bumi",
-      "levelSignal": 4,
-      "contentDomain": "Sains",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "type": "objective",
+      "plannedLevel": 3,
+      "constructFamily": "inventory_reconciliation",
+      "levelSignal": 3,
+      "contentDomain": "Teknologi/RBT",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B74",
+      "id": "S41-B58",
       "section": "BAHAGIAN B",
-      "category": "RBT",
+      "category": "Teknologi/RBT",
       "format": "MCQ",
-      "question": "Prototaip digunakan untuk... Situasi projek alam sekitar; fokus pada komunikasi Konteks: pameran STEM.",
+      "question": "An extension socket becomes unusually hot. What should be done?",
       "options": [
-        "Menguji reka bentuk sebelum produk akhir",
-        "Menggantikan semua ujian",
-        "Menentukan warna sahaja",
-        "Menyimpan produk"
+        "Add another adaptor.",
+        "Stop using it and check the load and equipment before reuse.",
+        "Cover it with cloth.",
+        "Ignore it."
       ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
+      "answerIndex": 1,
+      "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "prototaip",
+      "constructFamily": "electrical_load_safety",
       "levelSignal": 4,
-      "contentDomain": "RBT",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "contentDomain": "Teknologi/RBT",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B75",
+      "id": "S41-B59",
       "section": "BAHAGIAN B",
-      "category": "RBT",
+      "category": "Teknologi/RBT",
       "format": "MCQ",
-      "question": "Sebelum menggunakan alat pemotong, murid perlu... Situasi projek makanan sihat; fokus pada penyelesaian masalah Konteks: kempen membaca.",
+      "question": "A sale should complete only if payment is confirmed AND sufficient stock exists. Which rule is correct?",
       "options": [
-        "Memegang bilah",
-        "Bekerja tanpa pengawasan",
-        "Memastikan cara penggunaan dan keselamatan difahami",
-        "Memotong tanpa ukuran"
+        "Complete when neither is true.",
+        "Ignore stock.",
+        "Complete only when both conditions are true.",
+        "Ignore payment."
       ],
       "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
+      "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "keselamatan",
+      "constructFamily": "and_logic",
       "levelSignal": 4,
-      "contentDomain": "RBT",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "contentDomain": "Teknologi/RBT",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B76",
+      "id": "S41-B60",
       "section": "BAHAGIAN B",
-      "category": "RBT",
+      "category": "Teknologi/RBT",
       "format": "MCQ",
-      "question": "Mengapa ukuran perlu tepat? Situasi projek kebun sekolah; fokus pada kebolehlaksanaan Konteks: aktiviti kelab.",
+      "question": "Users cannot tell whether payment succeeded. What improvement helps most?",
       "options": [
-        "Supaya komponen sepadan dan produk berfungsi",
-        "Supaya produk lebih berat",
-        "Supaya bahan terbuang",
-        "Supaya lakaran tidak diperlukan"
+        "Hide status.",
+        "Use random colours only.",
+        "Remove messages.",
+        "Show a clear success, failure or pending status."
+      ],
+      "answerIndex": 3,
+      "type": "objective",
+      "plannedLevel": 3,
+      "constructFamily": "payment_feedback",
+      "levelSignal": 3,
+      "contentDomain": "Teknologi/RBT",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B61",
+      "section": "BAHAGIAN B",
+      "category": "Pengetahuan Am",
+      "format": "MCQ",
+      "question": "Apakah maksud koperasi sekolah?",
+      "options": [
+        "Organisasi di sekolah yang menjalankan aktiviti ekonomi atau perkhidmatan berasaskan prinsip koperasi",
+        "Jabatan kerajaan",
+        "Pasukan sukan",
+        "Makmal sains"
       ],
       "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "ukuran",
-      "levelSignal": 4,
-      "contentDomain": "RBT",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "type": "objective",
+      "plannedLevel": 2,
+      "constructFamily": "school_cooperative",
+      "levelSignal": 2,
+      "contentDomain": "Pengetahuan Am",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B77",
+      "id": "S41-B62",
       "section": "BAHAGIAN B",
-      "category": "RBT",
+      "category": "Pengetahuan Am",
       "format": "MCQ",
-      "question": "Maklum balas pengguna membantu... Situasi kempen membaca; fokus pada pemerhatian Konteks: bengkel RBT.",
+      "question": "Apakah maksud stok?",
       "options": [
-        "Menghapuskan tujuan produk",
-        "Menentukan markah sahaja",
-        "Mengenal pasti penambahbaikan",
-        "Menggantikan prototaip"
+        "Jumlah pelanggan sahaja",
+        "Barang yang disimpan untuk dijual atau digunakan",
+        "Harga sewa",
+        "Masa operasi"
+      ],
+      "answerIndex": 1,
+      "type": "objective",
+      "plannedLevel": 2,
+      "constructFamily": "inventory",
+      "levelSignal": 2,
+      "contentDomain": "Pengetahuan Am",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B63",
+      "section": "BAHAGIAN B",
+      "category": "Pengetahuan Am",
+      "format": "MCQ",
+      "question": "Apakah maksud resit?",
+      "options": [
+        "Senarai tugas",
+        "Kad identiti",
+        "Rekod atau bukti transaksi yang menunjukkan butiran pembelian atau pembayaran",
+        "Jadual kelas"
       ],
       "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "penilaian",
-      "levelSignal": 4,
-      "contentDomain": "RBT",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "type": "objective",
+      "plannedLevel": 2,
+      "constructFamily": "receipt",
+      "levelSignal": 2,
+      "contentDomain": "Pengetahuan Am",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B78",
+      "id": "S41-B64",
       "section": "BAHAGIAN B",
-      "category": "RBT",
+      "category": "Pengetahuan Am",
       "format": "MCQ",
-      "question": "Tujuan lakaran awal ialah... Situasi projek kitar semula; fokus pada keadilan penilaian Konteks: hari sukan.",
+      "question": "Apakah maksud untung?",
       "options": [
-        "Meneroka dan menyampaikan idea reka bentuk",
-        "Menggantikan produk akhir",
-        "Menentukan harga sahaja",
-        "Menghapuskan penilaian"
+        "Jumlah hasil sahaja",
+        "Harga jual sahaja",
+        "Bilangan stok",
+        "Lebihan hasil selepas kos berkaitan ditolak"
+      ],
+      "answerIndex": 3,
+      "type": "objective",
+      "plannedLevel": 3,
+      "constructFamily": "profit",
+      "levelSignal": 3,
+      "contentDomain": "Pengetahuan Am",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B65",
+      "section": "BAHAGIAN B",
+      "category": "Pengetahuan Am",
+      "format": "MCQ",
+      "question": "Mengapakah harga perlu dipaparkan dengan jelas?",
+      "options": [
+        "Supaya pelanggan boleh membuat pilihan dengan maklumat harga yang mudah difahami",
+        "Supaya semua produk sama harga",
+        "Supaya resit tidak perlu",
+        "Supaya stok tidak perlu dikira"
       ],
       "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "lakaran",
-      "levelSignal": 4,
-      "contentDomain": "RBT",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "type": "objective",
+      "plannedLevel": 2,
+      "constructFamily": "price_transparency",
+      "levelSignal": 2,
+      "contentDomain": "Pengetahuan Am",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B79",
+      "id": "S41-B66",
       "section": "BAHAGIAN B",
-      "category": "RBT",
+      "category": "Pengetahuan Am",
       "format": "MCQ",
-      "question": "Selepas mengenal pasti masalah, langkah sesuai ialah... Situasi projek komuniti; fokus pada kreativiti Konteks: kitar semula.",
+      "question": "Apakah tujuan inventori berkala?",
       "options": [
-        "Terus menjual produk",
-        "Membuang semua lakaran",
-        "Menjana beberapa idea penyelesaian",
-        "Mengabaikan pengguna"
+        "Menggantikan semua resit",
+        "Membanding stok sebenar dengan rekod dan mengenal pasti perbezaan",
+        "Menentukan cuaca",
+        "Menghapuskan pembekal"
+      ],
+      "answerIndex": 1,
+      "type": "objective",
+      "plannedLevel": 3,
+      "constructFamily": "inventory_check",
+      "levelSignal": 3,
+      "contentDomain": "Pengetahuan Am",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B67",
+      "section": "BAHAGIAN B",
+      "category": "Penyelesaian Masalah",
+      "format": "MCQ",
+      "question": "Kaunter A memproses 5 transaksi/minit dan Kaunter B 3 transaksi/minit. Jika kedua-duanya beroperasi 12 minit, berapakah transaksi diproses?",
+      "options": [
+        "60 transaksi",
+        "84 transaksi",
+        "96 transaksi",
+        "108 transaksi"
       ],
       "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
+      "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "proses_reka_bentuk",
+      "constructFamily": "combined_rate",
       "levelSignal": 4,
-      "contentDomain": "RBT",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "contentDomain": "Penyelesaian Masalah",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B80",
+      "id": "S41-B68",
       "section": "BAHAGIAN B",
-      "category": "RBT",
+      "category": "Penyelesaian Masalah",
       "format": "MCQ",
-      "question": "Bahan yang ringan dan mudah dipotong ialah... Situasi aktiviti kelab; fokus pada pengurusan risiko Konteks: minggu bahasa.",
+      "question": "Koperasi mempunyai RM900. Sebanyak 20 kotak barang dibeli pada RM37 setiap satu. Baki digunakan untuk label RM8 satu pek. Berapakah pek maksimum?",
       "options": [
-        "Kadbod",
-        "Batu",
-        "Konkrit",
-        "Besi tebal"
+        "18",
+        "19",
+        "21",
+        "20"
+      ],
+      "answerIndex": 3,
+      "type": "objective",
+      "plannedLevel": 3,
+      "constructFamily": "budget",
+      "levelSignal": 3,
+      "contentDomain": "Penyelesaian Masalah",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
+    },
+    {
+      "id": "S41-B69",
+      "section": "BAHAGIAN B",
+      "category": "Penyelesaian Masalah",
+      "format": "MCQ",
+      "question": "Produk A untung RM150 daripada 50 unit. Produk B untung RM216 daripada 80 unit. Produk manakah mempunyai untung per unit lebih tinggi?",
+      "options": [
+        "Produk A",
+        "Produk B",
+        "Kedua-duanya sama",
+        "Maklumat tidak cukup"
       ],
       "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
+      "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "bahan",
+      "constructFamily": "profit_rate_compare",
       "levelSignal": 4,
-      "contentDomain": "RBT",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "contentDomain": "Penyelesaian Masalah",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     },
     {
-      "id": "PKSK-V47-S41-B81",
+      "id": "S41-B70",
       "section": "BAHAGIAN B",
-      "category": "RBT",
+      "category": "Penyelesaian Masalah",
       "format": "MCQ",
-      "question": "Fungsi suis dalam litar ialah... Situasi minggu bahasa; fokus pada keutamaan tugasan Konteks: penjimatan elektrik.",
+      "question": "Pembekal A lewat 2 daripada 40 penghantaran. Pembekal B lewat 3 daripada 75 penghantaran. Berdasarkan kadar kelewatan sahaja, pembekal manakah lebih baik?",
       "options": [
-        "Menghasilkan semua tenaga",
-        "Menambah panjang wayar",
-        "Membuka atau menutup laluan arus",
-        "Menukar bateri kepada mentol"
+        "Pembekal A",
+        "Pembekal B",
+        "Kedua-duanya sama",
+        "Maklumat tidak cukup"
       ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
+      "answerIndex": 1,
+      "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "elektronik",
+      "constructFamily": "supplier_failure_rate",
       "levelSignal": 4,
-      "contentDomain": "RBT",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B82",
-      "section": "BAHAGIAN B",
-      "category": "RBT",
-      "format": "MCQ",
-      "question": "Urutan langkah tersusun untuk menyelesaikan masalah ialah... Situasi aktiviti data kelas; fokus pada refleksi Konteks: pembentangan kelas.",
-      "options": [
-        "Algoritma",
-        "Bahan",
-        "Prototaip",
-        "Ukuran"
-      ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "algoritma",
-      "levelSignal": 4,
-      "contentDomain": "RBT",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B83",
-      "section": "BAHAGIAN B",
-      "category": "RBT",
-      "format": "MCQ",
-      "question": "Arahan yang diulang beberapa kali menggunakan konsep... Situasi reka bentuk pembungkusan; fokus pada teknologi bertanggungjawab Konteks: makanan sihat.",
-      "options": [
-        "Pembolehubah sahaja",
-        "Komen",
-        "Ulangan",
-        "Tajuk"
-      ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "ulangan",
-      "levelSignal": 4,
-      "contentDomain": "RBT",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B84",
-      "section": "BAHAGIAN B",
-      "category": "Sejarah",
-      "format": "MCQ",
-      "question": "Mengapa tokoh terdahulu dipelajari? Situasi projek alam sekitar; fokus pada komunikasi Konteks: data kelas.",
-      "options": [
-        "Menghafal tarikh tanpa konteks",
-        "Menggantikan mata pelajaran lain",
-        "Memahami sumbangan dan perjuangan mereka",
-        "Mengelakkan perbincangan"
-      ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "tokoh",
-      "levelSignal": 4,
-      "contentDomain": "Sejarah",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B85",
-      "section": "BAHAGIAN B",
-      "category": "Sejarah",
-      "format": "MCQ",
-      "question": "Simbol negara membantu... Situasi projek makanan sihat; fokus pada penyelesaian masalah Konteks: pembungkusan.",
-      "options": [
-        "Membina rasa identiti dan kebersamaan",
-        "Menentukan keputusan peperiksaan",
-        "Menggantikan undang-undang",
-        "Menghapuskan budaya"
-      ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "simbol",
-      "levelSignal": 4,
-      "contentDomain": "Sejarah",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B86",
-      "section": "BAHAGIAN B",
-      "category": "Sejarah",
-      "format": "MCQ",
-      "question": "Jati diri penting kerana... Situasi projek kebun sekolah; fokus pada kebolehlaksanaan Konteks: alam sekitar.",
-      "options": [
-        "Menghalang pembelajaran",
-        "Menghapuskan kepelbagaian",
-        "Membantu seseorang mengenali nilai dan identitinya",
-        "Mengelakkan kerjasama"
-      ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "jati_diri",
-      "levelSignal": 4,
-      "contentDomain": "Sejarah",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B87",
-      "section": "BAHAGIAN B",
-      "category": "Sejarah",
-      "format": "MCQ",
-      "question": "Kerjasama dalam komuniti dapat... Situasi kempen membaca; fokus pada pemerhatian Konteks: inovasi.",
-      "options": [
-        "Menyelesaikan masalah bersama",
-        "Mengasingkan ahli masyarakat",
-        "Mengurangkan komunikasi",
-        "Mengelakkan tanggungjawab"
-      ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "komuniti",
-      "levelSignal": 4,
-      "contentDomain": "Sejarah",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B88",
-      "section": "BAHAGIAN B",
-      "category": "Sejarah",
-      "format": "MCQ",
-      "question": "Muzium membantu masyarakat... Situasi projek kitar semula; fokus pada keadilan penilaian Konteks: gotong-royong.",
-      "options": [
-        "Menghapuskan artifak",
-        "Menggantikan semua buku",
-        "Memahami bahan dan peristiwa sejarah",
-        "Menentukan markah"
-      ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "warisan_sejarah",
-      "levelSignal": 4,
-      "contentDomain": "Sejarah",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B89",
-      "section": "BAHAGIAN B",
-      "category": "Sejarah",
-      "format": "MCQ",
-      "question": "Kepelbagaian budaya menjadi kekuatan apabila... Situasi projek komuniti; fokus pada kreativiti Konteks: robotik.",
-      "options": [
-        "Dihormati dan dikongsi secara positif",
-        "Dihapuskan",
-        "Dielakkan",
-        "Dipertandingkan sahaja"
-      ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "kepelbagaian",
-      "levelSignal": 4,
-      "contentDomain": "Sejarah",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B90",
-      "section": "BAHAGIAN B",
-      "category": "Sejarah",
-      "format": "MCQ",
-      "question": "Warisan budaya perlu dipelihara kerana... Situasi aktiviti kelab; fokus pada pengurusan risiko Konteks: perpustakaan digital.",
-      "options": [
-        "Menghalang semua perubahan",
-        "Hanya untuk pertandingan",
-        "Mengekalkan identiti dan pengetahuan masyarakat",
-        "Supaya sejarah dilupakan"
-      ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "warisan",
-      "levelSignal": 4,
-      "contentDomain": "Sejarah",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B91",
-      "section": "BAHAGIAN B",
-      "category": "Sejarah",
-      "format": "MCQ",
-      "question": "Manfaat perpaduan ialah... Situasi minggu bahasa; fokus pada keutamaan tugasan Konteks: kantin sihat.",
-      "options": [
-        "Mewujudkan masyarakat aman dan bekerjasama",
-        "Menghapuskan semua perbezaan",
-        "Mengurangkan tanggungjawab",
-        "Menghalang kemajuan"
-      ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "perpaduan",
-      "levelSignal": 4,
-      "contentDomain": "Sejarah",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B92",
-      "section": "BAHAGIAN B",
-      "category": "Pendidikan Islam",
-      "format": "MCQ",
-      "question": "Sikap baik ketika berjual beli ialah... Situasi projek alam sekitar; fokus pada komunikasi Konteks: kokurikulum.",
-      "options": [
-        "Menyembunyikan kecacatan",
-        "Mengubah harga selepas persetujuan",
-        "Jujur dan tidak menipu",
-        "Mengambil barang tanpa izin"
-      ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "muamalat",
-      "levelSignal": 4,
-      "contentDomain": "Pendidikan Islam",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B93",
-      "section": "BAHAGIAN B",
-      "category": "Pendidikan Islam",
-      "format": "MCQ",
-      "question": "Tolong-menolong bermaksud... Situasi projek makanan sihat; fokus pada penyelesaian masalah Konteks: hidroponik.",
-      "options": [
-        "Membantu dalam perkara yang baik",
-        "Mengambil kesempatan",
-        "Mengabaikan orang lain",
-        "Memaksa rakan"
-      ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "tolong_menolong",
-      "levelSignal": 4,
-      "contentDomain": "Pendidikan Islam",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B94",
-      "section": "BAHAGIAN B",
-      "category": "Pendidikan Islam",
-      "format": "MCQ",
-      "question": "Contoh menghormati guru ialah... Situasi projek kebun sekolah; fokus pada kebolehlaksanaan Konteks: kelab bahasa.",
-      "options": [
-        "Memotong percakapan",
-        "Mengabaikan nasihat",
-        "Mendengar arahan dan bercakap sopan",
-        "Meninggikan suara"
-      ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "hormat",
-      "levelSignal": 4,
-      "contentDomain": "Pendidikan Islam",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B95",
-      "section": "BAHAGIAN B",
-      "category": "Pendidikan Islam",
-      "format": "MCQ",
-      "question": "Sikap jujur ditunjukkan apabila... Situasi kempen membaca; fokus pada pemerhatian Konteks: makmal sains.",
-      "options": [
-        "Bercakap benar walaupun sukar",
-        "Menyembunyikan fakta",
-        "Meniru jawapan",
-        "Menyalahkan orang lain"
-      ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "jujur",
-      "levelSignal": 4,
-      "contentDomain": "Pendidikan Islam",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B96",
-      "section": "BAHAGIAN B",
-      "category": "Pendidikan Islam",
-      "format": "MCQ",
-      "question": "Tanggungjawab terhadap tugasan bermaksud... Situasi projek kitar semula; fokus pada keadilan penilaian Konteks: lampu cekap tenaga.",
-      "options": [
-        "Menyerahkannya kepada orang lain",
-        "Mengabaikannya",
-        "Menyiapkannya dengan bersungguh-sungguh",
-        "Menunggu saat akhir tanpa usaha"
-      ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "tanggungjawab",
-      "levelSignal": 4,
-      "contentDomain": "Pendidikan Islam",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B97",
-      "section": "BAHAGIAN B",
-      "category": "Pendidikan Islam",
-      "format": "MCQ",
-      "question": "Apakah contoh sifat amanah? Situasi projek komuniti; fokus pada kreativiti Konteks: sudut bacaan.",
-      "options": [
-        "Melaksanakan tanggungjawab dengan jujur",
-        "Mengambil hak orang lain",
-        "Menyembunyikan kesalahan",
-        "Mengabaikan tugas"
-      ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "amanah",
-      "levelSignal": 4,
-      "contentDomain": "Pendidikan Islam",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B98",
-      "section": "BAHAGIAN B",
-      "category": "Pendidikan Islam",
-      "format": "MCQ",
-      "question": "Apakah contoh sabar? Situasi aktiviti kelab; fokus pada pengurusan risiko Konteks: air bersih.",
-      "options": [
-        "Membalas kemarahan",
-        "Berhenti mencuba",
-        "Mengawal emosi ketika menghadapi kesukaran",
-        "Menyalahkan orang lain"
-      ],
-      "answerIndex": 2,
-      "weights": [
-        0,
-        0,
-        3,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "sabar",
-      "levelSignal": 4,
-      "contentDomain": "Pendidikan Islam",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
-    },
-    {
-      "id": "PKSK-V47-S41-B99",
-      "section": "BAHAGIAN B",
-      "category": "Pendidikan Islam",
-      "format": "MCQ",
-      "question": "Mengapa kebersihan diberi perhatian? Situasi minggu bahasa; fokus pada keutamaan tugasan Konteks: pameran sejarah.",
-      "options": [
-        "Menjaga diri dan membantu ibadah dilakukan dengan baik",
-        "Hanya penting ketika peperiksaan",
-        "Tidak berkaitan disiplin",
-        "Hanya untuk tempat awam"
-      ],
-      "answerIndex": 0,
-      "weights": [
-        3,
-        0,
-        0,
-        0
-      ],
-      "type": "graded",
-      "plannedLevel": 4,
-      "constructFamily": "kebersihan",
-      "levelSignal": 4,
-      "contentDomain": "Pendidikan Islam",
-      "setLevel": 4,
-      "rebuildStatus": "V48_REBUILT_PRODUCTION"
+      "contentDomain": "Penyelesaian Masalah",
+      "setLevel": 2,
+      "rebuildStatus": "V2_CURATED"
     }
   ],
   "writing": [
     {
       "id": "S41-C01",
-      "title": "Menyelesaikan masalah",
-      "prompt": "Huraikan satu masalah dalam projek alam sekitar. Terangkan punca, dua pilihan penyelesaian, alasan dan cara menilai hasil.",
+      "title": "Menilai produk berdasarkan untung dan permintaan",
+      "prompt": "Dua produk mempunyai harga, kos, jumlah unit terjual dan untung yang berbeza. Terangkan cara membanding hasil, untung per unit, kadar jualan dan risiko stok sebelum menentukan pesanan seterusnya.",
       "min_words": 120,
       "plannedLevel": 4,
-      "constructFamily": "problem_solving"
+      "constructFamily": "product_performance",
+      "rubric_focus": [
+        "hasil",
+        "kos",
+        "untung",
+        "stok",
+        "bahasa"
+      ]
     },
     {
       "id": "S41-C02",
-      "title": "Kerja berpasukan",
-      "prompt": "Terangkan cara mengurus kerja kumpulan dalam projek kebun sekolah apabila ahli berbeza pendapat.",
+      "title": "Memilih pembekal koperasi",
+      "prompt": "Dua pembekal berbeza dari segi harga, ketepatan penghantaran dan kualiti. Huraikan cara menggunakan rekod prestasi dan kos keseluruhan untuk membuat pilihan.",
       "min_words": 120,
       "plannedLevel": 4,
-      "constructFamily": "collaboration"
+      "constructFamily": "supplier_total_cost",
+      "rubric_focus": [
+        "harga",
+        "penghantaran",
+        "kualiti",
+        "bukti",
+        "bahasa"
+      ]
     },
     {
       "id": "S41-C03",
-      "title": "Menilai maklumat",
-      "prompt": "Terangkan cara menyemak kesahihan maklumat sebelum membuat keputusan dalam projek kitar semula.",
+      "title": "Menyemak perbezaan stok",
+      "prompt": "Rekod sistem dan kiraan fizikal stok tidak sepadan. Terangkan langkah menyemak transaksi, masa kemas kini, kiraan semula dan pembetulan rekod tanpa menutup punca masalah.",
       "min_words": 120,
       "plannedLevel": 4,
-      "constructFamily": "critical_thinking"
+      "constructFamily": "inventory_reconciliation",
+      "rubric_focus": [
+        "rekod",
+        "kiraan",
+        "transaksi",
+        "punca",
+        "bahasa"
+      ]
     }
   ],
-  "rebuildVersion": "V48_REBUILT_PRODUCTION",
-  "source": "generator_v48",
+  "rebuildVersion": "REQOO_ITEM_STANDARD_V2",
+  "source": "REQOO V2 curated rebuild",
   "legacy_content_used": false,
   "structure": {
-    "A": 30,
-    "B": 70,
-    "C": 3
+    "sectionA": 30,
+    "sectionB": 70,
+    "sectionC": 3
   },
   "qa": {
-    "status": "PASS",
-    "count": 103,
-    "A_formats": {
-      "AGREE_DISAGREE": 10,
-      "SSQ": 10,
-      "EQ": 10
-    },
-    "math_items": 14,
-    "math_average_items": 2,
-    "unique_question_text": 100,
-    "single_correct_option": "PASS"
-  }
+    "itemStandardV2A": "REBUILT_PENDING_AUDIT",
+    "itemStandardV2B": "REBUILT_PENDING_AUDIT",
+    "answerBalanceTarget": "18/18/17/17"
+  },
+  "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
