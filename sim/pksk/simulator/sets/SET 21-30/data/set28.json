@@ -819,7 +819,7 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Antara 18, 27, 36 dan 50, yang manakah bukan gandaan 9?",
+      "question": "Antara 18, 27, 36 dan 50, nombor manakah menghasilkan baki 5 apabila dibahagi dengan 9?",
       "options": [
         "18",
         "27",
@@ -829,11 +829,11 @@
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "multiple_classification",
+      "constructFamily": "remainder_mod9",
       "levelSignal": 2,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S28-B04",
@@ -945,21 +945,21 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Sebuah mesin menggunakan aturan (x + 4) × 2. Jika output 30, apakah input?",
+      "question": "Sebuah mesin menggunakan aturan (x + 4) × 2. Berapakah beza output bagi input 15 dan input 11?",
       "options": [
-        "11",
-        "9",
+        "8",
+        "6",
         "10",
         "12"
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "reverse_two_step",
+      "constructFamily": "two_step_function_difference",
       "levelSignal": 3,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S28-B10",
@@ -1613,21 +1613,21 @@
       "section": "BAHAGIAN B",
       "category": "English",
       "format": "MCQ",
-      "question": "Choose the correct sentence using 'before'.",
+      "question": "Which sentence correctly uses 'before' to give a route-planning instruction?",
       "options": [
-        "Check route before choosing final plan conditions.",
-        "Before route conditions choose plan.",
+        "Check route conditions choosing before the final plan.",
+        "Before route conditions, choose final plan.",
         "Check the route conditions before choosing the final travel plan.",
         "The route before choosing checked."
       ],
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "time_clause",
+      "constructFamily": "before_route_instruction",
       "levelSignal": 2,
       "contentDomain": "English",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S28-B40",
@@ -2339,7 +2339,8 @@
   "qa": {
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
-    "answerBalanceTarget": "18/18/17/17"
+    "answerBalanceTarget": "18/18/17/17",
+    "manualEditorialReview": "B03/B09/B39 rebuilt to eliminate global collisions"
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
