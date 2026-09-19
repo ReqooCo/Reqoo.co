@@ -903,21 +903,21 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Dalam kod, ● = 4 dan ★ = 9. Berapakah 2★ − 3●?",
+      "question": "Dalam satu kod, jumlah nilai ● dan ★ ialah 13, manakala beza ★ − ● ialah 5. Berapakah nilai ★?",
       "options": [
-        "3",
-        "9",
+        "4",
         "6",
-        "12"
+        "9",
+        "13"
       ],
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "symbolic_expression",
+      "constructFamily": "symbol_pair_equations",
       "levelSignal": 3,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S22-B08",
@@ -1160,21 +1160,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Rajah kuboid mempunyai isipadu 448 cm³. Panjang 8 cm dan tinggi 7 cm. Berapakah lebarnya?",
+      "question": "Rajah kuboid menunjukkan panjang 8 cm, lebar 8 cm dan tinggi 7 cm. Berapakah jumlah panjang kesemua 12 rusuk kuboid itu?",
       "options": [
-        "6 cm",
-        "7 cm",
-        "8 cm",
-        "9 cm"
+        "84 cm",
+        "88 cm",
+        "92 cm",
+        "96 cm"
       ],
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "visual_missing_dimension",
+      "constructFamily": "visual_cuboid_total_edges",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "visual": {
         "kind": "cuboid",
         "length_cm": 8,
@@ -1269,21 +1269,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Rajah koordinat menunjukkan titik pada (6, 1). Titik bergerak 3 unit ke kanan dan 6 unit ke atas. Apakah koordinat akhir?",
+      "question": "Rajah koordinat menunjukkan titik pada (6, 1). Titik bergerak 3 unit ke kanan dan kemudian 6 unit ke atas. Berapakah jumlah nilai x dan y bagi koordinat akhirnya?",
       "options": [
-        "(9, 5)",
-        "(3, 7)",
-        "(9, 7)",
-        "(12, 4)"
+        "12",
+        "14",
+        "16",
+        "18"
       ],
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "two_axis_translation",
+      "constructFamily": "coordinate_sum_after_translation",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "visual": {
         "kind": "coordinate_move",
         "start": [
@@ -1333,54 +1333,49 @@
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
-      "visual": {
-        "kind": "rectangle",
-        "length_cm": 28,
-        "width_cm": 18
-      }
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S22-B26",
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Purata 6 nombor ialah 26. Jika satu nombor 20 diganti dengan 38, berapakah purata baharu?",
+      "question": "Enam nombor mempunyai purata 26. Satu nilai 20 diganti dengan 38. Berapakah pertambahan jumlah keseluruhan enam nombor itu?",
       "options": [
-        "27",
-        "29",
-        "28",
-        "30"
+        "12",
+        "18",
+        "26",
+        "38"
       ],
       "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "mean_replacement",
+      "constructFamily": "mean_replacement_total_change",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S22-B27",
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Tangki 1,600 L berisi 75%. Selepas 280 L digunakan, berapakah peratus kapasiti yang masih berisi?",
+      "question": "Tangki 1,600 L berisi 75%. Selepas 280 L digunakan, baki air melebihi separuh kapasiti tangki sebanyak berapa liter?",
       "options": [
-        "55%",
-        "60%",
-        "57.5%",
-        "62.5%"
+        "80 L",
+        "100 L",
+        "120 L",
+        "160 L"
       ],
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "capacity_after_use",
+      "constructFamily": "capacity_difference_from_half",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S22-B28",
@@ -1408,21 +1403,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Stok 2,200 unit berkurang 10%, kemudian bertambah 220 unit. Berapakah stok akhir?",
+      "question": "Stok 2,200 unit berkurang 10%, kemudian menerima tambahan 220 unit. Berapakah perubahan bersih berbanding stok asal?",
       "options": [
-        "2,200",
-        "1,980",
-        "2,000",
-        "2,420"
+        "0%",
+        "10% berkurang",
+        "10% bertambah",
+        "20% bertambah"
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "decrease_then_add",
+      "constructFamily": "inventory_net_change",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S22-B30",
@@ -2206,21 +2201,21 @@
       "section": "BAHAGIAN B",
       "category": "Penyelesaian Masalah",
       "format": "MCQ",
-      "question": "Tugas A mengambil 30 minit dan mesti siap sebelum B 15 minit. Tugas C 25 minit boleh dibuat serentak oleh orang kedua. Jika dua orang bekerja, berapakah masa minimum?",
+      "question": "Tugas A mengambil 30 minit dan mesti siap sebelum B 15 minit. Tugas C mengambil 25 minit dan boleh dibuat serentak oleh orang kedua. Selepas semua tugas selesai, berapa minit orang kedua menganggur jika dia hanya mengendalikan C?",
       "options": [
-        "30 minit",
-        "40 minit",
-        "45 minit",
-        "70 minit"
+        "5 minit",
+        "15 minit",
+        "20 minit",
+        "25 minit"
       ],
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "parallel_schedule",
+      "constructFamily": "parallel_idle_time",
       "levelSignal": 4,
       "contentDomain": "Penyelesaian Masalah",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S22-B68",
@@ -2344,7 +2339,8 @@
   "qa": {
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
-    "answerBalanceTarget": "18/18/17/17"
+    "answerBalanceTarget": "18/18/17/17",
+    "manualEditorialReview": "Seven template collisions rebuilt to distinct constructs; B25 redundant visual removed"
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
