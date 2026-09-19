@@ -3,7 +3,7 @@
   "rebuildVersion": "REQOO_ITEM_STANDARD_V2",
   "source": "generated_from_zero_v45.10",
   "legacy_content_used": false,
-  "status": "CURATION_V2_COMPLETE_PENDING_AUDIT",
+  "status": "CURATION_V2_COMPLETE_PENDING_FINAL_AUDIT",
   "structure": {
     "A": 30,
     "B": 70,
@@ -22,7 +22,8 @@
     "structure": "PASS",
     "itemStandardV2A": "PASS",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
-    "answerBalanceTarget": "18/18/17/17"
+    "answerBalanceTarget": "18/18/17/17",
+    "manualEditorialReview": "B01/B03/B18/B19/B26/B29/B45/B67/B68/B69 repaired; B68 ambiguity removed"
   },
   "questions": [
     {
@@ -800,21 +801,21 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Apakah nombor seterusnya dalam pola 3, 6, 12, 24, ...?",
+      "question": "Satu pola dibina dengan mendarab nombor sebelumnya dengan 2 kemudian menambah 1: 2, 5, 11, 23, ... Apakah nombor seterusnya?",
       "options": [
-        "48",
-        "30",
-        "36",
-        "42"
+        "47",
+        "45",
+        "46",
+        "48"
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "number_pattern",
+      "constructFamily": "multi_step_number_rule",
       "levelSignal": 2,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S04-B02",
@@ -842,21 +843,21 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Yang manakah berbeza daripada yang lain?",
+      "question": "Antara pilihan berikut, yang manakah mempunyai permukaan melengkung sedangkan tiga yang lain hanya mempunyai permukaan rata?",
       "options": [
-        "segi tiga",
-        "segi empat sama",
         "kubus",
-        "segi lima"
+        "prisma segi tiga",
+        "sfera",
+        "piramid"
       ],
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 1,
-      "constructFamily": "classification",
+      "constructFamily": "classification_3d",
       "levelSignal": 1,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S04-B04",
@@ -1157,21 +1158,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Rajah menunjukkan sebuah segi empat tepat. Berapakah luasnya?",
+      "question": "Berdasarkan ukuran yang ditunjukkan pada rajah, hitung luas kawasan segi empat tepat itu.",
       "options": [
-        "42 cm²",
-        "104 cm²",
         "96 cm²",
-        "112 cm²"
+        "104 cm²",
+        "112 cm²",
+        "42 cm²"
       ],
       "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "rectangle_area",
+      "constructFamily": "visual_rectangle_area",
       "levelSignal": 2,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "visual": {
         "kind": "rectangle",
         "length_cm": 13,
@@ -1183,21 +1184,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Rajah menunjukkan sebuah kuboid. Berapakah isipadunya?",
+      "question": "Sebuah kotak penyimpanan berbentuk kuboid ditunjukkan dalam rajah. Gunakan ketiga-tiga ukuran pada rajah untuk menentukan isipadunya.",
       "options": [
-        "30 cm³",
         "74 cm³",
+        "30 cm³",
         "120 cm³",
         "240 cm³"
       ],
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "cuboid_volume",
+      "constructFamily": "visual_cuboid_volume",
       "levelSignal": 2,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "visual": {
         "kind": "cuboid",
         "length_cm": 6,
@@ -1368,21 +1369,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Purata bagi 18, 22, 25 dan 15 ialah ___.",
+      "question": "Purata empat skor latihan ialah 20. Tiga daripada skor itu ialah 18, 22 dan 25. Berapakah skor yang keempat?",
       "options": [
-        "18",
-        "20",
-        "19",
-        "21"
+        "14",
+        "15",
+        "16",
+        "17"
       ],
       "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "mean",
+      "constructFamily": "reverse_mean",
       "levelSignal": 2,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S04-B27",
@@ -1431,21 +1432,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Daripada 400 tiket, 65% telah dijual. Berapakah tiket yang masih belum dijual?",
+      "question": "Sebuah pusat aktiviti menyediakan 400 kupon. Pada waktu pagi, 35% daripada jumlah asal digunakan dan pada waktu petang, 30% daripada jumlah asal digunakan. Berapakah kupon yang masih belum digunakan?",
       "options": [
         "140",
+        "120",
         "160",
-        "260",
-        "135"
+        "260"
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "percentage_remaining",
+      "constructFamily": "multi_stage_percentage",
       "levelSignal": 3,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S04-B30",
@@ -1767,21 +1768,21 @@
       "section": "BAHAGIAN B",
       "category": "English",
       "format": "MCQ",
-      "question": "Which sentence is the most polite request?",
+      "question": "A pupil wants to borrow a pair of scissors from the teacher. Which sentence is the most polite and appropriate?",
       "options": [
-        "Could you please help me carry these books?",
-        "Carry these books now.",
-        "You must carry these books.",
-        "Why are you not carrying these books?"
+        "Could I please borrow the scissors?",
+        "Give me the scissors.",
+        "I want those scissors now.",
+        "You should lend me the scissors."
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "functional_language",
+      "constructFamily": "polite_request_context",
       "levelSignal": 2,
       "contentDomain": "English",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S04-B46",
@@ -2229,7 +2230,7 @@
       "section": "BAHAGIAN B",
       "category": "Penyelesaian Masalah",
       "format": "MCQ",
-      "question": "Tiga kumpulan perlu menggunakan satu bilik selama 30 minit antara 2:00 hingga 3:30 petang. Kumpulan A mesti selesai sebelum 3:00, Kumpulan B hanya boleh bermula pada atau selepas 2:30, dan Kumpulan C boleh hadir bila-bila masa. Jadual manakah memenuhi semua syarat?",
+      "question": "Tiga kumpulan perlu menggunakan satu bilik selama 30 minit antara 2:00 hingga 3:30 petang. Kumpulan A mesti selesai sebelum 3:00, Kumpulan B hanya boleh bermula pada atau selepas 2:30, dan Kumpulan C boleh hadir bila-bila masa. Susunan masa manakah memenuhi semua syarat?",
       "options": [
         "B 2:00–2:30, A 2:30–3:00, C 3:00–3:30",
         "C 2:00–2:30, B 2:30–3:00, A 3:00–3:30",
@@ -2243,49 +2244,49 @@
       "levelSignal": 4,
       "contentDomain": "Penyelesaian Masalah",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S04-B68",
       "section": "BAHAGIAN B",
       "category": "Penyelesaian Masalah",
       "format": "MCQ",
-      "question": "Kelas mempunyai bajet RM90 untuk membeli buku latihan. Buku A berharga RM12 sebuah dan Buku B berharga RM9 sebuah. Mereka mesti membeli sekurang-kurangnya 4 Buku A. Pilihan manakah menggunakan bajet tanpa melebihinya dan membeli jumlah buku paling banyak?",
+      "question": "Kelas mempunyai bajet RM90. Buku latihan A berharga RM15 sebuah dan Buku latihan B berharga RM8 sebuah. Mereka mesti membeli sekurang-kurangnya 4 Buku A. Pilihan manakah membeli jumlah buku paling banyak tanpa melebihi bajet?",
       "options": [
-        "4 Buku A dan 3 Buku B",
-        "5 Buku A dan 3 Buku B",
-        "6 Buku A dan 2 Buku B",
-        "4 Buku A dan 4 Buku B"
+        "4 Buku A dan 2 Buku B",
+        "5 Buku A dan 1 Buku B",
+        "6 Buku A sahaja",
+        "4 Buku A dan 3 Buku B"
       ],
       "answerIndex": 3,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "budget_optimization",
+      "constructFamily": "budget_optimization_unique",
       "levelSignal": 4,
       "contentDomain": "Penyelesaian Masalah",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S04-B69",
       "section": "BAHAGIAN B",
       "category": "Penyelesaian Masalah",
       "format": "MCQ",
-      "question": "Sebuah pasukan mempunyai 18 botol air untuk 6 peserta. Dua peserta akan berada di luar lebih lama dan perlu menerima 4 botol setiap seorang. Jika baki botol dibahagi sama rata kepada empat peserta lain, berapa botol setiap seorang menerima?",
+      "question": "Sebanyak 18 L air minuman perlu dibahagi kepada 6 peserta. Dua peserta yang bertugas lebih lama menerima 4 L setiap seorang. Baki air dibahagi sama rata kepada empat peserta lain. Berapakah air yang diterima setiap seorang daripada empat peserta itu?",
       "options": [
-        "2.5 botol",
-        "2 botol",
-        "3 botol",
-        "4 botol"
+        "2.5 L",
+        "2 L",
+        "3 L",
+        "4 L"
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "resource_allocation",
+      "constructFamily": "resource_allocation_continuous",
       "levelSignal": 4,
       "contentDomain": "Penyelesaian Masalah",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S04-B70",
