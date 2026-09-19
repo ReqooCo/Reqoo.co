@@ -1993,19 +1993,19 @@
       "format": "MCQ",
       "question": "Why record refrigerator temperature at regular intervals?",
       "options": [
-        "To detect trends or unsafe conditions that a single reading may miss.",
         "To make the fridge colder.",
         "To eliminate maintenance.",
-        "To increase storage space."
+        "To increase storage space.",
+        "To detect trends or unsafe conditions that a single reading may miss."
       ],
-      "answerIndex": 0,
+      "answerIndex": 3,
       "type": "objective",
       "plannedLevel": 3,
       "constructFamily": "monitoring",
       "levelSignal": 3,
       "contentDomain": "Teknologi/RBT",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S31-B58",
@@ -2077,19 +2077,19 @@
       "format": "MCQ",
       "question": "Apakah maksud pencemaran silang dalam penyediaan makanan?",
       "options": [
-        "Pemindahan bahan pencemar seperti mikroorganisma dari satu makanan atau permukaan ke makanan lain",
         "Menukar harga makanan",
         "Menyejukkan makanan",
+        "Pemindahan bahan pencemar seperti mikroorganisma dari satu makanan atau permukaan ke makanan lain",
         "Mengubah warna bekas"
       ],
-      "answerIndex": 0,
+      "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 3,
       "constructFamily": "cross_contamination",
       "levelSignal": 3,
       "contentDomain": "Pengetahuan Am",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S31-B62",
@@ -2161,19 +2161,19 @@
       "format": "MCQ",
       "question": "Mengapakah tarikh dan masa penting pada rekod suhu?",
       "options": [
-        "Supaya bacaan boleh dikaitkan dengan keadaan dan tempoh yang betul",
         "Supaya semua suhu sama",
+        "Supaya bacaan boleh dikaitkan dengan keadaan dan tempoh yang betul",
         "Supaya unit tidak diperlukan",
         "Supaya rekod lebih panjang"
       ],
-      "answerIndex": 0,
+      "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 2,
       "constructFamily": "time_metadata",
       "levelSignal": 2,
       "contentDomain": "Pengetahuan Am",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S31-B66",
@@ -2245,19 +2245,19 @@
       "format": "MCQ",
       "question": "Kantin A menjual 180 hidangan kepada 120 pelanggan. Kantin B menjual 210 hidangan kepada 150 pelanggan. Kantin manakah mempunyai hidangan per pelanggan lebih tinggi?",
       "options": [
-        "Kantin A",
         "Kantin B",
+        "Kantin A",
         "Kedua-duanya sama",
         "Maklumat tidak cukup"
       ],
-      "answerIndex": 0,
+      "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 4,
       "constructFamily": "normalized_sales_rate",
       "levelSignal": 4,
       "contentDomain": "Penyelesaian Masalah",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S31-B70",
@@ -2340,7 +2340,15 @@
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
     "answerBalanceTarget": "18/18/17/17",
-    "manualEditorialReview": "B01/B22/B36/B39/B42/B45 rebuilt after global collision audit"
+    "manualEditorialReview": "B01/B22/B36/B39/B42/B45 rebuilt after global collision audit",
+    "answerBalance": "18/18/17/17",
+    "balanceRepair": "option-order only",
+    "balanceRepairItems": [
+      "S31-B69",
+      "S31-B65",
+      "S31-B61",
+      "S31-B57"
+    ]
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
