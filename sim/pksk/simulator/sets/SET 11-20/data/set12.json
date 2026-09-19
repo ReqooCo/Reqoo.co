@@ -493,11 +493,11 @@
       "section": "BAHAGIAN A",
       "category": "EQ",
       "format": "SITUATIONAL",
-      "question": "Kamu terlepas tarikh kecil dalam projek kerana salah membaca jadual. Apakah tindakan terbaik?",
+      "question": "Kamu terlepas satu tarikh kecil dalam projek kerana salah membaca perancangan masa. Apakah tindakan terbaik?",
       "options": [
         "Sembunyikan kesilapan",
         "Maklumkan, semak kesan kelewatan dan ubah perancangan supaya tugas penting masih terkawal",
-        "Salahkan jadual",
+        "Salahkan perancangan",
         "Betulkan sistem peringatan dan utamakan tugas yang terjejas"
       ],
       "weights": [
@@ -512,7 +512,7 @@
       "levelSignal": 3,
       "contentDomain": "EQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
     },
     {
@@ -903,7 +903,7 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Jika ■ = 7 dan ○ = 4, berapakah 3○ + ■?",
+      "question": "Dalam satu permainan skor, petak bernilai 7 mata dan bulatan bernilai 4 mata. Pemain mendapat satu petak dan tiga bulatan. Berapakah jumlah mata?",
       "options": [
         "11",
         "16",
@@ -913,11 +913,11 @@
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "symbolic",
+      "constructFamily": "symbolic_score_context",
       "levelSignal": 2,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S12-B08",
@@ -1071,7 +1071,7 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Berapakah 27.5% daripada 240?",
+      "question": "Daripada 240 peserta, 27.5% memilih sesi pagi. Berapakah peserta yang memilih sesi pagi?",
       "options": [
         "60",
         "64",
@@ -1081,11 +1081,11 @@
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "percentage",
+      "constructFamily": "percentage_group",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S12-B16",
@@ -1113,21 +1113,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Tukarkan 4.75 L kepada mililiter.",
+      "question": "Sebuah jag mengandungi 4.75 L minuman. Nyatakan isipadu itu dalam mililiter.",
       "options": [
-        "4,750 mL",
         "475 mL",
         "47,500 mL",
+        "4,750 mL",
         "4,075 mL"
       ],
-      "answerIndex": 0,
+      "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "volume_conversion",
+      "constructFamily": "volume_context_conversion",
       "levelSignal": 2,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S12-B18",
@@ -1160,21 +1160,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Rajah menunjukkan sebuah kuboid. Berapakah isipadunya?",
+      "question": "Rajah kuboid menunjukkan ukuran 10 cm, 6 cm dan 6 cm. Jika separuh ruang kuboid diisi, berapakah isipadu ruang yang masih kosong?",
       "options": [
         "90 cm³",
         "180 cm³",
         "360 cm³",
         "720 cm³"
       ],
-      "answerIndex": 2,
+      "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "visual_volume",
+      "constructFamily": "visual_half_cuboid_volume",
       "levelSignal": 2,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "visual": {
         "kind": "cuboid",
         "length_cm": 10,
@@ -1187,21 +1187,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Daripada 20 bahagian sama besar, 7 berlorek. Apakah pecahan tidak berlorek?",
+      "question": "Rajah menunjukkan 20 bahagian sama besar dan 7 daripadanya berlorek. Apakah pecahan bahagian yang tidak berlorek?",
       "options": [
         "7/20",
         "7/13",
-        "20/13",
-        "13/20"
+        "13/20",
+        "20/13"
       ],
-      "answerIndex": 3,
+      "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "visual_fraction",
+      "constructFamily": "visual_unshaded_fraction",
       "levelSignal": 2,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "visual": {
         "kind": "fraction_bar",
         "parts": 20,
@@ -1244,21 +1244,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Pada rajah garis lurus, satu sudut ialah 117°. Berapakah sudut bersebelahan?",
+      "question": "Pada rajah garis lurus, satu sudut ialah 117° dan sudut bersebelahan ialah x. Berapakah beza antara 117° dengan x?",
       "options": [
-        "53°",
+        "44°",
+        "54°",
         "63°",
-        "73°",
         "117°"
       ],
       "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "visual_angle",
+      "constructFamily": "straight_angle_difference",
       "levelSignal": 2,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "visual": {
         "kind": "straight_line_angle",
         "known_angle_deg": 117
@@ -1408,42 +1408,42 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Sebuah stor mempunyai 2,000 unit. Sebanyak 15% dikeluarkan, kemudian 425 unit lagi digunakan. Berapakah baki?",
+      "question": "Sebuah gudang bermula dengan 2,000 unit. Selepas 15% daripadanya dikeluarkan, stok yang tinggal kemudian dikurangkan lagi sebanyak 425 unit. Berapakah peratus stok asal yang masih tinggal?",
       "options": [
-        "1,275",
-        "300",
-        "1,325",
-        "1,700"
+        "48.75%",
+        "61.25%",
+        "63.75%",
+        "72.5%"
       ],
-      "answerIndex": 0,
+      "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "multi_stage_stock",
+      "constructFamily": "multi_stage_stock_percentage",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S12-B30",
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Pada pelan, 2 cm mewakili 6 m. Satu laluan dilukis 9.5 cm. Berapakah panjang sebenar?",
+      "question": "Pada pelan berskala, 2 cm mewakili 6 m. Jika panjang sebenar satu laluan ialah 28.5 m, berapakah panjang laluan itu pada pelan?",
       "options": [
-        "15.5 m",
-        "28.5 m",
-        "19 m",
-        "57 m"
+        "7.5 cm",
+        "8.0 cm",
+        "9.5 cm",
+        "10.5 cm"
       ],
-      "answerIndex": 1,
+      "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "scale",
+      "constructFamily": "reverse_scale",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S12-B31",
@@ -2344,7 +2344,8 @@
   "qa": {
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
-    "answerBalanceTarget": "18/18/17/17"
+    "answerBalanceTarget": "18/18/17/17",
+    "manualEditorialReview": "A19 false visual cue removed; B07/B15/B17/B19/B20/B22/B29/B30 rewritten for uniqueness and visual contract"
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
