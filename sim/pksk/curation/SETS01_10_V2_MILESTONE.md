@@ -75,3 +75,18 @@ After the final cleanup:
 ## Decision
 
 Sets 01-10 are the current V2 benchmark group. Do not merge to live until the larger curated bank and release plan are explicitly approved.
+
+
+## Final answer balance verification
+
+After the last editorial rewrites, answer positions were rebalanced without changing stems or correct-answer content:
+- Set 08: A18 / B18 / C17 / D17
+- Set 09: A18 / B18 / C17 / D17
+- Set 10: A18 / B18 / C17 / D17
+
+Final audit run **35448113818** confirms Sets 01-10 each have:
+- 100 KEEP_CANDIDATE
+- 0 item flags
+- release gate PASS
+
+This is the final V2 checkpoint for the first ten clone sets.
