@@ -33,10 +33,12 @@ async function dashboardSummary(env){
     env.DB.prepare(`SELECT o.id,o.order_no,o.total_minor,o.created_at,c.name customer_name,c.phone customer_phone FROM orders o LEFT JOIN customers c ON c.id=o.customer_id WHERE o.payment_status NOT IN ('paid','failed','cancelled','refunded') AND o.fulfillment_status!='cancelled' AND o.created_at<=datetime('now','-1 day') ORDER BY o.created_at ASC LIMIT 6`).all(),
     env.DB.prepare(`SELECT c.id,c.name,c.phone,c.email,MAX(o.created_at) last_order_at,COUNT(*) paid_orders,COALESCE(SUM(o.total_minor),0) paid_value_minor FROM customers c JOIN orders o ON o.customer_id=c.id WHERE o.payment_status='paid' AND c.phone IS NOT NULL AND TRIM(c.phone)<>'' GROUP BY c.id,c.name,c.phone,c.email HAVING COUNT(*)>=2 AND MAX(o.created_at)<=datetime('now','-45 days') ORDER BY MAX(o.created_at) ASC LIMIT 4`).all()
   ]);
-  const ledgerToday=await safeFirst(env.DB.prepare(`SELECT COALESCE(SUM(amount_minor),0) amount_minor,COUNT(*) n FROM reqoo_payments WHERE status='confirmed' AND date(paid_at,'+8 hours')=date('now','+8 hours')`),null);
-  const ledgerOutstanding=await safeFirst(env.DB.prepare(`SELECT COALESCE(SUM(CASE WHEN billing_total>paid_minor THEN billing_total-paid_minor ELSE 0 END),0) outstanding_minor,COALESCE(SUM(CASE WHEN billing_total>paid_minor THEN 1 ELSE 0 END),0) outstanding_count FROM (SELECT o.id,COALESCE((SELECT d.total_minor FROM reqoo_documents d WHERE d.order_id=o.id AND d.type='invoice' ORDER BY d.created_at,d.id LIMIT 1),o.total_minor) billing_total,COALESCE((SELECT SUM(p.amount_minor) FROM reqoo_payments p WHERE p.order_id=o.id AND p.status='confirmed'),0) paid_minor FROM orders o WHERE o.fulfillment_status!='cancelled' AND o.payment_status NOT IN ('failed','cancelled','refunded')) q`),null);
-  const invoiceStats=await safeFirst(env.DB.prepare(INVOICE_DUE_CTE+" SELECT COALESCE(SUM(CASE WHEN balance_minor>0 AND days_to_due<0 THEN balance_minor ELSE 0 END),0) overdue_minor,COALESCE(SUM(CASE WHEN balance_minor>0 AND days_to_due<0 THEN 1 ELSE 0 END),0) overdue_count,COALESCE(SUM(CASE WHEN balance_minor>0 AND days_to_due BETWEEN 0 AND 7 THEN balance_minor ELSE 0 END),0) due_soon_minor,COALESCE(SUM(CASE WHEN balance_minor>0 AND days_to_due BETWEEN 0 AND 7 THEN 1 ELSE 0 END),0) due_soon_count FROM invoice_balance"),{overdue_minor:0,overdue_count:0,due_soon_minor:0,due_soon_count:0});
-  const invoiceDue=await safeAll(env.DB.prepare(INVOICE_DUE_CTE+" SELECT * FROM invoice_balance WHERE balance_minor>0 AND days_to_due<=7 ORDER BY days_to_due ASC,due_at ASC,id ASC LIMIT 16"),[]);
+  const [ledgerToday,ledgerOutstanding,invoiceStats,invoiceDue]=await Promise.all([
+    safeFirst(env.DB.prepare(`SELECT COALESCE(SUM(amount_minor),0) amount_minor,COUNT(*) n FROM reqoo_payments WHERE status='confirmed' AND date(paid_at,'+8 hours')=date('now','+8 hours')`),null),
+    safeFirst(env.DB.prepare(`SELECT COALESCE(SUM(CASE WHEN billing_total>paid_minor THEN billing_total-paid_minor ELSE 0 END),0) outstanding_minor,COALESCE(SUM(CASE WHEN billing_total>paid_minor THEN 1 ELSE 0 END),0) outstanding_count FROM (SELECT o.id,COALESCE((SELECT d.total_minor FROM reqoo_documents d WHERE d.order_id=o.id AND d.type='invoice' ORDER BY d.created_at,d.id LIMIT 1),o.total_minor) billing_total,COALESCE((SELECT SUM(p.amount_minor) FROM reqoo_payments p WHERE p.order_id=o.id AND p.status='confirmed'),0) paid_minor FROM orders o WHERE o.fulfillment_status!='cancelled' AND o.payment_status NOT IN ('failed','cancelled','refunded')) q`),null),
+    safeFirst(env.DB.prepare(INVOICE_DUE_CTE+" SELECT COALESCE(SUM(CASE WHEN balance_minor>0 AND days_to_due<0 THEN balance_minor ELSE 0 END),0) overdue_minor,COALESCE(SUM(CASE WHEN balance_minor>0 AND days_to_due<0 THEN 1 ELSE 0 END),0) overdue_count,COALESCE(SUM(CASE WHEN balance_minor>0 AND days_to_due BETWEEN 0 AND 7 THEN balance_minor ELSE 0 END),0) due_soon_minor,COALESCE(SUM(CASE WHEN balance_minor>0 AND days_to_due BETWEEN 0 AND 7 THEN 1 ELSE 0 END),0) due_soon_count FROM invoice_balance"),{overdue_minor:0,overdue_count:0,due_soon_minor:0,due_soon_count:0}),
+    safeAll(env.DB.prepare(INVOICE_DUE_CTE+" SELECT * FROM invoice_balance WHERE balance_minor>0 AND days_to_due<=7 ORDER BY days_to_due ASC,due_at ASC,id ASC LIMIT 16"),[])
+  ]);
   const today=myDate(),overdueInvoices=invoiceDue.filter(r=>Number(r.days_to_due)<0),dueSoonInvoices=invoiceDue.filter(r=>Number(r.days_to_due)>=0&&Number(r.days_to_due)<=7);
   const todayCollected=ledgerToday&&Number(ledgerToday.amount_minor||0)>0?ledgerToday:fallbackToday;
   const outstanding=ledgerOutstanding||fallbackOutstanding;
@@ -89,21 +91,24 @@ async function productsDashboard(d,env){
   const where=[productFilterSql(filter)],args=[];
   if(q){where.push("(LOWER(COALESCE(p.name,'')) LIKE ? OR LOWER(COALESCE(p.sku,'')) LIKE ? OR LOWER(COALESCE(p.category,p.product_type,'')) LIKE ? OR EXISTS(SELECT 1 FROM product_variations pv WHERE pv.product_id=p.id AND LOWER(COALESCE(pv.sku,'')) LIKE ?))");for(let i=0;i<4;i++)args.push('%'+q+'%')}
   const whereSql=' WHERE '+where.join(' AND ');
-  const rows=(await env.DB.prepare(PRODUCT_ROLLUP_CTE+
-    " SELECT p.*,COALESCE(v.variant_count,0) variant_count,COALESCE(v.tracked_count,0) tracked_count,COALESCE(v.stock_units,0) stock_units,COALESCE(v.low_count,0) low_count,COALESCE(v.positive_count,0) positive_count,COALESCE(s.units_sold,0) units_sold,COALESCE(s.revenue_minor,0) revenue_minor,COALESCE(s.paid_orders,0) paid_orders,s.last_sale_at,"+
-    " COALESCE((SELECT pi.url FROM product_images pi WHERE pi.product_id=p.id ORDER BY pi.is_cover DESC,pi.sort_order,pi.id LIMIT 1),'') image"+
-    " FROM products p LEFT JOIN variant_rollup v ON v.product_id=p.id LEFT JOIN sales_rollup s ON s.product_id=p.id"+
-    whereSql+" ORDER BY p.created_at DESC,p.id DESC LIMIT ? OFFSET ?").bind(...args,limit,offset).all()).results||[];
-  const totalRow=await env.DB.prepare(PRODUCT_ROLLUP_CTE+" SELECT COUNT(*) n FROM products p LEFT JOIN variant_rollup v ON v.product_id=p.id LEFT JOIN sales_rollup s ON s.product_id=p.id"+whereSql).bind(...args).first();
-  const stats=await env.DB.prepare(PRODUCT_ROLLUP_CTE+
-    " SELECT COUNT(*) total,SUM(CASE WHEN p.status='active' THEN 1 ELSE 0 END) active,"+
-    " SUM(CASE WHEN COALESCE(v.tracked_count,0)>0 AND COALESCE(v.positive_count,0)>0 AND COALESCE(v.low_count,0)>0 THEN 1 ELSE 0 END) low,"+
-    " SUM(CASE WHEN COALESCE(v.tracked_count,0)>0 AND COALESCE(v.positive_count,0)=0 THEN 1 ELSE 0 END) out"+
-    " FROM products p LEFT JOIN variant_rollup v ON v.product_id=p.id").first();
-  const revenue=await env.DB.prepare("SELECT COALESCE(SUM(oi.line_total_minor),0) revenue_minor FROM order_items oi JOIN orders o ON o.id=oi.order_id WHERE o.payment_status='paid'").first();
-  const total=Number(totalRow?.n||0);
+  const [rowsResult,totalRow,stats,revenue]=await Promise.all([
+    env.DB.prepare(PRODUCT_ROLLUP_CTE+
+      " SELECT p.*,COALESCE(v.variant_count,0) variant_count,COALESCE(v.tracked_count,0) tracked_count,COALESCE(v.stock_units,0) stock_units,COALESCE(v.low_count,0) low_count,COALESCE(v.positive_count,0) positive_count,COALESCE(s.units_sold,0) units_sold,COALESCE(s.revenue_minor,0) revenue_minor,COALESCE(s.paid_orders,0) paid_orders,s.last_sale_at,"+
+      " COALESCE((SELECT pi.url FROM product_images pi WHERE pi.product_id=p.id ORDER BY pi.is_cover DESC,pi.sort_order,pi.id LIMIT 1),'') image"+
+      " FROM products p LEFT JOIN variant_rollup v ON v.product_id=p.id LEFT JOIN sales_rollup s ON s.product_id=p.id"+
+      whereSql+" ORDER BY p.created_at DESC,p.id DESC LIMIT ? OFFSET ?").bind(...args,limit,offset).all(),
+    env.DB.prepare(PRODUCT_ROLLUP_CTE+" SELECT COUNT(*) n FROM products p LEFT JOIN variant_rollup v ON v.product_id=p.id LEFT JOIN sales_rollup s ON s.product_id=p.id"+whereSql).bind(...args).first(),
+    env.DB.prepare(PRODUCT_ROLLUP_CTE+
+      " SELECT COUNT(*) total,SUM(CASE WHEN p.status='active' THEN 1 ELSE 0 END) active,"+
+      " SUM(CASE WHEN COALESCE(v.tracked_count,0)>0 AND COALESCE(v.positive_count,0)>0 AND COALESCE(v.low_count,0)>0 THEN 1 ELSE 0 END) low,"+
+      " SUM(CASE WHEN COALESCE(v.tracked_count,0)>0 AND COALESCE(v.positive_count,0)=0 THEN 1 ELSE 0 END) out"+
+      " FROM products p LEFT JOIN variant_rollup v ON v.product_id=p.id").first(),
+    env.DB.prepare("SELECT COALESCE(SUM(oi.line_total_minor),0) revenue_minor FROM order_items oi JOIN orders o ON o.id=oi.order_id WHERE o.payment_status='paid'").first()
+  ]);
+  const rows=rowsResult?.results||[],total=Number(totalRow?.n||0);
   return J({ok:true,products:rows.map(mapProductListRow),total,offset,limit,hasMore:offset+rows.length<total,stats:{total:Number(stats?.total||0),active:Number(stats?.active||0),low:Number(stats?.low||0),out:Number(stats?.out||0),revenueMinor:Number(revenue?.revenue_minor||0)},query:q,filter});
 }
+
 async function productDetail(d,env){
   const id=S(d.productId||d.id);if(!id)return J({ok:false,error:'Product diperlukan'},400);
   const x=await env.DB.prepare("SELECT p.*,COALESCE((SELECT pi.url FROM product_images pi WHERE pi.product_id=p.id ORDER BY pi.is_cover DESC,pi.sort_order,pi.id LIMIT 1),'') image FROM products p WHERE p.id=? LIMIT 1").bind(id).first();
