@@ -902,21 +902,21 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Jika □ = 5 dan ★ = 3, berapakah nilai 3□ − ★?",
+      "question": "Dalam satu kod bentuk, setiap □ bernilai 5 mata dan setiap ★ bernilai 3 mata. Satu kad menunjukkan tiga □ dan satu ★ ditolak daripada jumlah mata itu. Apakah nilainya?",
       "options": [
+        "12",
         "8",
         "15",
-        "12",
         "18"
       ],
-      "answerIndex": 2,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "symbolic_arithmetic",
+      "constructFamily": "symbolic_score_rule",
       "levelSignal": 2,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S06-B08",
@@ -986,21 +986,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Berapakah hasil 7,245 − 3,678?",
+      "question": "Sebuah stor merekod 7,245 helaian kertas. Selepas 3,678 helaian digunakan, berapakah baki kertas?",
       "options": [
+        "3,567",
         "3,477",
         "3,577",
-        "3,567",
         "4,567"
       ],
-      "answerIndex": 2,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "subtraction",
+      "constructFamily": "subtraction_inventory",
       "levelSignal": 2,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S06-B12",
@@ -1449,21 +1449,21 @@
       "section": "BAHAGIAN B",
       "category": "Bahasa Melayu",
       "format": "MCQ",
-      "question": "Pilih ayat yang paling gramatis.",
+      "question": "Antara ayat berikut, yang manakah sesuai digunakan dalam notis rasmi sekolah dan gramatis?",
       "options": [
+        "Para peserta diminta berkumpul sebelum taklimat bermula.",
         "Para peserta-peserta diminta berkumpul sebelum taklimat bermula.",
         "Para peserta diminta berkumpul sebelum taklimat akan bermula semalam.",
-        "Para peserta diminta berkumpul sebelum taklimat bermula.",
         "Para peserta diminta berkumpul kepada sebelum taklimat."
       ],
-      "answerIndex": 2,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 1,
-      "constructFamily": "grammar",
+      "constructFamily": "formal_sentence_grammar",
       "levelSignal": 1,
       "contentDomain": "Bahasa Melayu",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S06-B32",
@@ -2344,7 +2344,8 @@
   "qa": {
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
-    "answerBalanceTarget": "18/18/17/17"
+    "answerBalanceTarget": "18/18/17/17",
+    "manualEditorialReview": "B07, B11 and B31 rewritten after global duplicate audit"
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
