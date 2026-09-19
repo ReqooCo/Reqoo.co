@@ -196,3 +196,13 @@ A set may be assembled for release only when:
 10. No unresolved severe flags remain.
 
 Set 01-03 are reference-quality candidates, not automatic truth. Set 04-50 must be judged item-by-item under this V2 standard.
+
+
+## 14. Automated set-level release gates
+
+In addition to item-level triage, every set is checked for:
+- Structure: A=30 objective, B=70 objective, C=3 writing prompts.
+- A format: exactly 20 four-option SITUATIONAL items + 10 two-option AGREE_DISAGREE items.
+- B blueprint: exactly IQ 10, Matematik 20, Bahasa Melayu 8, English 8, Sains 8, Teknologi/RBT 6, Pengetahuan Am 6, Penyelesaian Masalah 4.
+
+A set remains HOLD even when many individual items are KEEP_CANDIDATE if either A format or B blueprint fails.
