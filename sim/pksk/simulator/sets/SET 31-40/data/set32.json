@@ -2065,19 +2065,19 @@
       "format": "MCQ",
       "question": "Apakah maksud katalog perpustakaan?",
       "options": [
-        "Sistem atau senarai tersusun yang membantu pengguna mencari bahan perpustakaan",
         "Senarai harga makanan",
         "Jadual cuaca",
-        "Peta trafik"
+        "Peta trafik",
+        "Sistem atau senarai tersusun yang membantu pengguna mencari bahan perpustakaan"
       ],
-      "answerIndex": 0,
+      "answerIndex": 3,
       "type": "objective",
       "plannedLevel": 2,
       "constructFamily": "catalogue",
       "levelSignal": 2,
       "contentDomain": "Pengetahuan Am",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S32-B62",
@@ -2128,12 +2128,12 @@
       "format": "MCQ",
       "question": "Manakah contoh yang paling jelas bagi sumber primer untuk kajian tentang pengalaman murid menggunakan perpustakaan?",
       "options": [
-        "Temu bual asal dengan murid yang menggunakan perpustakaan.",
         "Ringkasan blog tentang perpustakaan sekolah lain.",
         "Poster promosi membaca.",
-        "Pendapat tanpa nama di laman rawak."
+        "Pendapat tanpa nama di laman rawak.",
+        "Temu bual asal dengan murid yang menggunakan perpustakaan."
       ],
-      "answerIndex": 0,
+      "answerIndex": 3,
       "type": "objective",
       "plannedLevel": 3,
       "constructFamily": "primary_source_example",
@@ -2149,19 +2149,19 @@
       "format": "MCQ",
       "question": "Mengapakah saiz teks penting dalam kebolehaksesan?",
       "options": [
-        "Saiz sesuai membantu lebih ramai pengguna membaca maklumat dengan jelas",
         "Saiz besar menjamin semua faham",
         "Saiz tidak mempengaruhi bacaan",
+        "Saiz sesuai membantu lebih ramai pengguna membaca maklumat dengan jelas",
         "Teks kecil sentiasa lebih tepat"
       ],
-      "answerIndex": 0,
+      "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 2,
       "constructFamily": "text_accessibility",
       "levelSignal": 2,
       "contentDomain": "Pengetahuan Am",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S32-B66",
@@ -2233,19 +2233,19 @@
       "format": "MCQ",
       "question": "Kelas A meminjam 96 buku untuk 32 murid. Kelas B meminjam 126 buku untuk 42 murid. Apakah hubungan kadar pinjaman per murid?",
       "options": [
-        "Kedua-duanya sama",
         "Kelas A lebih tinggi",
         "Kelas B lebih tinggi",
+        "Kedua-duanya sama",
         "Maklumat tidak cukup"
       ],
-      "answerIndex": 0,
+      "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 4,
       "constructFamily": "normalized_usage_compare",
       "levelSignal": 4,
       "contentDomain": "Penyelesaian Masalah",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S32-B70",
@@ -2328,7 +2328,15 @@
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
     "answerBalanceTarget": "18/18/17/17",
-    "manualEditorialReview": "B22 rebuilt to non-template supplementary-angle reasoning"
+    "manualEditorialReview": "B22 rebuilt to non-template supplementary-angle reasoning",
+    "answerBalance": "18/18/17/17",
+    "balanceRepair": "option-order only",
+    "balanceRepairItems": [
+      "S32-B69",
+      "S32-B65",
+      "S32-B64",
+      "S32-B61"
+    ]
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
