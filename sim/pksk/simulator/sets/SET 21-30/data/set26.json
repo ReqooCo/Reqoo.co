@@ -2245,19 +2245,19 @@
       "format": "MCQ",
       "question": "Sebanyak 140 unit bahan ada. 20 unit disimpan sebagai stok minimum. Empat kumpulan menerima 21 unit setiap satu. Baki dibahagi sama rata kepada 6 kumpulan lain. Berapakah setiap kumpulan menerima?",
       "options": [
-        "6 unit",
         "5 unit",
         "7 unit",
+        "6 unit",
         "8 unit"
       ],
-      "answerIndex": 0,
+      "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 4,
       "constructFamily": "stock_reserve_allocation",
       "levelSignal": 4,
       "contentDomain": "Penyelesaian Masalah",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S26-B70",
@@ -2340,7 +2340,12 @@
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
     "answerBalanceTarget": "18/18/17/17",
-    "manualEditorialReview": "B03/B05/B20/B39 rebuilt to remove global collisions"
+    "manualEditorialReview": "B03/B05/B20/B39 rebuilt to remove global collisions",
+    "answerBalance": "18/18/17/17",
+    "balanceRepair": "option-order only",
+    "balanceRepairItems": [
+      "S26-B69"
+    ]
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
