@@ -819,7 +819,7 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Antara 18, 27, 36 dan 49, yang manakah bukan gandaan 9?",
+      "question": "Apabila 49 dibahagi dengan 9, bakinya 4. Antara 18, 27, 36 dan 49, nombor manakah menghasilkan baki terbesar apabila dibahagi 9?",
       "options": [
         "18",
         "27",
@@ -829,11 +829,11 @@
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "multiple_classification",
+      "constructFamily": "compare_remainders_mod9",
       "levelSignal": 2,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S32-B04",
@@ -1244,21 +1244,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Rajah garis lurus menunjukkan sudut 117°. Berapakah sudut bersebelahan?",
+      "question": "Rajah garis lurus menunjukkan sudut 117° dan sudut bersebelahan x. Berapakah nilai x − 18°?",
       "options": [
-        "53°",
+        "45°",
         "63°",
-        "73°",
-        "117°"
+        "81°",
+        "99°"
       ],
-      "answerIndex": 1,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "straight_angle",
+      "constructFamily": "adjacent_angle_difference_expression",
       "levelSignal": 2,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "visual": {
         "kind": "straight_line_angle",
         "known_angle_deg": 117
@@ -1269,29 +1269,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Rajah koordinat menunjukkan titik pada (1, 4). Titik bergerak 6 unit ke kanan dan 2 unit ke atas. Apakah koordinat akhir?",
+      "question": "Sebuah titik bermula pada (1, 4), bergerak 6 unit ke kanan dan 2 unit ke atas. Berapakah hasil darab koordinat akhirnya?",
       "options": [
-        "(7, 2)",
-        "(5, 6)",
-        "(7, 6)",
-        "(6, 7)"
+        "36",
+        "42",
+        "48",
+        "56"
       ],
-      "answerIndex": 2,
+      "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "coordinate_translation",
+      "constructFamily": "coordinate_product_after_translation",
       "levelSignal": 3,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
-      "visual": {
-        "kind": "coordinate_move",
-        "start": [
-          1,
-          4
-        ],
-        "move_right": 6
-      }
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S32-B24",
@@ -1550,21 +1542,21 @@
       "section": "BAHAGIAN B",
       "category": "Bahasa Melayu",
       "format": "MCQ",
-      "question": "Pilih ayat yang menunjukkan tujuan dengan jelas.",
+      "question": "Dalam laporan pembangunan koleksi, ayat manakah paling jelas menyatakan tujuan analisis data pinjaman?",
       "options": [
+        "Data pinjaman dianalisis supaya koleksi baharu dapat dipilih berdasarkan keperluan.",
         "Data kerana koleksi dipilih.",
         "Koleksi walaupun data.",
-        "Dipilih supaya kerana data.",
-        "Data pinjaman dianalisis supaya koleksi baharu dapat dipilih berdasarkan keperluan."
+        "Dipilih supaya kerana data."
       ],
-      "answerIndex": 3,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "purpose_clause",
+      "constructFamily": "purpose_clause_collection_data",
       "levelSignal": 2,
       "contentDomain": "Bahasa Melayu",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S32-B37",
@@ -1613,21 +1605,21 @@
       "section": "BAHAGIAN B",
       "category": "English",
       "format": "MCQ",
-      "question": "Choose the correct sentence using 'before'.",
+      "question": "Which sentence correctly uses 'before' when giving a source-checking instruction?",
       "options": [
+        "Check the source before using it in your report.",
         "Check source before using report it.",
         "Before source using checked report.",
-        "Check the source before using it in your report.",
         "The source before report checked."
       ],
-      "answerIndex": 2,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "time_clause",
+      "constructFamily": "before_source_check_instruction",
       "levelSignal": 2,
       "contentDomain": "English",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S32-B40",
@@ -1676,21 +1668,21 @@
       "section": "BAHAGIAN B",
       "category": "English",
       "format": "MCQ",
-      "question": "Choose the correct sentence using 'while'.",
+      "question": "Which sentence correctly uses 'while' to describe two library tasks happening at the same time?",
       "options": [
-        "One pupil while catalogue another shelves.",
         "One pupil searched the catalogue while another checked the shelves.",
-        "While searched because shelves.",
-        "One pupil searched the catalogue while another checked the shelves."
+        "One pupil searched the catalogue, another checked because shelves.",
+        "While catalogue one pupil and shelves another.",
+        "One pupil searched while because another shelves."
       ],
-      "answerIndex": 1,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "simultaneous_actions",
+      "constructFamily": "while_parallel_library_tasks",
       "levelSignal": 3,
       "contentDomain": "English",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S32-B43",
@@ -1739,9 +1731,9 @@
       "section": "BAHAGIAN B",
       "category": "English",
       "format": "MCQ",
-      "question": "Which sentence makes a cautious claim?",
+      "question": "Which sentence makes the most careful conclusion after only three months of borrowing data?",
       "options": [
-        "Borrowing appears to have increased during the months measured.",
+        "Borrowing appears to have increased during the three months measured.",
         "Borrowing will always increase.",
         "Every pupil now reads more.",
         "The new system is perfect."
@@ -1749,11 +1741,11 @@
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "cautious_claim",
+      "constructFamily": "cautious_claim_borrowing_window",
       "levelSignal": 3,
       "contentDomain": "English",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S32-B46",
@@ -2138,21 +2130,21 @@
       "section": "BAHAGIAN B",
       "category": "Pengetahuan Am",
       "format": "MCQ",
-      "question": "Apakah maksud sumber primer?",
+      "question": "Manakah contoh yang paling jelas bagi sumber primer untuk kajian tentang pengalaman murid menggunakan perpustakaan?",
       "options": [
-        "Ringkasan tanpa sumber",
-        "Iklan",
-        "Pendapat rawak",
-        "Sumber asal yang menghasilkan data, bukti atau karya secara langsung"
+        "Temu bual asal dengan murid yang menggunakan perpustakaan.",
+        "Ringkasan blog tentang perpustakaan sekolah lain.",
+        "Poster promosi membaca.",
+        "Pendapat tanpa nama di laman rawak."
       ],
-      "answerIndex": 3,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "primary_source",
+      "constructFamily": "primary_source_example",
       "levelSignal": 3,
       "contentDomain": "Pengetahuan Am",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S32-B65",
@@ -2339,7 +2331,8 @@
   "qa": {
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
-    "answerBalanceTarget": "18/18/17/17"
+    "answerBalanceTarget": "18/18/17/17",
+    "manualEditorialReview": "B03/B22/B23/B36/B39/B42/B45/B64 rebuilt after global collision audit"
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
