@@ -24,6 +24,16 @@ SUPPORTED_VISUALS = {
     "fraction_bar", "five_value_data", "rectangle",
     "cuboid", "straight_line_angle", "coordinate_move",
 }
+LOCKED_B = {
+    "IQ": 10,
+    "Matematik": 20,
+    "Bahasa Melayu": 8,
+    "English": 8,
+    "Sains": 8,
+    "Teknologi/RBT": 6,
+    "Pengetahuan Am": 6,
+    "Penyelesaian Masalah": 4,
+}
 VISUAL_CUES = re.compile(r"\b(rajah|gambar rajah|graf|carta|jadual|diagram|figure)\b", re.I)
 APPENDED_CONTEXT = re.compile(
     r"(?:\bKonteks\s*:|\bdalam projek bertema\b|\bkumpulan\s+(?:Alpha|Beta|Gamma|Delta|Epsilon)\b)",
@@ -123,12 +133,45 @@ def main():
     rows = []
     exact_groups = defaultdict(list)
     template_groups = defaultdict(list)
+    set_gates = {}
 
     for path in files:
         data = json.loads(path.read_text(encoding="utf-8"))
         match = re.search(r"set(\d+)", path.name, re.I)
         set_no = int(data.get("set") or (match.group(1) if match else 0))
-        for idx, q in enumerate(data.get("questions") or [], start=1):
+        questions = data.get("questions") or []
+        a_items = [q for q in questions if section_of(q) == "A"]
+        b_items = [q for q in questions if section_of(q) == "B"]
+        situational = sum(
+            1 for q in a_items
+            if str(q.get("format", "")).upper() == "SITUATIONAL"
+            and isinstance(q.get("options"), list) and len(q.get("options")) == 4
+        )
+        agree = sum(
+            1 for q in a_items
+            if str(q.get("format", "")).upper() == "AGREE_DISAGREE"
+            and isinstance(q.get("options"), list) and len(q.get("options")) == 2
+            and [str(x).strip().lower() for x in q.get("options")] == ["setuju", "tidak setuju"]
+        )
+        b_counts = Counter(str(q.get("category", "")) for q in b_items)
+        writing_count = len(data.get("writing") or [])
+        a_format_pass = len(a_items) == 30 and situational == 20 and agree == 10
+        b_blueprint_pass = len(b_items) == 70 and all(b_counts.get(k, 0) == v for k, v in LOCKED_B.items()) and sum(b_counts.values()) == 70
+        structure_pass = len(a_items) == 30 and len(b_items) == 70 and writing_count == 3
+        set_gates[set_no] = {
+            "A_count": len(a_items),
+            "B_count": len(b_items),
+            "C_count": writing_count,
+            "A_situational": situational,
+            "A_agree_disagree": agree,
+            "A_format_pass": a_format_pass,
+            "B_blueprint_pass": b_blueprint_pass,
+            "structure_pass": structure_pass,
+            "B_counts": dict(b_counts),
+            "release_gate": "PASS" if structure_pass and a_format_pass and b_blueprint_pass else "HOLD",
+        }
+
+        for idx, q in enumerate(questions, start=1):
             qid = str(q.get("id") or ("ROW-" + str(idx)))
             stem = str(q.get("question") or "")
             flags = flag_item(q)
@@ -186,6 +229,7 @@ def main():
         "items": len(rows),
         "totals": dict(totals),
         "sets": {str(k): dict(v) for k, v in sorted(per_set.items())},
+        "set_gates": {str(k): v for k, v in sorted(set_gates.items())},
         "items_detail": rows,
     }
     OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -209,6 +253,27 @@ def main():
     ]
     for name in flag_names:
         lines.append("- {}: **{}**".format(name, totals[name]))
+
+    release_pass = sum(1 for g in set_gates.values() if g["release_gate"] == "PASS")
+    a_pass = sum(1 for g in set_gates.values() if g["A_format_pass"])
+    b_pass = sum(1 for g in set_gates.values() if g["B_blueprint_pass"])
+    lines += [
+        "", "## Set-level release gates", "",
+        "- A format pass (20 situational + 10 Agree/Disagree): **{} / {}**".format(a_pass, len(set_gates)),
+        "- B blueprint pass (10/20/8/8/8/6/6/4): **{} / {}**".format(b_pass, len(set_gates)),
+        "- Full release gate pass: **{} / {}**".format(release_pass, len(set_gates)),
+        "",
+        "| Set | A | B | C | A situational | A S/TS | A format | B blueprint | Release |",
+        "|---:|---:|---:|---:|---:|---:|:---:|:---:|:---:|",
+    ]
+    for s, g in sorted(set_gates.items()):
+        lines.append(
+            "| {:02d} | {} | {} | {} | {} | {} | {} | {} | {} |".format(
+                s, g["A_count"], g["B_count"], g["C_count"], g["A_situational"],
+                g["A_agree_disagree"], "PASS" if g["A_format_pass"] else "FAIL",
+                "PASS" if g["B_blueprint_pass"] else "FAIL", g["release_gate"]
+            )
+        )
 
     lines += [
         "", "## Per-set summary", "",
