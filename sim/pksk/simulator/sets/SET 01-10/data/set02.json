@@ -1100,7 +1100,7 @@
       "section": "BAHAGIAN B",
       "category": "Bahasa Melayu",
       "format": "MCQ",
-      "question": "Pilih perkataan berimbuhan yang betul: “Pihak sekolah akan ___ jadual baharu kepada semua murid.”",
+      "question": "Pilih perkataan berimbuhan yang betul: “Pihak sekolah akan ___ susunan waktu baharu kepada semua murid.”",
       "options": [
         "mengumumkan",
         "diumum",
@@ -1120,7 +1120,7 @@
       "levelSignal": 2,
       "contentDomain": "Bahasa Melayu",
       "setLevel": 2,
-      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "B14",
@@ -2287,7 +2287,7 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Titik bermula pada (1, 4) dan bergerak 5 unit ke kanan. Apakah koordinat baharu?",
+      "question": "Rajah koordinat menunjukkan titik bermula pada (1, 4) dan bergerak 5 unit ke kanan. Apakah koordinat baharu?",
       "options": [
         "(5, 4)",
         "(6, 9)",
@@ -2303,11 +2303,11 @@
       ],
       "type": "graded",
       "plannedLevel": 2,
-      "constructFamily": "coordinate_translation",
+      "constructFamily": "visual_coordinate_move",
       "levelSignal": 2,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "visual": {
         "kind": "coordinate_move",
         "start": [
@@ -2403,12 +2403,12 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Rajah menunjukkan satu sudut 74° pada garis lurus. Berapakah nilai x?",
+      "question": "Pada rajah garis lurus, satu sudut ialah 74° dan sudut bersebelahan ialah x. Berapakah nilai 2x?",
       "options": [
         "96°",
         "104°",
         "116°",
-        "106°"
+        "212°"
       ],
       "answerIndex": 3,
       "weights": [
@@ -2419,11 +2419,11 @@
       ],
       "type": "graded",
       "plannedLevel": 3,
-      "constructFamily": "straight_line_angle",
+      "constructFamily": "straight_angle_double_unknown",
       "levelSignal": 3,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "visual": {
         "kind": "straight_line_angle",
         "known_angle_deg": 74
@@ -2655,7 +2655,7 @@
         "On Monday, Aisha visited Kuching with her family.",
         "on Monday, Aisha visited kuching with her family.",
         "On monday Aisha visited Kuching with her family",
-        "On Monday, aisha visited Kuching with her family."
+        "On Monday Aisha visited Kuching with her family."
       ],
       "answerIndex": 0,
       "weights": [
@@ -2670,7 +2670,7 @@
       "levelSignal": 2,
       "contentDomain": "English",
       "setLevel": 2,
-      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "B70",
@@ -2739,5 +2739,8 @@
   "rebuildVersion": "GOLD_V1_SET02",
   "source": "human_authored_gold_standard",
   "legacy_content_used": false,
-  "qualityStatus": "CANDIDATE_REVIEW"
+  "qualityStatus": "CANDIDATE_REVIEW",
+  "qa": {
+    "v2Cleanup": "B13 false visual cue removed; B56 visual contract fixed; B60 unique construct; B69 normalized duplicate option removed"
+  }
 }
