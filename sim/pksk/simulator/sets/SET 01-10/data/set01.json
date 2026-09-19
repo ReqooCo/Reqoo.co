@@ -1024,7 +1024,7 @@
       "section": "BAHAGIAN B",
       "category": "Penyelesaian Masalah",
       "format": "MCQ",
-      "question": "Tiga kumpulan perlu menggunakan makmal masing-masing selama 30 minit antara 2:00 hingga 3:30 petang. Kumpulan A hanya boleh hadir sebelum 2:45, Kumpulan B tidak boleh hadir sebelum 2:30, dan Kumpulan C boleh hadir bila-bila masa. Jadual manakah memenuhi semua syarat?",
+      "question": "Tiga kumpulan perlu menggunakan makmal masing-masing selama 30 minit antara 2:00 hingga 3:30 petang. Kumpulan A hanya boleh hadir sebelum 2:45, Kumpulan B tidak boleh hadir sebelum 2:30, dan Kumpulan C boleh hadir bila-bila masa. Susunan masa manakah memenuhi semua syarat?",
       "options": [
         "B: 2:00–2:30, A: 2:30–3:00, C: 3:00–3:30",
         "A: 2:00–2:30, C: 2:30–3:00, B: 3:00–3:30",
@@ -1044,7 +1044,7 @@
       "levelSignal": 3,
       "contentDomain": "Penyelesaian Masalah",
       "setLevel": 2,
-      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "B11",
@@ -1963,12 +1963,12 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Rajah menunjukkan satu sudut 68° pada garis lurus. Berapakah nilai x?",
+      "question": "Berdasarkan rajah sudut pada garis lurus, satu sudut ialah 68° dan sudut bersebelahan ialah x. Berapakah beza antara x dengan 68°?",
       "options": [
         "22°",
-        "68°",
-        "122°",
-        "112°"
+        "34°",
+        "54°",
+        "44°"
       ],
       "answerIndex": 3,
       "weights": [
@@ -1979,11 +1979,11 @@
       ],
       "type": "graded",
       "plannedLevel": 2,
-      "constructFamily": "angle_visual",
+      "constructFamily": "straight_angle_difference",
       "levelSignal": 2,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "visual": {
         "kind": "straight_line_angle",
         "known_angle_deg": 68
@@ -2739,5 +2739,8 @@
   "rebuildVersion": "GOLD_V1_SET01",
   "source": "human_authored_gold_standard",
   "legacy_content_used": false,
-  "qualityStatus": "CANDIDATE_REVIEW"
+  "qualityStatus": "CANDIDATE_REVIEW",
+  "qa": {
+    "v2Cleanup": "B10 false visual cue removed; B44 rewritten for global uniqueness"
+  }
 }
