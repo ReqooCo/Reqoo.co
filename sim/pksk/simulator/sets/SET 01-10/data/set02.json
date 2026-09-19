@@ -2653,7 +2653,7 @@
       "question": "Which sentence uses capital letters and punctuation correctly?",
       "options": [
         "On Monday, Aisha visited Kuching with her family.",
-        "on Monday, Aisha visited kuching with her family.",
+        "on Monday Aisha visited kuching with her family.",
         "On monday Aisha visited Kuching with her family",
         "On Monday; Aisha visited Kuching with her family?"
       ],
@@ -2742,6 +2742,7 @@
   "qualityStatus": "CANDIDATE_REVIEW",
   "qa": {
     "v2Cleanup": "B13 false visual cue removed; B56 visual contract fixed; B60 unique construct; B69 normalized duplicate option removed",
-    "v2CleanupFinal": "B69 distractors made structurally distinct"
+    "v2CleanupFinal": "B69 distractors made structurally distinct",
+    "v2CleanupFinal2": "B69 capitalization distractor also changed punctuation so normalized options remain distinct"
   }
 }
