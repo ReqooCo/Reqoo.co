@@ -777,21 +777,21 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Urutan 7, 15, 31, 63, 127 dibina dengan aturan ×2 +1. Apakah nombor seterusnya?",
+      "question": "Sebuah nilai bermula pada 7. Ia didarab 2 kemudian ditambah 1, dan proses itu dilakukan tiga kali. Apakah nilai akhir?",
       "options": [
-        "255",
-        "253",
-        "254",
-        "257"
+        "63",
+        "31",
+        "127",
+        "255"
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "double_plus_one",
+      "constructFamily": "iterated_double_plus_one",
       "levelSignal": 3,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S37-B02",
@@ -819,7 +819,7 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Antara 16, 24, 32 dan 45, yang manakah bukan gandaan 8?",
+      "question": "Apabila 45 dibahagi dengan 8, bakinya 5. Antara 16, 24, 32 dan 45, nombor manakah mempunyai baki bukan sifar apabila dibahagi 8?",
       "options": [
         "16",
         "24",
@@ -829,11 +829,11 @@
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "multiple_classification",
+      "constructFamily": "remainder_mod8",
       "levelSignal": 2,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S37-B04",
@@ -861,21 +861,21 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Satu pola ialah 4, 8, 13, 19, 26. Apakah nombor seterusnya?",
+      "question": "Urutan 4, 8, 13, 19, 26 mempunyai pertambahan +4,+5,+6,+7. Berapakah pertambahan seterusnya?",
       "options": [
-        "34",
-        "32",
-        "33",
-        "35"
+        "8",
+        "7",
+        "9",
+        "10"
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "increasing_difference",
+      "constructFamily": "next_difference_rule",
       "levelSignal": 3,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S37-B06",
@@ -903,21 +903,21 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Jika A = B + 10 dan A + B = 34, berapakah B?",
+      "question": "Folder A mempunyai 10 fail lebih banyak daripada Folder B. Jumlah kedua-duanya 34 fail. Berapakah fail dalam Folder B?",
       "options": [
+        "12",
         "10",
         "17",
-        "12",
         "22"
       ],
-      "answerIndex": 2,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "two_variable_relation",
+      "constructFamily": "sum_difference_files",
       "levelSignal": 3,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S37-B08",
@@ -945,21 +945,21 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Sebuah aturan menukar x kepada 5x + 4. Jika output 49, apakah input?",
+      "question": "Satu aturan memberi output 5x + 4. Berapakah beza output bagi input 14 dengan input 9?",
       "options": [
-        "9",
-        "7",
-        "8",
-        "10"
+        "25",
+        "20",
+        "30",
+        "45"
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "reverse_linear",
+      "constructFamily": "linear_output_difference",
       "levelSignal": 3,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S37-B10",
@@ -1134,21 +1134,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Rajah menunjukkan segi empat tepat 18 cm × 10 cm. Jika panjang bertambah 20%, berapakah luas baharu?",
+      "question": "Rajah menunjukkan segi empat tepat 18 cm × 10 cm. Panjang bertambah 20% tetapi lebar berkurang 10%. Berapakah luas baharu?",
       "options": [
+        "194.4 cm²",
         "180 cm²",
-        "216 cm²",
-        "200 cm²",
-        "240 cm²"
+        "198 cm²",
+        "216 cm²"
       ],
-      "answerIndex": 1,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "visual_percentage_length",
+      "constructFamily": "visual_opposite_dimension_percent_changes",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "visual": {
         "kind": "rectangle",
         "length_cm": 18,
@@ -1244,42 +1244,42 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Dua sudut bersebelahan pada garis lurus mempunyai nisbah 4 : 5. Berapakah sudut yang lebih kecil?",
+      "question": "Dalam sebuah segi tiga, satu sudut ialah 60°. Dua sudut lain mempunyai nisbah 2 : 3. Berapakah sudut yang lebih kecil daripada dua sudut itu?",
       "options": [
-        "72°",
-        "80°",
-        "90°",
-        "100°"
+        "48°",
+        "40°",
+        "60°",
+        "72°"
       ],
-      "answerIndex": 1,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "supplementary_angle_ratio",
+      "constructFamily": "triangle_remaining_angle_ratio",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S37-B23",
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Sebuah titik bermula pada (1, 2), bergerak 7 unit ke kanan dan 3 unit ke atas. Berapakah jumlah koordinat akhir?",
+      "question": "Sebuah titik bermula pada (1, 2), bergerak 7 unit ke kanan dan 3 unit ke atas. Berapakah jarak mendatar titik akhir daripada paksi-y?",
       "options": [
-        "11",
-        "12",
-        "13",
-        "15"
+        "8 unit",
+        "7 unit",
+        "5 unit",
+        "10 unit"
       ],
-      "answerIndex": 2,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "coordinate_sum_after_move",
+      "constructFamily": "coordinate_x_distance_after_move",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S37-B24",
@@ -1874,21 +1874,21 @@
       "section": "BAHAGIAN B",
       "category": "Sains",
       "format": "MCQ",
-      "question": "Which process changes liquid water into water vapour?",
+      "question": "Air pada kain basah berkurang apabila kain dibiarkan di tempat berangin. Proses apakah yang menukarkan air cecair kepada wap?",
       "options": [
+        "evaporation",
         "condensation",
         "freezing",
-        "melting",
-        "evaporation"
+        "melting"
       ],
-      "answerIndex": 3,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 1,
-      "constructFamily": "state_change",
+      "constructFamily": "evaporation_context_wet_cloth",
       "levelSignal": 1,
       "contentDomain": "Sains",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S37-B53",
@@ -2327,7 +2327,8 @@
   "qa": {
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
-    "answerBalanceTarget": "18/18/17/17"
+    "answerBalanceTarget": "18/18/17/17",
+    "manualEditorialReview": "B01/B03/B05/B07/B09/B18/B22/B23/B52 rebuilt after global collision audit"
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
