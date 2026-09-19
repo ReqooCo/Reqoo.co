@@ -1115,12 +1115,12 @@
       "format": "MCQ",
       "question": "Sebuah botol kecil mengandungi 0.85 L air. Berapakah isipadu air itu dalam mililiter?",
       "options": [
-        "850 mL",
         "85 mL",
+        "850 mL",
         "8,500 mL",
         "805 mL"
       ],
-      "answerIndex": 0,
+      "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 1,
       "constructFamily": "volume_context_conversion",
@@ -2348,9 +2348,10 @@
     "manualEditorialReview": "A09/A27/B38 false visual cues removed; B01/B03/B04/B17 rewritten for global uniqueness",
     "itemStandardV2ReleaseGate": "PASS",
     "itemAuditV2": "100_KEEP_0_FLAGS",
-    "answerBalance": "19/17/17/17",
+    "answerBalance": "18/18/17/17",
     "auditRun": 35448028607,
-    "humanEditorialGate": "PASS_WITH_TARGETED_REVIEW"
+    "humanEditorialGate": "PASS_WITH_TARGETED_REVIEW",
+    "balanceRepair": "option-order only; no stem/content change"
   },
   "status": "REQOO_V2_GOLD_CANDIDATE"
 }
