@@ -304,7 +304,7 @@
       "section": "BAHAGIAN A",
       "category": "EQ",
       "format": "SITUATIONAL",
-      "question": "Rakan kamu mempunyai jadual pertumbuhan tetapi tidak menerangkan perubahan yang berlaku. Apakah bantuan terbaik?",
+      "question": "Rakan kamu mempunyai rekod pertumbuhan tetapi tidak menerangkan perubahan yang berlaku. Apakah bantuan terbaik?",
       "options": [
         "Tambah lebih banyak nombor",
         "Minta dia nyatakan trend dan sokong dengan nilai khusus",
@@ -323,7 +323,7 @@
       "levelSignal": 3,
       "contentDomain": "EQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
     },
     {
@@ -777,21 +777,21 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Urutan 3, 8, 15, 24, 35 mempunyai beza +5,+7,+9,+11. Apakah nombor seterusnya?",
+      "question": "Satu pola nombor ialah 4, 7, 13, 22, 34. Perbezaannya bertambah 3 setiap kali. Apakah nombor seterusnya?",
       "options": [
-        "48",
+        "49",
         "46",
-        "47",
-        "50"
+        "52",
+        "55"
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "odd_increasing_difference",
+      "constructFamily": "difference_increment_by_three",
       "levelSignal": 3,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S33-B02",
@@ -819,7 +819,7 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Antara 20, 30, 40 dan 55, yang manakah bukan gandaan 10?",
+      "question": "Antara 20, 30, 40 dan 55, nombor manakah menghasilkan baki 5 apabila dibahagi 10?",
       "options": [
         "20",
         "30",
@@ -829,11 +829,11 @@
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 1,
-      "constructFamily": "multiple_classification",
+      "constructFamily": "remainder_mod10",
       "levelSignal": 1,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S33-B04",
@@ -1244,54 +1244,42 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Rajah garis lurus menunjukkan sudut 129°. Berapakah sudut bersebelahan?",
+      "question": "Dua sudut bersebelahan pada garis lurus berbeza 78°. Berapakah sudut yang lebih kecil?",
       "options": [
-        "41°",
         "51°",
-        "61°",
-        "129°"
+        "39°",
+        "78°",
+        "102°"
       ],
-      "answerIndex": 1,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "straight_angle",
+      "constructFamily": "supplementary_angles_difference",
       "levelSignal": 2,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
-      "visual": {
-        "kind": "straight_line_angle",
-        "known_angle_deg": 129
-      }
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S33-B23",
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Rajah koordinat menunjukkan titik pada (3, 3). Titik bergerak 4 unit ke kanan dan 5 unit ke atas. Apakah koordinat akhir?",
+      "question": "Sebuah titik bermula pada (3, 3), bergerak 4 unit ke kanan dan 5 unit ke atas. Berapakah beza antara koordinat y dan x pada kedudukan akhir?",
       "options": [
-        "(7, 2)",
-        "(8, 7)",
-        "(7, 8)",
-        "(4, 8)"
+        "1",
+        "2",
+        "3",
+        "4"
       ],
-      "answerIndex": 2,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "coordinate_translation",
+      "constructFamily": "coordinate_difference_after_translation",
       "levelSignal": 3,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
-      "visual": {
-        "kind": "coordinate_move",
-        "start": [
-          3,
-          3
-        ],
-        "move_right": 4
-      }
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S33-B24",
@@ -1550,21 +1538,21 @@
       "section": "BAHAGIAN B",
       "category": "Bahasa Melayu",
       "format": "MCQ",
-      "question": "Pilih ayat yang menunjukkan tujuan dengan jelas.",
+      "question": "Dalam laporan sistem pengairan, ayat manakah paling jelas menyatakan tujuan pemasangan sensor?",
       "options": [
+        "Sensor dipasang supaya kelembapan tanah dapat dipantau secara berkala.",
         "Sensor kerana tanah dipantau.",
         "Tanah walaupun sensor.",
-        "Dipasang tetapi supaya tanah.",
-        "Sensor dipasang supaya kelembapan tanah dapat dipantau secara berkala."
+        "Dipasang tetapi supaya tanah."
       ],
-      "answerIndex": 3,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "purpose_clause",
+      "constructFamily": "purpose_clause_irrigation_sensor",
       "levelSignal": 2,
       "contentDomain": "Bahasa Melayu",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S33-B37",
@@ -1613,21 +1601,21 @@
       "section": "BAHAGIAN B",
       "category": "English",
       "format": "MCQ",
-      "question": "Choose the correct sentence using 'before'.",
+      "question": "Which sentence correctly uses 'before' in an irrigation instruction?",
       "options": [
+        "Check the soil moisture before turning on the irrigation system.",
         "Check soil before turning moisture system.",
         "Before soil moisture turned system.",
-        "Check the soil moisture before turning on the irrigation system.",
         "The moisture before irrigation checked."
       ],
-      "answerIndex": 2,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "time_clause",
+      "constructFamily": "before_irrigation_instruction",
       "levelSignal": 2,
       "contentDomain": "English",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S33-B40",
@@ -1676,21 +1664,21 @@
       "section": "BAHAGIAN B",
       "category": "English",
       "format": "MCQ",
-      "question": "Choose the correct sentence using 'while'.",
+      "question": "Which sentence correctly uses 'while' to describe two garden measurements happening at the same time?",
       "options": [
-        "One group while height another moisture.",
         "One group measured plant height while another checked soil moisture.",
-        "While measured because moisture.",
-        "One group measured plant height while another checked soil moisture."
+        "One group measured height, another because soil moisture.",
+        "While plant height one group and moisture another.",
+        "One group while measured because another checked."
       ],
-      "answerIndex": 1,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "simultaneous_actions",
+      "constructFamily": "while_parallel_garden_measurements",
       "levelSignal": 3,
       "contentDomain": "English",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S33-B43",
@@ -1739,7 +1727,7 @@
       "section": "BAHAGIAN B",
       "category": "English",
       "format": "MCQ",
-      "question": "Which sentence makes a cautious claim?",
+      "question": "Which sentence makes the most careful conclusion after testing compost on only a few plants?",
       "options": [
         "The compost appears to have improved growth in this small trial.",
         "Compost always makes every plant grow faster.",
@@ -1749,11 +1737,11 @@
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "cautious_claim",
+      "constructFamily": "cautious_claim_small_plant_trial",
       "levelSignal": 3,
       "contentDomain": "English",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S33-B46",
@@ -2339,7 +2327,8 @@
   "qa": {
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
-    "answerBalanceTarget": "18/18/17/17"
+    "answerBalanceTarget": "18/18/17/17",
+    "manualEditorialReview": "A12 false visual cue removed; B01/B03/B22/B23/B36/B39/B42/B45 rebuilt after global audit"
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
