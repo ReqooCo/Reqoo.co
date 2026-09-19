@@ -777,21 +777,21 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Urutan 5, 12, 26, 54, 110 dibina dengan aturan ×2 +2. Apakah nombor seterusnya?",
+      "question": "Sebuah sistem skor memberi 5 mata asas, kemudian menambah dua kali nombor pusingan. Berapakah beza skor antara pusingan ke-12 dan pusingan ke-7?",
       "options": [
-        "222",
-        "218",
-        "220",
-        "224"
+        "10",
+        "5",
+        "12",
+        "14"
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "double_plus_two",
+      "constructFamily": "linear_score_difference",
       "levelSignal": 3,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S36-B02",
@@ -819,17 +819,17 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Apabila 46 dibahagi dengan 7, bakinya 4. Antara 21, 28, 35 dan 46, nombor manakah mempunyai baki bukan sifar apabila dibahagi 7?",
+      "question": "Satu nombor menghasilkan baki 4 apabila dibahagi dengan 7. Jika nombor itu ditambah 10, apakah baki baharu apabila dibahagi dengan 7?",
       "options": [
-        "21",
-        "28",
-        "46",
-        "35"
+        "0",
+        "1",
+        "3",
+        "4"
       ],
-      "answerIndex": 2,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "remainder_mod7",
+      "constructFamily": "remainder_after_increment",
       "levelSignal": 2,
       "contentDomain": "IQ",
       "setLevel": 2,
@@ -1265,21 +1265,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Sebuah titik bermula pada (2, 1), bergerak 6 unit ke kanan dan 5 unit ke atas. Berapakah jumlah koordinat akhir?",
+      "question": "Sebuah titik bermula pada (2, 1), bergerak 6 unit ke kanan dan 5 unit ke atas. Berapakah jumlah jarak mendatar dan menegak yang ditempuh?",
       "options": [
-        "12",
-        "13",
-        "14",
-        "16"
+        "11 unit",
+        "8 unit",
+        "7 unit",
+        "13 unit"
       ],
-      "answerIndex": 2,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "coordinate_sum_after_move",
+      "constructFamily": "coordinate_manhattan_path",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S36-B24",
@@ -2328,7 +2328,7 @@
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
     "answerBalanceTarget": "18/18/17/17",
-    "manualEditorialReview": "B03/B05/B07/B09/B22/B28/B69 rebuilt; B64 false visual cue removed"
+    "manualEditorialReview": "B01/B03/B23 rebuilt to remove final template collisions"
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
