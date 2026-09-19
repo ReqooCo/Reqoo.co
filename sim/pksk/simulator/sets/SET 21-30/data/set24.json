@@ -358,7 +358,7 @@
       "section": "BAHAGIAN A",
       "category": "SQ",
       "format": "SITUATIONAL",
-      "question": "Kamu tersalah mencatat unit gram sebagai kilogram dalam jadual laporan. Apakah tindakan terbaik?",
+      "question": "Kamu tersalah mencatat unit gram sebagai kilogram dalam rekod laporan. Apakah tindakan terbaik?",
       "options": [
         "Biarkan nombor sama",
         "Betulkan unit segera dan semak semua pengiraan atau kesimpulan yang menggunakan nilai itu",
@@ -377,7 +377,7 @@
       "levelSignal": 4,
       "contentDomain": "SQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
     },
     {
@@ -777,21 +777,21 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Urutan 8, 19, 41, 85 dibina dengan aturan yang sama. Apakah nombor seterusnya?",
+      "question": "Satu aturan menukar nombor x kepada x² + 2. Jika input ialah 9, apakah output?",
       "options": [
-        "173",
-        "169",
-        "171",
-        "175"
+        "83",
+        "81",
+        "79",
+        "85"
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "recursive_double_plus_three",
+      "constructFamily": "function_square_plus_two",
       "levelSignal": 3,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S24-B02",
@@ -1340,21 +1340,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Purata 8 nombor ialah 29. Jika satu nilai 22 diganti dengan 38, berapakah pertambahan purata?",
+      "question": "Lapan nombor mempunyai purata 29. Jika satu nilai 22 dikeluarkan, berapakah purata tujuh nombor yang tinggal?",
       "options": [
-        "1",
-        "2",
-        "3",
-        "4"
+        "29",
+        "30",
+        "31",
+        "32"
       ],
       "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "mean_change",
+      "constructFamily": "mean_after_removal",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S24-B27",
@@ -1382,42 +1382,42 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Sebuah van bergerak 70 km pada 35 km/j dan 72 km pada 48 km/j. Berapakah jumlah masa perjalanan?",
+      "question": "Sebuah van bergerak 70 km pada 35 km/j dan kemudian 72 km pada 48 km/j. Apakah pecahan daripada jumlah masa perjalanan yang digunakan untuk perjalanan pertama?",
       "options": [
-        "3 jam",
-        "4 jam",
-        "4 jam 30 minit",
-        "3 jam 30 minit"
+        "3/7",
+        "1/2",
+        "2/3",
+        "4/7"
       ],
       "answerIndex": 3,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "two_speed_time",
+      "constructFamily": "two_speed_time_fraction",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S24-B29",
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Stok 2,600 unit bertambah 10%, kemudian 360 unit dihantar. Berapakah stok akhir?",
+      "question": "Stok 2,600 unit bertambah 10%, kemudian 360 unit dihantar. Selepas itu stok tinggal 2,500 unit. Berapa unit lagi perlu dihantar supaya stok menjadi 2,300 unit?",
       "options": [
-        "2,500",
-        "2,240",
-        "2,340",
-        "2,860"
+        "200",
+        "160",
+        "260",
+        "360"
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "increase_then_subtract",
+      "constructFamily": "inventory_target_reduction",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S24-B30",
@@ -2117,21 +2117,21 @@
       "section": "BAHAGIAN B",
       "category": "Pengetahuan Am",
       "format": "MCQ",
-      "question": "Apakah ibu negeri Sabah?",
+      "question": "Apakah fungsi utama pusat pemindahan sementara semasa berlaku bencana?",
       "options": [
-        "Sandakan",
-        "Tawau",
-        "Kota Kinabalu",
-        "Lahad Datu"
+        "Menjual barang keperluan.",
+        "Menjadi tempat hiburan.",
+        "Memberi tempat perlindungan sementara kepada penduduk terjejas.",
+        "Menggantikan pejabat pos."
       ],
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 1,
-      "constructFamily": "malaysia_geography",
+      "constructFamily": "disaster_relief_service",
       "levelSignal": 1,
       "contentDomain": "Pengetahuan Am",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S24-B64",
@@ -2339,7 +2339,8 @@
   "qa": {
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
-    "answerBalanceTarget": "18/18/17/17"
+    "answerBalanceTarget": "18/18/17/17",
+    "manualEditorialReview": "A14 false visual cue removed; B01/B26/B28/B29/B63 rebuilt to eliminate global collisions"
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
