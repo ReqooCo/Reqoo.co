@@ -903,7 +903,7 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Jika ● = 5 dan ▲ = 8, berapakah 2▲ − ●?",
+      "question": "Satu kad skor memberikan 5 mata bagi setiap bulatan dan 8 mata bagi setiap segi tiga. Jika kad itu mempunyai satu bulatan dan dua segi tiga, kemudian 10 mata ditolak, berapakah skor akhir?",
       "options": [
         "3",
         "13",
@@ -913,11 +913,11 @@
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "symbolic",
+      "constructFamily": "symbolic_score_context",
       "levelSignal": 2,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S11-B08",
@@ -1244,21 +1244,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Pada rajah garis lurus, satu sudut ialah 132°. Berapakah sudut bersebelahan?",
+      "question": "Rajah garis lurus menunjukkan satu sudut 132° dan sudut bersebelahan x. Berapakah nilai 2x?",
       "options": [
-        "38°",
-        "48°",
-        "58°",
+        "86°",
+        "96°",
+        "106°",
         "132°"
       ],
       "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "visual_angle",
+      "constructFamily": "straight_angle_double_unknown",
       "levelSignal": 2,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "visual": {
         "kind": "straight_line_angle",
         "known_angle_deg": 132
@@ -1387,21 +1387,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Sebuah bas bergerak 96 km dalam 1 jam 36 minit. Berapakah purata lajunya?",
+      "question": "Satu perjalanan sejauh 96 km mengambil masa 1 jam 36 minit. Jika kadar purata dianggap seragam, berapakah jarak yang akan ditempuh dalam 30 minit pada kadar yang sama?",
       "options": [
-        "48 km/j",
-        "64 km/j",
-        "72 km/j",
-        "60 km/j"
+        "24 km",
+        "32 km",
+        "36 km",
+        "30 km"
       ],
       "answerIndex": 3,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "speed",
+      "constructFamily": "speed_projection",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S11-B29",
@@ -1429,21 +1429,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Pada pelan, 3 cm mewakili 7.5 m. Satu laluan dilukis 8.4 cm. Berapakah panjang sebenar?",
+      "question": "Sebuah model trek dibina pada skala 3 cm mewakili 7.5 m. Jika panjang trek sebenar ialah 21 m, berapakah panjangnya pada model?",
       "options": [
-        "11.4 m",
-        "21 m",
-        "18 m",
-        "28 m"
+        "6.4 cm",
+        "7.2 cm",
+        "9.0 cm",
+        "8.4 cm"
       ],
-      "answerIndex": 1,
+      "answerIndex": 3,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "scale",
+      "constructFamily": "reverse_scale",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S11-B31",
@@ -2345,7 +2345,7 @@
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
     "answerBalanceTarget": "18/18/17/17",
-    "manualEditorialReview": "B03 corrected: unique non-multiple of 7"
+    "manualEditorialReview": "B07/B22/B28/B30 rewritten for global uniqueness; B03 answer validity previously corrected"
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
