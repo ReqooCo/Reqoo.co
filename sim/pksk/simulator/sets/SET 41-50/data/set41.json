@@ -903,21 +903,21 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Jika A+B=24, B+C=20 dan A+C=18, berapakah B?",
+      "question": "Satu kod pasangan menggunakan aturan 2 × nombor pertama + nombor kedua. Berapakah nilai pasangan (6, 7)?",
       "options": [
-        "11",
-        "12",
-        "13",
-        "14"
+        "17",
+        "18",
+        "19",
+        "20"
       ],
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "pair_sum_system",
+      "constructFamily": "ordered_pair_linear_code",
       "levelSignal": 4,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S41-B08",
@@ -945,21 +945,21 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Sebuah mesin memberi output x/2 + 6. Jika output 15, apakah input?",
+      "question": "Satu kod menyongsangkan dua digit kemudian menolak 2. Contohnya 41 menjadi 12. Apakah hasil bagi 53?",
       "options": [
-        "18",
-        "16",
-        "20",
-        "30"
+        "33",
+        "31",
+        "35",
+        "37"
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "reverse_fraction_rule",
+      "constructFamily": "digit_reverse_minus_two",
       "levelSignal": 3,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S41-B10",
@@ -1134,26 +1134,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Rajah menunjukkan segi empat tepat 20 cm × 9 cm. Jika panjang dikurangkan 10%, berapakah luas baharu?",
+      "question": "Sepuluh kotak masing-masing mengandungi 18 unit barang. Jika 10% daripada semua unit rosak, berapakah unit yang masih boleh dijual?",
       "options": [
-        "144 cm²",
-        "162 cm²",
-        "180 cm²",
-        "198 cm²"
+        "144",
+        "162",
+        "170",
+        "180"
       ],
       "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "visual_percentage_dimension",
+      "constructFamily": "inventory_damage_percentage",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
-      "visual": {
-        "kind": "rectangle",
-        "length_cm": 20,
-        "width_cm": 9
-      }
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S41-B19",
@@ -1213,73 +1208,63 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Gunakan lima nilai jualan pada rajah. Berapakah median?",
+      "question": "Jualan lima hari ialah 20, 24, 28, 32 dan 36 unit. Jika hari dengan jualan tertinggi dikeluarkan, berapakah purata empat hari yang tinggal?",
       "options": [
-        "28",
+        "26",
         "24",
-        "32",
-        "36"
+        "28",
+        "30"
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "visual_median",
+      "constructFamily": "mean_after_highest_removed",
       "levelSignal": 2,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
-      "visual": {
-        "kind": "five_value_data",
-        "values": [
-          20,
-          24,
-          28,
-          32,
-          36
-        ]
-      }
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S41-B22",
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Dua sudut bersebelahan pada garis lurus mempunyai nisbah 3 : 5. Berapakah sudut yang lebih kecil?",
+      "question": "Sebuah papan tanda dipusing 70° ke kanan kemudian 25° ke kiri. Berapakah putaran bersih daripada arah asal?",
       "options": [
-        "60°",
-        "67.5°",
-        "72°",
-        "112.5°"
+        "35°",
+        "45°",
+        "55°",
+        "95°"
       ],
       "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "supplementary_angle_ratio",
+      "constructFamily": "net_rotation_two_steps",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S41-B23",
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Sebuah titik bermula pada (3,2), bergerak 4 unit ke kanan dan 5 unit ke atas. Berapakah hasil darab koordinat akhir?",
+      "question": "Tiga pek label berharga RM21 pada kadar yang sama. Jika 5 pek dibeli dan caj penghantaran RM14 dikenakan, berapakah jumlah bayaran?",
       "options": [
-        "35",
-        "42",
-        "49",
-        "56"
+        "RM42",
+        "RM45",
+        "RM49",
+        "RM56"
       ],
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "coordinate_product",
+      "constructFamily": "unit_rate_plus_shipping",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S41-B24",
@@ -1538,7 +1523,7 @@
       "section": "BAHAGIAN B",
       "category": "Bahasa Melayu",
       "format": "MCQ",
-      "question": "Pilih ayat yang menunjukkan tujuan dengan jelas.",
+      "question": "Dalam laporan audit stok, ayat manakah paling jelas menyatakan tujuan membuat kiraan fizikal?",
       "options": [
         "Stok kerana rekod dikira.",
         "Rekod walaupun stok.",
@@ -1548,11 +1533,11 @@
       "answerIndex": 3,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "purpose_clause",
+      "constructFamily": "purpose_clause_inventory_audit",
       "levelSignal": 2,
       "contentDomain": "Bahasa Melayu",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S41-B37",
@@ -1727,7 +1712,7 @@
       "section": "BAHAGIAN B",
       "category": "English",
       "format": "MCQ",
-      "question": "Which sentence makes a cautious claim?",
+      "question": "After reviewing only three weeks of sales, which sentence makes the most careful conclusion?",
       "options": [
         "Sales appear stronger over the weeks measured, but more data may be useful.",
         "Sales will rise forever.",
@@ -1737,11 +1722,11 @@
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "cautious_claim",
+      "constructFamily": "cautious_claim_sales_window",
       "levelSignal": 3,
       "contentDomain": "English",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S41-B46",
@@ -1832,21 +1817,21 @@
       "section": "BAHAGIAN B",
       "category": "Sains",
       "format": "MCQ",
-      "question": "What is the purpose of insulation around an electrical wire?",
+      "question": "Why is copper commonly used as the conducting core inside many electrical cables?",
       "options": [
-        "To store money",
-        "To reduce unwanted contact with the conducting core.",
-        "To increase current without limit",
-        "To measure mass"
+        "Copper stores money.",
+        "Copper is a good conductor of electric current.",
+        "Copper stops all current.",
+        "Copper measures mass."
       ],
       "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "electrical_insulation",
+      "constructFamily": "copper_conductor",
       "levelSignal": 2,
       "contentDomain": "Sains",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S41-B51",
@@ -1874,21 +1859,21 @@
       "section": "BAHAGIAN B",
       "category": "Sains",
       "format": "MCQ",
-      "question": "Which process changes liquid water into water vapour?",
+      "question": "An ice pack is left at room temperature until the solid ice becomes liquid water. Which change of state occurs?",
       "options": [
         "condensation",
         "freezing",
-        "melting",
-        "evaporation"
+        "evaporation",
+        "melting"
       ],
       "answerIndex": 3,
       "type": "objective",
       "plannedLevel": 1,
-      "constructFamily": "state_change",
+      "constructFamily": "melting_ice_context",
       "levelSignal": 1,
       "contentDomain": "Sains",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S41-B53",
@@ -2084,21 +2069,21 @@
       "section": "BAHAGIAN B",
       "category": "Pengetahuan Am",
       "format": "MCQ",
-      "question": "Apakah maksud stok?",
+      "question": "Situasi manakah paling jelas menunjukkan maksud stok dalam koperasi?",
       "options": [
-        "Jumlah pelanggan sahaja",
-        "Barang yang disimpan untuk dijual atau digunakan",
-        "Harga sewa",
-        "Masa operasi"
+        "Bilangan pelanggan yang beratur.",
+        "Kotak barang yang disimpan di rak untuk dijual kemudian.",
+        "Jumlah masa koperasi dibuka.",
+        "Harga sewa ruang."
       ],
       "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "inventory",
+      "constructFamily": "inventory_example",
       "levelSignal": 2,
       "contentDomain": "Pengetahuan Am",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S41-B63",
@@ -2126,42 +2111,42 @@
       "section": "BAHAGIAN B",
       "category": "Pengetahuan Am",
       "format": "MCQ",
-      "question": "Apakah maksud untung?",
+      "question": "Sebuah koperasi memperoleh hasil RM500 dan menanggung kos RM380. Berapakah untungnya?",
       "options": [
-        "Jumlah hasil sahaja",
-        "Harga jual sahaja",
-        "Bilangan stok",
-        "Lebihan hasil selepas kos berkaitan ditolak"
+        "RM500",
+        "RM380",
+        "RM880",
+        "RM120"
       ],
       "answerIndex": 3,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "profit",
+      "constructFamily": "profit_from_revenue_cost",
       "levelSignal": 3,
       "contentDomain": "Pengetahuan Am",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S41-B65",
       "section": "BAHAGIAN B",
       "category": "Pengetahuan Am",
       "format": "MCQ",
-      "question": "Mengapakah harga perlu dipaparkan dengan jelas?",
+      "question": "Apakah manfaat utama meletakkan tanda harga yang besar dan jelas berhampiran produk?",
       "options": [
-        "Supaya pelanggan boleh membuat pilihan dengan maklumat harga yang mudah difahami",
-        "Supaya semua produk sama harga",
-        "Supaya resit tidak perlu",
-        "Supaya stok tidak perlu dikira"
+        "Pelanggan boleh mengetahui harga sebelum membuat pilihan.",
+        "Semua produk akan mempunyai harga yang sama.",
+        "Resit tidak lagi diperlukan.",
+        "Stok tidak perlu dikira."
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "price_transparency",
+      "constructFamily": "price_sign_benefit",
       "levelSignal": 2,
       "contentDomain": "Pengetahuan Am",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S41-B66",
@@ -2252,7 +2237,7 @@
       "section": "BAHAGIAN B",
       "category": "Penyelesaian Masalah",
       "format": "MCQ",
-      "question": "Pembekal A lewat 2 daripada 40 penghantaran. Pembekal B lewat 3 daripada 75 penghantaran. Berdasarkan kadar kelewatan sahaja, pembekal manakah lebih baik?",
+      "question": "Pembekal A lewat 2 kali dan setiap kelewatan menyebabkan kos tambahan RM30. Pembekal B lewat 3 kali tetapi setiap kelewatan menyebabkan kos tambahan RM15. Berdasarkan jumlah kos kelewatan sahaja, pembekal manakah lebih baik?",
       "options": [
         "Pembekal A",
         "Pembekal B",
@@ -2262,11 +2247,11 @@
       "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "supplier_failure_rate",
+      "constructFamily": "supplier_delay_cost_compare",
       "levelSignal": 4,
       "contentDomain": "Penyelesaian Masalah",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     }
   ],
   "writing": [
@@ -2327,7 +2312,8 @@
   "qa": {
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
-    "answerBalanceTarget": "18/18/17/17"
+    "answerBalanceTarget": "18/18/17/17",
+    "manualEditorialReview": "Fourteen Set41 audit collisions rebuilt with distinct constructs"
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
