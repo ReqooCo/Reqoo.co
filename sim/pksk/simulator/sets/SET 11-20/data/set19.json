@@ -223,7 +223,7 @@
       "section": "BAHAGIAN A",
       "category": "SSQ",
       "format": "SITUATIONAL",
-      "question": "Satu carta menunjukkan peningkatan besar tetapi paksi menegak bermula pada nilai tinggi. Apakah tindakan terbaik?",
+      "question": "Satu paparan data menunjukkan peningkatan besar, tetapi skala menegaknya bermula pada nilai tinggi. Apakah tindakan terbaik?",
       "options": [
         "Terima kerana beza nampak jelas",
         "Semak skala sebenar dan nilai asal sebelum menilai saiz perubahan",
@@ -242,7 +242,7 @@
       "levelSignal": 4,
       "contentDomain": "SSQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
     },
     {
@@ -593,7 +593,7 @@
       "section": "BAHAGIAN A",
       "category": "SSQ",
       "format": "AGREE_DISAGREE",
-      "question": "Setuju atau Tidak setuju: Paksi carta boleh mempengaruhi cara kita melihat besar kecil perubahan.",
+      "question": "Setuju atau Tidak setuju: Skala menegak yang dipilih boleh mempengaruhi cara kita melihat besar kecil sesuatu perubahan.",
       "options": [
         "Setuju",
         "Tidak setuju"
@@ -608,7 +608,7 @@
       "levelSignal": 3,
       "contentDomain": "SSQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
     },
     {
@@ -1333,12 +1333,7 @@
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
-      "visual": {
-        "kind": "rectangle",
-        "length_cm": 20,
-        "width_cm": 18
-      }
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S19-B26",
@@ -1576,7 +1571,7 @@
       "section": "BAHAGIAN B",
       "category": "Bahasa Melayu",
       "format": "MCQ",
-      "question": "Ayat manakah paling sesuai sebagai cadangan laporan?",
+      "question": "Pernyataan manakah paling sesuai diletakkan dalam bahagian cadangan selepas kajian penggunaan tenaga?",
       "options": [
         "Dicadangkan supaya penggunaan tenaga dipantau sekurang-kurangnya sebulan selepas sistem baharu dipasang.",
         "Sistem itu berwarna putih.",
@@ -1586,18 +1581,18 @@
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "report_recommendation",
+      "constructFamily": "report_recommendation_energy",
       "levelSignal": 3,
       "contentDomain": "Bahasa Melayu",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S19-B38",
       "section": "BAHAGIAN B",
       "category": "Bahasa Melayu",
       "format": "MCQ",
-      "question": "Nadia membandingkan angka asal dengan skala paksi sebelum menilai sebuah carta. Apakah tujuannya?",
+      "question": "Nadia membandingkan angka asal dengan skala menegak sebelum menilai satu paparan data. Apakah tujuannya?",
       "options": [
         "menjadikan carta lebih cantik",
         "mengelakkan tafsiran berlebihan akibat cara carta dipaparkan",
@@ -1611,7 +1606,7 @@
       "levelSignal": 4,
       "contentDomain": "Bahasa Melayu",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S19-B39",
@@ -2185,21 +2180,21 @@
       "section": "BAHAGIAN B",
       "category": "Pengetahuan Am",
       "format": "MCQ",
-      "question": "Apakah fungsi utama pusat kitar semula?",
+      "question": "Sebuah kawasan mengumpulkan kertas, kaca dan logam secara berasingan sebelum dihantar untuk diproses. Apakah tujuan utama amalan ini?",
       "options": [
-        "Menghasilkan semua bahan baharu",
-        "Mengumpul dan mengasingkan bahan tertentu supaya boleh diproses semula",
-        "Menghapuskan semua sisa",
-        "Mengawal cuaca"
+        "Memudahkan bahan sesuai diproses semula mengikut jenis.",
+        "Menghasilkan semua bahan baharu tanpa proses lain.",
+        "Menghapuskan semua sisa serta-merta.",
+        "Mengawal cuaca setempat."
       ],
-      "answerIndex": 1,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "recycling_service",
+      "constructFamily": "recycling_separation",
       "levelSignal": 2,
       "contentDomain": "Pengetahuan Am",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S19-B67",
@@ -2344,7 +2339,8 @@
   "qa": {
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
-    "answerBalanceTarget": "18/18/17/17"
+    "answerBalanceTarget": "18/18/17/17",
+    "manualEditorialReview": "A09/A23/B38 false visual cues removed; B25 redundant visual removed; B37/B66 rewritten for global uniqueness"
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
