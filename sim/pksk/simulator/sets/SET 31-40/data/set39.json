@@ -223,7 +223,7 @@
       "section": "BAHAGIAN A",
       "category": "SSQ",
       "format": "SITUATIONAL",
-      "question": "Satu statistik viral hanya menunjukkan satu graf tanpa sumber asal. Apakah tindakan terbaik?",
+      "question": "Satu dakwaan viral memaparkan angka yang kuat tetapi tidak memberikan pautan kepada sumber asal. Apakah tindakan terbaik?",
       "options": [
         "Kongsi jika grafik cantik",
         "Cari sumber data asal dan semak kaedah sebelum mempercayai dakwaan",
@@ -242,7 +242,7 @@
       "levelSignal": 4,
       "contentDomain": "SSQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
     },
     {
@@ -1134,53 +1134,42 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Rajah menunjukkan segi empat tepat 16 cm × 10 cm. Jika panjang bertambah 25%, berapakah luas baharu?",
+      "question": "Fail video bersaiz 240 MB dimampatkan sebanyak 25%. Kemudian sari kata menambah 20 MB. Berapakah saiz akhir?",
       "options": [
-        "160 cm²",
-        "200 cm²",
-        "180 cm²",
-        "240 cm²"
+        "180 MB",
+        "200 MB",
+        "220 MB",
+        "260 MB"
       ],
       "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "visual_percentage_dimension",
+      "constructFamily": "compression_then_addition",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
-      "visual": {
-        "kind": "rectangle",
-        "length_cm": 16,
-        "width_cm": 10
-      }
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S39-B19",
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Rajah kuboid berukuran 8 cm × 6 cm × 5 cm. Jika panjang bertambah 50%, berapakah isipadu baharu?",
+      "question": "Tiga klip video masing-masing 80 MB dan dua fail audio masing-masing 60 MB disimpan dalam satu folder. Berapakah jumlah saiz folder itu?",
       "options": [
-        "240 cm³",
-        "300 cm³",
-        "360 cm³",
-        "480 cm³"
+        "300 MB",
+        "320 MB",
+        "360 MB",
+        "400 MB"
       ],
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "visual_volume_percentage",
+      "constructFamily": "multi_file_storage_total",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
-      "visual": {
-        "kind": "cuboid",
-        "length_cm": 8,
-        "width_cm": 6,
-        "height_cm": 5
-      }
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S39-B20",
@@ -1213,52 +1202,42 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Gunakan lima saiz fail pada rajah. Berapakah median?",
+      "question": "Lima fail bersaiz 16, 20, 24, 28 dan 32 MB. Fail 32 MB dipadam. Berapakah purata saiz empat fail yang tinggal?",
       "options": [
-        "24 MB",
+        "22 MB",
         "20 MB",
-        "28 MB",
-        "32 MB"
+        "24 MB",
+        "25 MB"
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "visual_median",
+      "constructFamily": "mean_after_file_removal",
       "levelSignal": 2,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
-      "visual": {
-        "kind": "five_value_data",
-        "values": [
-          16,
-          20,
-          24,
-          28,
-          32
-        ]
-      }
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S39-B22",
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Dua sudut bersebelahan pada garis lurus mempunyai nisbah 4 : 5. Berapakah sudut yang lebih kecil?",
+      "question": "Kamera dipusing 80° ke kanan kemudian 35° ke kiri. Berapakah putaran bersih dari arah asal?",
       "options": [
-        "72°",
-        "80°",
-        "90°",
-        "100°"
+        "40°",
+        "45°",
+        "50°",
+        "55°"
       ],
       "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "supplementary_angle_ratio",
+      "constructFamily": "net_camera_rotation",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S39-B23",
@@ -1370,21 +1349,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Video A mendapat 240 tontonan dalam 6 jam. Video B 300 tontonan dalam 10 jam. Video manakah mempunyai kadar tontonan sejam lebih tinggi?",
+      "question": "Video A ditonton 240 orang dan 60 menonton hingga tamat. Video B ditonton 300 orang dan 90 menonton hingga tamat. Video manakah mempunyai kadar tontonan tamat lebih tinggi?",
       "options": [
-        "Video B",
+        "Video A",
         "Kedua-duanya sama",
         "Maklumat tidak cukup",
-        "Video A"
+        "Video B"
       ],
       "answerIndex": 3,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "normalized_view_rate",
+      "constructFamily": "completion_rate_compare",
       "levelSignal": 4,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S39-B29",
@@ -1538,7 +1517,7 @@
       "section": "BAHAGIAN B",
       "category": "Bahasa Melayu",
       "format": "MCQ",
-      "question": "Pilih ayat yang menunjukkan tujuan dengan jelas.",
+      "question": "Dalam penerangan video yang mahu meningkatkan kebolehaksesan, ayat manakah paling jelas menyatakan tujuan sari kata?",
       "options": [
         "Sari kata kerana penonton mesej.",
         "Penonton walaupun sari kata.",
@@ -1548,11 +1527,11 @@
       "answerIndex": 3,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "purpose_clause",
+      "constructFamily": "purpose_clause_subtitles",
       "levelSignal": 2,
       "contentDomain": "Bahasa Melayu",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S39-B37",
@@ -1727,7 +1706,7 @@
       "section": "BAHAGIAN B",
       "category": "English",
       "format": "MCQ",
-      "question": "Which sentence makes a cautious claim?",
+      "question": "After only a small group reviews a new edit, which sentence makes the most careful conclusion?",
       "options": [
         "The revised edit appears clearer to the small group who reviewed it.",
         "Everyone will always prefer this edit.",
@@ -1737,11 +1716,11 @@
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "cautious_claim",
+      "constructFamily": "cautious_claim_small_review_group",
       "levelSignal": 3,
       "contentDomain": "English",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S39-B46",
@@ -2105,42 +2084,42 @@
       "section": "BAHAGIAN B",
       "category": "Pengetahuan Am",
       "format": "MCQ",
-      "question": "Apakah maksud sumber asal?",
+      "question": "Manakah contoh paling jelas bagi sumber asal untuk mengesahkan bila satu foto sekolah diambil?",
       "options": [
-        "Ringkasan tanpa rujukan",
-        "Iklan rawak",
-        "Sumber pertama atau utama tempat data, kenyataan atau karya diterbitkan",
-        "Komen tanpa nama"
+        "Catatan blog yang menyalin foto tanpa rujukan.",
+        "Komen tanpa nama di media sosial.",
+        "Fail foto asal daripada kamera bersama metadata tarikh yang boleh disemak.",
+        "Iklan yang menggunakan semula foto itu."
       ],
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "original_source",
+      "constructFamily": "original_source_photo_example",
       "levelSignal": 3,
       "contentDomain": "Pengetahuan Am",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S39-B64",
       "section": "BAHAGIAN B",
       "category": "Pengetahuan Am",
       "format": "MCQ",
-      "question": "Apakah fungsi sandaran data?",
+      "question": "Amalan manakah paling jelas menghasilkan sandaran data yang benar-benar berguna?",
       "options": [
-        "Menghapuskan semua risiko",
-        "Menambah resolusi video",
-        "Menggantikan kata laluan",
-        "Menyediakan salinan yang boleh digunakan jika data utama hilang atau rosak"
+        "Menyimpan dua pintasan kepada fail yang sama.",
+        "Menamakan fail sebagai backup tanpa menyalinnya.",
+        "Menggantikan kata laluan fail.",
+        "Menyimpan salinan kedua di lokasi berbeza dan menguji bahawa fail itu boleh dibuka."
       ],
       "answerIndex": 3,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "backup",
+      "constructFamily": "usable_backup_practice",
       "levelSignal": 2,
       "contentDomain": "Pengetahuan Am",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S39-B65",
@@ -2231,21 +2210,21 @@
       "section": "BAHAGIAN B",
       "category": "Penyelesaian Masalah",
       "format": "MCQ",
-      "question": "Video A mendapat 360 tontonan dalam 9 jam. Video B 420 tontonan dalam 14 jam. Video manakah mempunyai kadar tontonan sejam lebih tinggi?",
+      "question": "Storan mempunyai kapasiti 2,048 MB. Ia menyimpan video 360 MB, audio 420 MB dan tiga imej 80 MB setiap satu. Berapakah ruang yang masih kosong?",
       "options": [
-        "Video A",
-        "Video B",
-        "Kedua-duanya sama",
-        "Maklumat tidak cukup"
+        "1,028 MB",
+        "980 MB",
+        "1,068 MB",
+        "1,188 MB"
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "normalized_view_compare",
+      "constructFamily": "storage_capacity_multifile",
       "levelSignal": 4,
       "contentDomain": "Penyelesaian Masalah",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S39-B70",
@@ -2327,7 +2306,8 @@
   "qa": {
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
-    "answerBalanceTarget": "18/18/17/17"
+    "answerBalanceTarget": "18/18/17/17",
+    "manualEditorialReview": "A09 false visual cue removed; ten Set39 template/exact collisions rebuilt"
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
