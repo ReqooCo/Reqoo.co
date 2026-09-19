@@ -819,7 +819,7 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Antara 21, 28, 35 dan 43, yang manakah bukan gandaan 7?",
+      "question": "Antara 21, 28, 35 dan 43, nombor manakah memberikan baki 1 apabila dibahagi dengan 7?",
       "options": [
         "21",
         "28",
@@ -829,11 +829,11 @@
       "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "multiple_classification",
+      "constructFamily": "remainder_classification",
       "levelSignal": 2,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S26-B04",
@@ -861,21 +861,21 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Pola huruf ialah C, F, K, R, ... Jurang bertambah 2 setiap kali. Huruf seterusnya ialah ___.",
+      "question": "Huruf B, E, J, Q dan Z berada pada kedudukan abjad 2, 5, 10, 17 dan 26. Beza kedudukan berturut-turut ialah 3, 5, 7 dan 9. Jika pola beza diteruskan, apakah beza seterusnya?",
       "options": [
-        "A",
-        "Y",
-        "Z",
-        "B"
+        "11",
+        "10",
+        "12",
+        "13"
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "cyclic_letter_gap",
+      "constructFamily": "odd_gap_rule",
       "levelSignal": 4,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S26-B06",
@@ -1187,21 +1187,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Rajah menunjukkan 16 bahagian sama besar dan 6 berlorek. Berapakah peratus bahagian yang tidak berlorek?",
+      "question": "Rajah menunjukkan 16 bahagian sama besar dan 6 berlorek. Apakah nisbah bahagian tidak berlorek kepada bahagian berlorek dalam bentuk termudah?",
       "options": [
-        "37.5%",
-        "60%",
-        "75%",
-        "62.5%"
+        "3 : 5",
+        "5 : 8",
+        "8 : 3",
+        "5 : 3"
       ],
       "answerIndex": 3,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "visual_unshaded_percentage",
+      "constructFamily": "visual_unshaded_shaded_ratio",
       "levelSignal": 3,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "visual": {
         "kind": "fraction_bar",
         "parts": 16,
@@ -1613,21 +1613,21 @@
       "section": "BAHAGIAN B",
       "category": "English",
       "format": "MCQ",
-      "question": "Choose the correct sentence using 'unless'.",
+      "question": "Which sentence correctly uses 'unless' to explain a condition for an energy-saving sensor to work well?",
       "options": [
+        "The sensor will not save energy unless it is configured correctly.",
         "The sensor unless configured will saved energy.",
         "Unless sensor correct it save.",
-        "The sensor will not save energy unless it is configured correctly.",
         "The sensor will not saving unless configured."
       ],
-      "answerIndex": 2,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "unless_clause",
+      "constructFamily": "unless_sensor_condition",
       "levelSignal": 3,
       "contentDomain": "English",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S26-B40",
@@ -2339,7 +2339,8 @@
   "qa": {
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
-    "answerBalanceTarget": "18/18/17/17"
+    "answerBalanceTarget": "18/18/17/17",
+    "manualEditorialReview": "B03/B05/B20/B39 rebuilt to remove global collisions"
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
