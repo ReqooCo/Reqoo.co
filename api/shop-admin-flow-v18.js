@@ -15,13 +15,18 @@ function auth(request,env,d){
   return !!supplied&&supplied===expected;
 }
 function money(v,max=1000000000){const n=Math.round(Number(v||0));return Number.isFinite(n)?Math.max(0,Math.min(max,n)):0}
+const ENSURE_CACHE=new WeakMap();
 async function ensure(env){
-  await env.DB.batch([
-    env.DB.prepare("CREATE TABLE IF NOT EXISTS reqoo_payments(id TEXT PRIMARY KEY,order_id TEXT NOT NULL,invoice_document_id TEXT,receipt_number TEXT NOT NULL UNIQUE,amount_minor INTEGER NOT NULL,payment_type TEXT NOT NULL CHECK(payment_type IN ('deposit','partial','final','full')),method TEXT NOT NULL,reference TEXT,note TEXT,paid_at TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'confirmed',share_token TEXT NOT NULL UNIQUE,created_at TEXT NOT NULL,updated_at TEXT NOT NULL)"),
-    env.DB.prepare('CREATE INDEX IF NOT EXISTS idx_reqoo_payments_order ON reqoo_payments(order_id,paid_at)'),
-    env.DB.prepare('CREATE INDEX IF NOT EXISTS idx_reqoo_payments_invoice ON reqoo_payments(invoice_document_id,paid_at)'),
-    env.DB.prepare('CREATE TABLE IF NOT EXISTS reqoo_document_sequences(seq_key TEXT PRIMARY KEY,next_number INTEGER NOT NULL DEFAULT 1,updated_at TEXT NOT NULL)')
-  ]);
+  const db=env?.DB;if(!db)throw new Error('D1 binding DB tidak dijumpai');
+  let pending=ENSURE_CACHE.get(db);if(pending)return pending;
+  pending=db.batch([
+    db.prepare("CREATE TABLE IF NOT EXISTS reqoo_payments(id TEXT PRIMARY KEY,order_id TEXT NOT NULL,invoice_document_id TEXT,receipt_number TEXT NOT NULL UNIQUE,amount_minor INTEGER NOT NULL,payment_type TEXT NOT NULL CHECK(payment_type IN ('deposit','partial','final','full')),method TEXT NOT NULL,reference TEXT,note TEXT,paid_at TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'confirmed',share_token TEXT NOT NULL UNIQUE,created_at TEXT NOT NULL,updated_at TEXT NOT NULL)"),
+    db.prepare('CREATE INDEX IF NOT EXISTS idx_reqoo_payments_order ON reqoo_payments(order_id,paid_at)'),
+    db.prepare('CREATE INDEX IF NOT EXISTS idx_reqoo_payments_invoice ON reqoo_payments(invoice_document_id,paid_at)'),
+    db.prepare('CREATE TABLE IF NOT EXISTS reqoo_document_sequences(seq_key TEXT PRIMARY KEY,next_number INTEGER NOT NULL DEFAULT 1,updated_at TEXT NOT NULL)')
+  ]).catch(error=>{ENSURE_CACHE.delete(db);throw error});
+  ENSURE_CACHE.set(db,pending);
+  return pending;
 }
 function receiptSeq(number,year){
   const m=String(number||'').match(new RegExp(`^RC-${year}-(\\d+)$`));
@@ -57,28 +62,30 @@ async function nextReceiptNumber(env){
 }
 
 async function syncLegacyPaidPayments(env,orderId=''){
-  let sql="SELECT p.id,p.order_id,p.provider,p.provider_reference,p.method,p.amount_minor,p.paid_at,p.created_at,p.updated_at,o.total_minor FROM payments p JOIN orders o ON o.id=p.order_id WHERE p.status='paid' AND o.payment_status='paid'",args=[];
+  // Fast path: repair missing invoice links in one set-based statement, then only
+  // inspect legacy payments that have not already been imported.
+  try{
+    await env.DB.prepare("UPDATE reqoo_payments SET invoice_document_id=(SELECT d.id FROM reqoo_documents d WHERE d.order_id=reqoo_payments.order_id AND d.type='invoice' ORDER BY d.created_at,d.id LIMIT 1),updated_at=? WHERE (invoice_document_id IS NULL OR TRIM(invoice_document_id)='') AND EXISTS(SELECT 1 FROM reqoo_documents d2 WHERE d2.order_id=reqoo_payments.order_id AND d2.type='invoice')").bind(NOW()).run();
+  }catch{}
+  let sql="SELECT p.id,p.order_id,p.provider,p.provider_reference,p.method,p.amount_minor,p.paid_at,p.created_at,p.updated_at,o.total_minor FROM payments p JOIN orders o ON o.id=p.order_id WHERE p.status='paid' AND o.payment_status='paid' AND NOT EXISTS(SELECT 1 FROM reqoo_payments rp WHERE rp.id=('legacy_'||p.id) OR (rp.order_id=p.order_id AND rp.reference=COALESCE(NULLIF(TRIM(p.provider_reference),''),p.id)))",args=[];
   if(orderId){sql+=' AND p.order_id=?';args.push(orderId)}
   sql+=' ORDER BY COALESCE(p.paid_at,p.updated_at,p.created_at),p.id LIMIT 500';
   const rows=(await env.DB.prepare(sql).bind(...args).all()).results||[];
   let imported=0;
   for(const row of rows){
     const legacyId=`legacy_${S(row.id)}`,reference=S(row.provider_reference)||S(row.id);
-    const invoice=await invoiceForOrder(row.order_id,env);
-    const existing=await env.DB.prepare('SELECT id,invoice_document_id FROM reqoo_payments WHERE id=? OR (order_id=? AND reference=?) LIMIT 1').bind(legacyId,row.order_id,reference).first();
-    if(existing){
-      if(invoice?.id&&!S(existing.invoice_document_id))await env.DB.prepare('UPDATE reqoo_payments SET invoice_document_id=?,updated_at=? WHERE id=?').bind(invoice.id,NOW(),existing.id).run();
-      continue;
-    }
-    const totals=await env.DB.prepare("SELECT COALESCE(SUM(CASE WHEN status='confirmed' THEN amount_minor ELSE 0 END),0) paid_minor FROM reqoo_payments WHERE order_id=?").bind(row.order_id).first();
+    const [invoice,totals]=await Promise.all([
+      invoiceForOrder(row.order_id,env),
+      env.DB.prepare("SELECT COALESCE(SUM(CASE WHEN status='confirmed' THEN amount_minor ELSE 0 END),0) paid_minor FROM reqoo_payments WHERE order_id=?").bind(row.order_id).first()
+    ]);
     const orderTotal=Number(invoice?.total_minor??row.total_minor??0),already=Math.max(0,Number(totals?.paid_minor||0));
     if(orderTotal>0&&already>=orderTotal)continue;
     let amount=money(row.amount_minor);
     if(orderTotal>0)amount=Math.min(amount,Math.max(0,orderTotal-already));
     if(amount<=0)continue;
     const receiptNumber=await nextReceiptNumber(env),paidAt=S(row.paid_at||row.updated_at||row.created_at)||NOW(),remaining=Math.max(0,orderTotal-already),type=already===0&&orderTotal>0&&amount>=orderTotal?'full':amount>=remaining?'final':already===0?'deposit':'partial',method=S(row.method||row.provider||'provider').slice(0,80)||'provider',note=`Imported from ${S(row.provider)||'legacy'} payment`,shareToken=`${crypto.randomUUID()}${crypto.randomUUID().replaceAll('-','')}`,now=NOW();
-    await env.DB.prepare('INSERT OR IGNORE INTO reqoo_payments(id,order_id,invoice_document_id,receipt_number,amount_minor,payment_type,method,reference,note,paid_at,status,share_token,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(legacyId,row.order_id,invoice?.id||null,receiptNumber,amount,type,method,reference,note,paidAt,'confirmed',shareToken,now,now).run();
-    imported++;
+    const result=await env.DB.prepare('INSERT OR IGNORE INTO reqoo_payments(id,order_id,invoice_document_id,receipt_number,amount_minor,payment_type,method,reference,note,paid_at,status,share_token,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(legacyId,row.order_id,invoice?.id||null,receiptNumber,amount,type,method,reference,note,paidAt,'confirmed',shareToken,now,now).run();
+    if(Number(result?.meta?.changes||result?.changes||0)>0)imported++;
   }
   return imported;
 }
@@ -181,11 +188,14 @@ async function financeTransactions(d,env){
 async function financeDashboard(d,env){
   await ensure(env);await syncLegacyPaidPayments(env);
   const range=S(d.range||'30').toLowerCase(),cte=financeOrderCte(range),payRange=financeRangeSql(range,"COALESCE(p.paid_at,p.created_at)");
-  const collection=await env.DB.prepare("SELECT COALESCE(SUM(p.amount_minor),0) collected_minor,COUNT(DISTINCT p.order_id) paid_orders FROM reqoo_payments p WHERE p.status='confirmed' AND "+payRange).first();
-  const state=await env.DB.prepare(cte+" SELECT COUNT(*) valid_orders,COALESCE(SUM(balance_minor),0) outstanding_minor,COALESCE(SUM(CASE WHEN balance_minor>0 THEN 1 ELSE 0 END),0) outstanding_orders,COALESCE(SUM(CASE WHEN paid_minor>0 THEN 1 ELSE 0 END),0) orders_with_payment,COALESCE(SUM(CASE WHEN balance_minor=0 AND billing_total_minor>0 THEN 1 ELSE 0 END),0) paid_full,COALESCE(SUM(CASE WHEN paid_minor>0 AND balance_minor>0 THEN 1 ELSE 0 END),0) partial,COALESCE(SUM(CASE WHEN paid_minor=0 THEN 1 ELSE 0 END),0) unpaid FROM final").first();
-  const trend=(await env.DB.prepare("SELECT * FROM (SELECT strftime('%Y-%m',COALESCE(p.paid_at,p.created_at)) month,COALESCE(SUM(p.amount_minor),0) collected_minor FROM reqoo_payments p WHERE p.status='confirmed' AND "+payRange+" GROUP BY month ORDER BY month DESC LIMIT 12) ORDER BY month ASC").all()).results||[];
-  const products=(await env.DB.prepare(cte+" SELECT COALESCE(NULLIF(oi.product_id,''),oi.product_name_snapshot) product_key,MAX(oi.product_name_snapshot) product_name,COALESCE(SUM(oi.quantity),0) units_sold,COUNT(DISTINCT oi.order_id) orders,CAST(ROUND(COALESCE(SUM(oi.line_total_minor*CASE WHEN f.billing_total_minor>0 THEN MIN(1.0,f.raw_paid_minor*1.0/f.billing_total_minor) ELSE 0 END),0)) AS INTEGER) collected_minor FROM order_items oi JOIN final f ON f.id=oi.order_id WHERE f.paid_minor>0 GROUP BY product_key ORDER BY collected_minor DESC LIMIT 6").all()).results||[];
-  const tx=await financeTransactionData({range,limit:12,offset:0},env),collected=Number(collection?.collected_minor||0),paidOrders=Number(collection?.paid_orders||0),validOrders=Number(state?.valid_orders||0),withPayment=Number(state?.orders_with_payment||0);
+  const [collection,state,trendResult,productsResult,tx]=await Promise.all([
+    env.DB.prepare("SELECT COALESCE(SUM(p.amount_minor),0) collected_minor,COUNT(DISTINCT p.order_id) paid_orders FROM reqoo_payments p WHERE p.status='confirmed' AND "+payRange).first(),
+    env.DB.prepare(cte+" SELECT COUNT(*) valid_orders,COALESCE(SUM(balance_minor),0) outstanding_minor,COALESCE(SUM(CASE WHEN balance_minor>0 THEN 1 ELSE 0 END),0) outstanding_orders,COALESCE(SUM(CASE WHEN paid_minor>0 THEN 1 ELSE 0 END),0) orders_with_payment,COALESCE(SUM(CASE WHEN balance_minor=0 AND billing_total_minor>0 THEN 1 ELSE 0 END),0) paid_full,COALESCE(SUM(CASE WHEN paid_minor>0 AND balance_minor>0 THEN 1 ELSE 0 END),0) partial,COALESCE(SUM(CASE WHEN paid_minor=0 THEN 1 ELSE 0 END),0) unpaid FROM final").first(),
+    env.DB.prepare("SELECT * FROM (SELECT strftime('%Y-%m',COALESCE(p.paid_at,p.created_at)) month,COALESCE(SUM(p.amount_minor),0) collected_minor FROM reqoo_payments p WHERE p.status='confirmed' AND "+payRange+" GROUP BY month ORDER BY month DESC LIMIT 12) ORDER BY month ASC").all(),
+    env.DB.prepare(cte+" SELECT COALESCE(NULLIF(oi.product_id,''),oi.product_name_snapshot) product_key,MAX(oi.product_name_snapshot) product_name,COALESCE(SUM(oi.quantity),0) units_sold,COUNT(DISTINCT oi.order_id) orders,CAST(ROUND(COALESCE(SUM(oi.line_total_minor*CASE WHEN f.billing_total_minor>0 THEN MIN(1.0,f.raw_paid_minor*1.0/f.billing_total_minor) ELSE 0 END),0)) AS INTEGER) collected_minor FROM order_items oi JOIN final f ON f.id=oi.order_id WHERE f.paid_minor>0 GROUP BY product_key ORDER BY collected_minor DESC LIMIT 6").all(),
+    financeTransactionData({range,limit:12,offset:0},env)
+  ]);
+  const trend=trendResult?.results||[],products=productsResult?.results||[],collected=Number(collection?.collected_minor||0),paidOrders=Number(collection?.paid_orders||0),validOrders=Number(state?.valid_orders||0),withPayment=Number(state?.orders_with_payment||0);
   return J({ok:true,range,summary:{collectedMinor:collected,paidOrders,outstandingMinor:Number(state?.outstanding_minor||0),outstandingOrders:Number(state?.outstanding_orders||0),averageCollectedMinor:paidOrders?Math.round(collected/paidOrders):0,ordersWithPaymentRate:validOrders?Math.round(withPayment/validOrders*100):0,validOrders},breakdown:{paid:Number(state?.paid_full||0),partial:Number(state?.partial||0),pending:Number(state?.unpaid||0)},trend,products,transactions:tx.transactions,transactionsHasMore:tx.hasMore});
 }
 const ORDER_CLOSED_SQL="(o.fulfillment_status='cancelled' OR o.payment_status IN ('failed','cancelled','refunded'))";
@@ -208,15 +218,18 @@ async function ordersDashboard(d,env){
     const phone=q.replace(/[^0-9]/g,'');args.push('%'+q+'%','%'+q+'%',phone?'%'+phone+'%':'__NO_PHONE_MATCH__','%'+q+'%');
   }
   const whereSql=' WHERE '+where.join(' AND ');
-  const rows=(await env.DB.prepare("SELECT o.*,c.name customer_name,c.phone,c.email,(SELECT GROUP_CONCAT(d.type) FROM reqoo_documents d WHERE d.order_id=o.id) document_types FROM orders o LEFT JOIN customers c ON c.id=o.customer_id"+whereSql+" ORDER BY o.created_at DESC,o.id DESC LIMIT ? OFFSET ?").bind(...args,limit,offset).all()).results||[];
-  const totalRow=await env.DB.prepare("SELECT COUNT(*) n FROM orders o LEFT JOIN customers c ON c.id=o.customer_id"+whereSql).bind(...args).first();
-  const stats=await env.DB.prepare("SELECT COUNT(*) total,"+
-    " SUM(CASE WHEN NOT "+ORDER_CLOSED_SQL+" AND NOT "+ORDER_READY_SQL+" THEN 1 ELSE 0 END) pending,"+
-    " SUM(CASE WHEN NOT "+ORDER_CLOSED_SQL+" AND "+ORDER_READY_SQL+" AND o.fulfillment_status='pending' THEN 1 ELSE 0 END) paid,"+
-    " SUM(CASE WHEN NOT "+ORDER_CLOSED_SQL+" AND "+ORDER_READY_SQL+" AND o.fulfillment_status='processing' THEN 1 ELSE 0 END) processing,"+
-    " SUM(CASE WHEN NOT "+ORDER_CLOSED_SQL+" AND "+ORDER_READY_SQL+" THEN 1 ELSE 0 END) payment_ready"+
-    " FROM orders o").first();
-  return J({ok:true,orders:rows.map(o=>({...o,orderNo:S(o.order_no)||('RQ-'+String(o.id).replace(/[^A-Za-z0-9]/g,'').slice(-12).toUpperCase()),order_ref:S(o.order_no)||o.id,name:o.customer_name||'',total:Number(o.total_minor||0)/100,status:o.fulfillment_status,payment:o.payment_status,timestamp:o.created_at})),total:Number(totalRow?.n||0),offset,limit,hasMore:offset+rows.length<Number(totalRow?.n||0),stats:{total:Number(stats?.total||0),pending:Number(stats?.pending||0),paid:Number(stats?.paid||0),processing:Number(stats?.processing||0),paymentReady:Number(stats?.payment_ready||0)}});
+  const [rowsResult,totalRow,stats]=await Promise.all([
+    env.DB.prepare("SELECT o.*,c.name customer_name,c.phone,c.email,(SELECT GROUP_CONCAT(d.type) FROM reqoo_documents d WHERE d.order_id=o.id) document_types FROM orders o LEFT JOIN customers c ON c.id=o.customer_id"+whereSql+" ORDER BY o.created_at DESC,o.id DESC LIMIT ? OFFSET ?").bind(...args,limit,offset).all(),
+    env.DB.prepare("SELECT COUNT(*) n FROM orders o LEFT JOIN customers c ON c.id=o.customer_id"+whereSql).bind(...args).first(),
+    env.DB.prepare("SELECT COUNT(*) total,"+
+      " SUM(CASE WHEN NOT "+ORDER_CLOSED_SQL+" AND NOT "+ORDER_READY_SQL+" THEN 1 ELSE 0 END) pending,"+
+      " SUM(CASE WHEN NOT "+ORDER_CLOSED_SQL+" AND "+ORDER_READY_SQL+" AND o.fulfillment_status='pending' THEN 1 ELSE 0 END) paid,"+
+      " SUM(CASE WHEN NOT "+ORDER_CLOSED_SQL+" AND "+ORDER_READY_SQL+" AND o.fulfillment_status='processing' THEN 1 ELSE 0 END) processing,"+
+      " SUM(CASE WHEN NOT "+ORDER_CLOSED_SQL+" AND "+ORDER_READY_SQL+" THEN 1 ELSE 0 END) payment_ready"+
+      " FROM orders o").first()
+  ]);
+  const rows=rowsResult?.results||[],total=Number(totalRow?.n||0);
+  return J({ok:true,orders:rows.map(o=>({...o,orderNo:S(o.order_no)||('RQ-'+String(o.id).replace(/[^A-Za-z0-9]/g,'').slice(-12).toUpperCase()),order_ref:S(o.order_no)||o.id,name:o.customer_name||'',total:Number(o.total_minor||0)/100,status:o.fulfillment_status,payment:o.payment_status,timestamp:o.created_at})),total,offset,limit,hasMore:offset+rows.length<total,stats:{total:Number(stats?.total||0),pending:Number(stats?.pending||0),paid:Number(stats?.paid||0),processing:Number(stats?.processing||0),paymentReady:Number(stats?.payment_ready||0)}});
 }
 const CUSTOMER_ROLLUP_CTE="WITH order_rollup AS ("+
 " SELECT o.customer_id,COUNT(*) order_count,MAX(o.created_at) last_order_at,"+
@@ -241,8 +254,11 @@ async function customerDashboard(d,env){
     " SELECT c.id,c.name,c.phone,c.email,c.created_at,c.updated_at,COALESCE(o.order_count,0) order_count,COALESCE(o.collected_minor,0) collected_minor,COALESCE(o.outstanding_minor,0) outstanding_minor,COALESCE(doc.document_count,0) document_count,COALESCE(doc.quotation_count,0) quotation_count,COALESCE(doc.receipt_count,0) receipt_count,MAX(COALESCE(c.updated_at,''),COALESCE(c.created_at,''),COALESCE(o.last_order_at,''),COALESCE(doc.last_doc_at,''),COALESCE(pay.last_payment_at,'')) last_activity"+
     " FROM customers c LEFT JOIN order_rollup o ON o.customer_id=c.id LEFT JOIN doc_rollup doc ON doc.customer_id=c.id LEFT JOIN pay_rollup pay ON pay.customer_id=c.id"+
     where+" ORDER BY "+customerSortExpr(sort)+" LIMIT ?";
-  const rows=(await env.DB.prepare(sql).bind(...args,limit).all()).results||[];
-  const stats=await env.DB.prepare(CUSTOMER_ROLLUP_CTE+" SELECT COUNT(c.id) customers,COALESCE(SUM(CASE WHEN COALESCE(o.order_count,0)>1 THEN 1 ELSE 0 END),0) repeat_customers,COALESCE(SUM(COALESCE(o.collected_minor,0)),0) collected_minor,COALESCE(SUM(COALESCE(o.outstanding_minor,0)),0) outstanding_minor FROM customers c LEFT JOIN order_rollup o ON o.customer_id=c.id").first();
+  const [rowsResult,stats]=await Promise.all([
+    env.DB.prepare(sql).bind(...args,limit).all(),
+    env.DB.prepare(CUSTOMER_ROLLUP_CTE+" SELECT COUNT(c.id) customers,COALESCE(SUM(CASE WHEN COALESCE(o.order_count,0)>1 THEN 1 ELSE 0 END),0) repeat_customers,COALESCE(SUM(COALESCE(o.collected_minor,0)),0) collected_minor,COALESCE(SUM(COALESCE(o.outstanding_minor,0)),0) outstanding_minor FROM customers c LEFT JOIN order_rollup o ON o.customer_id=c.id").first()
+  ]);
+  const rows=rowsResult?.results||[];
   return J({ok:true,customers:rows,stats:{customers:Number(stats?.customers||0),repeatCustomers:Number(stats?.repeat_customers||0),collectedMinor:Number(stats?.collected_minor||0),outstandingMinor:Number(stats?.outstanding_minor||0)},query:q,limit});
 }
 async function customerDetail(d,env){
