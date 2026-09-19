@@ -304,7 +304,7 @@
       "section": "BAHAGIAN A",
       "category": "EQ",
       "format": "SITUATIONAL",
-      "question": "Rakan kamu mempunyai jadual data yang baik tetapi kesimpulan terlalu umum. Apakah bantuan terbaik?",
+      "question": "Rakan kamu mempunyai rekod data yang baik tetapi kesimpulan terlalu umum. Apakah bantuan terbaik?",
       "options": [
         "Tambah lebih banyak data rawak",
         "Padankan setiap kesimpulan dengan data khusus yang benar-benar menyokongnya",
@@ -323,7 +323,7 @@
       "levelSignal": 3,
       "contentDomain": "EQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
     },
     {
@@ -777,21 +777,21 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Pola nombor ialah 5, 11, 23, 47, 95. Apakah nombor seterusnya?",
+      "question": "Jumlah dua nombor ialah 96 dan beza antara kedua-duanya ialah 14. Berapakah nombor yang lebih besar?",
       "options": [
-        "191",
-        "187",
-        "189",
-        "193"
+        "55",
+        "41",
+        "48",
+        "62"
       ],
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "double_plus_one",
+      "constructFamily": "sum_difference_pair",
       "levelSignal": 3,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S29-B02",
@@ -1550,28 +1550,28 @@
       "section": "BAHAGIAN B",
       "category": "Bahasa Melayu",
       "format": "MCQ",
-      "question": "Pilih ayat yang menunjukkan akibat dengan jelas.",
+      "question": "Dalam laporan kebocoran air, ayat manakah paling jelas menunjukkan akibat daripada masalah yang dibiarkan lama?",
       "options": [
-        "Kebocoran sehingga walaupun air.",
         "Air kerana kebocoran tetapi.",
         "Kecil kebocoran supaya jumlah.",
+        "Kebocoran sehingga walaupun air.",
         "Kebocoran kecil dibiarkan berterusan sehingga jumlah air terbuang menjadi besar."
       ],
       "answerIndex": 3,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "effect_clause",
+      "constructFamily": "effect_clause_leak",
       "levelSignal": 2,
       "contentDomain": "Bahasa Melayu",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S29-B37",
       "section": "BAHAGIAN B",
       "category": "Bahasa Melayu",
       "format": "MCQ",
-      "question": "Ayat manakah paling sesuai sebagai cadangan laporan?",
+      "question": "Selepas pembaikan paip, bacaan aliran masih perlu disahkan. Ayat manakah paling sesuai dimasukkan dalam bahagian cadangan laporan?",
       "options": [
         "Dicadangkan supaya kadar aliran diperiksa semula selepas pembaikan bagi memastikan kebocoran benar-benar berkurang.",
         "Paip itu berwarna kelabu.",
@@ -1581,11 +1581,11 @@
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "report_recommendation",
+      "constructFamily": "post_repair_recommendation",
       "levelSignal": 4,
       "contentDomain": "Bahasa Melayu",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S29-B38",
@@ -1676,7 +1676,7 @@
       "section": "BAHAGIAN B",
       "category": "English",
       "format": "MCQ",
-      "question": "Choose the correct sentence using 'whereas'.",
+      "question": "Which sentence correctly contrasts total water use with group size using 'whereas'?",
       "options": [
         "Whereas Class A more water because Class B pupils.",
         "Class A used more water overall, whereas Class B had more pupils.",
@@ -1686,11 +1686,11 @@
       "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "contrast",
+      "constructFamily": "whereas_normalized_context",
       "levelSignal": 3,
       "contentDomain": "English",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S29-B43",
@@ -2339,7 +2339,8 @@
   "qa": {
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
-    "answerBalanceTarget": "18/18/17/17"
+    "answerBalanceTarget": "18/18/17/17",
+    "manualEditorialReview": "A12 false visual cue removed; B01/B36/B37/B42 rebuilt to eliminate global collisions"
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
