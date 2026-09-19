@@ -1897,19 +1897,19 @@
       "format": "MCQ",
       "question": "A pupil changes shoe sole texture and measures stopping distance. What is the responding variable?",
       "options": [
-        "stopping distance",
         "sole texture",
         "starting speed kept constant",
-        "surface type"
+        "surface type",
+        "stopping distance"
       ],
-      "answerIndex": 0,
+      "answerIndex": 3,
       "type": "objective",
       "plannedLevel": 3,
       "constructFamily": "responding_variable",
       "levelSignal": 3,
       "contentDomain": "Sains",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S36-B54",
@@ -1981,19 +1981,19 @@
       "format": "MCQ",
       "question": "Why test a manual score backup before a match?",
       "options": [
-        "To confirm scoring can continue if the electronic system fails.",
         "To make electronics fail.",
         "To avoid training.",
-        "To remove the scoreboard."
+        "To remove the scoreboard.",
+        "To confirm scoring can continue if the electronic system fails."
       ],
-      "answerIndex": 0,
+      "answerIndex": 3,
       "type": "objective",
       "plannedLevel": 3,
       "constructFamily": "backup_workflow",
       "levelSignal": 3,
       "contentDomain": "Teknologi/RBT",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S36-B58",
@@ -2065,19 +2065,19 @@
       "format": "MCQ",
       "question": "Apakah maksud kadar prestasi?",
       "options": [
-        "Ukuran hasil berbanding unit seperti masa atau percubaan",
         "Jumlah tertinggi sahaja",
         "Bilangan pemain",
+        "Ukuran hasil berbanding unit seperti masa atau percubaan",
         "Warna jersi"
       ],
-      "answerIndex": 0,
+      "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 3,
       "constructFamily": "performance_rate",
       "levelSignal": 3,
       "contentDomain": "Pengetahuan Am",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S36-B62",
@@ -2128,12 +2128,12 @@
       "format": "MCQ",
       "question": "Apakah tujuan susunan masa dan urutan perlawanan yang telah ditetapkan untuk kejohanan?",
       "options": [
-        "Mengatur masa, tempat dan urutan perlawanan supaya acara dapat diurus.",
         "Menentukan keputusan awal.",
         "Menggantikan pengadil.",
+        "Mengatur masa, tempat dan urutan perlawanan supaya acara dapat diurus.",
         "Mengukur suhu."
       ],
-      "answerIndex": 0,
+      "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 2,
       "constructFamily": "competition_schedule_function",
@@ -2149,19 +2149,19 @@
       "format": "MCQ",
       "question": "Mengapakah kadar per minit berguna?",
       "options": [
-        "Ia membantu membanding prestasi apabila tempoh penglibatan berbeza",
         "Ia menjadikan semua pemain sama",
         "Ia menghapuskan konteks",
+        "Ia membantu membanding prestasi apabila tempoh penglibatan berbeza",
         "Ia hanya untuk larian"
       ],
-      "answerIndex": 0,
+      "answerIndex": 2,
       "type": "objective",
       "plannedLevel": 3,
       "constructFamily": "normalized_rate",
       "levelSignal": 3,
       "contentDomain": "Pengetahuan Am",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S36-B66",
@@ -2233,12 +2233,12 @@
       "format": "MCQ",
       "question": "Pemain A berjaya 18 daripada 24 percubaan. Pemain B berjaya 20 daripada 32 percubaan. Siapakah mempunyai kadar kejayaan lebih tinggi?",
       "options": [
-        "Pemain A",
         "Pemain B",
+        "Pemain A",
         "Kedua-duanya sama",
         "Maklumat tidak cukup"
       ],
-      "answerIndex": 0,
+      "answerIndex": 1,
       "type": "objective",
       "plannedLevel": 4,
       "constructFamily": "success_rate_compare",
@@ -2328,7 +2328,17 @@
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
     "answerBalanceTarget": "18/18/17/17",
-    "manualEditorialReview": "B01/B03/B23 rebuilt to remove final template collisions"
+    "manualEditorialReview": "B01/B03/B23 rebuilt to remove final template collisions",
+    "answerBalance": "18/18/17/17",
+    "balanceRepair": "option-order only",
+    "balanceRepairItems": [
+      "S36-B69",
+      "S36-B65",
+      "S36-B64",
+      "S36-B61",
+      "S36-B57",
+      "S36-B53"
+    ]
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
