@@ -358,12 +358,12 @@
       "section": "BAHAGIAN A",
       "category": "SQ",
       "format": "SITUATIONAL",
-      "question": "Kamu tersalah menulis data dalam carta dan ia sudah dikongsi kepada kumpulan. Apakah tindakan terbaik?",
+      "question": "Kamu tersalah menulis satu nilai dalam ringkasan data yang sudah dikongsi kepada kumpulan. Apakah tindakan terbaik?",
       "options": [
         "Biarkan kerana beza kecil",
-        "Betulkan carta, maklumkan kesilapan dan pastikan versi yang betul jelas dikenal pasti",
+        "Betulkan nilai, maklumkan kesilapan dan pastikan versi yang betul jelas dikenal pasti",
         "Padam mesej lama sahaja",
-        "Hantar versi pembetulan bersama nota ringkas tentang data yang berubah"
+        "Hantar versi pembetulan bersama nota ringkas tentang nilai yang berubah"
       ],
       "weights": [
         0,
@@ -377,7 +377,7 @@
       "levelSignal": 3,
       "contentDomain": "SQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "scoringNote": "Respons berprofil; skor menunjukkan kekuatan respons latihan, bukan label betul/salah mutlak."
     },
     {
@@ -777,7 +777,7 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Pola nombor ialah 1, 4, 10, 22, 46, ... Apakah nombor seterusnya?",
+      "question": "Satu mesin nombor bermula dengan 1. Setiap keluaran baharu ialah dua kali nombor sebelumnya ditambah 2. Selepas 1, 4, 10, 22 dan 46, apakah keluaran berikutnya?",
       "options": [
         "94",
         "70",
@@ -787,11 +787,11 @@
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 4,
-      "constructFamily": "double_plus_two",
+      "constructFamily": "recursive_machine_rule",
       "levelSignal": 4,
       "contentDomain": "IQ",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S09-B02",
@@ -1113,7 +1113,7 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Tukarkan 5.6 kg kepada gram.",
+      "question": "Sebuah beg beras berjisim 5.6 kg. Nyatakan jisimnya dalam gram.",
       "options": [
         "5,600 g",
         "560 g",
@@ -1123,11 +1123,11 @@
       "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 1,
-      "constructFamily": "mass_conversion",
+      "constructFamily": "mass_context_conversion",
       "levelSignal": 1,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S09-B18",
@@ -1269,21 +1269,21 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Titik pada rajah bermula di (1, 8) dan bergerak 8 unit ke kanan. Apakah koordinat akhirnya?",
+      "question": "Pada rajah koordinat, sebuah robot bermula di titik (1, 8). Robot itu bergerak 8 unit secara mendatar ke kanan. Di manakah robot berhenti?",
       "options": [
+        "(9, 8)",
         "(1, 16)",
         "(-7, 8)",
-        "(9, 8)",
         "(9, 16)"
       ],
-      "answerIndex": 2,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "visual_coordinate",
+      "constructFamily": "coordinate_robot_move",
       "levelSignal": 2,
       "contentDomain": "Matematik",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED",
+      "rebuildStatus": "V2_CURATED_REVIEWED",
       "visual": {
         "kind": "coordinate_move",
         "start": [
@@ -1450,21 +1450,21 @@
       "section": "BAHAGIAN B",
       "category": "Bahasa Melayu",
       "format": "MCQ",
-      "question": "Pilih ayat yang menggunakan kata ganda dengan betul.",
+      "question": "Ayat manakah menggunakan bentuk jamak secara gramatis tanpa pengulangan penanda jamak yang tidak perlu?",
       "options": [
-        "Murid murid-murid beratur dengan tertib.",
-        "Para murid-murid beratur dengan tertib.",
         "Murid-murid beratur dengan tertib di luar dewan.",
-        "Murid-murid semua beratur-beratur dengan tertib sekali."
+        "Para murid-murid beratur dengan tertib.",
+        "Semua murid-murid beratur dengan tertib.",
+        "Banyak murid-murid beratur dengan tertib."
       ],
-      "answerIndex": 2,
+      "answerIndex": 0,
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "kata_ganda",
+      "constructFamily": "plural_grammar",
       "levelSignal": 2,
       "contentDomain": "Bahasa Melayu",
       "setLevel": 2,
-      "rebuildStatus": "V2_CURATED"
+      "rebuildStatus": "V2_CURATED_REVIEWED"
     },
     {
       "id": "S09-B32",
@@ -2344,7 +2344,8 @@
   "qa": {
     "itemStandardV2A": "REBUILT_PENDING_AUDIT",
     "itemStandardV2B": "REBUILT_PENDING_AUDIT",
-    "answerBalanceTarget": "18/18/17/17"
+    "answerBalanceTarget": "18/18/17/17",
+    "manualEditorialReview": "A14 false visual cue removed; B01/B17/B23/B31 rewritten for global uniqueness"
   },
   "status": "CURATION_V2_COMPLETE_PENDING_AUDIT"
 }
