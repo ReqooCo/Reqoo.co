@@ -1063,12 +1063,12 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Jika △ = 8 dan ○ = △ ÷ 2, berapakah △ − ○?",
+      "question": "Empat kotak mengandungi bilangan guli yang sama. Jika jumlah guli ialah 28, berapakah guli dalam dua kotak?",
       "options": [
-        "4",
-        "2",
-        "6",
-        "12"
+        "14",
+        "7",
+        "12",
+        "16"
       ],
       "answerIndex": 0,
       "weights": [
@@ -1079,11 +1079,11 @@
       ],
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "symbol_half_difference",
+      "constructFamily": "equal_boxes_two_of_four",
       "levelSignal": 2,
       "contentDomain": "IQ",
       "setLevel": 4,
-      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED"
+      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED_REVIEWED"
     },
     {
       "id": "S49-B10",
@@ -1279,7 +1279,7 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Rajah jalur mempunyai 18 bahagian sama besar dan 6 berlorek. Apakah pecahan berlorek dalam bentuk paling ringkas?",
+      "question": "Sebuah jalur kertas mempunyai 18 bahagian sama besar. Enam bahagian di hujung kiri diwarnakan. Apakah pecahan bahagian berwarna dalam bentuk paling ringkas?",
       "options": [
         "1/3",
         "2/3",
@@ -1295,11 +1295,11 @@
       ],
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "visual_fraction_6_18",
+      "constructFamily": "visual_coloured_fraction_18_6",
       "levelSignal": 2,
       "contentDomain": "Matematik",
       "setLevel": 4,
-      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED",
+      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED_REVIEWED",
       "visual": {
         "kind": "fraction_bar",
         "parts": 18,
@@ -1311,7 +1311,7 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Rajah menunjukkan segi empat tepat 14 cm × 5 cm. Berapakah luasnya?",
+      "question": "Sebuah papan iklan berbentuk segi empat tepat mempunyai panjang 14 cm dan lebar 5 cm. Berapakah luas permukaannya?",
       "options": [
         "38 cm²",
         "70 cm²",
@@ -1327,11 +1327,11 @@
       ],
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "visual_rectangle_area_14_5",
+      "constructFamily": "visual_billboard_area",
       "levelSignal": 2,
       "contentDomain": "Matematik",
       "setLevel": 4,
-      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED",
+      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED_REVIEWED",
       "visual": {
         "kind": "rectangle",
         "length_cm": 14,
@@ -1343,7 +1343,7 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Rajah menunjukkan kuboid 8 cm × 4 cm × 2 cm. Berapakah isipadunya?",
+      "question": "Sebuah bekas penyimpanan berbentuk kuboid berukuran 8 cm × 4 cm × 2 cm. Berapakah isipadu ruang di dalamnya?",
       "options": [
         "32 cm³",
         "56 cm³",
@@ -1359,11 +1359,11 @@
       ],
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "visual_cuboid_8_4_2",
+      "constructFamily": "visual_storage_cuboid",
       "levelSignal": 2,
       "contentDomain": "Matematik",
       "setLevel": 4,
-      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED",
+      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED_REVIEWED",
       "visual": {
         "kind": "cuboid",
         "length_cm": 8,
@@ -1447,7 +1447,7 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Pada grid, titik bermula di (6, 5) dan bergerak 3 unit ke kanan. Apakah koordinat akhirnya?",
+      "question": "Sebuah penanda pada peta grid berada di (6, 5). Ia dialihkan 3 petak secara mendatar ke kanan. Apakah koordinat baharu penanda itu?",
       "options": [
         "(6, 8)",
         "(9, 5)",
@@ -1463,11 +1463,11 @@
       ],
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "visual_coordinate_6_5_right3",
+      "constructFamily": "visual_marker_grid_shift",
       "levelSignal": 2,
       "contentDomain": "Matematik",
       "setLevel": 4,
-      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED",
+      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED_REVIEWED",
       "visual": {
         "kind": "coordinate_move",
         "start": [
@@ -2107,12 +2107,12 @@
       "section": "BAHAGIAN B",
       "category": "English",
       "format": "MCQ",
-      "question": "Choose the correct sentence.",
+      "question": "Which sentence correctly uses a singular subject with a singular verb?",
       "options": [
-        "A pair of scissors are on the table.",
-        "A pair of scissors is on the table.",
-        "A pair scissors is on table.",
-        "Pairs of scissors is on the table."
+        "The box of tools are heavy.",
+        "The box of tools is heavy.",
+        "The boxes of tool is heavy.",
+        "The box tools are heavy."
       ],
       "answerIndex": 1,
       "weights": [
@@ -2123,11 +2123,11 @@
       ],
       "type": "objective",
       "plannedLevel": 3,
-      "constructFamily": "en_agreement_pair",
+      "constructFamily": "en_singular_subject_agreement",
       "levelSignal": 3,
       "contentDomain": "English",
       "setLevel": 4,
-      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED"
+      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED_REVIEWED"
     },
     {
       "id": "S49-B47",
@@ -2512,12 +2512,12 @@
       "section": "BAHAGIAN B",
       "category": "Pengetahuan Am",
       "format": "MCQ",
-      "question": "Apakah ibu negeri Perak?",
+      "question": "Bandar Ipoh terletak di negeri manakah?",
       "options": [
-        "Ipoh",
-        "Taiping",
-        "Teluk Intan",
-        "Kuala Kangsar"
+        "Perak",
+        "Pahang",
+        "Kedah",
+        "Selangor"
       ],
       "answerIndex": 0,
       "weights": [
@@ -2528,11 +2528,11 @@
       ],
       "type": "objective",
       "plannedLevel": 1,
-      "constructFamily": "ga_perak_capital",
+      "constructFamily": "ga_ipoh_state",
       "levelSignal": 1,
       "contentDomain": "Pengetahuan Am",
       "setLevel": 4,
-      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED"
+      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED_REVIEWED"
     },
     {
       "id": "S49-B62",
@@ -2647,12 +2647,12 @@
       "section": "BAHAGIAN B",
       "category": "Pengetahuan Am",
       "format": "MCQ",
-      "question": "Apakah nama gunung tertinggi di Malaysia?",
+      "question": "Gunung Tahan terletak di Semenanjung Malaysia. Ia berada di negeri _____.",
       "options": [
-        "Gunung Tahan",
-        "Gunung Kinabalu",
-        "Gunung Ledang",
-        "Gunung Jerai"
+        "Sabah",
+        "Pahang",
+        "Kedah",
+        "Johor"
       ],
       "answerIndex": 1,
       "weights": [
@@ -2663,11 +2663,11 @@
       ],
       "type": "objective",
       "plannedLevel": 1,
-      "constructFamily": "ga_highest_mountain",
+      "constructFamily": "ga_gunung_tahan_state",
       "levelSignal": 1,
       "contentDomain": "Pengetahuan Am",
       "setLevel": 4,
-      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED"
+      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED_REVIEWED"
     },
     {
       "id": "S49-B67",
@@ -2813,7 +2813,7 @@
     "C": 3
   },
   "qa": {
-    "status": "PASS_PENDING_CROSS_SET_AUDIT",
+    "status": "PASS_PENDING_CROSS_SET_RECHECK",
     "count": 103,
     "A_formats": {
       "SITUATIONAL": 20,
@@ -2829,11 +2829,12 @@
       "Pengetahuan Am": 6,
       "Penyelesaian Masalah": 4
     },
-    "manualEditorialReview": "Human-style rebuild completed for wording, answer logic, distractors and structured visuals.",
+    "manualEditorialReview": "Human-style rebuild completed; eight first-pass cross-set exact/template overlaps repaired.",
     "mathVerification": "PASS",
     "visualAnswerContract": "PASS",
     "appendedContextCount": 0,
-    "approvalScope": "clone_only"
+    "approvalScope": "clone_only",
+    "firstCrossSetRepairCount": 8
   },
-  "status": "CURATION_V2_REBUILT_PENDING_CROSS_SET_AUDIT"
+  "status": "CURATION_V2_REBUILT_PENDING_CROSS_SET_RECHECK"
 }
