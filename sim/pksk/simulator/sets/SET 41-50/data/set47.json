@@ -2813,7 +2813,7 @@
     "C": 3
   },
   "qa": {
-    "status": "PASS_PENDING_CROSS_SET_RECHECK",
+    "status": "PASS",
     "count": 103,
     "A_formats": {
       "SITUATIONAL": 20,
@@ -2829,12 +2829,19 @@
       "Pengetahuan Am": 6,
       "Penyelesaian Masalah": 4
     },
-    "manualEditorialReview": "Human-style rebuild completed; three first-pass cross-set overlaps repaired.",
+    "manualEditorialReview": "Human-style rebuild completed; three first-pass cross-set overlaps repaired and full Sets 01-46 exact/number-template recheck returned zero collisions.",
     "mathVerification": "PASS",
     "visualAnswerContract": "PASS",
     "appendedContextCount": 0,
     "approvalScope": "clone_only",
-    "firstCrossSetRepairCount": 3
+    "firstCrossSetRepairCount": 3,
+    "crossSetScope": "Sets 01-46",
+    "crossSetExactCollisions": 0,
+    "crossSetNumberTemplateCollisions": 0,
+    "localExactStemCollisions": 0,
+    "answerPositionA": "8/8/7/7",
+    "answerPositionB": "18/18/17/17",
+    "editorialHumanReadThrough": "PASS"
   },
-  "status": "CURATION_V2_REBUILT_PENDING_CROSS_SET_RECHECK"
+  "status": "CURATION_V2_HUMAN_APPROVED_CLONE"
 }
