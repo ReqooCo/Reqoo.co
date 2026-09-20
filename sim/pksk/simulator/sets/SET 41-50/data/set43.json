@@ -938,11 +938,11 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Tiga kad bernombor 2, 5 dan 9 disusun mengikut peraturan: nombor pada kad baharu ialah jumlah dua kad sebelumnya. Jika kad keempat menggunakan kad bernombor 5 dan 9, apakah nombornya?",
+      "question": "Tiga kad pertama bernombor 4, 5 dan 9. Mulai kad ketiga, setiap nombor ialah jumlah dua nombor sebelumnya. Apakah nombor pada kad keempat?",
       "options": [
         "14",
         "11",
-        "16",
+        "13",
         "18"
       ],
       "answerIndex": 0,
@@ -954,7 +954,7 @@
       ],
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "two_previous_sum_rule",
+      "constructFamily": "two_previous_sum_sequence",
       "levelSignal": 2,
       "contentDomain": "IQ",
       "setLevel": 4,
@@ -2083,7 +2083,7 @@
       "section": "BAHAGIAN B",
       "category": "Sains",
       "format": "MCQ",
-      "question": "A bulb does not light because the switch is open. Apakah sebab utama?",
+      "question": "Sebuah mentol tidak menyala apabila suis dalam litar dibuka. Apakah sebab utama?",
       "options": [
         "Mentol menghasilkan terlalu banyak cahaya",
         "Bateri menjadi lebih besar apabila suis dibuka",
@@ -2735,7 +2735,7 @@
     "C": 3
   },
   "qa": {
-    "status": "PASS_PENDING_CROSS_SET_AUDIT",
+    "status": "PASS",
     "count": 103,
     "A_formats": {
       "SITUATIONAL": 20,
@@ -2751,6 +2751,17 @@
       "Pengetahuan Am": 6,
       "Penyelesaian Masalah": 4
     },
-    "manualEditorialReview": "Human-style rebuild completed; first cross-set collision pass repaired exact and template overlaps found against Sets 01-14."
-  }
+    "manualEditorialReview": "Human-style rebuild completed; first cross-set collision pass repaired exact and template overlaps found against Sets 01-14.",
+    "crossSetScope": "Sets 01-42",
+    "crossSetExactCollisions": 0,
+    "crossSetNumberTemplateCollisions": 0,
+    "localExactStemCollisions": 0,
+    "localNumberTemplateCollisionGroups": 0,
+    "mathVerification": "PASS",
+    "visualAnswerContract": "PASS",
+    "editorialHumanReadThrough": "PASS",
+    "appendedContextCount": 0,
+    "approvalScope": "clone_only"
+  },
+  "status": "CURATION_V2_HUMAN_APPROVED_CLONE"
 }
