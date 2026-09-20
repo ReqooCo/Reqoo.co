@@ -928,12 +928,12 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Kompas berkaitan dengan arah seperti termometer berkaitan dengan _____.",
+      "question": "Topi keledar digunakan untuk melindungi kepala. Cermin mata keselamatan pula digunakan terutamanya untuk melindungi _____.",
       "options": [
-        "masa",
-        "jarak",
-        "jisim",
-        "suhu"
+        "tangan",
+        "lutut",
+        "telinga",
+        "mata"
       ],
       "answerIndex": 3,
       "weights": [
@@ -944,11 +944,11 @@
       ],
       "type": "objective",
       "plannedLevel": 1,
-      "constructFamily": "analogy_tool_quantity",
+      "constructFamily": "functional_analogy_safety_gear",
       "levelSignal": 1,
       "contentDomain": "IQ",
       "setLevel": 4,
-      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED"
+      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED_REVIEWED"
     },
     {
       "id": "S46-B05",
@@ -1063,12 +1063,12 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Jika ○ = 4 dan △ = ○ + 3, berapakah nilai 2 × △?",
+      "question": "Tiga kotak mempunyai bilangan guli yang sama. Jika jumlah guli dalam tiga kotak itu bersama 2 guli tambahan ialah 17, berapakah guli dalam setiap kotak?",
       "options": [
-        "14",
-        "7",
-        "11",
-        "16"
+        "5",
+        "3",
+        "6",
+        "15"
       ],
       "answerIndex": 0,
       "weights": [
@@ -1079,11 +1079,11 @@
       ],
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "symbol_dependency",
+      "constructFamily": "equal_boxes_inverse",
       "levelSignal": 2,
       "contentDomain": "IQ",
       "setLevel": 4,
-      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED"
+      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED_REVIEWED"
     },
     {
       "id": "S46-B10",
@@ -1836,7 +1836,7 @@
       "section": "BAHAGIAN B",
       "category": "Bahasa Melayu",
       "format": "MCQ",
-      "question": "Pilih ejaan yang betul.",
+      "question": "Antara ejaan berikut, yang manakah betul bagi kata yang bermaksud kewajipan yang perlu dilaksanakan?",
       "options": [
         "tanggung jawab",
         "tanggongjawab",
@@ -1852,11 +1852,11 @@
       ],
       "type": "objective",
       "plannedLevel": 1,
-      "constructFamily": "bm_spelling_tanggungjawab",
+      "constructFamily": "bm_spelling_meaning_prompt",
       "levelSignal": 1,
       "contentDomain": "Bahasa Melayu",
       "setLevel": 4,
-      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED"
+      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED_REVIEWED"
     },
     {
       "id": "S46-B37",
@@ -2106,7 +2106,7 @@
       "section": "BAHAGIAN B",
       "category": "English",
       "format": "MCQ",
-      "question": "Choose the correct question.",
+      "question": "Which question correctly asks how frequently an activity happens?",
       "options": [
         "How often do the club meets?",
         "How often does the club meet?",
@@ -2122,11 +2122,11 @@
       ],
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "en_question_frequency",
+      "constructFamily": "en_frequency_question",
       "levelSignal": 2,
       "contentDomain": "English",
       "setLevel": 4,
-      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED"
+      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED_REVIEWED"
     },
     {
       "id": "S46-B47",
@@ -2619,12 +2619,12 @@
       "section": "BAHAGIAN B",
       "category": "Pengetahuan Am",
       "format": "MCQ",
-      "question": "Apakah ibu negeri Sarawak?",
+      "question": "Sungai Rajang, yang sering disebut sebagai sungai terpanjang di Malaysia, mengalir terutama di negeri mana?",
       "options": [
-        "Kuching",
-        "Miri",
-        "Sibu",
-        "Bintulu"
+        "Sarawak",
+        "Sabah",
+        "Pahang",
+        "Perak"
       ],
       "answerIndex": 0,
       "weights": [
@@ -2635,11 +2635,11 @@
       ],
       "type": "objective",
       "plannedLevel": 1,
-      "constructFamily": "ga_sarawak_capital",
+      "constructFamily": "ga_rajang_state",
       "levelSignal": 1,
       "contentDomain": "Pengetahuan Am",
       "setLevel": 4,
-      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED"
+      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED_REVIEWED"
     },
     {
       "id": "S46-B66",
@@ -2812,7 +2812,7 @@
     "C": 3
   },
   "qa": {
-    "status": "PASS_PENDING_CROSS_SET_AUDIT",
+    "status": "PASS_PENDING_CROSS_SET_RECHECK",
     "count": 103,
     "A_formats": {
       "SITUATIONAL": 20,
@@ -2828,11 +2828,12 @@
       "Pengetahuan Am": 6,
       "Penyelesaian Masalah": 4
     },
-    "manualEditorialReview": "Human-style rebuild completed for wording, answer logic, distractors and structured visuals.",
+    "manualEditorialReview": "Human-style rebuild completed; five first-pass cross-set overlaps repaired.",
     "mathVerification": "PASS",
     "visualAnswerContract": "PASS",
     "appendedContextCount": 0,
-    "approvalScope": "clone_only"
+    "approvalScope": "clone_only",
+    "firstCrossSetRepairCount": 5
   },
-  "status": "CURATION_V2_REBUILT_PENDING_CROSS_SET_AUDIT"
+  "status": "CURATION_V2_REBUILT_PENDING_CROSS_SET_RECHECK"
 }
