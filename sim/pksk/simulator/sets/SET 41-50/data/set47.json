@@ -1063,12 +1063,12 @@
       "section": "BAHAGIAN B",
       "category": "IQ",
       "format": "MCQ",
-      "question": "Jika □ = 6 dan ○ = □ − 2, berapakah nilai □ + 2○?",
+      "question": "Tiga bakul mengandungi jumlah oren yang sama. Jika jumlah oren dalam tiga bakul itu dan 4 oren tambahan ialah 25, berapakah oren dalam setiap bakul?",
       "options": [
-        "14",
-        "10",
-        "12",
-        "16"
+        "7",
+        "5",
+        "6",
+        "9"
       ],
       "answerIndex": 0,
       "weights": [
@@ -1079,11 +1079,11 @@
       ],
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "symbol_substitution",
+      "constructFamily": "equal_baskets_inverse",
       "levelSignal": 2,
       "contentDomain": "IQ",
       "setLevel": 4,
-      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED"
+      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED_REVIEWED"
     },
     {
       "id": "S47-B10",
@@ -1343,12 +1343,12 @@
       "section": "BAHAGIAN B",
       "category": "Matematik",
       "format": "MCQ",
-      "question": "Rajah menunjukkan kuboid berukuran 5 cm × 4 cm × 6 cm. Berapakah isipadunya?",
+      "question": "Rajah menunjukkan sebuah bekas berbentuk kuboid berukuran 10 cm × 3 cm × 4 cm. Berapakah isipadunya?",
       "options": [
-        "60 cm³",
+        "90 cm³",
         "100 cm³",
         "120 cm³",
-        "150 cm³"
+        "140 cm³"
       ],
       "answerIndex": 2,
       "weights": [
@@ -1359,16 +1359,16 @@
       ],
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "visual_cuboid_5_4_6",
+      "constructFamily": "visual_cuboid_10_3_4",
       "levelSignal": 2,
       "contentDomain": "Matematik",
       "setLevel": 4,
-      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED",
+      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED_REVIEWED",
       "visual": {
         "kind": "cuboid",
-        "length_cm": 5,
-        "width_cm": 4,
-        "height_cm": 6
+        "length_cm": 10,
+        "width_cm": 3,
+        "height_cm": 4
       }
     },
     {
@@ -2053,12 +2053,12 @@
       "section": "BAHAGIAN B",
       "category": "English",
       "format": "MCQ",
-      "question": "The word \"fragile\" is closest in meaning to _____.",
+      "question": "The word \"scarce\" is closest in meaning to _____.",
       "options": [
-        "very heavy",
-        "very noisy",
-        "difficult to see",
-        "easily broken"
+        "plentiful",
+        "colourful",
+        "heavy",
+        "limited"
       ],
       "answerIndex": 3,
       "weights": [
@@ -2069,11 +2069,11 @@
       ],
       "type": "objective",
       "plannedLevel": 2,
-      "constructFamily": "en_vocabulary_fragile",
+      "constructFamily": "en_vocabulary_scarce",
       "levelSignal": 2,
       "contentDomain": "English",
       "setLevel": 4,
-      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED"
+      "rebuildStatus": "GOLD_V1_HUMAN_AUTHORED_REVIEWED"
     },
     {
       "id": "S47-B45",
@@ -2813,7 +2813,7 @@
     "C": 3
   },
   "qa": {
-    "status": "PASS_PENDING_CROSS_SET_AUDIT",
+    "status": "PASS_PENDING_CROSS_SET_RECHECK",
     "count": 103,
     "A_formats": {
       "SITUATIONAL": 20,
@@ -2829,11 +2829,12 @@
       "Pengetahuan Am": 6,
       "Penyelesaian Masalah": 4
     },
-    "manualEditorialReview": "Human-style rebuild completed for wording, answer logic, distractors and structured visuals.",
+    "manualEditorialReview": "Human-style rebuild completed; three first-pass cross-set overlaps repaired.",
     "mathVerification": "PASS",
     "visualAnswerContract": "PASS",
     "appendedContextCount": 0,
-    "approvalScope": "clone_only"
+    "approvalScope": "clone_only",
+    "firstCrossSetRepairCount": 3
   },
-  "status": "CURATION_V2_REBUILT_PENDING_CROSS_SET_AUDIT"
+  "status": "CURATION_V2_REBUILT_PENDING_CROSS_SET_RECHECK"
 }
