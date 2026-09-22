@@ -27,3 +27,10 @@ body{margin:0}.rqDocsApp{width:min(1180px,calc(100% - 32px));margin:0 auto;paddi
 .rqDocsPreview .rqPaper{aspect-ratio:auto!important;min-height:0!important;overflow:visible!important}
 
 .rqDocsOrderMore{display:flex;justify-content:center;padding:12px 0 2px}.rqDocsOrderMore .btn{min-width:130px}.rqDocsOrderMore .btn[hidden]{display:none}
+
+/* Document preview: preserve type hierarchy but keep typography monochrome and clean. */
+.rqDocsPreview .rqPaper,.rqDocsPreview .rqPaper *{color:#111!important}
+.rqDocsPreview .rqPaperTable thead{background:#f1f1ef!important;border-top:1px solid #111!important;border-bottom:1px solid #111!important}
+.rqDocsPreview .rqPaperTotals .grand{background:#f1f1ef!important;border-top:1px solid #111!important;border-bottom:1px solid #111!important}
+.rqDocsPreview .rqPaperTotals .deposit{background:#fff!important;color:#111!important}
+.rqDocsPreview .rqPaperFoot::before{color:#111!important}

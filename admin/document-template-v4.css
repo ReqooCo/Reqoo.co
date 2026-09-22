@@ -51,6 +51,24 @@
 .rqPaperBank{margin:20px 0 0!important;padding:13px 0 0!important;border:0!important;border-top:1px solid #d9d9d4!important;border-radius:0!important;background:transparent!important;font-size:9px!important;line-height:1.5!important;color:#4e5358!important;white-space:pre-line!important}
 .rqPaperFoot{position:relative!important;margin:28px 0 0!important;padding:18px 0 0!important;border-top:5px solid #17191d!important;font-size:8px!important;line-height:1.5!important;color:#80848a!important}
 .rqPaperFoot::before{content:"Thank you for your business."!important;display:block!important;margin-bottom:8px!important;font-size:10px!important;line-height:1.2!important;font-weight:900!important;color:#17191d!important}
+
+/* Neutral document typography: keep hierarchy, use black type throughout for a cleaner quotation. */
+.rqPaper,
+.rqPaperBrand,.rqPaperLegal,.rqPaperReg,.rqPaperTop .rqDocMeta,.rqPaperCompany,
+.rqPaperType h1,.rqPaperType small,.rqPaperLabel,.rqPaperCustomerName,
+.rqPaperAttention,.rqPaperAttention span,.rqPaperCustomerContacts span,
+.rqPaperCustomerAddress>span,.rqPaperCustomerContacts b,.rqPaperCustomerAddress p,
+.rqPaperGrid>div:last-child,.rqPaperGrid>div:last-child b,
+.rqPaperTable th,.rqPaperTable td,.rqPaperTable td small,
+.rqPaperTotals>div span,.rqPaperTotals>div b,
+.rqPaperTotals .grand span,.rqPaperTotals .grand b,
+.rqPaperTotals .deposit,.rqPaperTotals .deposit span,.rqPaperTotals .deposit b,
+.rqPaperQuoteInfo b,.rqPaperBank>b,.rqPaperQuoteInfo p,.rqPaperBank,
+.rqPaperFoot,.rqPaperFoot::before{color:#111!important}
+.rqPaperTable thead{background:#f1f1ef!important;color:#111!important;border-top:1px solid #111!important;border-bottom:1px solid #111!important}
+.rqPaperTotals .grand{background:#f1f1ef!important;color:#111!important;border-top:1px solid #111!important;border-bottom:1px solid #111!important}
+.rqPaperTotals .deposit{background:#fff!important;border-top:1px solid #c7c7c2!important;border-bottom:1px solid #c7c7c2!important}
+
 @media(max-width:600px){
  .rqPaper{padding:22px 20px 22px!important;aspect-ratio:210/297!important}
  .rqPaper::before{height:5px!important}
