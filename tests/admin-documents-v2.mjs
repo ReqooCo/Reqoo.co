@@ -46,7 +46,7 @@ assert.match(v17,/convertedOrderId/);
 assert.match(v17,/status='accepted'/);
 
 assert.match(v18,/reqoo_payments/);
-assert.match(v18,/recordPayment/);
+assert.match(v18,/recordPayment/);assert.match(v18,/correctPayment/);assert.match(v18,/payment\.corrected/);
 assert.match(v18,/paymentSummary/);
 assert.match(v18,/documentIntegrityAudit/);
 assert.match(v18,/Nombor receipt unik gagal dijana/);
@@ -59,7 +59,7 @@ assert.match(html,/SSM REGISTRATION NO/);
 assert.match(html,/id="qDeposit"[^>]*value="50"/);
 assert.match(html,/documents\.js\?v=10/);
 assert.match(html,/documents\.css\?v=5/);
-assert.match(html,/documents-payment-v1\.js\?v=4/);
+assert.match(html,/documents-payment-v1\.js\?v=5/);
 assert.match(html,/documents-drawer-v1\.js\?v=3/);
 assert.match(html,/documents-drawer-v1\.css\?v=1/);
 assert.match(css,/document-template-v4\.css/);
@@ -80,7 +80,7 @@ assert.match(ui,/quoteMeta/);assert.match(ui,/function paymentTerms/);assert.mat
 assert.match(ui,/AB ART TRADING/);
 assert.match(ui,/201903337879 \(003053605-X\)/);
 
-assert.match(paymentJs,/Record Payment/);
+assert.match(paymentJs,/Record Payment/);assert.match(paymentJs,/Betulkan Payment/);assert.match(paymentJs,/correctPayment/);assert.match(paymentJs,/DEPOSIT/);
 assert.match(paymentJs,/Save Payment & Create Receipt/);
 assert.match(paymentJs,/documentsFinanceDashboard/);assert.doesNotMatch(paymentJs,/listPayments/);assert.doesNotMatch(paymentJs,/paymentSummary/);
 assert.match(drawerJs,/DOCUMENT FLOW/);
