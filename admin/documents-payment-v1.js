@@ -37,13 +37,14 @@ function enrichInvoices(){
   const metaHtml=`<span>Total <b>${money(s.totalMinor)}</b></span><span>Paid <b class="${s.balanceMinor===0?'settled':''}">${money(s.paidMinor)}</b></span><span>Balance <b class="${s.balanceMinor===0?'settled':'balance'}">${money(s.balanceMinor)}</b></span>`;if(meta&&meta.innerHTML!==metaHtml)meta.innerHTML=metaHtml;
   const badge=row.querySelector('.rqDocBadge');if(badge&&s.paymentStatus){const label=s.paymentStatus==='partial'?'PARTIAL':s.paymentStatus==='paid'?'PAID':badge.textContent;if(badge.textContent!==label)badge.textContent=label;badge.classList.toggle('paid',s.paymentStatus==='paid');badge.classList.toggle('pending',s.paymentStatus!=='paid')}
   const acts=row.querySelector('.rqHistActions');if(!acts)return;let btn=acts.querySelector('.rqRecordPaymentBtn');
-  if(s.balanceMinor>0){if(!btn){btn=document.createElement('button');btn.type='button';btn.className='btn rqRecordPaymentBtn';btn.textContent='Record Payment';acts.prepend(btn)}btn.onclick=()=>openPayment(doc,s)}else if(btn)btn.remove()
+  if(s.balanceMinor>0){if(!btn){btn=document.createElement('button');btn.type='button';btn.className='btn rqRecordPaymentBtn';btn.textContent='Record Payment';acts.prepend(btn)}btn.onclick=()=>openPayment(doc,s)}else if(btn)btn.remove();
+  let fix=acts.querySelector('.rqCorrectPaymentBtn');if(s.paymentStatus==='paid'){if(!fix){fix=document.createElement('button');fix.type='button';fix.className='btn rqCorrectPaymentBtn';fix.textContent='Betulkan Payment';acts.prepend(fix)}fix.onclick=()=>correctPaid(doc,s)}else if(fix)fix.remove()
  })
 }
 function clearPaymentRows(){$$('#docHistory .rqPaymentReceiptRow').forEach(r=>r.remove())}
 function injectPaymentReceipts(){
  const host=$('#docHistory');if(!host)return;
- payments.slice().reverse().forEach(p=>{if(host.querySelector(`[data-payment-id="${CSS.escape(String(p.id))}"]`))return;const row=document.createElement('article');row.className='rqHistRow rqPaymentReceiptRow';row.dataset.paymentId=p.id;row.innerHTML=`<div><div class="rqHistType">OFFICIAL RECEIPT</div><div class="rqHistNo">${esc(p.receipt_number)}</div></div><div class="rqHistDate">${esc(dateFmt(p.paid_at))}</div><div class="rqHistCustomer">${esc(p.customer_name||'Customer')}<br><span class="rqDocMeta">${esc(p.invoice_number||p.order_no||'')}</span><div class="rqPaymentMeta"><span>${esc(typeLabel(p.payment_type))}</span><span><b>${money(p.amount_minor)}</b></span></div></div><div><span class="rqDocBadge paid">PAID</span></div><div class="rqHistActions"><button class="btn" type="button" data-open-payment="${esc(p.id)}">Buka</button></div>`;host.prepend(row)});
+ payments.slice().reverse().forEach(p=>{if(host.querySelector(`[data-payment-id="${CSS.escape(String(p.id))}"]`))return;const row=document.createElement('article');row.className='rqHistRow rqPaymentReceiptRow';row.dataset.paymentId=p.id;row.innerHTML=`<div><div class="rqHistType">OFFICIAL RECEIPT</div><div class="rqHistNo">${esc(p.receipt_number)}</div></div><div class="rqHistDate">${esc(dateFmt(p.paid_at))}</div><div class="rqHistCustomer">${esc(p.customer_name||'Customer')}<br><span class="rqDocMeta">${esc(p.invoice_number||p.order_no||'')}</span><div class="rqPaymentMeta"><span>${esc(typeLabel(p.payment_type))}</span><span><b>${money(p.amount_minor)}</b></span></div></div><div><span class="rqDocBadge ${['deposit','partial'].includes(String(p.payment_type||'').toLowerCase())?'pending':'paid'}">${esc(String(p.payment_type||'').toLowerCase()==='deposit'?'DEPOSIT':String(p.payment_type||'').toLowerCase()==='partial'?'PARTIAL':'PAID')}</span></div><div class="rqHistActions"><button class="btn" type="button" data-open-payment="${esc(p.id)}">Buka</button></div>`;host.prepend(row)});
  $$('[data-open-payment]').forEach(b=>b.onclick=()=>openReceipt(b.dataset.openPayment));
  const pager=$('#rqLoadMorePayments');if(pager){pager.hidden=!paymentsHasMore;pager.disabled=false;pager.textContent='Load More Receipts'}
  document.dispatchEvent(new Event('rq:documents-payment-rows-changed'))
@@ -51,6 +52,20 @@ function injectPaymentReceipts(){
 function openPayment(doc,s){
  ensureModal();activeInvoice={doc,summary:s};$('#rqPayTitle').textContent='Record Payment · '+doc.number;$('#rqPaySub').textContent=(doc.customer_name||'Customer')+' · '+(doc.order_id||'');$('#rqPayTotal').textContent=money(s.totalMinor);$('#rqPayPaid').textContent=money(s.paidMinor);$('#rqPayBalance').textContent=money(s.balanceMinor);
  const first=Number(s.paidMinor||0)===0,defaultMinor=first?Math.min(s.balanceMinor,Math.round(s.totalMinor*.5)):s.balanceMinor;$('#rqPayAmount').value=(defaultMinor/100).toFixed(2);$('#rqPayType').value=first?(defaultMinor>=s.totalMinor?'full':'deposit'):'final';$('#rqPayMethod').value='bank_transfer';$('#rqPayDate').value=new Date().toLocaleDateString('en-CA');$('#rqPayRef').value='';$('#rqPayNote').value=first?'Deposit diterima':'Baki bayaran diterima';$('#rqPayStatus').textContent='';$('#rqPayStatus').className='rqPaymentStatus';$('#rqPaymentModal').classList.add('open');$('#rqPaymentModal').setAttribute('aria-hidden','false')
+}
+async function correctPaid(doc,s){
+ try{
+  const d=await api('paymentSummary',{orderId:doc.order_id}),summary=d.summary||s,pays=summary.payments||[];
+  if(summary.paymentStatus!=='paid'){await refreshData(true);return}
+  if(pays.length!==1){alert('Pembetulan automatik hanya untuk order dengan satu rekod bayaran. Semak Payment Timeline dahulu.');return}
+  const suggested=(summary.totalMinor/2/100).toFixed(2),raw=prompt('Amaun sebenar yang sudah diterima (RM).\nContoh jika deposit 50%: '+suggested,suggested);
+  if(raw===null)return;const actual=Math.round(Number(raw||0)*100);
+  if(!Number.isFinite(actual)||actual<=0||actual>=summary.totalMinor){alert('Masukkan amaun deposit/partial yang lebih RM0.00 dan kurang daripada jumlah invoice.');return}
+  const balance=summary.totalMinor-actual;
+  if(!confirm('Tukar status invoice daripada PAID kepada PARTIAL?\n\nPaid sebenar: '+money(actual)+'\nBalance: '+money(balance)))return;
+  await api('correctPayment',{orderId:doc.order_id,actualPaidMinor:actual,paymentType:'deposit',reason:'Admin correction: full paid tersalah tekan; bayaran sebenar deposit/partial'},'POST');
+  await refreshData(true);document.getElementById('refreshDocs')?.click();alert('Status dibetulkan kepada PARTIAL.')
+ }catch(e){alert(e.message||'Pembetulan payment gagal.')}
 }
 async function savePayment(){
  if(!activeInvoice)return;const btn=$('#rqPaySave'),status=$('#rqPayStatus'),amount=Math.round(Number($('#rqPayAmount').value||0)*100);if(amount<=0){status.textContent='Masukkan amaun bayaran yang sah.';status.className='rqPaymentStatus err';return}if(amount>activeInvoice.summary.balanceMinor){status.textContent='Amaun melebihi baki '+money(activeInvoice.summary.balanceMinor)+'.';status.className='rqPaymentStatus err';return}
