@@ -8,7 +8,8 @@ const money=n=>'RM'+(Number(n||0)/100).toFixed(2);
 const toMinor=v=>Math.max(0,Math.round((Number(v)||0)*100));
 const LEGAL_NAME='AB ART TRADING',SSM_NO='201903337879 (003053605-X)';
 const DEFAULT_BANK_DETAILS='Bank: MAYBANK\nAccount Name: AB ART TRADING\nAccount No: 566010635319';
-function cleanField(v){const s=String(v??'').trim();return !s||/^(?:-|—|n\/?a|none|null)$/i.test(s)?'':s}\nfunction normalizeBankDetails(v){return cleanField(v).replace(/\\\\n/g,'\\n').replace(/5660\\s*1063\\s*5319/g,'566010635319')}
+function cleanField(v){const s=String(v??'').trim();return !s||/^(?:-|—|n\/?a|none|null)$/i.test(s)?'':s}
+function normalizeBankDetails(v){return cleanField(v).replace(/\\n/g,'\n').replace(/5660\s*1063\s*5319/g,'566010635319')}
 function toast(msg,err=false){const el=$('docsToast');el.textContent=msg;el.className='rqDocsToast show'+(err?' err':'');clearTimeout(toast.t);toast.t=setTimeout(()=>el.className='rqDocsToast',2600)}
 async function api(action,extra={},method='GET'){
   let url=new URL(API,location.origin),opt={method,headers:{},cache:'no-store'};
