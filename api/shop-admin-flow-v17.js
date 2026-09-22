@@ -117,6 +117,45 @@ async function customQuotation(d,env){
   const doc=await hydrateDocument(row,env),meta=quoteMeta(doc);
   return meta.source==='custom'?doc:null;
 }
+async function updateCustomQuotation(d,env){
+  await ensureDocuments(env);
+  const doc=await customQuotation(d,env);
+  if(!doc)return J({ok:false,error:'Custom quotation tidak dijumpai.'},404);
+  const oldMeta=quoteMeta(doc);
+  if(oldMeta.convertedOrderId)return J({ok:false,error:'Quotation yang telah menjadi order tidak boleh diedit. Edit order/invoice selepas conversion.'},409);
+  const customerName=S(d.customerName).slice(0,160),customerPhone=S(d.customerPhone).slice(0,60),customerEmail=S(d.customerEmail).slice(0,160),items=normalizeQuoteItems(d.items);
+  if(!customerName)return J({ok:false,error:'Nama pelanggan / syarikat diperlukan.'},400);
+  if(!items.length)return J({ok:false,error:'Masukkan sekurang-kurangnya satu item quotation.'},400);
+  const now=NOW(),subtotal=items.reduce((sum,item)=>sum+item.lineTotalMinor,0),discount=Math.min(subtotal,clampMoney(d.discountMinor,subtotal)),shipping=clampMoney(d.shippingMinor,100000000),tax=clampMoney(d.taxMinor,100000000),total=Math.max(0,subtotal-discount+shipping+tax);
+  const validDays=clampDays(d.validDays,7),dueAt=S(d.dueAt)||plusDays(now,validDays),depositPercent=Math.max(0,Math.min(100,Number(d.depositPercent||0)));
+  const company={...(doc.company||{}),quoteMeta:{...oldMeta,source:'custom',customerAddress:S(d.customerAddress).slice(0,1000),attention:S(d.attention).slice(0,160),notes:S(d.notes).slice(0,2000),terms:S(d.terms).slice(0,3000),depositPercent:Number.isFinite(depositPercent)?Math.round(depositPercent*100)/100:0}};
+  const stmts=[
+    env.DB.prepare('UPDATE reqoo_documents SET subtotal_minor=?,discount_minor=?,shipping_minor=?,tax_minor=?,total_minor=?,due_at=?,customer_name=?,customer_phone=?,customer_email=?,company_json=?,updated_at=? WHERE id=?').bind(subtotal,discount,shipping,tax,total,dueAt,customerName,customerPhone,customerEmail,JSON.stringify(company),now,doc.id),
+    env.DB.prepare('DELETE FROM reqoo_document_items WHERE document_id=?').bind(doc.id),
+    ...items.map(item=>env.DB.prepare('INSERT INTO reqoo_document_items(id,document_id,description,variation,quantity,unit_price_minor,line_total_minor,sort_order) VALUES(?,?,?,?,?,?,?,?)').bind(ID('di'),doc.id,item.description,item.variation,item.quantity,item.unitPriceMinor,item.lineTotalMinor,item.sortOrder))
+  ];
+  await env.DB.batch(stmts);
+  return J({ok:true,updated:true,document:await hydrateDocument(await env.DB.prepare('SELECT * FROM reqoo_documents WHERE id=? LIMIT 1').bind(doc.id).first(),env)});
+}
+async function createInvoiceWithQuoteTerms(d,request,env){
+  const response=await legacy({request,env});
+  if(!response.ok)return response;
+  let out={};try{out=await response.clone().json()}catch{return response}
+  if(out.ok===false||!out.document)return response;
+  const invoice=out.document,orderId=S(invoice.order_id||d.orderId||d.orderNo||d.orderRef);
+  if(!orderId)return response;
+  const qrow=await env.DB.prepare("SELECT * FROM reqoo_documents WHERE order_id=? AND type='quotation' ORDER BY created_at,id LIMIT 1").bind(orderId).first();
+  if(!qrow)return response;
+  const quote=await hydrateDocument(qrow,env),meta=quoteMeta(quote),pct=Math.max(0,Math.min(100,Number(meta.depositPercent||0)));
+  if(!(pct>0&&pct<100))return response;
+  const irow=await env.DB.prepare("SELECT * FROM reqoo_documents WHERE id=? AND type='invoice' LIMIT 1").bind(invoice.id).first();
+  if(!irow)return response;
+  let company={};try{company=JSON.parse(irow.company_json||'{}')}catch{}
+  company={...company,quoteMeta:{...meta,sourceQuotationId:quote.id,sourceQuotationNumber:quote.number,depositPercent:pct}};
+  await env.DB.prepare('UPDATE reqoo_documents SET company_json=?,updated_at=? WHERE id=?').bind(JSON.stringify(company),NOW(),irow.id).run();
+  out.document=await hydrateDocument(await env.DB.prepare('SELECT * FROM reqoo_documents WHERE id=?').bind(irow.id).first(),env);
+  return J(out);
+}
 async function updateCustomQuotationStatus(d,env){
   await ensureDocuments(env);
   const status=S(d.status).toLowerCase(),allowed=new Set(['issued','sent','accepted','rejected','expired']);
@@ -194,14 +233,22 @@ export async function onRequest({request,env}){
     try{return await repairProductImages(env)}catch(error){console.error('REQOO image repair:',error);return J({ok:false,error:'Gambar lama belum dapat dipulihkan'},500)}
   }
 
-  if(['createCustomQuotation','updateCustomQuotationStatus','convertCustomQuotationToOrder'].includes(action)){
+  if(['createCustomQuotation','updateCustomQuotation','updateCustomQuotationStatus','convertCustomQuotationToOrder'].includes(action)){
     if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);
     if(!env.DB)return J({ok:false,error:'D1 binding DB tidak dijumpai'},503);
     try{
       if(action==='createCustomQuotation')return await createCustomQuotation(d,env);
+      if(action==='updateCustomQuotation')return await updateCustomQuotation(d,env);
       if(action==='updateCustomQuotationStatus')return await updateCustomQuotationStatus(d,env);
       return await convertCustomQuotationToOrder(d,env);
     }catch(error){console.error('REQOO custom quotation:',error);return J({ok:false,error:error?.message||'Quotation gagal diproses'},500)}
+  }
+
+  if(action==='createDocument'&&S(d.type).toLowerCase()==='invoice'){
+    if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);
+    if(!env.DB)return J({ok:false,error:'D1 binding DB tidak dijumpai'},503);
+    try{await ensureDocuments(env);return await createInvoiceWithQuoteTerms(d,request,env)}
+    catch(error){console.error('REQOO deposit invoice:',error);return J({ok:false,error:error?.message||'Invoice gagal diproses'},500)}
   }
 
   if(action==='createDocument'&&S(d.type).toLowerCase()==='quotation'){
