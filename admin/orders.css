@@ -35,3 +35,13 @@
 }
 
 .rqOrdersMore{display:flex;justify-content:center;padding-top:12px}.rqOrdersMore .btn{min-width:130px}.rqOrdersMore .btn[hidden]{display:none}
+
+/* Mobile order drawer must sit above the fixed Admin dock and keep actions reachable. */
+@media(max-width:900px){
+ .rqOrderDrawer{z-index:970!important}
+ .rqOrderDrawer.open~.rqAdminMobile{display:none!important}
+}
+@media(max-width:600px){
+ .rqOrderDrawerCard{padding-bottom:calc(22px + env(safe-area-inset-bottom))!important}
+ .rqOrderActions{padding-bottom:4px!important}
+}
