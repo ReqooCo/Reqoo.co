@@ -38,7 +38,7 @@ function enrichInvoices(){
   const badge=row.querySelector('.rqDocBadge');if(badge&&s.paymentStatus){const label=s.paymentStatus==='partial'?'PARTIAL':s.paymentStatus==='paid'?'PAID':badge.textContent;if(badge.textContent!==label)badge.textContent=label;badge.classList.toggle('paid',s.paymentStatus==='paid');badge.classList.toggle('pending',s.paymentStatus!=='paid')}
   const acts=row.querySelector('.rqHistActions');if(!acts)return;let btn=acts.querySelector('.rqRecordPaymentBtn');
   if(s.balanceMinor>0){if(!btn){btn=document.createElement('button');btn.type='button';btn.className='btn rqRecordPaymentBtn';btn.textContent='Record Payment';acts.prepend(btn)}btn.onclick=()=>openPayment(doc,s)}else if(btn)btn.remove();
-  let fix=acts.querySelector('.rqCorrectPaymentBtn');if(s.paymentStatus==='paid'){if(!fix){fix=document.createElement('button');fix.type='button';fix.className='btn rqCorrectPaymentBtn';fix.textContent='Betulkan Payment';acts.prepend(fix)}fix.onclick=()=>correctPaid(doc,s)}else if(fix)fix.remove()
+  let fix=acts.querySelector('.rqCorrectPaymentBtn');if(s.paymentStatus==='paid'){if(!fix){fix=document.createElement('button');fix.type='button';fix.className='btn rqCorrectPaymentBtn';fix.textContent='Betulkan / Undo Paid';acts.prepend(fix)}fix.onclick=()=>correctPaid(doc,s)}else if(fix)fix.remove()
  })
 }
 function clearPaymentRows(){$$('#docHistory .rqPaymentReceiptRow').forEach(r=>r.remove())}
@@ -58,13 +58,13 @@ async function correctPaid(doc,s){
   const d=await api('paymentSummary',{orderId:doc.order_id}),summary=d.summary||s,pays=summary.payments||[];
   if(summary.paymentStatus!=='paid'){await refreshData(true);return}
   if(pays.length!==1){alert('Pembetulan automatik hanya untuk order dengan satu rekod bayaran. Semak Payment Timeline dahulu.');return}
-  const suggested=(summary.totalMinor/2/100).toFixed(2),raw=prompt('Amaun sebenar yang sudah diterima (RM).\nContoh jika deposit 50%: '+suggested,suggested);
+  const suggested=(summary.totalMinor/2/100).toFixed(2),raw=prompt('Berapa bayaran sebenar yang sudah diterima?\n\nMasukkan 0 jika BELUM TERIMA BAYARAN.\nContoh deposit 50%: '+suggested,suggested);
   if(raw===null)return;const actual=Math.round(Number(raw||0)*100);
-  if(!Number.isFinite(actual)||actual<=0||actual>=summary.totalMinor){alert('Masukkan amaun deposit/partial yang lebih RM0.00 dan kurang daripada jumlah invoice.');return}
-  const balance=summary.totalMinor-actual;
-  if(!confirm('Tukar status invoice daripada PAID kepada PARTIAL?\n\nPaid sebenar: '+money(actual)+'\nBalance: '+money(balance)))return;
-  await api('correctPayment',{orderId:doc.order_id,actualPaidMinor:actual,paymentType:'deposit',reason:'Admin correction: full paid tersalah tekan; bayaran sebenar deposit/partial'},'POST');
-  await refreshData(true);document.getElementById('refreshDocs')?.click();alert('Status dibetulkan kepada PARTIAL.')
+  if(!Number.isFinite(actual)||actual<0||actual>=summary.totalMinor){alert('Masukkan RM0.00 atau amaun yang kurang daripada jumlah invoice.');return}
+  const reset=actual===0,balance=summary.totalMinor-actual,next=reset?'BELUM BAYAR':'PARTIAL';
+  if(!confirm('Tukar status daripada PAID kepada '+next+'?\n\nPaid sebenar: '+money(actual)+'\nBalance: '+money(balance)))return;
+  await api('correctPayment',{orderId:doc.order_id,actualPaidMinor:actual,paymentType:'deposit',reason:reset?'Admin correction: full paid tersalah tekan; bayaran belum diterima':'Admin correction: full paid tersalah tekan; bayaran sebenar deposit/partial'},'POST');
+  await refreshData(true);document.getElementById('refreshDocs')?.click();alert(reset?'Status dipulihkan kepada BELUM BAYAR.':'Status dibetulkan kepada PARTIAL.')
  }catch(e){alert(e.message||'Pembetulan payment gagal.')}
 }
 async function savePayment(){

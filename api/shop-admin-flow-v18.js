@@ -149,27 +149,31 @@ async function correctPayment(d,env){
   const o=await orderByKey(key,env);if(!o)return J({ok:false,error:'Order tidak dijumpai.'},404);
   const before=await summaryForOrder(o,env),actual=money(d.actualPaidMinor);
   if(before.totalMinor<=0)return J({ok:false,error:'Jumlah invoice tidak sah.'},409);
-  if(actual<=0||actual>=before.totalMinor)return J({ok:false,error:'Amaun pembetulan mesti lebih RM0.00 dan kurang daripada jumlah invoice.'},400);
-  if(before.paymentStatus!=='paid')return J({ok:false,error:'Status semasa bukan PAID. Muat semula dokumen dahulu.'},409);
+  if(actual<0||actual>=before.totalMinor)return J({ok:false,error:'Amaun pembetulan mesti RM0.00 atau kurang daripada jumlah invoice.'},400);
+  if(before.paymentStatus!=='paid')return J({ok:false,error:'Status semasa bukan PAID. Muat semula dahulu.'},409);
   const confirmed=(before.payments||[]).filter(p=>S(p.status).toLowerCase()==='confirmed');
   if(confirmed.length!==1)return J({ok:false,error:'Pembetulan automatik hanya dibenarkan apabila ada satu rekod bayaran. Semak Payment Timeline dahulu.'},409);
-  const p=confirmed[0],now=NOW(),type=S(d.paymentType).toLowerCase()==='partial'?'partial':'deposit';
-  const reason=S(d.reason||'Pembetulan: bayaran sebenar ialah deposit/partial').slice(0,500);
+  const p=confirmed[0],now=NOW(),resetToPending=actual===0,type=S(d.paymentType).toLowerCase()==='partial'?'partial':'deposit';
+  const reason=S(d.reason||(resetToPending?'Pembetulan: status PAID tersalah tekan; bayaran belum diterima':'Pembetulan: bayaran sebenar ialah deposit/partial')).slice(0,500);
   const oldNote=S(p.note),note=(oldNote?oldNote+' | ':'')+reason;
-  const stmts=[
+  const stmts=resetToPending?[
+    env.DB.prepare("UPDATE reqoo_payments SET status='void',note=?,updated_at=? WHERE id=? AND status='confirmed'").bind(note,now,p.id),
+    env.DB.prepare("UPDATE orders SET payment_status='pending',updated_at=? WHERE id=?").bind(now,o.id),
+    env.DB.prepare("UPDATE reqoo_documents SET payment_status='pending',status=CASE WHEN type='invoice' THEN 'issued' WHEN type='receipt' THEN 'void' ELSE status END,updated_at=? WHERE order_id=?").bind(now,o.id)
+  ]:[
     env.DB.prepare("UPDATE reqoo_payments SET amount_minor=?,payment_type=?,note=?,updated_at=? WHERE id=? AND status='confirmed'").bind(actual,type,note,now,p.id),
     env.DB.prepare("UPDATE orders SET payment_status='partial',updated_at=? WHERE id=?").bind(now,o.id),
     env.DB.prepare("UPDATE reqoo_documents SET payment_status='partial',status=CASE WHEN type='invoice' THEN 'partial' ELSE status END,updated_at=? WHERE order_id=?").bind(now,o.id)
   ];
-  if(S(p.id).startsWith('legacy_')){
+  if(!resetToPending&&S(p.id).startsWith('legacy_')){
     const legacyId=S(p.id).slice(7);
     stmts.push(env.DB.prepare("UPDATE payments SET amount_minor=?,updated_at=? WHERE id=? AND order_id=?").bind(actual,now,legacyId,o.id));
   }
   await env.DB.batch(stmts);
-  try{await env.DB.prepare("UPDATE documents SET status=CASE WHEN type='invoice' THEN 'partial' WHEN type='receipt' THEN 'void' ELSE status END,updated_at=? WHERE order_id=?").bind(now,o.id).run()}catch{}
-  try{await env.DB.prepare('INSERT INTO activity_events(id,order_id,event_type,trace_id,metadata_json,created_at) VALUES(?,?,?,?,?,?)').bind(ID('evt'),o.id,'payment.corrected',o.id,JSON.stringify({paymentId:p.id,fromMinor:Number(p.amount_minor||0),toMinor:actual,reason}),now).run()}catch{}
+  try{await env.DB.prepare("UPDATE documents SET status=CASE WHEN type='invoice' THEN ? WHEN type='receipt' THEN 'void' ELSE status END,updated_at=? WHERE order_id=?").bind(resetToPending?'issued':'partial',now,o.id).run()}catch{}
+  try{await env.DB.prepare('INSERT INTO activity_events(id,order_id,event_type,trace_id,metadata_json,created_at) VALUES(?,?,?,?,?,?)').bind(ID('evt'),o.id,'payment.corrected',o.id,JSON.stringify({paymentId:p.id,fromMinor:Number(p.amount_minor||0),toMinor:actual,resetToPending,reason}),now).run()}catch{}
   const fresh=await orderByKey(o.id,env),summary=await summaryForOrder(fresh,env);
-  return J({ok:true,payment:{...p,amount_minor:actual,payment_type:type,note},summary});
+  return J({ok:true,payment:{...p,amount_minor:actual,payment_type:resetToPending?p.payment_type:type,note,status:resetToPending?'void':'confirmed'},summary});
 }
 async function listPayments(d,env){
   await ensure(env);const orderId=S(d.orderId),invoiceId=S(d.invoiceId),limit=Math.min(2000,Math.max(1,Number(d.limit||200)));await syncLegacyPaidPayments(env,orderId);let sql="SELECT p.*,o.order_no,o.total_minor,c.name customer_name,c.phone customer_phone,c.email customer_email,rd.number invoice_number FROM reqoo_payments p JOIN orders o ON o.id=p.order_id LEFT JOIN customers c ON c.id=o.customer_id LEFT JOIN reqoo_documents rd ON rd.id=p.invoice_document_id WHERE p.status='confirmed'",args=[];

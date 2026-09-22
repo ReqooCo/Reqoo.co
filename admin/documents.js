@@ -143,7 +143,6 @@ function shareWhatsApp(){
   const amount=activeDoc.type==='delivery_order'?'':money(dueNow),kind=typeLabel(activeDoc.type),amountLabel=depositInvoice?'Amount Due Now':'Jumlah';
   const text=`Salam ${activeDoc.customer_name||''},\n\nREQOO.CO telah mengeluarkan ${kind} ${activeDoc.number}.${amount?'\n'+amountLabel+': '+amount:''}\n\nPautan rasmi REQOO.CO untuk semak dokumen:\n${link}\n\nPautan ini menggunakan domain rasmi reqoo.co. Boleh tekan untuk lihat dokumen penuh atau simpan PDF.`;
   window.open('https://wa.me/'+n+'?text='+encodeURIComponent(text),'_blank','noopener');
-  const meta=quoteMeta(activeDoc);
   if(activeDoc.type==='quotation'&&meta.source==='custom'&&String(activeDoc.status||'issued').toLowerCase()==='issued'){
     api('updateCustomQuotationStatus',{documentId:activeDoc.id,status:'sent'},'POST').then(d=>{activeDoc=d.document;replaceDocument(activeDoc);renderHistory();if($('docModal').classList.contains('open'))showDocument()}).catch(()=>{});
   }
@@ -167,13 +166,20 @@ async function createDepositInvoice(){
 }
 async function convertActiveQuote(){
   if(!activeDoc||activeDoc.type!=='quotation')return;
-  if(!confirm(`Convert ${activeDoc.number} kepada order? Harga dan item quotation akan dikunci ke order baru.`))return;
+  const quote=activeDoc,meta=quoteMeta(quote),pct=Math.max(0,Math.min(100,Number(meta.depositPercent||0))),depositText=pct>0&&pct<100?' dan terus sediakan Invoice Deposit '+pct+'%':'';
+  if(!confirm(`Convert ${quote.number} kepada order${depositText}? Harga dan item quotation akan dikunci.`))return;
   const btn=$('docConvert'),old=btn.textContent;btn.disabled=true;btn.textContent='Converting…';
   try{
-    const d=await api('convertCustomQuotationToOrder',{documentId:activeDoc.id},'POST');
-    activeDoc=d.document;replaceDocument(activeDoc);
-    const ref=d.order?.order_no||d.order?.id||'order baru';
-    toast(`Order ${ref} berjaya dibuat`);
+    const d=await api('convertCustomQuotationToOrder',{documentId:quote.id},'POST');
+    const convertedQuote=d.document;replaceDocument(convertedQuote);
+    const orderId=d.order?.id||quoteMeta(convertedQuote).convertedOrderId,ref=d.order?.order_no||orderId||'order baru';
+    if(orderId&&pct>0&&pct<100){
+      const invoiceData=await api('createDocument',{type:'invoice',orderId},'POST');
+      activeDoc=invoiceData.document;replaceDocument(activeDoc);renderHistory();
+      toast(`Order ${ref} + Invoice Deposit ${pct}% siap`);
+      await load(true);if(ordersLoaded)await loadOrders(true);showDocument();return;
+    }
+    activeDoc=convertedQuote;toast(`Order ${ref} berjaya dibuat`);
     await load(true);if(ordersLoaded)await loadOrders(true);
     const fresh=await openSaved(activeDoc.id,false);activeDoc=fresh;showDocument();
   }catch(e){toast(e.message,true)}finally{btn.disabled=false;btn.textContent=old}
