@@ -4,7 +4,7 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=n=>'RM'+(Number(n||0)/100).toFixed(2);
 const LEGAL_NAME='AB ART TRADING',SSM_NO='201903337879 (003053605-X)';
-const DEFAULT_BANK_DETAILS='Bank: MAYBANK\\nAccount Name: AB ART TRADING\\nAccount No: 5660 1063 5319';
+const DEFAULT_BANK_DETAILS='Bank: MAYBANK\nAccount Name: AB ART TRADING\nAccount No: 566010635319';
 function cleanField(v){const s=String(v??'').trim();return !s||/^(?:-|—|n\/?a|none|null)$/i.test(s)?'':s}
 function dateFmt(v){if(!v)return'—';const d=new Date(v);return Number.isNaN(d.getTime())?String(v):d.toLocaleDateString('ms-MY',{day:'2-digit',month:'short',year:'numeric'})}
 function typeLabel(t){return t==='quotation'?'Quotation':t==='invoice'?'Invoice':t==='receipt'?'Official Receipt':'Delivery Order'}
