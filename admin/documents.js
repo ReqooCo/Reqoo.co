@@ -7,7 +7,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const money=n=>'RM'+(Number(n||0)/100).toFixed(2);
 const toMinor=v=>Math.max(0,Math.round((Number(v)||0)*100));
 const LEGAL_NAME='AB ART TRADING',SSM_NO='201903337879 (003053605-X)';
-const DEFAULT_BANK_DETAILS='Bank: MAYBANK\\nAccount Name: AB ART TRADING\\nAccount No: 5660 1063 5319';
+const DEFAULT_BANK_DETAILS='Bank: MAYBANK\nAccount Name: AB ART TRADING\nAccount No: 566010635319';
 function cleanField(v){const s=String(v??'').trim();return !s||/^(?:-|—|n\/?a|none|null)$/i.test(s)?'':s}
 function toast(msg,err=false){const el=$('docsToast');el.textContent=msg;el.className='rqDocsToast show'+(err?' err':'');clearTimeout(toast.t);toast.t=setTimeout(()=>el.className='rqDocsToast',2600)}
 async function api(action,extra={},method='GET'){
