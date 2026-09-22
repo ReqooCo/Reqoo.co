@@ -34,3 +34,35 @@ body{margin:0}.rqDocsApp{width:min(1180px,calc(100% - 32px));margin:0 auto;paddi
 .rqDocsPreview .rqPaperTotals .grand{background:#f1f1ef!important;border-top:1px solid #111!important;border-bottom:1px solid #111!important}
 .rqDocsPreview .rqPaperTotals .deposit{background:#fff!important;color:#111!important}
 .rqDocsPreview .rqPaperFoot::before{color:#111!important}
+
+/* Quotation item entry: explicit field labels on compact/mobile layouts. */
+.rqQuoteItemField{display:block;min-width:0}
+.rqQuoteItemField>span,.rqQuoteAmount>span{display:none}
+.rqQuoteItemField input{display:block}
+.rqQuoteAmount{min-width:0;text-align:right}
+.rqQuoteAmount>div{display:block}
+.rqQuoteAmount [data-q-total]{display:block}
+.rqQuoteAmount [data-q-calc]{display:none;margin-top:3px;font-size:9px;font-weight:650;color:#777b83}
+@media(max-width:900px){
+ .rqQuoteItemHeader{display:none}
+ .rqQuoteItem{position:relative;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;padding:14px}
+ .rqQuoteItemField>span,.rqQuoteAmount>span{display:block;margin:0 0 6px;font-size:8px;line-height:1.2;font-weight:900;letter-spacing:.75px;color:#626872}
+ .rqQuoteDescription,.rqQuoteVariation{grid-column:1/-1}
+ .rqQuoteQty{grid-column:1}
+ .rqQuoteUnit{grid-column:2}
+ .rqQuoteAmount{grid-column:1/-1;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:11px 12px;border:1px solid #e4dfd3;border-radius:9px;background:#faf9f6;text-align:right}
+ .rqQuoteAmount>span{margin:0}
+ .rqQuoteAmount [data-q-total]{font-size:14px}
+ .rqQuoteAmount [data-q-calc]{display:block}
+ .rqQuoteRemove{position:absolute;right:14px;top:12px}
+ .rqQuoteDescription>span{padding-right:42px}
+}
+@media(max-width:600px){
+ .rqQuoteItem{grid-template-columns:1fr 1fr!important;gap:11px!important;padding:13px!important}
+ .rqQuoteDescription,.rqQuoteVariation{grid-column:1/-1!important}
+ .rqQuoteQty{grid-column:1!important}
+ .rqQuoteUnit{grid-column:2!important}
+ .rqQuoteAmount{grid-column:1/-1!important}
+ .rqQuoteItem input[data-q="description"],.rqQuoteItem input[data-q="variation"]{grid-column:auto!important}
+ .rqQuoteRemove{grid-column:auto!important;grid-row:auto!important;right:13px;top:11px}
+}
