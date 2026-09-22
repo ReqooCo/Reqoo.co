@@ -57,7 +57,7 @@ async function documentSettings(env){
     address:m.document_address||'',
     phone:m.document_phone||'',
     email:m.document_email||'',
-    bank:m.document_bank||'',
+    bank:m.document_bank||'Bank: MAYBANK\nAccount Name: AB ART TRADING\nAccount No: 5660 1063 5319',
     quoteValidDays:clampDays(m.document_quote_valid_days,7)
   };
 }

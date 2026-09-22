@@ -28,7 +28,7 @@ async function settings(env){
   const rows=(await env.DB.prepare(`SELECT key,value FROM shop_settings WHERE key IN (${keys.map(()=>'?').join(',')})`).bind(...keys).all()).results||[];
   const m=Object.fromEntries(rows.map(r=>[r.key,r.value||'']));
   return {
-    companyName:m.document_company_name||'REQOO.CO',registrationNo:m.document_registration_no||'',address:m.document_address||'',phone:m.document_phone||'',email:m.document_email||'',bank:m.document_bank||'',
+    companyName:m.document_company_name||'REQOO.CO',registrationNo:m.document_registration_no||'',address:m.document_address||'',phone:m.document_phone||'',email:m.document_email||'',bank:m.document_bank||'Bank: MAYBANK\nAccount Name: AB ART TRADING\nAccount No: 5660 1063 5319',
     quoteValidDays:Math.max(0,Math.min(365,Number(m.document_quote_valid_days||7))),invoiceDueDays:Math.max(0,Math.min(365,Number(m.document_invoice_due_days||14)))
   };
 }
