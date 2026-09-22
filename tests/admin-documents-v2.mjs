@@ -69,7 +69,7 @@ assert.match(templateCss,/@page\{size:A4 portrait/);
 assert.match(depositJs,/DEFAULT_DEPOSIT=50/);
 assert.match(depositCss,/\.rqPaperPaymentTerms/);assert.match(depositCss,/content:none!important/,'legacy CSS-generated payment terms must stay disabled');
 assert.doesNotMatch(ui,/data-create="quotation"/);
-assert.match(ui,/createCustomQuotation/);assert.match(ui,/updateCustomQuotation/);assert.match(ui,/editActiveQuote/);assert.match(ui,/createDepositInvoice/);assert.match(ui,/QUANTITY \(UNIT\)/);assert.match(ui,/PRICE \/ UNIT \(RM\)/);assert.match(ui,/data-q-calc/);
+assert.match(ui,/createCustomQuotation/);assert.match(ui,/updateCustomQuotation/);assert.match(ui,/editActiveQuote/);assert.match(ui,/createDepositInvoice/);assert.match(ui,/Deposit Invoice/);assert.match(ui,/QUANTITY \(UNIT\)/);assert.match(ui,/PRICE \/ UNIT \(RM\)/);assert.match(ui,/data-q-calc/);
 assert.match(ui,/convertCustomQuotationToOrder/);
 assert.match(ui,/updateCustomQuotationStatus/);
 assert.match(ui,/Convert to Order|convertActiveQuote/);
