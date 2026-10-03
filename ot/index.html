@@ -39,6 +39,7 @@
     .card h2{font-size:15px;margin:0 0 13px}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .grid4{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
     label{display:block;min-width:0}
     label span{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
     input[type="number"]{width:100%;min-height:48px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:10px 12px;font-size:17px;color:var(--ink);outline:none}
@@ -65,7 +66,7 @@
     .install b{color:#7c2d12}
     .foot{text-align:center;color:var(--muted);font-size:10px;margin-top:18px}
     @media(max-width:520px){
-      .grid3{grid-template-columns:1fr}
+      .grid3,.grid4{grid-template-columns:1fr}
       .hero .net{font-size:34px}
       .grid2{grid-template-columns:1fr 1fr}
     }
@@ -110,8 +111,8 @@
     </section>
 
     <section class="card">
-      <h2>Berapa hari kerja 12 jam?</h2>
-      <div class="grid3">
+      <h2>Bilangan hari OT</h2>
+      <div class="grid4">
         <div class="otbox">
           <div class="otname">Hari biasa</div>
           <input id="normalDays" aria-label="Bilangan hari biasa" type="number" inputmode="numeric" min="0" step="1" value="14">
@@ -125,10 +126,16 @@
           <div id="restAmount" class="amount">RM0.00</div>
         </div>
         <div class="otbox">
-          <div class="otname">Public Holiday</div>
-          <input id="phDays" aria-label="Bilangan Public Holiday" type="number" inputmode="numeric" min="0" step="1" value="1">
+          <div class="otname">Public Holiday 8 jam</div>
+          <input id="ph8Days" aria-label="Bilangan Public Holiday 8 jam" type="number" inputmode="numeric" min="0" step="1" value="0">
+          <div class="rule">8j × 2.0</div>
+          <div id="ph8Amount" class="amount">RM0.00</div>
+        </div>
+        <div class="otbox">
+          <div class="otname">Public Holiday 12 jam</div>
+          <input id="ph12Days" aria-label="Bilangan Public Holiday 12 jam" type="number" inputmode="numeric" min="0" step="1" value="1">
           <div class="rule">8j × 2.0 + 4j × 3.0</div>
-          <div id="phAmount" class="amount">RM0.00</div>
+          <div id="ph12Amount" class="amount">RM0.00</div>
         </div>
       </div>
       <div class="summary" style="margin-top:14px">
@@ -143,7 +150,7 @@
       <div class="grid2" style="margin-top:13px">
         <label><span>OT Meal / hari (RM)</span><input id="mealRate" type="number" inputmode="decimal" min="0" step="1" value="10"></label>
       </div>
-      <div class="note">Bilangan meal dikira daripada jumlah hari biasa + Rest Day + Public Holiday.</div>
+      <div class="note">Bilangan meal dikira daripada jumlah hari biasa + Rest Day + Public Holiday 8 jam + Public Holiday 12 jam.</div>
     </details>
 
     <section class="card">
@@ -205,7 +212,7 @@
         sip: 11.90 / REF_GROSS,
         pcb: 318.45 / REF_GROSS
       };
-      const ids = ['basic','shift','laundry','skm','normalDays','restDays','phDays','mealRate'];
+      const ids = ['basic','shift','laundry','skm','normalDays','restDays','ph8Days','ph12Days','mealRate'];
       const $ = id => document.getElementById(id);
       const num = id => Math.max(0, Number($(id).value) || 0);
       const money = value => new Intl.NumberFormat('ms-MY',{style:'currency',currency:'MYR'}).format(Number.isFinite(value) ? value : 0);
@@ -223,17 +230,19 @@
         const skm = num('skm');
         const normal = num('normalDays');
         const rest = num('restDays');
-        const ph = num('phDays');
+        const ph8 = num('ph8Days');
+        const ph12 = num('ph12Days');
         const mealRate = num('mealRate');
 
         const otBase = basic + shift;
         const hourly = otBase / 26 / 8;
         const normalAmount = normal * 4 * hourly * 1.5;
         const restAmount = rest * ((8 * hourly * 1.5) + (4 * hourly * 2));
-        const phAmount = ph * ((8 * hourly * 2) + (4 * hourly * 3));
-        const otTotal = normalAmount + restAmount + phAmount;
-        const otHours = (normal * 4) + (rest * 12) + (ph * 12);
-        const meal = (normal + rest + ph) * mealRate;
+        const ph8Amount = ph8 * (8 * hourly * 2);
+        const ph12Amount = ph12 * ((8 * hourly * 2) + (4 * hourly * 3));
+        const otTotal = normalAmount + restAmount + ph8Amount + ph12Amount;
+        const otHours = (normal * 4) + (rest * 12) + (ph8 * 8) + (ph12 * 12);
+        const meal = (normal + rest + ph8 + ph12) * mealRate;
         const fixedEarnings = basic + shift + laundry + skm;
         const gross = fixedEarnings + otTotal + meal;
 
@@ -251,7 +260,8 @@
         $('hourly').textContent = money(hourly);
         $('normalAmount').textContent = money(normalAmount);
         $('restAmount').textContent = money(restAmount);
-        $('phAmount').textContent = money(phAmount);
+        $('ph8Amount').textContent = money(ph8Amount);
+        $('ph12Amount').textContent = money(ph12Amount);
         $('otTotal').textContent = money(otTotal);
         $('otHours').textContent = otHours.toFixed(0) + ' jam';
         $('mealAmount').textContent = money(meal);
@@ -285,11 +295,14 @@
           ids.forEach(id => {
             if (stored[id] !== undefined && Number.isFinite(Number(stored[id]))) $(id).value = stored[id];
           });
+          if (stored.ph12Days === undefined && stored.phDays !== undefined && Number.isFinite(Number(stored.phDays))) {
+            $('ph12Days').value = stored.phDays;
+          }
         } catch (e) {}
       }
 
       function reset() {
-        const defaults = {basic:4522,shift:200,laundry:40,skm:50,normalDays:14,restDays:0,phDays:1,mealRate:10};
+        const defaults = {basic:4522,shift:200,laundry:40,skm:50,normalDays:14,restDays:0,ph8Days:0,ph12Days:1,mealRate:10};
         Object.entries(defaults).forEach(([id,value]) => $(id).value = value);
         calculate();
         save(false);
