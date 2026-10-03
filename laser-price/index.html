@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#18181b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Laser Price">
+  <meta name="description" content="Kalkulator harga produk custom laser untuk quotation pantas.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icon.svg">
+  <title>Laser Price Calculator</title>
+  <style>
+    :root{
+      --bg:#f5f5f4;--card:#fff;--ink:#18181b;--muted:#71717a;--line:#e4e4e7;
+      --accent:#b7791f;--soft:#fef3c7;--good:#166534;--bad:#b91c1c;
+    }
+    *{box-sizing:border-box}
+    html{background:var(--bg);color-scheme:light}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+    button,input,select{font:inherit}
+    .app{max-width:760px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top)) 15px calc(38px + env(safe-area-inset-bottom))}
+    .top{display:flex;align-items:center;gap:11px;margin-bottom:16px}
+    .logo{width:48px;height:48px;border-radius:14px;background:#18181b;color:#fbbf24;display:grid;place-items:center;font-size:22px;font-weight:900}
+    h1{font-size:23px;line-height:1.1;margin:0}.sub{font-size:12px;color:var(--muted);margin-top:3px}
+    .status{margin-left:auto;font-size:11px;padding:5px 8px;border-radius:999px;background:#e4e4e7;color:#52525b}
+    .hero{background:#18181b;color:#fff;border-radius:20px;padding:18px;margin-bottom:12px}
+    .hero .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#d4d4d8}
+    .hero .price{font-size:40px;font-weight:900;letter-spacing:-1.5px;margin:3px 0 12px}
+    .herogrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .heroitem{background:#27272a;border:1px solid #3f3f46;border-radius:12px;padding:9px}
+    .heroitem span{display:block;font-size:10px;color:#a1a1aa;margin-bottom:3px}.heroitem b{font-size:15px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:15px;margin-bottom:11px}
+    .card h2{font-size:15px;margin:0 0 12px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    label{display:block;min-width:0} label span{display:block;font-size:11px;color:var(--muted);margin-bottom:5px}
+    input,select{width:100%;min-height:46px;border:1px solid var(--line);border-radius:11px;background:#fff;padding:9px 10px;font-size:16px;color:var(--ink);outline:none}
+    input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(183,121,31,.12)}
+    .material{border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:9px;background:#fafafa}
+    .materialhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+    .materialhead b{font-size:13px}.toggle{border:0;background:#e4e4e7;border-radius:999px;padding:6px 9px;font-size:11px;font-weight:700;cursor:pointer}
+    .summary{display:grid;grid-template-columns:1fr auto;gap:8px 12px;font-size:13px;align-items:center}
+    .muted{color:var(--muted)}.strong{font-weight:800}.line{grid-column:1/-1;height:1px;background:var(--line);margin:3px 0}
+    .profit{color:var(--good);font-weight:800}
+    .note{font-size:11px;line-height:1.5;color:var(--muted);margin-top:8px}
+    .actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.btn{flex:1;min-width:130px;min-height:46px;border:0;border-radius:12px;padding:9px 12px;font-weight:800;cursor:pointer}
+    .btn.primary{background:var(--accent);color:#fff}.btn.secondary{background:#e4e4e7;color:#3f3f46}
+    details{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:14px 15px;margin-bottom:11px}summary{font-size:14px;font-weight:800;cursor:pointer}
+    .pill{display:inline-block;background:var(--soft);color:#92400e;border-radius:999px;padding:3px 7px;font-size:10px;font-weight:800}
+    .warn{color:var(--bad);font-size:11px;margin-top:7px;display:none}
+    .install{display:none;background:#fff7ed;border:1px solid #fed7aa;border-radius:15px;padding:12px;margin-bottom:11px;color:#9a3412;font-size:12px;line-height:1.45}.install.show{display:block}
+    .foot{text-align:center;color:var(--muted);font-size:10px;margin-top:15px}
+    @media(max-width:560px){.grid3{grid-template-columns:1fr 1fr}.herogrid{grid-template-columns:1fr}.hero .price{font-size:35px}}
+    @media(max-width:370px){.grid2,.grid3{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<main class="app">
+  <div class="top">
+    <div class="logo">L</div>
+    <div><h1>Laser Price</h1><div class="sub">Kalkulator harga produk custom laser</div></div>
+    <div id="status" class="status">Online</div>
+  </div>
+
+  <div id="installHint" class="install"><b>Simpan sebagai app:</b> Safari → Share → Add to Home Screen.</div>
+
+  <section class="hero" aria-live="polite">
+    <div class="eyebrow">Cadangan harga jual / unit</div>
+    <div id="sellUnit" class="price">RM0.00</div>
+    <div class="herogrid">
+      <div class="heroitem"><span>Kos / unit</span><b id="costUnit">RM0.00</b></div>
+      <div class="heroitem"><span>Total quotation</span><b id="quoteTotal">RM0.00</b></div>
+      <div class="heroitem"><span>Anggaran untung</span><b id="profitTotal">RM0.00</b></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Job</h2>
+    <div class="grid3">
+      <label><span>Kuantiti</span><input id="qty" type="number" inputmode="numeric" min="1" step="1" value="1"></label>
+      <label><span>Lebar produk (mm)</span><input id="prodW" type="number" inputmode="decimal" min="1" step="1" value="148"></label>
+      <label><span>Tinggi produk (mm)</span><input id="prodH" type="number" inputmode="decimal" min="1" step="1" value="210"></label>
+    </div>
+    <div class="note">Saiz ini digunakan untuk anggaran penggunaan material. Untuk bentuk pelik, masukkan saiz kotak paling luar.</div>
+  </section>
+
+  <section class="card">
+    <h2>Material</h2>
+
+    <div class="material" data-material="1">
+      <div class="materialhead"><b>Material 1</b><span class="pill">Utama</span></div>
+      <div class="grid2">
+        <label><span>Preset</span>
+          <select id="m1Preset">
+            <option value="acrylic5">Acrylic 5mm • 4×6ft • RM200</option>
+            <option value="ply3">Plywood 3mm • 4×8ft • RM70</option>
+            <option value="custom">Custom</option>
+          </select>
+        </label>
+        <label><span>Bilangan layer</span><input id="m1Layers" type="number" inputmode="numeric" min="0" step="1" value="1"></label>
+        <label><span>Harga sekeping (RM)</span><input id="m1Price" type="number" inputmode="decimal" min="0" step="0.01" value="200"></label>
+        <label><span>Saiz sheet</span>
+          <select id="m1Sheet">
+            <option value="1219.2x1828.8">4×6 kaki</option>
+            <option value="1219.2x2438.4">4×8 kaki</option>
+            <option value="custom">Custom</option>
+          </select>
+        </label>
+        <label><span>Lebar sheet (mm)</span><input id="m1W" type="number" inputmode="decimal" min="1" step="1" value="1219.2"></label>
+        <label><span>Tinggi sheet (mm)</span><input id="m1H" type="number" inputmode="decimal" min="1" step="1" value="1828.8"></label>
+      </div>
+    </div>
+
+    <div class="material" data-material="2">
+      <div class="materialhead"><b>Material 2</b><button id="m2Toggle" class="toggle" type="button">Aktifkan</button></div>
+      <div id="m2Body" style="display:none">
+        <div class="grid2">
+          <label><span>Preset</span>
+            <select id="m2Preset">
+              <option value="ply3">Plywood 3mm • 4×8ft • RM70</option>
+              <option value="acrylic5">Acrylic 5mm • 4×6ft • RM200</option>
+              <option value="custom">Custom</option>
+            </select>
+          </label>
+          <label><span>Bilangan layer</span><input id="m2Layers" type="number" inputmode="numeric" min="0" step="1" value="1"></label>
+          <label><span>Harga sekeping (RM)</span><input id="m2Price" type="number" inputmode="decimal" min="0" step="0.01" value="70"></label>
+          <label><span>Saiz sheet</span>
+            <select id="m2Sheet">
+              <option value="1219.2x2438.4">4×8 kaki</option>
+              <option value="1219.2x1828.8">4×6 kaki</option>
+              <option value="custom">Custom</option>
+            </select>
+          </label>
+          <label><span>Lebar sheet (mm)</span><input id="m2W" type="number" inputmode="decimal" min="1" step="1" value="1219.2"></label>
+          <label><span>Tinggi sheet (mm)</span><input id="m2H" type="number" inputmode="decimal" min="1" step="1" value="2438.4"></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2" style="margin-top:10px">
+      <label><span>Waste material (%)</span><input id="waste" type="number" inputmode="decimal" min="0" max="100" step="1" value="15"></label>
+      <label><span>Kos material / unit</span><input id="materialOverride" type="number" inputmode="decimal" min="0" step="0.01" value="0"></label>
+    </div>
+    <div class="note">Kalau isi “Kos material / unit” lebih daripada RM0, app akan guna angka itu dan abaikan kiraan sheet.</div>
+  </section>
+
+  <section class="card">
+    <h2>Masa mesin & kerja</h2>
+    <div class="grid3">
+      <label><span>Cut / unit (min)</span><input id="cutMin" type="number" inputmode="decimal" min="0" step="0.1" value="5"></label>
+      <label><span>Engrave / unit (min)</span><input id="engraveMin" type="number" inputmode="decimal" min="0" step="0.1" value="3"></label>
+      <label><span>Setup / batch (min)</span><input id="setupMin" type="number" inputmode="decimal" min="0" step="0.1" value="5"></label>
+    </div>
+    <div class="grid3" style="margin-top:10px">
+      <label><span>Rate cut (RM/min)</span><input id="cutRate" type="number" inputmode="decimal" min="0" step="0.05" value="0.80"></label>
+      <label><span>Rate engrave (RM/min)</span><input id="engraveRate" type="number" inputmode="decimal" min="0" step="0.05" value="0.60"></label>
+      <label><span>Rate setup (RM/min)</span><input id="setupRate" type="number" inputmode="decimal" min="0" step="0.05" value="0.50"></label>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Kos lain</h2>
+    <div class="grid3">
+      <label><span>Aksesori / unit (RM)</span><input id="accessory" type="number" inputmode="decimal" min="0" step="0.01" value="0"></label>
+      <label><span>Packaging / unit (RM)</span><input id="packaging" type="number" inputmode="decimal" min="0" step="0.01" value="2"></label>
+      <label><span>Upah kerja / unit (RM)</span><input id="labour" type="number" inputmode="decimal" min="0" step="0.01" value="3"></label>
+      <label><span>Design sekali (RM)</span><input id="design" type="number" inputmode="decimal" min="0" step="0.01" value="10"></label>
+      <label><span>Overhead (%)</span><input id="overhead" type="number" inputmode="decimal" min="0" max="300" step="1" value="10"></label>
+      <label><span>Lain-lain / unit (RM)</span><input id="other" type="number" inputmode="decimal" min="0" step="0.01" value="0"></label>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Harga jual</h2>
+    <div class="grid3">
+      <label><span>Untung atas kos (%)</span><input id="markup" type="number" inputmode="decimal" min="0" max="1000" step="1" value="100"></label>
+      <label><span>Diskaun quotation (%)</span><input id="discount" type="number" inputmode="decimal" min="0" max="100" step="1" value="0"></label>
+      <label><span>Minimum harga / unit (RM)</span><input id="minimum" type="number" inputmode="decimal" min="0" step="1" value="15"></label>
+    </div>
+    <div class="grid2" style="margin-top:10px">
+      <label><span>Pembundaran</span>
+        <select id="rounding">
+          <option value="0.1">10 sen</option>
+          <option value="1" selected>RM1</option>
+          <option value="5">RM5</option>
+        </select>
+      </label>
+      <label><span>Harga manual / unit (RM)</span><input id="manualSell" type="number" inputmode="decimal" min="0" step="0.01" value="0"></label>
+    </div>
+    <div class="note">“Untung atas kos 100%” bermaksud kos × 2. Jika isi Harga manual, ia akan override cadangan automatik.</div>
+  </section>
+
+  <details>
+    <summary>Pecahan kiraan</summary>
+    <div class="summary" style="margin-top:12px">
+      <div class="muted">Material / unit</div><div id="breakMaterial">RM0.00</div>
+      <div class="muted">Mesin / unit</div><div id="breakMachine">RM0.00</div>
+      <div class="muted">Aksesori + packing + upah + lain</div><div id="breakOther">RM0.00</div>
+      <div class="muted">Design / unit</div><div id="breakDesign">RM0.00</div>
+      <div class="muted">Overhead / unit</div><div id="breakOverhead">RM0.00</div>
+      <div class="line"></div>
+      <div class="strong">Kos sebenar / unit</div><div id="breakCost" class="strong">RM0.00</div>
+      <div class="muted">Harga sebelum diskaun</div><div id="breakBeforeDiscount">RM0.00</div>
+      <div class="muted">Harga jual akhir / unit</div><div id="breakSell" class="strong">RM0.00</div>
+      <div class="muted">Untung / unit</div><div id="breakProfit" class="profit">RM0.00</div>
+      <div class="muted">Margin atas jualan</div><div id="breakMargin" class="profit">0%</div>
+    </div>
+  </details>
+
+  <section class="card">
+    <h2>Ringkasan quotation</h2>
+    <div class="summary">
+      <div class="muted">Kuantiti</div><div id="sumQty">1</div>
+      <div class="muted">Harga / unit</div><div id="sumUnit">RM0.00</div>
+      <div class="strong">TOTAL QUOTATION</div><div id="sumTotal" class="strong">RM0.00</div>
+      <div class="line"></div>
+      <div class="muted">Jumlah kos</div><div id="sumCost">RM0.00</div>
+      <div class="muted">Anggaran untung</div><div id="sumProfit" class="profit">RM0.00</div>
+    </div>
+    <div id="warning" class="warn"></div>
+    <div class="actions">
+      <button id="resetBtn" class="btn secondary" type="button">Reset contoh</button>
+      <button id="saveBtn" class="btn primary" type="button">Simpan tetapan</button>
+    </div>
+    <div id="savedMsg" class="note" aria-live="polite"></div>
+  </section>
+
+  <div class="foot">Anggaran dalaman untuk bantu quotation • Semak semula sebelum beri harga pelanggan</div>
+</main>
+
+<script>
+(() => {
+  const KEY='laser-price-v1';
+  const $=id=>document.getElementById(id);
+  const num=id=>Math.max(0,Number($(id).value)||0);
+  const money=v=>new Intl.NumberFormat('ms-MY',{style:'currency',currency:'MYR'}).format(Number.isFinite(v)?v:0);
+  let m2Active=false;
+
+  const ids=['qty','prodW','prodH','m1Preset','m1Layers','m1Price','m1Sheet','m1W','m1H',
+    'm2Preset','m2Layers','m2Price','m2Sheet','m2W','m2H','waste','materialOverride',
+    'cutMin','engraveMin','setupMin','cutRate','engraveRate','setupRate',
+    'accessory','packaging','labour','design','overhead','other','markup','discount','minimum','rounding','manualSell'];
+
+  const presets={
+    acrylic5:{price:200,w:1219.2,h:1828.8,sheet:'1219.2x1828.8'},
+    ply3:{price:70,w:1219.2,h:2438.4,sheet:'1219.2x2438.4'}
+  };
+
+  function applyPreset(prefix){
+    const key=$(prefix+'Preset').value;
+    if(key==='custom') return;
+    const p=presets[key];
+    $(prefix+'Price').value=p.price;
+    $(prefix+'W').value=p.w;
+    $(prefix+'H').value=p.h;
+    $(prefix+'Sheet').value=p.sheet;
+  }
+
+  function applySheet(prefix){
+    const v=$(prefix+'Sheet').value;
+    if(v==='custom') return;
+    const [w,h]=v.split('x').map(Number);
+    $(prefix+'W').value=w; $(prefix+'H').value=h;
+  }
+
+  function matCost(prefix,active=true){
+    if(!active) return 0;
+    const price=num(prefix+'Price'), sw=num(prefix+'W'), sh=num(prefix+'H'), layers=num(prefix+'Layers');
+    const pw=num('prodW'), ph=num('prodH'), waste=Math.min(100,num('waste'))/100;
+    if(!sw||!sh||!pw||!ph||!layers) return 0;
+    const unitArea=pw*ph*layers;
+    const sheetArea=sw*sh;
+    return price*(unitArea/sheetArea)*(1+waste);
+  }
+
+  function roundUp(v,step){
+    step=Math.max(0.01,step||1);
+    return Math.ceil((v-1e-9)/step)*step;
+  }
+
+  function calc(){
+    const qty=Math.max(1,Math.floor(num('qty')||1));
+    const override=num('materialOverride');
+    const material=override>0?override:(matCost('m1',true)+matCost('m2',m2Active));
+    const machine=(num('cutMin')*num('cutRate'))+(num('engraveMin')*num('engraveRate'))+((num('setupMin')*num('setupRate'))/qty);
+    const other=num('accessory')+num('packaging')+num('labour')+num('other');
+    const design=num('design')/qty;
+    const preOver=material+machine+other+design;
+    const overhead=preOver*(Math.min(300,num('overhead'))/100);
+    const cost=preOver+overhead;
+
+    const markup=Math.min(1000,num('markup'))/100;
+    const discount=Math.min(100,num('discount'))/100;
+    let beforeDiscount=cost*(1+markup);
+    let suggested=beforeDiscount*(1-discount);
+    suggested=Math.max(suggested,num('minimum'));
+    suggested=roundUp(suggested,Number($('rounding').value)||1);
+    const manual=num('manualSell');
+    const sell=manual>0?manual:suggested;
+
+    const total=sell*qty;
+    const totalCost=cost*qty;
+    const profit=total-totalCost;
+    const profitUnit=sell-cost;
+    const margin=sell>0?(profitUnit/sell)*100:0;
+
+    $('costUnit').textContent=money(cost);
+    $('sellUnit').textContent=money(sell);
+    $('quoteTotal').textContent=money(total);
+    $('profitTotal').textContent=money(profit);
+
+    $('breakMaterial').textContent=money(material);
+    $('breakMachine').textContent=money(machine);
+    $('breakOther').textContent=money(other);
+    $('breakDesign').textContent=money(design);
+    $('breakOverhead').textContent=money(overhead);
+    $('breakCost').textContent=money(cost);
+    $('breakBeforeDiscount').textContent=money(beforeDiscount);
+    $('breakSell').textContent=money(sell);
+    $('breakProfit').textContent=money(profitUnit);
+    $('breakMargin').textContent=margin.toFixed(1)+'%';
+
+    $('sumQty').textContent=qty;
+    $('sumUnit').textContent=money(sell);
+    $('sumTotal').textContent=money(total);
+    $('sumCost').textContent=money(totalCost);
+    $('sumProfit').textContent=money(profit);
+
+    const warn=$('warning');
+    if(profit<0){
+      warn.style.display='block';
+      warn.textContent='Amaran: harga jual lebih rendah daripada kos anggaran.';
+    }else{
+      warn.style.display='none'; warn.textContent='';
+    }
+  }
+
+  function values(){
+    const out={m2Active};
+    ids.forEach(id=>out[id]=($(id).tagName==='SELECT'?$(id).value:num(id)));
+    return out;
+  }
+  function save(show=false){
+    try{
+      localStorage.setItem(KEY,JSON.stringify(values()));
+      if(show){$('savedMsg').textContent='Tetapan harga disimpan dalam phone ini.';setTimeout(()=>{$('savedMsg').textContent=''},2000)}
+    }catch(e){}
+  }
+  function load(){
+    try{
+      const s=JSON.parse(localStorage.getItem(KEY)||'null'); if(!s)return;
+      ids.forEach(id=>{if(s[id]!==undefined)$(id).value=s[id]});
+      m2Active=!!s.m2Active;
+    }catch(e){}
+    updateM2();
+  }
+  function updateM2(){
+    $('m2Body').style.display=m2Active?'block':'none';
+    $('m2Toggle').textContent=m2Active?'Tutup':'Aktifkan';
+  }
+  function reset(){
+    const d={qty:1,prodW:148,prodH:210,m1Preset:'acrylic5',m1Layers:1,m1Price:200,m1Sheet:'1219.2x1828.8',m1W:1219.2,m1H:1828.8,
+      m2Preset:'ply3',m2Layers:1,m2Price:70,m2Sheet:'1219.2x2438.4',m2W:1219.2,m2H:2438.4,waste:15,materialOverride:0,
+      cutMin:5,engraveMin:3,setupMin:5,cutRate:.8,engraveRate:.6,setupRate:.5,accessory:0,packaging:2,labour:3,design:10,overhead:10,other:0,
+      markup:100,discount:0,minimum:15,rounding:'1',manualSell:0};
+    Object.entries(d).forEach(([id,v])=>$(id).value=v);
+    m2Active=false;updateM2();calc();save(false);
+    $('savedMsg').textContent='Dikembalikan ke contoh asal.';setTimeout(()=>{$('savedMsg').textContent=''},1800);
+  }
+  function network(){
+    $('status').textContent=navigator.onLine?'Online':'Offline';
+  }
+
+  ids.forEach(id=>{
+    $(id).addEventListener('input',()=>{calc();save(false)});
+    $(id).addEventListener('change',()=>{calc();save(false)});
+  });
+  $('m1Preset').addEventListener('change',()=>{applyPreset('m1');calc();save(false)});
+  $('m2Preset').addEventListener('change',()=>{applyPreset('m2');calc();save(false)});
+  $('m1Sheet').addEventListener('change',()=>{applySheet('m1');calc();save(false)});
+  $('m2Sheet').addEventListener('change',()=>{applySheet('m2');calc();save(false)});
+  $('m2Toggle').addEventListener('click',()=>{m2Active=!m2Active;updateM2();calc();save(false)});
+  $('saveBtn').addEventListener('click',()=>save(true));
+  $('resetBtn').addEventListener('click',reset);
+  window.addEventListener('online',network);window.addEventListener('offline',network);
+
+  const isiOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
+  const standalone=window.navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches;
+  if(isiOS&&!standalone)$('installHint').classList.add('show');
+
+  load();calc();network();
+  if('serviceWorker'in navigator)navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>
