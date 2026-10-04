@@ -128,10 +128,16 @@
           <div id="normalAmount" class="amount">RM0.00</div>
         </div>
         <div class="otbox">
-          <div class="otname">Rest Day</div>
-          <input id="restDays" aria-label="Bilangan Rest Day" type="number" inputmode="numeric" min="0" step="1" value="0">
+          <div class="otname">Rest Day 8 jam</div>
+          <input id="rest8Days" aria-label="Bilangan Rest Day 8 jam" type="number" inputmode="numeric" min="0" step="1" value="0">
+          <div class="rule">8j × 1.5</div>
+          <div id="rest8Amount" class="amount">RM0.00</div>
+        </div>
+        <div class="otbox">
+          <div class="otname">Rest Day 12 jam</div>
+          <input id="rest12Days" aria-label="Bilangan Rest Day 12 jam" type="number" inputmode="numeric" min="0" step="1" value="0">
           <div class="rule">8j × 1.5 + 4j × 2.0</div>
-          <div id="restAmount" class="amount">RM0.00</div>
+          <div id="rest12Amount" class="amount">RM0.00</div>
         </div>
         <div class="otbox">
           <div class="otname">Public Holiday 8 jam</div>
@@ -241,7 +247,7 @@
         sip: 11.90 / REF_GROSS,
         pcb: 318.45 / REF_GROSS
       };
-      const ids = ['basic','shift','laundry','skm','normalDays','restDays','ph8Days','ph12Days','mealRate'];
+      const ids = ['basic','shift','laundry','skm','normalDays','rest8Days','rest12Days','ph8Days','ph12Days','mealRate'];
       const $ = id => document.getElementById(id);
       const num = id => Math.max(0, Number($(id).value) || 0);
       const money = value => new Intl.NumberFormat('ms-MY',{style:'currency',currency:'MYR'}).format(Number.isFinite(value) ? value : 0);
@@ -340,7 +346,8 @@
         const laundry = num('laundry');
         const skm = num('skm');
         const normal = num('normalDays');
-        const rest = num('restDays');
+        const rest8 = num('rest8Days');
+        const rest12 = num('rest12Days');
         const ph8 = num('ph8Days');
         const ph12 = num('ph12Days');
         const mealRate = num('mealRate');
@@ -348,12 +355,13 @@
         const otBase = basic + shift;
         const hourly = otBase / 26 / 8;
         const normalAmount = normal * 4 * hourly * 1.5;
-        const restAmount = rest * ((8 * hourly * 1.5) + (4 * hourly * 2));
+        const rest8Amount = rest8 * (8 * hourly * 1.5);
+        const rest12Amount = rest12 * ((8 * hourly * 1.5) + (4 * hourly * 2));
         const ph8Amount = ph8 * (8 * hourly * 2);
         const ph12Amount = ph12 * ((8 * hourly * 2) + (4 * hourly * 3));
-        const otTotal = normalAmount + restAmount + ph8Amount + ph12Amount;
-        const otHours = (normal * 4) + (rest * 12) + (ph8 * 8) + (ph12 * 12);
-        const meal = (normal + rest + ph8 + ph12) * mealRate;
+        const otTotal = normalAmount + rest8Amount + rest12Amount + ph8Amount + ph12Amount;
+        const otHours = (normal * 4) + (rest8 * 8) + (rest12 * 12) + (ph8 * 8) + (ph12 * 12);
+        const meal = (normal + rest8 + rest12 + ph8 + ph12) * mealRate;
         const fixedEarnings = basic + shift + laundry + skm;
         const gross = fixedEarnings + otTotal + meal;
 
@@ -372,7 +380,8 @@
         $('otBase').textContent = money(otBase);
         $('hourly').textContent = money(hourly);
         $('normalAmount').textContent = money(normalAmount);
-        $('restAmount').textContent = money(restAmount);
+        $('rest8Amount').textContent = money(rest8Amount);
+        $('rest12Amount').textContent = money(rest12Amount);
         $('ph8Amount').textContent = money(ph8Amount);
         $('ph12Amount').textContent = money(ph12Amount);
         $('otTotal').textContent = money(otTotal);
@@ -412,6 +421,9 @@
           ids.forEach(id => {
             if (stored[id] !== undefined && Number.isFinite(Number(stored[id]))) $(id).value = stored[id];
           });
+          if (stored.rest12Days === undefined && stored.restDays !== undefined && Number.isFinite(Number(stored.restDays))) {
+            $('rest12Days').value = stored.restDays;
+          }
           if (stored.ph12Days === undefined && stored.phDays !== undefined && Number.isFinite(Number(stored.phDays))) {
             $('ph12Days').value = stored.phDays;
           }
@@ -419,7 +431,7 @@
       }
 
       function reset() {
-        const defaults = {basic:4522,shift:200,laundry:40,skm:50,normalDays:14,restDays:0,ph8Days:0,ph12Days:1,mealRate:10};
+        const defaults = {basic:4522,shift:200,laundry:40,skm:50,normalDays:14,rest8Days:0,rest12Days:0,ph8Days:0,ph12Days:1,mealRate:10};
         Object.entries(defaults).forEach(([id,value]) => $(id).value = value);
         calculate();
         save(false);
