@@ -146,20 +146,28 @@
           <div id="shiftOffAmount" class="amount">RM0.00</div>
         </div>
         <div class="otbox">
-          <div class="otname">Rest Day</div>
-          <input id="shiftRestHours" aria-label="Jumlah jam OT Rest Day syif" type="number" inputmode="decimal" min="0" step="0.01" value="0">
-          <div class="rule">Jumlah jam terkumpul</div>
-          <label style="margin-top:8px"><span>Bilangan hari Rest Day</span><input id="shiftRestDays" type="number" inputmode="numeric" min="0" step="1" value="0"></label>
-          <div id="shiftRestSplit" class="rule">8 jam pertama/hari ×1.5, lebihan ×2.0</div>
-          <div id="shiftRestAmount" class="amount">RM0.00</div>
+          <div class="otname">Rest Day 8 jam</div>
+          <input id="shiftRest8Days" aria-label="Bilangan Rest Day 8 jam syif" type="number" inputmode="numeric" min="0" step="1" value="0">
+          <div class="rule">1 hari = 8j ×1.5</div>
+          <div id="shiftRest8Amount" class="amount">RM0.00</div>
         </div>
         <div class="otbox">
-          <div class="otname">Public Holiday</div>
-          <input id="shiftPhHours" aria-label="Jumlah jam OT Public Holiday syif" type="number" inputmode="decimal" min="0" step="0.01" value="0">
-          <div class="rule">Jumlah jam terkumpul</div>
-          <label style="margin-top:8px"><span>Bilangan hari Public</span><input id="shiftPhDays" type="number" inputmode="numeric" min="0" step="1" value="0"></label>
-          <div id="shiftPhSplit" class="rule">8 jam pertama/hari ×2.0, lebihan ×3.0</div>
-          <div id="shiftPhAmount" class="amount">RM0.00</div>
+          <div class="otname">Rest Day 12 jam</div>
+          <input id="shiftRest12Days" aria-label="Bilangan Rest Day 12 jam syif" type="number" inputmode="numeric" min="0" step="1" value="0">
+          <div class="rule">1 hari = 8j ×1.5 + 4j ×2.0</div>
+          <div id="shiftRest12Amount" class="amount">RM0.00</div>
+        </div>
+        <div class="otbox">
+          <div class="otname">Public Holiday 8 jam</div>
+          <input id="shiftPh8Days" aria-label="Bilangan Public Holiday 8 jam syif" type="number" inputmode="numeric" min="0" step="1" value="0">
+          <div class="rule">1 hari = 8j ×2.0</div>
+          <div id="shiftPh8Amount" class="amount">RM0.00</div>
+        </div>
+        <div class="otbox">
+          <div class="otname">Public Holiday 12 jam</div>
+          <input id="shiftPh12Days" aria-label="Bilangan Public Holiday 12 jam syif" type="number" inputmode="numeric" min="0" step="1" value="0">
+          <div class="rule">1 hari = 8j ×2.0 + 4j ×3.0</div>
+          <div id="shiftPh12Amount" class="amount">RM0.00</div>
         </div>
       </div>
       <div class="summary" style="margin-top:14px">
@@ -331,7 +339,7 @@
         sip: 11.90 / REF_GROSS
       };
       const PCB_RATIO = 318.45 / REF_GROSS;
-      const ids = ['basic','shift','laundry','skm','shiftNormalHours','shiftOffHours','shiftRestHours','shiftRestDays','shiftPhHours','shiftPhDays','mealRate','shiftMealDays','quarters','ghs','gtl','union','normalOtHours','offOtHours','restOtHours','restOtDays','phOtHours','phOtDays','nonShiftMealDays','customThreshold','pcbManual'];
+      const ids = ['basic','shift','laundry','skm','shiftNormalHours','shiftOffHours','shiftRest8Days','shiftRest12Days','shiftPh8Days','shiftPh12Days','mealRate','shiftMealDays','quarters','ghs','gtl','union','normalOtHours','offOtHours','restOtHours','restOtDays','phOtHours','phOtDays','nonShiftMealDays','customThreshold','pcbManual'];
       const $ = id => document.getElementById(id);
       const num = id => Math.max(0, Number($(id).value) || 0);
       const money = value => new Intl.NumberFormat('ms-MY',{style:'currency',currency:'MYR'}).format(Number.isFinite(value) ? value : 0);
@@ -450,10 +458,10 @@
         const skm = num('skm');
         const shiftNormalHours = num('shiftNormalHours');
         const shiftOffHours = num('shiftOffHours');
-        const shiftRestHours = num('shiftRestHours');
-        const shiftRestDays = Math.floor(num('shiftRestDays'));
-        const shiftPhHours = num('shiftPhHours');
-        const shiftPhDays = Math.floor(num('shiftPhDays'));
+        const shiftRest8Days = Math.floor(num('shiftRest8Days'));
+        const shiftRest12Days = Math.floor(num('shiftRest12Days'));
+        const shiftPh8Days = Math.floor(num('shiftPh8Days'));
+        const shiftPh12Days = Math.floor(num('shiftPh12Days'));
         const mealRate = num('mealRate');
         const mode = $('workMode').value;
         const isShift = mode === 'shift';
@@ -464,16 +472,16 @@
 
         const shiftNormalAmount = isShift ? shiftNormalHours * hourly * 1.5 : 0;
         const shiftOffAmount = isShift ? shiftOffHours * hourly * 1.5 : 0;
+        const shiftRest8Amount = isShift ? shiftRest8Days * (8 * hourly * 1.5) : 0;
+        const shiftRest12Amount = isShift ? shiftRest12Days * ((8 * hourly * 1.5) + (4 * hourly * 2)) : 0;
+        const shiftPh8Amount = isShift ? shiftPh8Days * (8 * hourly * 2) : 0;
+        const shiftPh12Amount = isShift ? shiftPh12Days * ((8 * hourly * 2) + (4 * hourly * 3)) : 0;
 
-        const shiftRestBaseCap = shiftRestDays > 0 ? shiftRestDays * 8 : shiftRestHours;
-        const shiftRestBaseHours = Math.min(shiftRestHours, shiftRestBaseCap);
-        const shiftRestExtraHours = Math.max(0, shiftRestHours - shiftRestBaseHours);
-        const shiftRestAmount = isShift ? (shiftRestBaseHours * hourly * 1.5) + (shiftRestExtraHours * hourly * 2) : 0;
-
-        const shiftPhBaseCap = shiftPhDays > 0 ? shiftPhDays * 8 : shiftPhHours;
-        const shiftPhBaseHours = Math.min(shiftPhHours, shiftPhBaseCap);
-        const shiftPhExtraHours = Math.max(0, shiftPhHours - shiftPhBaseHours);
-        const shiftPhAmount = isShift ? (shiftPhBaseHours * hourly * 2) + (shiftPhExtraHours * hourly * 3) : 0;
+        const shiftRestHours = (shiftRest8Days * 8) + (shiftRest12Days * 12);
+        const shiftPhHours = (shiftPh8Days * 8) + (shiftPh12Days * 12);
+        const shiftPhDays = shiftPh8Days + shiftPh12Days;
+        const shiftRestAmount = shiftRest8Amount + shiftRest12Amount;
+        const shiftPhAmount = shiftPh8Amount + shiftPh12Amount;
 
         const normalOtHours = num('normalOtHours');
         const offOtHours = num('offOtHours');
@@ -539,14 +547,10 @@
         $('hourly').textContent = money(hourly);
         $('shiftNormalAmount').textContent = money(shiftNormalAmount);
         $('shiftOffAmount').textContent = money(shiftOffAmount);
-        $('shiftRestAmount').textContent = money(shiftRestAmount);
-        $('shiftPhAmount').textContent = money(shiftPhAmount);
-        $('shiftRestSplit').textContent = shiftRestDays > 0
-          ? shiftRestBaseHours.toFixed(2).replace(/\.00$/,'') + 'j ×1.5 + ' + shiftRestExtraHours.toFixed(2).replace(/\.00$/,'') + 'j ×2.0'
-          : 'Isi bilangan hari untuk auto pecahkan 8j ×1.5 + lebihan ×2.0';
-        $('shiftPhSplit').textContent = shiftPhDays > 0
-          ? shiftPhBaseHours.toFixed(2).replace(/\.00$/,'') + 'j ×2.0 + ' + shiftPhExtraHours.toFixed(2).replace(/\.00$/,'') + 'j ×3.0'
-          : 'Isi bilangan hari untuk auto pecahkan 8j ×2.0 + lebihan ×3.0';
+        $('shiftRest8Amount').textContent = money(shiftRest8Amount);
+        $('shiftRest12Amount').textContent = money(shiftRest12Amount);
+        $('shiftPh8Amount').textContent = money(shiftPh8Amount);
+        $('shiftPh12Amount').textContent = money(shiftPh12Amount);
         $('shiftAccumHours').textContent = (shiftNormalHours + shiftOffHours + shiftRestHours).toFixed(2).replace(/\.00$/,'') + ' jam';
         $('shiftPhSummary').textContent = shiftPhDays + ' hari / ' + shiftPhHours.toFixed(2).replace(/\.00$/,'') + ' jam';
         $('normalOtAmount').textContent = money(normalOtAmount);
@@ -612,13 +616,29 @@
           if (stored.shiftOffHours === undefined) {
             $('shiftOffHours').value = ((Number(stored.off8Days)||0) * 8) + ((Number(stored.off12Days)||0) * 12);
           }
-          if (stored.shiftRestHours === undefined) {
-            $('shiftRestHours').value = ((Number(stored.rest8Days)||0) * 8) + ((Number(stored.rest12Days)||0) * 12) + ((Number(stored.restDays)||0) * 12);
-            $('shiftRestDays').value = (Number(stored.rest8Days)||0) + (Number(stored.rest12Days)||0) + (Number(stored.restDays)||0);
+          if (stored.shiftRest8Days === undefined || stored.shiftRest12Days === undefined) {
+            if (stored.shiftRestDays !== undefined && stored.shiftRestHours !== undefined) {
+              const oldDays = Math.max(0, Math.floor(Number(stored.shiftRestDays)||0));
+              const oldHours = Math.max(0, Number(stored.shiftRestHours)||0);
+              const old12 = Math.max(0, Math.min(oldDays, Math.round(Math.max(0, oldHours - (oldDays * 8)) / 4)));
+              $('shiftRest12Days').value = old12;
+              $('shiftRest8Days').value = Math.max(0, oldDays - old12);
+            } else {
+              $('shiftRest8Days').value = Number(stored.rest8Days)||0;
+              $('shiftRest12Days').value = (Number(stored.rest12Days)||0) + (Number(stored.restDays)||0);
+            }
           }
-          if (stored.shiftPhHours === undefined) {
-            $('shiftPhHours').value = ((Number(stored.ph8Days)||0) * 8) + ((Number(stored.ph12Days)||0) * 12) + ((Number(stored.phDays)||0) * 12);
-            $('shiftPhDays').value = (Number(stored.ph8Days)||0) + (Number(stored.ph12Days)||0) + (Number(stored.phDays)||0);
+          if (stored.shiftPh8Days === undefined || stored.shiftPh12Days === undefined) {
+            if (stored.shiftPhDays !== undefined && stored.shiftPhHours !== undefined) {
+              const oldDays = Math.max(0, Math.floor(Number(stored.shiftPhDays)||0));
+              const oldHours = Math.max(0, Number(stored.shiftPhHours)||0);
+              const old12 = Math.max(0, Math.min(oldDays, Math.round(Math.max(0, oldHours - (oldDays * 8)) / 4)));
+              $('shiftPh12Days').value = old12;
+              $('shiftPh8Days').value = Math.max(0, oldDays - old12);
+            } else {
+              $('shiftPh8Days').value = Number(stored.ph8Days)||0;
+              $('shiftPh12Days').value = (Number(stored.ph12Days)||0) + (Number(stored.phDays)||0);
+            }
           }
           if (stored.shiftMealDays === undefined) {
             $('shiftMealDays').value = (Number(stored.normalDays)||0) + (Number(stored.rest8Days)||0) + (Number(stored.rest12Days)||0) + (Number(stored.off8Days)||0) + (Number(stored.off12Days)||0) + (Number(stored.ph8Days)||0) + (Number(stored.ph12Days)||0);
@@ -627,7 +647,7 @@
       }
 
       function reset() {
-        const defaults = {basic:'',shift:'',laundry:'',skm:'',shiftNormalHours:0,shiftOffHours:0,shiftRestHours:0,shiftRestDays:0,shiftPhHours:0,shiftPhDays:0,mealRate:10,shiftMealDays:0,quarters:'',ghs:'',gtl:'',union:'',normalOtHours:0,offOtHours:0,restOtHours:0,restOtDays:0,phOtHours:0,phOtDays:0,nonShiftMealDays:0,customThreshold:3111,pcbManual:0};
+        const defaults = {basic:'',shift:'',laundry:'',skm:'',shiftNormalHours:0,shiftOffHours:0,shiftRest8Days:0,shiftRest12Days:0,shiftPh8Days:0,shiftPh12Days:0,mealRate:10,shiftMealDays:0,quarters:'',ghs:'',gtl:'',union:'',normalOtHours:0,offOtHours:0,restOtHours:0,restOtDays:0,phOtHours:0,phOtDays:0,nonShiftMealDays:0,customThreshold:3111,pcbManual:0};
         Object.entries(defaults).forEach(([id,value]) => $(id).value = value);
         $('workMode').value = 'shift';
         $('pcbStatus').value = '3111';
