@@ -140,6 +140,18 @@
           <div id="rest12Amount" class="amount">RM0.00</div>
         </div>
         <div class="otbox">
+          <div class="otname">Off Day 8 jam</div>
+          <input id="off8Days" aria-label="Bilangan Off Day 8 jam" type="number" inputmode="numeric" min="0" step="1" value="0">
+          <div class="rule">8j × 1.5</div>
+          <div id="off8Amount" class="amount">RM0.00</div>
+        </div>
+        <div class="otbox">
+          <div class="otname">Off Day 12 jam</div>
+          <input id="off12Days" aria-label="Bilangan Off Day 12 jam" type="number" inputmode="numeric" min="0" step="1" value="0">
+          <div class="rule">12j × 1.5</div>
+          <div id="off12Amount" class="amount">RM0.00</div>
+        </div>
+        <div class="otbox">
           <div class="otname">Public Holiday 8 jam</div>
           <input id="ph8Days" aria-label="Bilangan Public Holiday 8 jam" type="number" inputmode="numeric" min="0" step="1" value="0">
           <div class="rule">8j × 2.0</div>
@@ -247,7 +259,7 @@
         sip: 11.90 / REF_GROSS,
         pcb: 318.45 / REF_GROSS
       };
-      const ids = ['basic','shift','laundry','skm','normalDays','rest8Days','rest12Days','ph8Days','ph12Days','mealRate'];
+      const ids = ['basic','shift','laundry','skm','normalDays','rest8Days','rest12Days','off8Days','off12Days','ph8Days','ph12Days','mealRate'];
       const $ = id => document.getElementById(id);
       const num = id => Math.max(0, Number($(id).value) || 0);
       const money = value => new Intl.NumberFormat('ms-MY',{style:'currency',currency:'MYR'}).format(Number.isFinite(value) ? value : 0);
@@ -348,6 +360,8 @@
         const normal = num('normalDays');
         const rest8 = num('rest8Days');
         const rest12 = num('rest12Days');
+        const off8 = num('off8Days');
+        const off12 = num('off12Days');
         const ph8 = num('ph8Days');
         const ph12 = num('ph12Days');
         const mealRate = num('mealRate');
@@ -357,11 +371,13 @@
         const normalAmount = normal * 4 * hourly * 1.5;
         const rest8Amount = rest8 * (8 * hourly * 1.5);
         const rest12Amount = rest12 * ((8 * hourly * 1.5) + (4 * hourly * 2));
+        const off8Amount = off8 * (8 * hourly * 1.5);
+        const off12Amount = off12 * (12 * hourly * 1.5);
         const ph8Amount = ph8 * (8 * hourly * 2);
         const ph12Amount = ph12 * ((8 * hourly * 2) + (4 * hourly * 3));
-        const otTotal = normalAmount + rest8Amount + rest12Amount + ph8Amount + ph12Amount;
-        const otHours = (normal * 4) + (rest8 * 8) + (rest12 * 12) + (ph8 * 8) + (ph12 * 12);
-        const meal = (normal + rest8 + rest12 + ph8 + ph12) * mealRate;
+        const otTotal = normalAmount + rest8Amount + rest12Amount + off8Amount + off12Amount + ph8Amount + ph12Amount;
+        const otHours = (normal * 4) + (rest8 * 8) + (rest12 * 12) + (off8 * 8) + (off12 * 12) + (ph8 * 8) + (ph12 * 12);
+        const meal = (normal + rest8 + rest12 + off8 + off12 + ph8 + ph12) * mealRate;
         const fixedEarnings = basic + shift + laundry + skm;
         const gross = fixedEarnings + otTotal + meal;
 
@@ -382,6 +398,8 @@
         $('normalAmount').textContent = money(normalAmount);
         $('rest8Amount').textContent = money(rest8Amount);
         $('rest12Amount').textContent = money(rest12Amount);
+        $('off8Amount').textContent = money(off8Amount);
+        $('off12Amount').textContent = money(off12Amount);
         $('ph8Amount').textContent = money(ph8Amount);
         $('ph12Amount').textContent = money(ph12Amount);
         $('otTotal').textContent = money(otTotal);
@@ -431,7 +449,7 @@
       }
 
       function reset() {
-        const defaults = {basic:4522,shift:200,laundry:40,skm:50,normalDays:14,rest8Days:0,rest12Days:0,ph8Days:0,ph12Days:1,mealRate:10};
+        const defaults = {basic:4522,shift:200,laundry:40,skm:50,normalDays:14,rest8Days:0,rest12Days:0,off8Days:0,off12Days:0,ph8Days:0,ph12Days:1,mealRate:10};
         Object.entries(defaults).forEach(([id,value]) => $(id).value = value);
         calculate();
         save(false);
