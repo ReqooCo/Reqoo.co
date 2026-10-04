@@ -236,16 +236,44 @@
 
     <section class="card">
       <h2>Potongan automatik</h2>
-      <div class="summary">
+
+      <div class="grid2" style="margin-bottom:12px">
+        <label><span>Ambang LHDN</span>
+          <select id="pcbStatus">
+            <option value="3111">Diri sendiri / berasingan 0 anak — RM3,111</option>
+            <option value="3278">Berasingan + 1 anak — RM3,278</option>
+            <option value="3444">Berasingan + 2 anak — RM3,444</option>
+            <option value="4000">Taksiran bersama 0 anak — RM4,000</option>
+            <option value="4167">Taksiran bersama + 1 anak — RM4,167</option>
+            <option value="4333">Taksiran bersama + 2 anak — RM4,333</option>
+            <option value="custom">Lain-lain / custom</option>
+          </select>
+        </label>
+        <label id="customThresholdField" style="display:none"><span>Ambang custom / bulan (RM)</span><input id="customThreshold" type="number" inputmode="decimal" min="0" step="1" value="3111"></label>
+      </div>
+
+      <div class="grid2" style="margin-bottom:12px">
+        <label><span>Kaedah PCB</span>
+          <select id="pcbMode">
+            <option value="auto">Auto anggaran</option>
+            <option value="manual">Isi PCB sendiri</option>
+          </select>
+        </label>
+        <label id="pcbManualField" style="display:none"><span>PCB manual (RM)</span><input id="pcbManual" type="number" inputmode="decimal" min="0" step="0.01" value="0"></label>
+      </div>
+
+      <div class="mode-note" id="pcbThresholdNote">Ambang dipilih: RM3,111 sebulan. Jika jumlah pendapatan bulan ini tidak melebihi ambang, PCB auto = RM0.</div>
+
+      <div class="summary" style="margin-top:12px">
         <div class="muted">EPF <span class="pill">7.076%</span></div><div id="epf">RM0.00</div>
         <div class="muted">SOCSO <span class="pill">0.396%</span></div><div id="socso">RM0.00</div>
         <div class="muted">SKBBK <span class="pill">0.595%</span></div><div id="skbbk">RM0.00</div>
         <div class="muted">SIP <span class="pill">0.159%</span></div><div id="sip">RM0.00</div>
-        <div class="muted">PCB <span class="pill">4.244%</span></div><div id="pcb">RM0.00</div>
+        <div class="muted">PCB <span id="pcbBadge" class="pill">Ambang LHDN</span></div><div id="pcb">RM0.00</div>
         <div class="ruleline"></div>
         <div class="muted">Potongan berubah</div><div id="variableDeduct" class="strong">RM0.00</div>
       </div>
-      <div class="note">Potongan auto ini menggunakan nisbah anggaran daripada contoh slip. Ia bukan jadual rasmi payroll dan boleh berbeza mengikut individu.</div>
+      <div id="pcbMethodNote" class="note">PCB auto menggunakan ambang LHDN dahulu. Jika melepasi ambang, amaun masih anggaran dan bukan pengiraan rasmi e-PCB.</div>
     </section>
 
     <section class="card">
@@ -311,10 +339,10 @@
         epf: 531 / REF_GROSS,
         socso: 29.75 / REF_GROSS,
         skbbk: 44.65 / REF_GROSS,
-        sip: 11.90 / REF_GROSS,
-        pcb: 318.45 / REF_GROSS
+        sip: 11.90 / REF_GROSS
       };
-      const ids = ['basic','shift','laundry','skm','normalDays','rest8Days','rest12Days','off8Days','off12Days','ph8Days','ph12Days','mealRate','quarters','ghs','gtl','union','normalOtHours','offOtHours','restOtHours','restOtDays','phOtHours','phOtDays','nonShiftMealDays'];
+      const PCB_RATIO = 318.45 / REF_GROSS;
+      const ids = ['basic','shift','laundry','skm','normalDays','rest8Days','rest12Days','off8Days','off12Days','ph8Days','ph12Days','mealRate','quarters','ghs','gtl','union','normalOtHours','offOtHours','restOtHours','restOtDays','phOtHours','phOtDays','nonShiftMealDays','customThreshold','pcbManual'];
       const $ = id => document.getElementById(id);
       const num = id => Math.max(0, Number($(id).value) || 0);
       const money = value => new Intl.NumberFormat('ms-MY',{style:'currency',currency:'MYR'}).format(Number.isFinite(value) ? value : 0);
@@ -402,9 +430,28 @@
       }
 
       function values() {
-        const out = { workMode: $('workMode').value };
+        const out = {
+          workMode: $('workMode').value,
+          pcbStatus: $('pcbStatus').value,
+          pcbMode: $('pcbMode').value
+        };
         ids.forEach(id => out[id] = num(id));
         return out;
+      }
+
+      function getPcbThreshold() {
+        const v = $('pcbStatus').value;
+        return v === 'custom' ? num('customThreshold') : Math.max(0, Number(v) || 0);
+      }
+
+      function updatePcbUI() {
+        const custom = $('pcbStatus').value === 'custom';
+        const manual = $('pcbMode').value === 'manual';
+        $('customThresholdField').style.display = custom ? 'block' : 'none';
+        $('pcbManualField').style.display = manual ? 'block' : 'none';
+        const threshold = getPcbThreshold();
+        $('pcbThresholdNote').textContent = 'Ambang dipilih: ' + money(threshold) + ' sebulan. Jika jumlah pendapatan bulan ini tidak melebihi ambang, PCB auto = RM0.';
+        $('pcbBadge').textContent = manual ? 'Manual' : 'Ambang LHDN';
       }
 
       function calculate() {
@@ -473,6 +520,22 @@
           $(id).textContent = money(amount);
         });
 
+        const pcbThreshold = getPcbThreshold();
+        const pcbMode = $('pcbMode').value;
+        let pcbAmount = 0;
+        if (pcbMode === 'manual') {
+          pcbAmount = num('pcbManual');
+          $('pcbMethodNote').textContent = 'PCB menggunakan amaun manual yang anda isi.';
+        } else if (gross <= pcbThreshold) {
+          pcbAmount = 0;
+          $('pcbMethodNote').textContent = 'Jumlah pendapatan bulan ini tidak melebihi ambang dipilih, jadi PCB auto = RM0.';
+        } else {
+          pcbAmount = gross * PCB_RATIO;
+          $('pcbMethodNote').textContent = 'Pendapatan melepasi ambang. PCB yang dipaparkan masih anggaran berdasarkan contoh slip, bukan pengiraan rasmi e-PCB.';
+        }
+        variableDeduct += pcbAmount;
+        $('pcb').textContent = money(pcbAmount);
+
         const fixedDeduct = num('quarters') + num('ghs') + num('gtl') + num('union');
         const totalDeduct = variableDeduct + fixedDeduct;
         const net = Math.max(0, gross - totalDeduct);
@@ -537,6 +600,8 @@
           const stored = JSON.parse(localStorage.getItem(KEY) || 'null');
           if (!stored) return;
           if (stored.workMode === 'shift' || stored.workMode === 'nonshift') $('workMode').value = stored.workMode;
+          if (stored.pcbStatus !== undefined) $('pcbStatus').value = String(stored.pcbStatus);
+          if (stored.pcbMode === 'auto' || stored.pcbMode === 'manual') $('pcbMode').value = stored.pcbMode;
           ids.forEach(id => {
             if (stored[id] !== undefined && Number.isFinite(Number(stored[id]))) $(id).value = stored[id];
           });
@@ -553,10 +618,13 @@
       }
 
       function reset() {
-        const defaults = {basic:'',shift:'',laundry:'',skm:'',normalDays:0,rest8Days:0,rest12Days:0,off8Days:0,off12Days:0,ph8Days:0,ph12Days:0,mealRate:10,quarters:'',ghs:'',gtl:'',union:'',normalOtHours:0,offOtHours:0,restOtHours:0,restOtDays:0,phOtHours:0,phOtDays:0,nonShiftMealDays:0};
+        const defaults = {basic:'',shift:'',laundry:'',skm:'',normalDays:0,rest8Days:0,rest12Days:0,off8Days:0,off12Days:0,ph8Days:0,ph12Days:0,mealRate:10,quarters:'',ghs:'',gtl:'',union:'',normalOtHours:0,offOtHours:0,restOtHours:0,restOtDays:0,phOtHours:0,phOtDays:0,nonShiftMealDays:0,customThreshold:3111,pcbManual:0};
         Object.entries(defaults).forEach(([id,value]) => $(id).value = value);
         $('workMode').value = 'shift';
+        $('pcbStatus').value = '3111';
+        $('pcbMode').value = 'auto';
         updateModeUI();
+        updatePcbUI();
         calculate();
         save(false);
         $('savedMsg').textContent = 'Dikembalikan ke template kosong.';
@@ -596,6 +664,16 @@
         calculate();
         save(false);
       });
+      $('pcbStatus').addEventListener('change', () => {
+        updatePcbUI();
+        calculate();
+        save(false);
+      });
+      $('pcbMode').addEventListener('change', () => {
+        updatePcbUI();
+        calculate();
+        save(false);
+      });
       $('addCommitBtn').addEventListener('click', () => {
         commitments.push(newCommit('', 0));
         saveCommitments();
@@ -618,6 +696,7 @@
 
       load();
       updateModeUI();
+      updatePcbUI();
       loadCommitments();
       renderCommitments();
       calculate();
