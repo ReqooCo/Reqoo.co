@@ -184,32 +184,45 @@
     </section>
 
     <section id="nonShiftOtSection" class="card" style="display:none">
-      <h2>Jam OT — bukan syif</h2>
-      <div class="grid3">
+      <h2>OT terkumpul — bukan syif</h2>
+      <div class="grid4">
         <div class="otbox">
-          <div class="otname">OT ×1.5</div>
-          <input id="ot15Hours" aria-label="Jam OT satu perpuluhan lima" type="number" inputmode="decimal" min="0" step="0.01" value="0">
-          <div class="rule">Masukkan jumlah jam ×1.5</div>
-          <div id="ot15Amount" class="amount">RM0.00</div>
+          <div class="otname">Normal</div>
+          <input id="normalOtHours" aria-label="Jam OT normal" type="number" inputmode="decimal" min="0" step="0.01" value="0">
+          <div class="rule">Semua jam ×1.5</div>
+          <div id="normalOtAmount" class="amount">RM0.00</div>
         </div>
+
         <div class="otbox">
-          <div class="otname">OT ×2.0</div>
-          <input id="ot20Hours" aria-label="Jam OT dua kali" type="number" inputmode="decimal" min="0" step="0.01" value="0">
-          <div class="rule">Masukkan jumlah jam ×2.0</div>
-          <div id="ot20Amount" class="amount">RM0.00</div>
+          <div class="otname">Off Day</div>
+          <input id="offOtHours" aria-label="Jam OT Off Day" type="number" inputmode="decimal" min="0" step="0.01" value="0">
+          <div class="rule">Semua jam ×1.5</div>
+          <div id="offOtAmount" class="amount">RM0.00</div>
         </div>
+
         <div class="otbox">
-          <div class="otname">OT ×3.0</div>
-          <input id="ot30Hours" aria-label="Jam OT tiga kali" type="number" inputmode="decimal" min="0" step="0.01" value="0">
-          <div class="rule">Masukkan jumlah jam ×3.0</div>
-          <div id="ot30Amount" class="amount">RM0.00</div>
+          <div class="otname">Rest Day</div>
+          <input id="restOtHours" aria-label="Jumlah jam OT Rest Day" type="number" inputmode="decimal" min="0" step="0.01" value="0">
+          <div class="rule">Jumlah jam terkumpul</div>
+          <label style="margin-top:8px"><span>Bilangan hari Rest Day</span><input id="restOtDays" type="number" inputmode="numeric" min="0" step="1" value="0"></label>
+          <div id="restOtSplit" class="rule">8 jam pertama/hari ×1.5, lebihan ×2.0</div>
+          <div id="restOtAmount" class="amount">RM0.00</div>
+        </div>
+
+        <div class="otbox">
+          <div class="otname">Public Holiday</div>
+          <input id="phOtHours" aria-label="Jumlah jam OT Public Holiday" type="number" inputmode="decimal" min="0" step="0.01" value="0">
+          <div class="rule">Jumlah jam terkumpul</div>
+          <label style="margin-top:8px"><span>Bilangan hari Public</span><input id="phOtDays" type="number" inputmode="numeric" min="0" step="1" value="0"></label>
+          <div id="phOtSplit" class="rule">8 jam pertama/hari ×2.0, lebihan ×3.0</div>
+          <div id="phOtAmount" class="amount">RM0.00</div>
         </div>
       </div>
       <div class="summary" style="margin-top:14px">
         <div class="muted">Jumlah OT</div><div id="nonShiftOtTotal" class="strong">RM0.00</div>
-        <div class="muted">Jumlah jam OT</div><div id="nonShiftOtHours" class="strong">0 jam</div>
+        <div class="muted">Jumlah jam OT terkumpul</div><div id="nonShiftOtHours" class="strong">0 jam</div>
       </div>
-      <div class="note">Mode bukan syif guna jam terus supaya tak paksa andaian kerja 12 jam.</div>
+      <div class="note">Contoh: Rest Day 30 jam dalam 3 hari → 24 jam ×1.5 + 6 jam ×2.0. Public 20 jam dalam 2 hari → 16 jam ×2.0 + 4 jam ×3.0.</div>
     </section>
 
     <details>
@@ -301,7 +314,7 @@
         sip: 11.90 / REF_GROSS,
         pcb: 318.45 / REF_GROSS
       };
-      const ids = ['basic','shift','laundry','skm','normalDays','rest8Days','rest12Days','off8Days','off12Days','ph8Days','ph12Days','mealRate','quarters','ghs','gtl','union','ot15Hours','ot20Hours','ot30Hours','nonShiftMealDays'];
+      const ids = ['basic','shift','laundry','skm','normalDays','rest8Days','rest12Days','off8Days','off12Days','ph8Days','ph12Days','mealRate','quarters','ghs','gtl','union','normalOtHours','offOtHours','restOtHours','restOtDays','phOtHours','phOtDays','nonShiftMealDays'];
       const $ = id => document.getElementById(id);
       const num = id => Math.max(0, Number($(id).value) || 0);
       const money = value => new Intl.NumberFormat('ms-MY',{style:'currency',currency:'MYR'}).format(Number.isFinite(value) ? value : 0);
@@ -422,19 +435,32 @@
         const ph8Amount = isShift ? ph8 * (8 * hourly * 2) : 0;
         const ph12Amount = isShift ? ph12 * ((8 * hourly * 2) + (4 * hourly * 3)) : 0;
 
-        const ot15Hours = num('ot15Hours');
-        const ot20Hours = num('ot20Hours');
-        const ot30Hours = num('ot30Hours');
-        const ot15Amount = isShift ? 0 : ot15Hours * hourly * 1.5;
-        const ot20Amount = isShift ? 0 : ot20Hours * hourly * 2;
-        const ot30Amount = isShift ? 0 : ot30Hours * hourly * 3;
+        const normalOtHours = num('normalOtHours');
+        const offOtHours = num('offOtHours');
+        const restOtHours = num('restOtHours');
+        const restOtDays = Math.floor(num('restOtDays'));
+        const phOtHours = num('phOtHours');
+        const phOtDays = Math.floor(num('phOtDays'));
+
+        const normalOtAmount = isShift ? 0 : normalOtHours * hourly * 1.5;
+        const offOtAmount = isShift ? 0 : offOtHours * hourly * 1.5;
+
+        const restBaseCap = restOtDays > 0 ? restOtDays * 8 : restOtHours;
+        const restBaseHours = Math.min(restOtHours, restBaseCap);
+        const restExtraHours = Math.max(0, restOtHours - restBaseHours);
+        const restOtAmount = isShift ? 0 : (restBaseHours * hourly * 1.5) + (restExtraHours * hourly * 2);
+
+        const phBaseCap = phOtDays > 0 ? phOtDays * 8 : phOtHours;
+        const phBaseHours = Math.min(phOtHours, phBaseCap);
+        const phExtraHours = Math.max(0, phOtHours - phBaseHours);
+        const phOtAmount = isShift ? 0 : (phBaseHours * hourly * 2) + (phExtraHours * hourly * 3);
 
         const otTotal = isShift
           ? normalAmount + rest8Amount + rest12Amount + off8Amount + off12Amount + ph8Amount + ph12Amount
-          : ot15Amount + ot20Amount + ot30Amount;
+          : normalOtAmount + offOtAmount + restOtAmount + phOtAmount;
         const otHours = isShift
           ? (normal * 4) + (rest8 * 8) + (rest12 * 12) + (off8 * 8) + (off12 * 12) + (ph8 * 8) + (ph12 * 12)
-          : ot15Hours + ot20Hours + ot30Hours;
+          : normalOtHours + offOtHours + restOtHours + phOtHours;
         const mealDays = isShift ? (normal + rest8 + rest12 + off8 + off12 + ph8 + ph12) : num('nonShiftMealDays');
         const meal = mealDays * mealRate;
         const fixedEarnings = basic + effectiveShift + laundry + skm;
@@ -462,9 +488,16 @@
         $('off12Amount').textContent = money(off12Amount);
         $('ph8Amount').textContent = money(ph8Amount);
         $('ph12Amount').textContent = money(ph12Amount);
-        $('ot15Amount').textContent = money(ot15Amount);
-        $('ot20Amount').textContent = money(ot20Amount);
-        $('ot30Amount').textContent = money(ot30Amount);
+        $('normalOtAmount').textContent = money(normalOtAmount);
+        $('offOtAmount').textContent = money(offOtAmount);
+        $('restOtAmount').textContent = money(restOtAmount);
+        $('phOtAmount').textContent = money(phOtAmount);
+        $('restOtSplit').textContent = restOtDays > 0
+          ? restBaseHours.toFixed(2).replace(/\.00$/,'') + 'j ×1.5 + ' + restExtraHours.toFixed(2).replace(/\.00$/,'') + 'j ×2.0'
+          : 'Isi bilangan hari untuk auto pecahkan 8j ×1.5 + lebihan ×2.0';
+        $('phOtSplit').textContent = phOtDays > 0
+          ? phBaseHours.toFixed(2).replace(/\.00$/,'') + 'j ×2.0 + ' + phExtraHours.toFixed(2).replace(/\.00$/,'') + 'j ×3.0'
+          : 'Isi bilangan hari untuk auto pecahkan 8j ×2.0 + lebihan ×3.0';
         $('otTotal').textContent = money(isShift ? otTotal : 0);
         $('otHours').textContent = (isShift ? otHours : 0).toFixed(2).replace(/\.00$/,'') + ' jam';
         $('nonShiftOtTotal').textContent = money(isShift ? 0 : otTotal);
@@ -507,6 +540,9 @@
           ids.forEach(id => {
             if (stored[id] !== undefined && Number.isFinite(Number(stored[id]))) $(id).value = stored[id];
           });
+          if (stored.normalOtHours === undefined && stored.ot15Hours !== undefined && Number.isFinite(Number(stored.ot15Hours))) {
+            $('normalOtHours').value = stored.ot15Hours;
+          }
           if (stored.rest12Days === undefined && stored.restDays !== undefined && Number.isFinite(Number(stored.restDays))) {
             $('rest12Days').value = stored.restDays;
           }
@@ -517,7 +553,7 @@
       }
 
       function reset() {
-        const defaults = {basic:'',shift:'',laundry:'',skm:'',normalDays:0,rest8Days:0,rest12Days:0,off8Days:0,off12Days:0,ph8Days:0,ph12Days:0,mealRate:10,quarters:'',ghs:'',gtl:'',union:'',ot15Hours:0,ot20Hours:0,ot30Hours:0,nonShiftMealDays:0};
+        const defaults = {basic:'',shift:'',laundry:'',skm:'',normalDays:0,rest8Days:0,rest12Days:0,off8Days:0,off12Days:0,ph8Days:0,ph12Days:0,mealRate:10,quarters:'',ghs:'',gtl:'',union:'',normalOtHours:0,offOtHours:0,restOtHours:0,restOtDays:0,phOtHours:0,phOtDays:0,nonShiftMealDays:0};
         Object.entries(defaults).forEach(([id,value]) => $(id).value = value);
         $('workMode').value = 'shift';
         updateModeUI();
@@ -536,7 +572,7 @@
         $('otBaseLabel').textContent = isShift ? 'Asas kiraan OT (Basic + Shift)' : 'Asas kiraan OT (Basic sahaja)';
         $('modeNote').textContent = isShift
           ? 'Mode syif: kiraan hari 12 jam seperti calculator asal.'
-          : 'Mode bukan syif: masukkan jam OT sebenar ikut kadar ×1.5, ×2.0 dan ×3.0. Shift allowance tidak digunakan.';
+          : 'Mode bukan syif: masukkan OT terkumpul ikut kategori Normal, Off Day, Rest Day dan Public Holiday. Shift allowance tidak digunakan.';
         $('mealNote').textContent = isShift
           ? 'Mode syif: bilangan meal dikira daripada jumlah hari OT.'
           : 'Mode bukan syif: isi sendiri bilangan hari yang layak OT Meal.';
