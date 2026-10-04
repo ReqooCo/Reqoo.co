@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="OT Air Selangor — Template">
+  <meta name="description" content="Kalkulator OT, gaji kasar, potongan dan gaji bersih Air Selangor.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icon.svg">
+  <title>OT Air Selangor — Template</title>
+  <style>
+    :root{
+      --bg:#f3f6fb;--card:#ffffff;--ink:#0f172a;--muted:#64748b;--line:#dbe3ee;
+      --accent:#0f766e;--accent2:#115e59;--soft:#ecfdf5;--danger:#b91c1c;
+    }
+    *{box-sizing:border-box}
+    html{background:var(--bg);color-scheme:light}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+    button,input{font:inherit}
+    .app{max-width:720px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top)) 16px calc(36px + env(safe-area-inset-bottom))}
+    .top{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+    .logo{width:48px;height:48px;border-radius:14px;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:900;letter-spacing:-1px}
+    h1{font-size:24px;line-height:1.1;margin:0}
+    .sub{color:var(--muted);font-size:13px;margin-top:3px}
+    .status{margin-left:auto;font-size:11px;padding:6px 9px;border-radius:999px;background:#e2e8f0;color:#334155}
+    .status.ok{background:#dcfce7;color:#166534}
+    .hero{background:linear-gradient(135deg,#0f172a,#1e293b);color:white;border-radius:22px;padding:20px;margin-bottom:14px}
+    .hero .label{font-size:12px;color:#cbd5e1;text-transform:uppercase;letter-spacing:.08em}
+    .hero .net{font-size:38px;font-weight:900;letter-spacing:-1.5px;margin:4px 0 14px}
+    .herogrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .heroitem{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:10px}
+    .heroitem span{display:block;color:#cbd5e1;font-size:11px;margin-bottom:3px}
+    .heroitem b{font-size:17px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}
+    .card h2{font-size:15px;margin:0 0 13px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .grid4{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    label{display:block;min-width:0}
+    label span{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
+    input[type="number"],input[type="text"]{width:100%;min-height:48px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:10px 12px;font-size:17px;color:var(--ink);outline:none}
+    input[type="number"]:focus,input[type="text"]:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(15,118,110,.12)}
+    .commit-list{display:grid;gap:9px;margin-top:12px}
+    .commit-row{display:grid;grid-template-columns:minmax(0,1fr) 145px 42px;gap:8px;align-items:center}
+    .commit-row .remove{width:42px;min-height:48px;border:0;border-radius:12px;background:#fee2e2;color:#991b1b;font-weight:900;font-size:18px;cursor:pointer}
+    .empty{padding:14px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);font-size:12px;text-align:center}
+    .balance{background:#ecfdf5;border:1px solid #bbf7d0;border-radius:16px;padding:14px;margin-top:12px}
+    .balance .label{font-size:11px;color:#166534;text-transform:uppercase;letter-spacing:.06em}
+    .balance .value{font-size:28px;font-weight:900;color:#14532d;margin-top:3px}
+    .otbox{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fbfdff}
+    .otbox .otname{font-size:13px;font-weight:700;margin-bottom:8px}
+    .otbox .rule{font-size:11px;color:var(--muted);line-height:1.35;margin-top:7px}
+    .amount{font-size:13px;font-weight:700;color:var(--accent2);margin-top:7px}
+    .summary{display:grid;grid-template-columns:1fr auto;gap:9px 12px;font-size:13px;align-items:center}
+    .summary .muted{color:var(--muted)}
+    .summary .strong{font-weight:800}
+    .ruleline{height:1px;background:var(--line);grid-column:1/-1;margin:3px 0}
+    .fixed{padding:10px 0;border-top:1px solid var(--line)}
+    .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--soft);color:var(--accent2);font-size:11px;font-weight:700}
+    details{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin-bottom:12px}
+    summary{font-weight:800;font-size:14px;cursor:pointer}
+    .note{font-size:11px;color:var(--muted);line-height:1.5;margin-top:10px}
+    .actions{display:flex;gap:10px;margin-top:14px}
+    .btn{flex:1;min-height:46px;border:0;border-radius:13px;padding:10px 14px;font-weight:800;cursor:pointer}
+    .btn.primary{background:var(--accent);color:#fff}
+    .btn.secondary{background:#e2e8f0;color:#334155}
+    .install{display:none;background:#fff7ed;border:1px solid #fed7aa;border-radius:16px;padding:13px;margin-bottom:12px;color:#9a3412;font-size:12px;line-height:1.5}
+    .install.show{display:block}
+    .install b{color:#7c2d12}
+    .foot{text-align:center;color:var(--muted);font-size:10px;margin-top:18px}
+    @media(max-width:520px){
+      .grid3,.grid4{grid-template-columns:1fr}
+      .hero .net{font-size:34px}
+      .grid2{grid-template-columns:1fr 1fr}
+      .commit-row{grid-template-columns:minmax(0,1fr) 118px 42px}
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <div class="top">
+      <div class="logo">OT</div>
+      <div>
+        <h1>OT Air Selangor — Template</h1>
+        <div class="sub">Template kosong • isi gaji sendiri</div>
+      </div>
+      <div id="offlineStatus" class="status">Online</div>
+    </div>
+
+    <div id="installHint" class="install">
+      <b>Simpan macam app di iPhone:</b> buka halaman ini dalam Safari → tekan Share → <b>Add to Home Screen</b>.
+    </div>
+
+    <section class="hero" aria-live="polite">
+      <div class="label">Baki selepas komitmen bulanan</div>
+      <div id="afterCommit" class="net">RM0.00</div>
+      <div class="herogrid">
+        <div class="heroitem"><span>Gaji bersih</span><b id="netPay">RM0.00</b></div>
+        <div class="heroitem"><span>Komitmen</span><b id="commitTotalHero">RM0.00</b></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Gaji & elaun</h2>
+      <div class="grid2">
+        <label><span>Basic (RM)</span><input id="basic" type="number" inputmode="decimal" min="0" step="1" value="" placeholder="Isi basic"></label>
+        <label><span>Shift allowance (RM)</span><input id="shift" type="number" inputmode="decimal" min="0" step="1" value="" placeholder="Isi allowance"></label>
+        <label><span>Laundry (RM)</span><input id="laundry" type="number" inputmode="decimal" min="0" step="1" value="" placeholder="Isi jika ada"></label>
+        <label><span>SKM incentive (RM)</span><input id="skm" type="number" inputmode="decimal" min="0" step="1" value="" placeholder="Isi jika ada"></label>
+      </div>
+      <div class="summary" style="margin-top:14px">
+        <div class="muted">Asas kiraan OT (Basic + Shift)</div><div id="otBase" class="strong">RM0.00</div>
+        <div class="muted">Kadar sejam</div><div id="hourly" class="strong">RM0.00</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Bilangan hari OT</h2>
+      <div class="grid4">
+        <div class="otbox">
+          <div class="otname">Hari biasa</div>
+          <input id="normalDays" aria-label="Bilangan hari biasa" type="number" inputmode="numeric" min="0" step="1" value="0">
+          <div class="rule">4 jam OT × 1.5</div>
+          <div id="normalAmount" class="amount">RM0.00</div>
+        </div>
+        <div class="otbox">
+          <div class="otname">Rest Day</div>
+          <input id="restDays" aria-label="Bilangan Rest Day" type="number" inputmode="numeric" min="0" step="1" value="0">
+          <div class="rule">8j × 1.5 + 4j × 2.0</div>
+          <div id="restAmount" class="amount">RM0.00</div>
+        </div>
+        <div class="otbox">
+          <div class="otname">Public Holiday 8 jam</div>
+          <input id="ph8Days" aria-label="Bilangan Public Holiday 8 jam" type="number" inputmode="numeric" min="0" step="1" value="0">
+          <div class="rule">8j × 2.0</div>
+          <div id="ph8Amount" class="amount">RM0.00</div>
+        </div>
+        <div class="otbox">
+          <div class="otname">Public Holiday 12 jam</div>
+          <input id="ph12Days" aria-label="Bilangan Public Holiday 12 jam" type="number" inputmode="numeric" min="0" step="1" value="0">
+          <div class="rule">8j × 2.0 + 4j × 3.0</div>
+          <div id="ph12Amount" class="amount">RM0.00</div>
+        </div>
+      </div>
+      <div class="summary" style="margin-top:14px">
+        <div class="muted">Jumlah OT</div><div id="otTotal" class="strong">RM0.00</div>
+        <div class="muted">Jumlah jam OT</div><div id="otHours" class="strong">0 jam</div>
+        <div class="muted">OT Meal</div><div id="mealAmount" class="strong">RM0.00</div>
+      </div>
+    </section>
+
+    <details>
+      <summary>Tetapan OT Meal</summary>
+      <div class="grid2" style="margin-top:13px">
+        <label><span>OT Meal / hari (RM)</span><input id="mealRate" type="number" inputmode="decimal" min="0" step="1" value="10"></label>
+      </div>
+      <div class="note">Bilangan meal dikira daripada jumlah hari biasa + Rest Day + Public Holiday 8 jam + Public Holiday 12 jam.</div>
+    </details>
+
+    <section class="card">
+      <h2>Potongan automatik</h2>
+      <div class="summary">
+        <div class="muted">EPF <span class="pill">7.076%</span></div><div id="epf">RM0.00</div>
+        <div class="muted">SOCSO <span class="pill">0.396%</span></div><div id="socso">RM0.00</div>
+        <div class="muted">SKBBK <span class="pill">0.595%</span></div><div id="skbbk">RM0.00</div>
+        <div class="muted">SIP <span class="pill">0.159%</span></div><div id="sip">RM0.00</div>
+        <div class="muted">PCB <span class="pill">4.244%</span></div><div id="pcb">RM0.00</div>
+        <div class="ruleline"></div>
+        <div class="muted">Potongan berubah</div><div id="variableDeduct" class="strong">RM0.00</div>
+      </div>
+      <div class="note">Potongan auto ini menggunakan nisbah anggaran daripada contoh slip. Ia bukan jadual rasmi payroll dan boleh berbeza mengikut individu.</div>
+    </section>
+
+    <section class="card">
+      <h2>Potongan tetap</h2>
+      <div class="grid2">
+        <label><span>Quarters (RM)</span><input id="quarters" type="number" inputmode="decimal" min="0" step="0.01" value="" placeholder="0.00"></label>
+        <label><span>GHS Flexi (RM)</span><input id="ghs" type="number" inputmode="decimal" min="0" step="0.01" value="" placeholder="0.00"></label>
+        <label><span>GTL Flexi (RM)</span><input id="gtl" type="number" inputmode="decimal" min="0" step="0.01" value="" placeholder="0.00"></label>
+        <label><span>Kesatuan (RM)</span><input id="union" type="number" inputmode="decimal" min="0" step="0.01" value="" placeholder="0.00"></label>
+      </div>
+      <div class="summary fixed">
+        <div class="strong">Jumlah tetap</div><div id="fixedDeductDisplay" class="strong">RM0.00</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Komitmen bulanan</h2>
+      <div class="note" style="margin-top:0">Tambah apa-apa komitmen bulanan. Jumlah ini akan terus ditolak daripada gaji bersih.</div>
+      <div id="commitList" class="commit-list"></div>
+      <div class="actions">
+        <button id="addCommitBtn" class="btn secondary" type="button">+ Tambah komitmen</button>
+      </div>
+      <div class="summary" style="margin-top:14px">
+        <div class="strong">Jumlah komitmen</div><div id="commitTotal" class="strong">RM0.00</div>
+      </div>
+      <div class="balance">
+        <div class="label">Baki lepas semua komitmen</div>
+        <div id="afterCommit2" class="value">RM0.00</div>
+      </div>
+      <div class="note">Komitmen disimpan dalam phone ini dan tidak hilang bila kira OT bulan seterusnya.</div>
+    </section>
+
+    <section class="card">
+      <h2>Ringkasan</h2>
+      <div class="summary">
+        <div class="muted">Basic + elaun</div><div id="fixedEarnings">RM0.00</div>
+        <div class="muted">OT + Meal</div><div id="otAndMeal">RM0.00</div>
+        <div class="strong">Total Earnings</div><div id="grossPay2" class="strong">RM0.00</div>
+        <div class="ruleline"></div>
+        <div class="muted">Potongan auto</div><div id="variableDeduct2">RM0.00</div>
+        <div class="muted">Potongan tetap</div><div id="fixedDeduct2">RM0.00</div>
+        <div class="strong">Net Salary</div><div id="netPay2" class="strong">RM0.00</div>
+        <div class="ruleline"></div>
+        <div class="muted">Komitmen bulanan</div><div id="commitTotal2">RM0.00</div>
+        <div class="strong">Baki selepas komitmen</div><div id="afterCommit3" class="strong">RM0.00</div>
+      </div>
+      <div class="actions">
+        <button id="resetBtn" class="btn secondary" type="button">Kosongkan</button>
+        <button id="saveBtn" class="btn primary" type="button">Simpan tetapan</button>
+      </div>
+      <div id="savedMsg" class="note" aria-live="polite"></div>
+    </section>
+
+    <div class="foot">Template perkongsian • Data yang diisi disimpan pada peranti masing-masing</div>
+  </main>
+
+  <script>
+    (() => {
+      const KEY = 'ot-air-selangor-share-v1';
+      const COMMIT_KEY = 'ot-air-selangor-share-commitments-v1';
+      const REF_GROSS = 7503.91;
+      const RATIOS = {
+        epf: 531 / REF_GROSS,
+        socso: 29.75 / REF_GROSS,
+        skbbk: 44.65 / REF_GROSS,
+        sip: 11.90 / REF_GROSS,
+        pcb: 318.45 / REF_GROSS
+      };
+      const ids = ['basic','shift','laundry','skm','normalDays','restDays','ph8Days','ph12Days','mealRate','quarters','ghs','gtl','union'];
+      const $ = id => document.getElementById(id);
+      const num = id => Math.max(0, Number($(id).value) || 0);
+      const money = value => new Intl.NumberFormat('ms-MY',{style:'currency',currency:'MYR'}).format(Number.isFinite(value) ? value : 0);
+      let commitments = [];
+
+      function newCommit(name = '', amount = 0) {
+        return { id: 'c_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,6), name, amount: Math.max(0, Number(amount) || 0) };
+      }
+
+      function loadCommitments() {
+        try {
+          const stored = JSON.parse(localStorage.getItem(COMMIT_KEY) || '[]');
+          commitments = Array.isArray(stored) ? stored.map((c,i) => ({
+            id: c.id || ('c_old_' + i),
+            name: String(c.name || ''),
+            amount: Math.max(0, Number(c.amount) || 0)
+          })) : [];
+        } catch (e) {
+          commitments = [];
+        }
+      }
+
+      function saveCommitments() {
+        try { localStorage.setItem(COMMIT_KEY, JSON.stringify(commitments)); } catch (e) {}
+      }
+
+      function commitmentTotal() {
+        return commitments.reduce((sum,c) => sum + Math.max(0, Number(c.amount) || 0), 0);
+      }
+
+      function renderCommitments() {
+        const root = $('commitList');
+        root.innerHTML = '';
+        if (!commitments.length) {
+          const empty = document.createElement('div');
+          empty.className = 'empty';
+          empty.textContent = 'Belum ada komitmen. Tekan “+ Tambah komitmen”.';
+          root.appendChild(empty);
+          return;
+        }
+
+        commitments.forEach((item,index) => {
+          const row = document.createElement('div');
+          row.className = 'commit-row';
+
+          const name = document.createElement('input');
+          name.type = 'text';
+          name.placeholder = 'Contoh: Rumah / Kereta';
+          name.value = item.name;
+          name.setAttribute('aria-label','Nama komitmen ' + (index + 1));
+          name.addEventListener('input', () => {
+            item.name = name.value;
+            saveCommitments();
+          });
+
+          const amount = document.createElement('input');
+          amount.type = 'number';
+          amount.inputMode = 'decimal';
+          amount.min = '0';
+          amount.step = '0.01';
+          amount.placeholder = 'RM';
+          amount.value = item.amount || '';
+          amount.setAttribute('aria-label','Amaun komitmen ' + (index + 1));
+          amount.addEventListener('input', () => {
+            item.amount = Math.max(0, Number(amount.value) || 0);
+            saveCommitments();
+            calculate();
+          });
+
+          const remove = document.createElement('button');
+          remove.type = 'button';
+          remove.className = 'remove';
+          remove.textContent = '×';
+          remove.setAttribute('aria-label','Buang komitmen ' + (index + 1));
+          remove.addEventListener('click', () => {
+            commitments = commitments.filter(c => c.id !== item.id);
+            saveCommitments();
+            renderCommitments();
+            calculate();
+          });
+
+          row.append(name,amount,remove);
+          root.appendChild(row);
+        });
+      }
+
+      function values() {
+        const out = {};
+        ids.forEach(id => out[id] = num(id));
+        return out;
+      }
+
+      function calculate() {
+        const basic = num('basic');
+        const shift = num('shift');
+        const laundry = num('laundry');
+        const skm = num('skm');
+        const normal = num('normalDays');
+        const rest = num('restDays');
+        const ph8 = num('ph8Days');
+        const ph12 = num('ph12Days');
+        const mealRate = num('mealRate');
+
+        const otBase = basic + shift;
+        const hourly = otBase / 26 / 8;
+        const normalAmount = normal * 4 * hourly * 1.5;
+        const restAmount = rest * ((8 * hourly * 1.5) + (4 * hourly * 2));
+        const ph8Amount = ph8 * (8 * hourly * 2);
+        const ph12Amount = ph12 * ((8 * hourly * 2) + (4 * hourly * 3));
+        const otTotal = normalAmount + restAmount + ph8Amount + ph12Amount;
+        const otHours = (normal * 4) + (rest * 12) + (ph8 * 8) + (ph12 * 12);
+        const meal = (normal + rest + ph8 + ph12) * mealRate;
+        const fixedEarnings = basic + shift + laundry + skm;
+        const gross = fixedEarnings + otTotal + meal;
+
+        let variableDeduct = 0;
+        Object.entries(RATIOS).forEach(([id, ratio]) => {
+          const amount = gross * ratio;
+          variableDeduct += amount;
+          $(id).textContent = money(amount);
+        });
+
+        const fixedDeduct = num('quarters') + num('ghs') + num('gtl') + num('union');
+        const totalDeduct = variableDeduct + fixedDeduct;
+        const net = Math.max(0, gross - totalDeduct);
+        const commits = commitmentTotal();
+        const afterCommit = net - commits;
+
+        $('otBase').textContent = money(otBase);
+        $('hourly').textContent = money(hourly);
+        $('normalAmount').textContent = money(normalAmount);
+        $('restAmount').textContent = money(restAmount);
+        $('ph8Amount').textContent = money(ph8Amount);
+        $('ph12Amount').textContent = money(ph12Amount);
+        $('otTotal').textContent = money(otTotal);
+        $('otHours').textContent = otHours.toFixed(0) + ' jam';
+        $('mealAmount').textContent = money(meal);
+        $('fixedEarnings').textContent = money(fixedEarnings);
+        $('otAndMeal').textContent = money(otTotal + meal);
+        $('grossPay2').textContent = money(gross);
+        $('variableDeduct').textContent = money(variableDeduct);
+        $('variableDeduct2').textContent = money(variableDeduct);
+        $('fixedDeductDisplay').textContent = money(fixedDeduct);
+        $('fixedDeduct2').textContent = money(fixedDeduct);
+        $('netPay').textContent = money(net);
+        $('netPay2').textContent = money(net);
+        $('commitTotal').textContent = money(commits);
+        $('commitTotal2').textContent = money(commits);
+        $('commitTotalHero').textContent = money(commits);
+        $('afterCommit').textContent = money(afterCommit);
+        $('afterCommit2').textContent = money(afterCommit);
+        $('afterCommit3').textContent = money(afterCommit);
+      }
+
+      function save(showMessage = false) {
+        try {
+          localStorage.setItem(KEY, JSON.stringify(values()));
+          if (showMessage) {
+            $('savedMsg').textContent = 'Tetapan disimpan dalam phone ini.';
+            setTimeout(() => { $('savedMsg').textContent = ''; }, 2200);
+          }
+        } catch (e) {
+          if (showMessage) $('savedMsg').textContent = 'Browser tidak membenarkan simpanan tempatan.';
+        }
+      }
+
+      function load() {
+        try {
+          const stored = JSON.parse(localStorage.getItem(KEY) || 'null');
+          if (!stored) return;
+          ids.forEach(id => {
+            if (stored[id] !== undefined && Number.isFinite(Number(stored[id]))) $(id).value = stored[id];
+          });
+          if (stored.ph12Days === undefined && stored.phDays !== undefined && Number.isFinite(Number(stored.phDays))) {
+            $('ph12Days').value = stored.phDays;
+          }
+        } catch (e) {}
+      }
+
+      function reset() {
+        const defaults = {basic:'',shift:'',laundry:'',skm:'',normalDays:0,restDays:0,ph8Days:0,ph12Days:0,mealRate:10,quarters:'',ghs:'',gtl:'',union:''};
+        Object.entries(defaults).forEach(([id,value]) => $(id).value = value);
+        calculate();
+        save(false);
+        $('savedMsg').textContent = 'Dikembalikan ke template kosong.';
+        setTimeout(() => { $('savedMsg').textContent = ''; }, 1800);
+      }
+
+      function updateNetwork() {
+        const el = $('offlineStatus');
+        const online = navigator.onLine;
+        el.textContent = online ? 'Online' : 'Offline';
+        el.classList.toggle('ok', !online);
+      }
+
+      ids.forEach(id => {
+        $(id).addEventListener('input', () => {
+          calculate();
+          save(false);
+        });
+      });
+      $('addCommitBtn').addEventListener('click', () => {
+        commitments.push(newCommit('', 0));
+        saveCommitments();
+        renderCommitments();
+        calculate();
+        const rows = $('commitList').querySelectorAll('.commit-row input[type="text"]');
+        if (rows.length) rows[rows.length - 1].focus();
+      });
+      $('saveBtn').addEventListener('click', () => {
+        saveCommitments();
+        save(true);
+      });
+      $('resetBtn').addEventListener('click', reset);
+      window.addEventListener('online', updateNetwork);
+      window.addEventListener('offline', updateNetwork);
+
+      const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const standalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+      if (isiOS && !standalone) $('installHint').classList.add('show');
+
+      load();
+      loadCommitments();
+      renderCommitments();
+      calculate();
+      updateNetwork();
+
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+      }
+    })();
+  </script>
+</body>
+</html>
