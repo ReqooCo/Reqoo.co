@@ -140,10 +140,16 @@
           <div id="normalAmount" class="amount">RM0.00</div>
         </div>
         <div class="otbox">
-          <div class="otname">Rest Day</div>
-          <input id="restDays" aria-label="Bilangan Rest Day" type="number" inputmode="numeric" min="0" step="1" value="0">
+          <div class="otname">Rest Day 8 jam</div>
+          <input id="rest8Days" aria-label="Bilangan Rest Day 8 jam" type="number" inputmode="numeric" min="0" step="1" value="0">
+          <div class="rule">8j × 1.5</div>
+          <div id="rest8Amount" class="amount">RM0.00</div>
+        </div>
+        <div class="otbox">
+          <div class="otname">Rest Day 12 jam</div>
+          <input id="rest12Days" aria-label="Bilangan Rest Day 12 jam" type="number" inputmode="numeric" min="0" step="1" value="0">
           <div class="rule">8j × 1.5 + 4j × 2.0</div>
-          <div id="restAmount" class="amount">RM0.00</div>
+          <div id="rest12Amount" class="amount">RM0.00</div>
         </div>
         <div class="otbox">
           <div class="otname">Public Holiday 8 jam</div>
@@ -283,7 +289,7 @@
         sip: 11.90 / REF_GROSS,
         pcb: 318.45 / REF_GROSS
       };
-      const ids = ['basic','shift','laundry','skm','normalDays','restDays','ph8Days','ph12Days','mealRate','quarters','ghs','gtl','union','ot15Hours','ot20Hours','ot30Hours','nonShiftMealDays'];
+      const ids = ['basic','shift','laundry','skm','normalDays','rest8Days','rest12Days','ph8Days','ph12Days','mealRate','quarters','ghs','gtl','union','ot15Hours','ot20Hours','ot30Hours','nonShiftMealDays'];
       const $ = id => document.getElementById(id);
       const num = id => Math.max(0, Number($(id).value) || 0);
       const money = value => new Intl.NumberFormat('ms-MY',{style:'currency',currency:'MYR'}).format(Number.isFinite(value) ? value : 0);
@@ -382,7 +388,8 @@
         const laundry = num('laundry');
         const skm = num('skm');
         const normal = num('normalDays');
-        const rest = num('restDays');
+        const rest8 = num('rest8Days');
+        const rest12 = num('rest12Days');
         const ph8 = num('ph8Days');
         const ph12 = num('ph12Days');
         const mealRate = num('mealRate');
@@ -394,7 +401,8 @@
         const hourly = otBase / 26 / 8;
 
         const normalAmount = isShift ? normal * 4 * hourly * 1.5 : 0;
-        const restAmount = isShift ? rest * ((8 * hourly * 1.5) + (4 * hourly * 2)) : 0;
+        const rest8Amount = isShift ? rest8 * (8 * hourly * 1.5) : 0;
+        const rest12Amount = isShift ? rest12 * ((8 * hourly * 1.5) + (4 * hourly * 2)) : 0;
         const ph8Amount = isShift ? ph8 * (8 * hourly * 2) : 0;
         const ph12Amount = isShift ? ph12 * ((8 * hourly * 2) + (4 * hourly * 3)) : 0;
 
@@ -406,12 +414,12 @@
         const ot30Amount = isShift ? 0 : ot30Hours * hourly * 3;
 
         const otTotal = isShift
-          ? normalAmount + restAmount + ph8Amount + ph12Amount
+          ? normalAmount + rest8Amount + rest12Amount + ph8Amount + ph12Amount
           : ot15Amount + ot20Amount + ot30Amount;
         const otHours = isShift
-          ? (normal * 4) + (rest * 12) + (ph8 * 8) + (ph12 * 12)
+          ? (normal * 4) + (rest8 * 8) + (rest12 * 12) + (ph8 * 8) + (ph12 * 12)
           : ot15Hours + ot20Hours + ot30Hours;
-        const mealDays = isShift ? (normal + rest + ph8 + ph12) : num('nonShiftMealDays');
+        const mealDays = isShift ? (normal + rest8 + rest12 + ph8 + ph12) : num('nonShiftMealDays');
         const meal = mealDays * mealRate;
         const fixedEarnings = basic + effectiveShift + laundry + skm;
         const gross = fixedEarnings + otTotal + meal;
@@ -432,7 +440,8 @@
         $('otBase').textContent = money(otBase);
         $('hourly').textContent = money(hourly);
         $('normalAmount').textContent = money(normalAmount);
-        $('restAmount').textContent = money(restAmount);
+        $('rest8Amount').textContent = money(rest8Amount);
+        $('rest12Amount').textContent = money(rest12Amount);
         $('ph8Amount').textContent = money(ph8Amount);
         $('ph12Amount').textContent = money(ph12Amount);
         $('ot15Amount').textContent = money(ot15Amount);
@@ -480,6 +489,9 @@
           ids.forEach(id => {
             if (stored[id] !== undefined && Number.isFinite(Number(stored[id]))) $(id).value = stored[id];
           });
+          if (stored.rest12Days === undefined && stored.restDays !== undefined && Number.isFinite(Number(stored.restDays))) {
+            $('rest12Days').value = stored.restDays;
+          }
           if (stored.ph12Days === undefined && stored.phDays !== undefined && Number.isFinite(Number(stored.phDays))) {
             $('ph12Days').value = stored.phDays;
           }
@@ -487,7 +499,7 @@
       }
 
       function reset() {
-        const defaults = {basic:'',shift:'',laundry:'',skm:'',normalDays:0,restDays:0,ph8Days:0,ph12Days:0,mealRate:10,quarters:'',ghs:'',gtl:'',union:'',ot15Hours:0,ot20Hours:0,ot30Hours:0,nonShiftMealDays:0};
+        const defaults = {basic:'',shift:'',laundry:'',skm:'',normalDays:0,rest8Days:0,rest12Days:0,ph8Days:0,ph12Days:0,mealRate:10,quarters:'',ghs:'',gtl:'',union:'',ot15Hours:0,ot20Hours:0,ot30Hours:0,nonShiftMealDays:0};
         Object.entries(defaults).forEach(([id,value]) => $(id).value = value);
         $('workMode').value = 'shift';
         updateModeUI();
