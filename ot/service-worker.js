@@ -1,4 +1,4 @@
-const CACHE = 'ot-air-selangor-v5';
+const CACHE = 'ot-air-selangor-v6';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', event => {
