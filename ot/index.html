@@ -119,54 +119,42 @@
     </section>
 
     <section class="card">
-      <h2>Bilangan hari OT</h2>
+      <h2>OT terkumpul — syif</h2>
       <div class="grid4">
         <div class="otbox">
-          <div class="otname">Hari biasa</div>
-          <input id="normalDays" aria-label="Bilangan hari biasa" type="number" inputmode="numeric" min="0" step="1" value="14">
-          <div class="rule">4 jam OT × 1.5</div>
+          <div class="otname">Normal</div>
+          <input id="normalShiftHours" aria-label="Jam OT Normal" type="number" inputmode="decimal" min="0" step="0.01" value="56">
+          <div class="rule">Semua jam ×1.5</div>
           <div id="normalAmount" class="amount">RM0.00</div>
         </div>
         <div class="otbox">
-          <div class="otname">Rest Day 8 jam</div>
-          <input id="rest8Days" aria-label="Bilangan Rest Day 8 jam" type="number" inputmode="numeric" min="0" step="1" value="0">
-          <div class="rule">8j × 1.5</div>
-          <div id="rest8Amount" class="amount">RM0.00</div>
+          <div class="otname">Off Day</div>
+          <input id="offShiftHours" aria-label="Jam OT Off Day" type="number" inputmode="decimal" min="0" step="0.01" value="0">
+          <div class="rule">Semua jam ×1.5</div>
+          <div id="offAmount" class="amount">RM0.00</div>
         </div>
         <div class="otbox">
-          <div class="otname">Rest Day 12 jam</div>
-          <input id="rest12Days" aria-label="Bilangan Rest Day 12 jam" type="number" inputmode="numeric" min="0" step="1" value="0">
-          <div class="rule">8j × 1.5 + 4j × 2.0</div>
-          <div id="rest12Amount" class="amount">RM0.00</div>
+          <div class="otname">Rest Day</div>
+          <input id="restShiftHours" aria-label="Jumlah jam OT Rest Day" type="number" inputmode="decimal" min="0" step="0.01" value="0">
+          <div class="rule">Jumlah jam terkumpul</div>
+          <label style="margin-top:8px"><span>Bilangan hari Rest Day</span><input id="restShiftDays" type="number" inputmode="numeric" min="0" step="1" value="0"></label>
+          <div id="restShiftSplit" class="rule">8 jam pertama/hari ×1.5, lebihan ×2.0</div>
+          <div id="restAmount" class="amount">RM0.00</div>
         </div>
         <div class="otbox">
-          <div class="otname">Off Day 8 jam</div>
-          <input id="off8Days" aria-label="Bilangan Off Day 8 jam" type="number" inputmode="numeric" min="0" step="1" value="0">
-          <div class="rule">8j × 1.5</div>
-          <div id="off8Amount" class="amount">RM0.00</div>
-        </div>
-        <div class="otbox">
-          <div class="otname">Off Day 12 jam</div>
-          <input id="off12Days" aria-label="Bilangan Off Day 12 jam" type="number" inputmode="numeric" min="0" step="1" value="0">
-          <div class="rule">12j × 1.5</div>
-          <div id="off12Amount" class="amount">RM0.00</div>
-        </div>
-        <div class="otbox">
-          <div class="otname">Public Holiday 8 jam</div>
-          <input id="ph8Days" aria-label="Bilangan Public Holiday 8 jam" type="number" inputmode="numeric" min="0" step="1" value="0">
-          <div class="rule">8j × 2.0</div>
-          <div id="ph8Amount" class="amount">RM0.00</div>
-        </div>
-        <div class="otbox">
-          <div class="otname">Public Holiday 12 jam</div>
-          <input id="ph12Days" aria-label="Bilangan Public Holiday 12 jam" type="number" inputmode="numeric" min="0" step="1" value="1">
-          <div class="rule">8j × 2.0 + 4j × 3.0</div>
-          <div id="ph12Amount" class="amount">RM0.00</div>
+          <div class="otname">Public Holiday</div>
+          <input id="phShiftHours" aria-label="Jumlah jam OT Public Holiday" type="number" inputmode="decimal" min="0" step="0.01" value="12">
+          <div class="rule">Jumlah jam terkumpul</div>
+          <label style="margin-top:8px"><span>Bilangan hari Public</span><input id="phShiftDays" type="number" inputmode="numeric" min="0" step="1" value="1"></label>
+          <div id="phShiftSplit" class="rule">8 jam pertama/hari ×2.0, lebihan ×3.0</div>
+          <div id="phAmount" class="amount">RM0.00</div>
         </div>
       </div>
       <div class="summary" style="margin-top:14px">
-        <div class="muted">Jumlah OT</div><div id="otTotal" class="strong">RM0.00</div>
-        <div class="muted">Jumlah jam OT</div><div id="otHours" class="strong">0 jam</div>
+        <div class="muted">Jumlah bayaran OT</div><div id="otTotal" class="strong">RM0.00</div>
+        <div class="muted">OT terkumpul (tanpa Public)</div><div id="otAccumHours" class="strong">0 jam</div>
+        <div class="muted">Public Holiday</div><div id="phSummary" class="strong">0 hari / 0 jam</div>
+        <div class="muted">Jumlah jam dikira</div><div id="otHours" class="strong">0 jam</div>
         <div class="muted">OT Meal</div><div id="mealAmount" class="strong">RM0.00</div>
       </div>
     </section>
@@ -175,8 +163,9 @@
       <summary>Tetapan OT Meal</summary>
       <div class="grid2" style="margin-top:13px">
         <label><span>OT Meal / hari (RM)</span><input id="mealRate" type="number" inputmode="decimal" min="0" step="1" value="10"></label>
+        <label><span>Bilangan hari layak meal</span><input id="mealDays" type="number" inputmode="numeric" min="0" step="1" value="15"></label>
       </div>
-      <div class="note">Bilangan meal dikira daripada jumlah hari biasa + Rest Day + Public Holiday 8 jam + Public Holiday 12 jam.</div>
+      <div class="note">Bila guna OT terkumpul, bilangan hari OT Meal diisi sendiri supaya tak tersalah kira.</div>
     </details>
 
     <section class="card">
@@ -259,7 +248,7 @@
         sip: 11.90 / REF_GROSS,
         pcb: 318.45 / REF_GROSS
       };
-      const ids = ['basic','shift','laundry','skm','normalDays','rest8Days','rest12Days','off8Days','off12Days','ph8Days','ph12Days','mealRate'];
+      const ids = ['basic','shift','laundry','skm','normalShiftHours','offShiftHours','restShiftHours','restShiftDays','phShiftHours','phShiftDays','mealRate','mealDays'];
       const $ = id => document.getElementById(id);
       const num = id => Math.max(0, Number($(id).value) || 0);
       const money = value => new Intl.NumberFormat('ms-MY',{style:'currency',currency:'MYR'}).format(Number.isFinite(value) ? value : 0);
@@ -357,27 +346,35 @@
         const shift = num('shift');
         const laundry = num('laundry');
         const skm = num('skm');
-        const normal = num('normalDays');
-        const rest8 = num('rest8Days');
-        const rest12 = num('rest12Days');
-        const off8 = num('off8Days');
-        const off12 = num('off12Days');
-        const ph8 = num('ph8Days');
-        const ph12 = num('ph12Days');
+        const normalHours = num('normalShiftHours');
+        const offHours = num('offShiftHours');
+        const restHours = num('restShiftHours');
+        const restDays = Math.floor(num('restShiftDays'));
+        const phHours = num('phShiftHours');
+        const phDays = Math.floor(num('phShiftDays'));
         const mealRate = num('mealRate');
+        const mealDays = Math.floor(num('mealDays'));
 
         const otBase = basic + shift;
         const hourly = otBase / 26 / 8;
-        const normalAmount = normal * 4 * hourly * 1.5;
-        const rest8Amount = rest8 * (8 * hourly * 1.5);
-        const rest12Amount = rest12 * ((8 * hourly * 1.5) + (4 * hourly * 2));
-        const off8Amount = off8 * (8 * hourly * 1.5);
-        const off12Amount = off12 * (12 * hourly * 1.5);
-        const ph8Amount = ph8 * (8 * hourly * 2);
-        const ph12Amount = ph12 * ((8 * hourly * 2) + (4 * hourly * 3));
-        const otTotal = normalAmount + rest8Amount + rest12Amount + off8Amount + off12Amount + ph8Amount + ph12Amount;
-        const otHours = (normal * 4) + (rest8 * 8) + (rest12 * 12) + (off8 * 8) + (off12 * 12) + (ph8 * 8) + (ph12 * 12);
-        const meal = (normal + rest8 + rest12 + off8 + off12 + ph8 + ph12) * mealRate;
+
+        const normalAmount = normalHours * hourly * 1.5;
+        const offAmount = offHours * hourly * 1.5;
+
+        const restBaseCap = restDays > 0 ? restDays * 8 : restHours;
+        const restBaseHours = Math.min(restHours, restBaseCap);
+        const restExtraHours = Math.max(0, restHours - restBaseHours);
+        const restAmount = (restBaseHours * hourly * 1.5) + (restExtraHours * hourly * 2);
+
+        const phBaseCap = phDays > 0 ? phDays * 8 : phHours;
+        const phBaseHours = Math.min(phHours, phBaseCap);
+        const phExtraHours = Math.max(0, phHours - phBaseHours);
+        const phAmount = (phBaseHours * hourly * 2) + (phExtraHours * hourly * 3);
+
+        const otTotal = normalAmount + offAmount + restAmount + phAmount;
+        const otAccumHours = normalHours + offHours + restHours;
+        const otHours = otAccumHours + phHours;
+        const meal = mealDays * mealRate;
         const fixedEarnings = basic + shift + laundry + skm;
         const gross = fixedEarnings + otTotal + meal;
 
@@ -396,14 +393,19 @@
         $('otBase').textContent = money(otBase);
         $('hourly').textContent = money(hourly);
         $('normalAmount').textContent = money(normalAmount);
-        $('rest8Amount').textContent = money(rest8Amount);
-        $('rest12Amount').textContent = money(rest12Amount);
-        $('off8Amount').textContent = money(off8Amount);
-        $('off12Amount').textContent = money(off12Amount);
-        $('ph8Amount').textContent = money(ph8Amount);
-        $('ph12Amount').textContent = money(ph12Amount);
+        $('offAmount').textContent = money(offAmount);
+        $('restAmount').textContent = money(restAmount);
+        $('phAmount').textContent = money(phAmount);
+        $('restShiftSplit').textContent = restDays > 0
+          ? restBaseHours.toFixed(2).replace(/\.00$/,'') + 'j ×1.5 + ' + restExtraHours.toFixed(2).replace(/\.00$/,'') + 'j ×2.0'
+          : 'Isi bilangan hari untuk auto pecahkan 8j ×1.5 + lebihan ×2.0';
+        $('phShiftSplit').textContent = phDays > 0
+          ? phBaseHours.toFixed(2).replace(/\.00$/,'') + 'j ×2.0 + ' + phExtraHours.toFixed(2).replace(/\.00$/,'') + 'j ×3.0'
+          : 'Isi bilangan hari untuk auto pecahkan 8j ×2.0 + lebihan ×3.0';
         $('otTotal').textContent = money(otTotal);
-        $('otHours').textContent = otHours.toFixed(0) + ' jam';
+        $('otAccumHours').textContent = otAccumHours.toFixed(2).replace(/\.00$/,'') + ' jam';
+        $('phSummary').textContent = phDays + ' hari / ' + phHours.toFixed(2).replace(/\.00$/,'') + ' jam';
+        $('otHours').textContent = otHours.toFixed(2).replace(/\.00$/,'') + ' jam';
         $('mealAmount').textContent = money(meal);
         $('fixedEarnings').textContent = money(fixedEarnings);
         $('otAndMeal').textContent = money(otTotal + meal);
@@ -439,17 +441,28 @@
           ids.forEach(id => {
             if (stored[id] !== undefined && Number.isFinite(Number(stored[id]))) $(id).value = stored[id];
           });
-          if (stored.rest12Days === undefined && stored.restDays !== undefined && Number.isFinite(Number(stored.restDays))) {
-            $('rest12Days').value = stored.restDays;
+          if (stored.normalShiftHours === undefined && stored.normalDays !== undefined) {
+            $('normalShiftHours').value = (Number(stored.normalDays)||0) * 4;
           }
-          if (stored.ph12Days === undefined && stored.phDays !== undefined && Number.isFinite(Number(stored.phDays))) {
-            $('ph12Days').value = stored.phDays;
+          if (stored.offShiftHours === undefined) {
+            $('offShiftHours').value = ((Number(stored.off8Days)||0) * 8) + ((Number(stored.off12Days)||0) * 12);
+          }
+          if (stored.restShiftHours === undefined) {
+            $('restShiftHours').value = ((Number(stored.rest8Days)||0) * 8) + ((Number(stored.rest12Days)||0) * 12) + ((Number(stored.restDays)||0) * 12);
+            $('restShiftDays').value = (Number(stored.rest8Days)||0) + (Number(stored.rest12Days)||0) + (Number(stored.restDays)||0);
+          }
+          if (stored.phShiftHours === undefined) {
+            $('phShiftHours').value = ((Number(stored.ph8Days)||0) * 8) + ((Number(stored.ph12Days)||0) * 12) + ((Number(stored.phDays)||0) * 12);
+            $('phShiftDays').value = (Number(stored.ph8Days)||0) + (Number(stored.ph12Days)||0) + (Number(stored.phDays)||0);
+          }
+          if (stored.mealDays === undefined) {
+            $('mealDays').value = (Number(stored.normalDays)||0) + (Number(stored.rest8Days)||0) + (Number(stored.rest12Days)||0) + (Number(stored.off8Days)||0) + (Number(stored.off12Days)||0) + (Number(stored.ph8Days)||0) + (Number(stored.ph12Days)||0);
           }
         } catch (e) {}
       }
 
       function reset() {
-        const defaults = {basic:4522,shift:200,laundry:40,skm:50,normalDays:14,rest8Days:0,rest12Days:0,off8Days:0,off12Days:0,ph8Days:0,ph12Days:1,mealRate:10};
+        const defaults = {basic:4522,shift:200,laundry:40,skm:50,normalShiftHours:56,offShiftHours:0,restShiftHours:0,restShiftDays:0,phShiftHours:12,phShiftDays:1,mealRate:10,mealDays:15};
         Object.entries(defaults).forEach(([id,value]) => $(id).value = value);
         calculate();
         save(false);
