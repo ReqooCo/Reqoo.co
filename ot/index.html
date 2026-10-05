@@ -133,7 +133,7 @@
         <label><span>Pilih bulan</span><input id="calcMonth" type="month"></label>
         <button id="todayMonthBtn" class="smallbtn" type="button">Bulan ini</button>
       </div>
-      <div class="note" style="margin-top:0">OT yang disimpan melalui Request OT akan terus masuk ke bulan ini secara automatik.</div>
+      <div class="note" style="margin-top:0">OT yang disimpan melalui Request OT akan terus masuk ke bulan tarikh tersebut. Jika ada OT lama sebelum mula guna app, isi jumlah semasa sekali dalam bulan itu.</div>
     </section>
 
     <section class="card">
@@ -334,6 +334,10 @@
           <div class="ruleline"></div>
           <div class="strong">OT terkumpul tanpa Public</div><div id="recAccum" class="strong">0 jam</div>
         </div>
+        <div class="actions">
+          <button id="syncRecordToCalcBtn" class="btn secondary" type="button">Buka bulan dalam Kalkulator</button>
+        </div>
+        <div class="note">Kalau jumlah sebenar bulan ini sudah ada sebelum app digunakan, buka bulan dalam Kalkulator dan betulkan jumlah semasa sekali. Request baru selepas itu akan auto tambah.</div>
         <div id="recordList" class="record-list"></div>
       </section>
     </div>
@@ -347,7 +351,7 @@
       const COMMIT_KEY = 'ot-air-selangor-commitments-v1';
       const PROFILE_KEY = 'ot-air-selangor-request-profile-v1';
       const REQUEST_KEY = 'ot-air-selangor-requests-v1';
-      const MONTH_KEY = 'ot-air-selangor-monthly-v1';
+      const MONTH_KEY = 'ot-air-selangor-monthly-v2';
       const REF_GROSS = 7503.91;
       const FIXED_DEDUCT = 339.36;
       const RATIOS = {
@@ -494,9 +498,25 @@
         return out;
       }
 
-      function seedMonthFromCurrent(key) {
+      function emptyMonth() {
+        return {
+          normalShiftHours:0,offShiftHours:0,rest8ShiftDays:0,rest12ShiftDays:0,
+          ph8ShiftDays:0,ph12ShiftDays:0,mealDays:0
+        };
+      }
+
+      function requestOnlyMonth(month) {
+        const out = emptyMonth();
+        requests.filter(r=>r.month===month).forEach(r=>{
+          const add = requestContribution(r.category, Number(r.hours)||0);
+          Object.entries(add).forEach(([k,v])=>out[k]=(Number(out[k])||0)+(Number(v)||0));
+        });
+        return out;
+      }
+
+      function ensureMonthFromRequests(key) {
         if (!monthlyData[key]) {
-          monthlyData[key] = readMonthForm();
+          monthlyData[key] = requestOnlyMonth(key);
           saveMonthlyData();
         }
       }
@@ -510,10 +530,7 @@
       function loadMonthForm(key) {
         if (!key) return;
         if (!monthlyData[key]) {
-          monthlyData[key] = {
-            normalShiftHours:0,offShiftHours:0,rest8ShiftDays:0,rest12ShiftDays:0,
-            ph8ShiftDays:0,ph12ShiftDays:0,mealDays:0
-          };
+          monthlyData[key] = emptyMonth();
           saveMonthlyData();
         }
         monthFields.forEach(id => $(id).value = Number(monthlyData[key][id]) || 0);
@@ -573,13 +590,15 @@
       }
 
       function applyContribution(month, cat, hours, sign=1) {
-        if(!monthlyData[month]) monthlyData[month] = {
-          normalShiftHours:0,offShiftHours:0,rest8ShiftDays:0,rest12ShiftDays:0,ph8ShiftDays:0,ph12ShiftDays:0,mealDays:0
-        };
-        const add = requestContribution(cat, hours);
-        Object.entries(add).forEach(([k,v]) => {
-          monthlyData[month][k] = Math.max(0, (Number(monthlyData[month][k])||0) + (v*sign));
-        });
+        const existed = !!monthlyData[month];
+        if(!existed) {
+          monthlyData[month] = sign > 0 ? requestOnlyMonth(month) : emptyMonth();
+        } else {
+          const add = requestContribution(cat, hours);
+          Object.entries(add).forEach(([k,v]) => {
+            monthlyData[month][k] = Math.max(0, (Number(monthlyData[month][k])||0) + (v*sign));
+          });
+        }
         saveMonthlyData();
         if(month===activeMonth) loadMonthForm(month);
       }
@@ -896,11 +915,13 @@
         if(activeMonth) saveMonthForm(activeMonth);
         activeMonth=currentMonthKey();
         $('calcMonth').value=activeMonth;
+        ensureMonthFromRequests(activeMonth);
         loadMonthForm(activeMonth);
       });
       $('calcMonth').addEventListener('change',()=>{
         if(activeMonth) saveMonthForm(activeMonth);
         activeMonth=$('calcMonth').value||currentMonthKey();
+        ensureMonthFromRequests(activeMonth);
         loadMonthForm(activeMonth);
       });
       monthFields.forEach(id=>$(id).addEventListener('input',()=>saveMonthForm(activeMonth)));
@@ -918,6 +939,14 @@
 
       $('recordThisMonthBtn').addEventListener('click',()=>{$('recordMonth').value=currentMonthKey();renderRecords()});
       $('recordMonth').addEventListener('change',renderRecords);
+      $('syncRecordToCalcBtn').addEventListener('click',()=>{
+        if(activeMonth) saveMonthForm(activeMonth);
+        activeMonth=$('recordMonth').value||currentMonthKey();
+        $('calcMonth').value=activeMonth;
+        ensureMonthFromRequests(activeMonth);
+        loadMonthForm(activeMonth);
+        switchTab('calc');
+      });
 
       $('addCommitBtn').addEventListener('click', () => {
         commitments.push(newCommit('', 0));
@@ -941,20 +970,17 @@
       if (isiOS && !standalone) $('installHint').classList.add('show');
 
       load();
+      loadRequests();
       loadMonthlyData();
       activeMonth = currentMonthKey();
       $('calcMonth').value = activeMonth;
-      if(!monthlyData[activeMonth]) {
-        seedMonthFromCurrent(activeMonth);
-      } else {
-        loadMonthForm(activeMonth);
-      }
+      ensureMonthFromRequests(activeMonth);
+      loadMonthForm(activeMonth);
 
       loadCommitments();
       renderCommitments();
 
       loadRequestProfile();
-      loadRequests();
       $('recordMonth').value = activeMonth;
       const today = new Date();
       $('reqDate').value = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
