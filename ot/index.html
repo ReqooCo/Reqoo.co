@@ -361,7 +361,7 @@
       </section>
     </div>
 
-    <div class="foot">Kalkulator peribadi • Boleh digunakan offline selepas dibuka sekali • Build 12</div>
+    <div class="foot">Kalkulator peribadi • Boleh digunakan offline selepas dibuka sekali • Build 13</div>
   </main>
 
   <script>
@@ -894,8 +894,8 @@
           if (stored.normalShiftHours === undefined && stored.normalDays !== undefined) {
             $('normalShiftHours').value = (Number(stored.normalDays)||0) * 4;
           }
-          if (stored.offShiftHours === undefined) {
-            $('offShiftHours').value = ((Number(stored.off8Days)||0) * 8) + ((Number(stored.off12Days)||0) * 12);
+          if (stored.offShiftDays === undefined && stored.offShiftHours === undefined) {
+            $('offShiftDays').value = (Number(stored.off8Days)||0) + (Number(stored.off12Days)||0);
           }
           if (stored.rest8ShiftDays === undefined || stored.rest12ShiftDays === undefined) {
             if (stored.restShiftDays !== undefined && stored.restShiftHours !== undefined) {
