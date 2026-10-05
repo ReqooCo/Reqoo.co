@@ -653,6 +653,18 @@
         return v > 0 ? (v + ' Hari') : '-';
       }
 
+      function getRequestTask() {
+        return $('reqTaskPreset').value === 'custom'
+          ? $('reqTaskCustom').value.trim()
+          : $('reqTaskPreset').value;
+      }
+
+      function updateTaskUI() {
+        const custom = $('reqTaskPreset').value === 'custom';
+        $('reqTaskCustomField').style.display = custom ? 'block' : 'none';
+        updateRequestPreview();
+      }
+
       function buildWhatsAppText() {
         const p = saveRequestProfile();
         const date = $('reqDate').value;
@@ -675,7 +687,7 @@
           'Public Holiday : ' + dashOrDays(s.phDays) + '\n' +
           '*Jumlah OT Terkumpul :* ' + s.accum.toFixed(2).replace(/\.00$/,'') + ' Jam\n\n' +
           '*Ketua/Penyelia :* ' + (p.supervisor||'-') + '\n\n' +
-          '*Tugasan :*\n' + ($('reqTask').value.trim()||'-');
+          '*Tugasan :*\n' + (getRequestTask()||'-');
       }
 
       function updateRequestPreview() {
@@ -692,7 +704,7 @@
       function requestFingerprint() {
         return [
           $('reqDate').value,$('reqCategory').value,$('reqStart').value.trim(),$('reqEnd').value.trim(),
-          num('reqHours'),$('reqTask').value.trim()
+          num('reqHours'),getRequestTask()
         ].join('|');
       }
 
@@ -714,7 +726,7 @@
           id:'ot_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,6),
           date,month:dateToMonthKey(date),category:cat,hours,
           start:$('reqStart').value.trim(),end:$('reqEnd').value.trim(),
-          task:$('reqTask').value.trim(),createdAt:Date.now(),fingerprint:fp
+          task:getRequestTask(),createdAt:Date.now(),fingerprint:fp
         };
         requests.push(rec);
         saveRequests();
@@ -956,7 +968,9 @@
       monthFields.forEach(id=>$(id).addEventListener('input',()=>saveMonthForm(activeMonth)));
 
       ['reqName','reqPosition','reqStaffId','reqLocation','reqSupervisor'].forEach(id=>$(id).addEventListener('input',()=>{saveRequestProfile();savedCurrentRequestId=null;updateRequestPreview()}));
-      ['reqDate','reqStart','reqEnd','reqHours','reqTask'].forEach(id=>$(id).addEventListener('input',()=>{savedCurrentRequestId=null;updateRequestPreview()}));
+      ['reqDate','reqStart','reqEnd','reqHours'].forEach(id=>$(id).addEventListener('input',()=>{savedCurrentRequestId=null;updateRequestPreview()}));
+      $('reqTaskPreset').addEventListener('change',()=>{savedCurrentRequestId=null;updateTaskUI()});
+      $('reqTaskCustom').addEventListener('input',()=>{savedCurrentRequestId=null;updateRequestPreview()});
       $('reqCategory').addEventListener('change',()=>{savedCurrentRequestId=null;normalizeRequestHours()});
       $('reqSaveBtn').addEventListener('click',()=>saveRequestRecord());
       $('reqWhatsAppBtn').addEventListener('click',()=>{
@@ -1014,6 +1028,7 @@
       const today = new Date();
       $('reqDate').value = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
       renderRecords();
+      updateTaskUI();
       updateRequestPreview();
 
       calculate();
