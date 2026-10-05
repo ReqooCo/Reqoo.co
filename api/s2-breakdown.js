@@ -3,11 +3,14 @@ const HEADERS={
   'cache-control':'no-store',
   'pragma':'no-cache',
   'access-control-allow-origin':'*',
-  'access-control-allow-headers':'content-type',
+  'access-control-allow-headers':'content-type,x-s2-key',
   'access-control-allow-methods':'GET,POST,OPTIONS'
 };
 
 const ALLOWED_STATUS=new Set(['OPEN','ONGOING','MONITORING','CLOSED']);
+const ACCESS_HASH='da55872021a7acbbd84f80edee8c565ec1e9e5d926a1f18a4a6d6e1ed1586331';
+async function sha256(v){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(String(v||'')));return[...new Uint8Array(d)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+async function authorized(request){const supplied=request.headers.get('X-S2-Key')||'';return supplied&&await sha256(supplied)===ACCESS_HASH}
 const text=(v,max=500)=>String(v??'').trim().slice(0,max);
 const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:HEADERS});
 const now=()=>new Date().toISOString();
@@ -68,6 +71,7 @@ function normalizeStatus(v,fallback='ONGOING'){
 
 export async function onRequest({request,env}){
   if(request.method==='OPTIONS')return new Response(null,{status:204,headers:HEADERS});
+  if(!(await authorized(request)))return json({ok:false,error:'Access code tidak sah'},401);
   try{
     await ensure(env);
     const url=new URL(request.url);
