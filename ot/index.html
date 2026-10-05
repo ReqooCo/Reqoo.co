@@ -161,8 +161,8 @@
         </div>
         <div class="otbox">
           <div class="otname">Off Day</div>
-          <input id="offShiftHours" aria-label="Jam OT Off Day" type="number" inputmode="decimal" min="0" step="0.01" value="0">
-          <div class="rule">Semua jam ×1.5</div>
+          <input id="offShiftDays" aria-label="Bilangan hari Off Day" type="number" inputmode="numeric" min="0" step="1" value="0">
+          <div class="rule">1 hari = 12j ×1.5</div>
           <div id="offAmount" class="amount">RM0.00</div>
         </div>
         <div class="otbox">
@@ -328,7 +328,7 @@
         </div>
         <div class="summary">
           <div class="muted">Normal</div><div id="recNormal" class="strong">0 jam</div>
-          <div class="muted">Off Day</div><div id="recOff" class="strong">0 jam</div>
+          <div class="muted">Off Day</div><div id="recOff" class="strong">0 hari</div>
           <div class="muted">Rest Day</div><div id="recRest" class="strong">0 hari</div>
           <div class="muted">Public Holiday</div><div id="recPh" class="strong">0 hari</div>
           <div class="ruleline"></div>
@@ -342,7 +342,7 @@
       </section>
     </div>
 
-    <div class="foot">Kalkulator peribadi • Boleh digunakan offline selepas dibuka sekali • Build 11</div>
+    <div class="foot">Kalkulator peribadi • Boleh digunakan offline selepas dibuka sekali • Build 12</div>
   </main>
 
   <script>
@@ -361,7 +361,7 @@
         sip: 11.90 / REF_GROSS,
         pcb: 318.45 / REF_GROSS
       };
-      const ids = ['basic','shift','laundry','skm','normalShiftHours','offShiftHours','rest8ShiftDays','rest12ShiftDays','ph8ShiftDays','ph12ShiftDays','mealRate','mealDays'];
+      const ids = ['basic','shift','laundry','skm','normalShiftHours','offShiftDays','rest8ShiftDays','rest12ShiftDays','ph8ShiftDays','ph12ShiftDays','mealRate','mealDays'];
       const $ = id => document.getElementById(id);
       const num = id => Math.max(0, Number($(id).value) || 0);
       const money = value => new Intl.NumberFormat('ms-MY',{style:'currency',currency:'MYR'}).format(Number.isFinite(value) ? value : 0);
@@ -452,7 +452,7 @@
         });
       }
 
-      const monthFields = ['normalShiftHours','offShiftHours','rest8ShiftDays','rest12ShiftDays','ph8ShiftDays','ph12ShiftDays','mealDays'];
+      const monthFields = ['normalShiftHours','offShiftDays','rest8ShiftDays','rest12ShiftDays','ph8ShiftDays','ph12ShiftDays','mealDays'];
       const monthNames = ['Januari','Februari','Mac','April','Mei','Jun','Julai','Ogos','September','Oktober','November','Disember'];
       const dayNames = ['Ahad','Isnin','Selasa','Rabu','Khamis','Jumaat','Sabtu'];
 
@@ -485,6 +485,11 @@
         try {
           const stored = JSON.parse(localStorage.getItem(MONTH_KEY) || '{}');
           monthlyData = stored && typeof stored === 'object' ? stored : {};
+          Object.values(monthlyData).forEach(m=>{
+            if(m && m.offShiftDays === undefined && m.offShiftHours !== undefined){
+              m.offShiftDays = Math.max(0, Math.round((Number(m.offShiftHours)||0) / 12));
+            }
+          });
         } catch(e) { monthlyData = {}; }
       }
 
@@ -500,7 +505,7 @@
 
       function emptyMonth() {
         return {
-          normalShiftHours:0,offShiftHours:0,rest8ShiftDays:0,rest12ShiftDays:0,
+          normalShiftHours:0,offShiftDays:0,rest8ShiftDays:0,rest12ShiftDays:0,
           ph8ShiftDays:0,ph12ShiftDays:0,mealDays:0
         };
       }
@@ -579,9 +584,9 @@
       }
 
       function requestContribution(cat, hours) {
-        const x = {normalShiftHours:0,offShiftHours:0,rest8ShiftDays:0,rest12ShiftDays:0,ph8ShiftDays:0,ph12ShiftDays:0,mealDays:1};
+        const x = {normalShiftHours:0,offShiftDays:0,rest8ShiftDays:0,rest12ShiftDays:0,ph8ShiftDays:0,ph12ShiftDays:0,mealDays:1};
         if(cat==='normal') x.normalShiftHours = hours;
-        else if(cat==='off') x.offShiftHours = hours;
+        else if(cat==='off') x.offShiftDays = 1;
         else if(cat==='rest8') x.rest8ShiftDays = 1;
         else if(cat==='rest12') x.rest12ShiftDays = 1;
         else if(cat==='ph8') x.ph8ShiftDays = 1;
@@ -606,17 +611,18 @@
       function monthSummary(month) {
         const m = monthlyData[month] || {};
         const normal = Number(m.normalShiftHours)||0;
-        const off = Number(m.offShiftHours)||0;
+        const offDays = Number(m.offShiftDays)||0;
         const r8 = Number(m.rest8ShiftDays)||0;
         const r12 = Number(m.rest12ShiftDays)||0;
         const p8 = Number(m.ph8ShiftDays)||0;
         const p12 = Number(m.ph12ShiftDays)||0;
         return {
-          normal,off,r8,r12,p8,p12,
+          normal,offDays,r8,r12,p8,p12,
+          offHours:offDays*12,
           restDays:r8+r12,phDays:p8+p12,
           restHours:(r8*8)+(r12*12),
           phHours:(p8*8)+(p12*12),
-          accum:normal+off+(r8*8)+(r12*12)
+          accum:normal+(offDays*12)+(r8*8)+(r12*12)
         };
       }
 
@@ -645,7 +651,7 @@
           '*PEMOHONAN OT :* ' + num('reqHours').toFixed(2).replace(/\.00$/,'') + ' Jam\n\n' +
           '*OT Terkumpul ' + monthLabel(month) + '*\n' +
           'Normal : ' + dashOrHours(s.normal) + '\n' +
-          'Offday : ' + dashOrHours(s.off) + '\n' +
+          'Offday : ' + dashOrDays(s.offDays) + '\n' +
           'Restday : ' + dashOrDays(s.restDays) + '\n' +
           'Public Holiday : ' + dashOrDays(s.phDays) + '\n' +
           '*Jumlah OT Terkumpul :* ' + s.accum.toFixed(2).replace(/\.00$/,'') + ' Jam\n\n' +
@@ -660,7 +666,7 @@
       function normalizeRequestHours() {
         const cat = $('reqCategory').value;
         if(cat==='rest8' || cat==='ph8') $('reqHours').value = 8;
-        if(cat==='rest12' || cat==='ph12') $('reqHours').value = 12;
+        if(cat==='off' || cat==='rest12' || cat==='ph12') $('reqHours').value = 12;
         updateRequestPreview();
       }
 
@@ -717,7 +723,7 @@
         const month = $('recordMonth').value || currentMonthKey();
         const s = monthSummary(month);
         $('recNormal').textContent = s.normal.toFixed(2).replace(/\.00$/,'') + ' jam';
-        $('recOff').textContent = s.off.toFixed(2).replace(/\.00$/,'') + ' jam';
+        $('recOff').textContent = s.offDays + ' hari';
         $('recRest').textContent = s.restDays + ' hari';
         $('recPh').textContent = s.phDays + ' hari';
         $('recAccum').textContent = s.accum.toFixed(2).replace(/\.00$/,'') + ' jam';
@@ -761,7 +767,8 @@
         const laundry = num('laundry');
         const skm = num('skm');
         const normalHours = num('normalShiftHours');
-        const offHours = num('offShiftHours');
+        const offDays = Math.floor(num('offShiftDays'));
+        const offHours = offDays * 12;
         const rest8Days = Math.floor(num('rest8ShiftDays'));
         const rest12Days = Math.floor(num('rest12ShiftDays'));
         const ph8Days = Math.floor(num('ph8ShiftDays'));
@@ -773,7 +780,7 @@
         const hourly = otBase / 26 / 8;
 
         const normalAmount = normalHours * hourly * 1.5;
-        const offAmount = offHours * hourly * 1.5;
+        const offAmount = offDays * (12 * hourly * 1.5);
         const rest8Amount = rest8Days * (8 * hourly * 1.5);
         const rest12Amount = rest12Days * ((8 * hourly * 1.5) + (4 * hourly * 2));
         const ph8Amount = ph8Days * (8 * hourly * 2);
@@ -850,6 +857,9 @@
           ids.forEach(id => {
             if (stored[id] !== undefined && Number.isFinite(Number(stored[id]))) $(id).value = stored[id];
           });
+          if (stored.offShiftDays === undefined && stored.offShiftHours !== undefined) {
+            $('offShiftDays').value = Math.max(0, Math.round((Number(stored.offShiftHours)||0) / 12));
+          }
           if (stored.normalShiftHours === undefined && stored.normalDays !== undefined) {
             $('normalShiftHours').value = (Number(stored.normalDays)||0) * 4;
           }
@@ -887,7 +897,7 @@
       }
 
       function reset() {
-        const defaults = {basic:4522,shift:200,laundry:40,skm:50,normalShiftHours:56,offShiftHours:0,rest8ShiftDays:0,rest12ShiftDays:0,ph8ShiftDays:0,ph12ShiftDays:1,mealRate:10,mealDays:15};
+        const defaults = {basic:4522,shift:200,laundry:40,skm:50,normalShiftHours:56,offShiftDays:0,rest8ShiftDays:0,rest12ShiftDays:0,ph8ShiftDays:0,ph12ShiftDays:1,mealRate:10,mealDays:15};
         Object.entries(defaults).forEach(([id,value]) => $(id).value = value);
         calculate();
         saveMonthForm();
