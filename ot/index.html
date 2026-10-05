@@ -305,7 +305,26 @@
           <label><span>Masa tamat</span><input id="reqEnd" type="text" inputmode="numeric" maxlength="4" placeholder="2000"></label>
           <label><span>Pemohonan OT (Jam)</span><input id="reqHours" type="number" inputmode="decimal" min="0" step="0.5" value="4"></label>
         </div>
-        <label style="margin-top:10px"><span>Tugasan</span><input id="reqTask" type="text" placeholder="Contoh: Ganti syif ... Restday"></label>
+        <label style="margin-top:10px"><span>Tugasan</span>
+          <select id="reqTaskPreset">
+            <option value="Ganti syif Hafizi (AIS04010) Offday">Ganti syif Hafizi (AIS04010) Offday</option>
+            <option value="Ganti syif Hafizi (AIS04010) Restday">Ganti syif Hafizi (AIS04010) Restday</option>
+            <option value="Ganti syif Hafizi (AIS04010) Training">Ganti syif Hafizi (AIS04010) Training</option>
+            <option value="Ganti syif Hafizi (AIS04010) A/L">Ganti syif Hafizi (AIS04010) A/L</option>
+            <option value="Ganti syif Hafizi (AIS04010) E/L">Ganti syif Hafizi (AIS04010) E/L</option>
+            <option value="Ganti syif Hafizi (AIS04010) Cuti Ehsan">Ganti syif Hafizi (AIS04010) Cuti Ehsan</option>
+            <option value="Ganti syif Hafizi (AIS04010) Cuti Umum">Ganti syif Hafizi (AIS04010) Cuti Umum</option>
+            <option value="Ganti syif Firdaus (AIS03996) Offday">Ganti syif Firdaus (AIS03996) Offday</option>
+            <option value="Ganti syif Firdaus (AIS03996) Restday">Ganti syif Firdaus (AIS03996) Restday</option>
+            <option value="Ganti syif Firdaus (AIS03996) Training">Ganti syif Firdaus (AIS03996) Training</option>
+            <option value="Ganti syif Firdaus (AIS03996) A/L">Ganti syif Firdaus (AIS03996) A/L</option>
+            <option value="Ganti syif Firdaus (AIS03996) E/L">Ganti syif Firdaus (AIS03996) E/L</option>
+            <option value="Ganti syif Firdaus (AIS03996) Cuti Ehsan">Ganti syif Firdaus (AIS03996) Cuti Ehsan</option>
+            <option value="Ganti syif Firdaus (AIS03996) Cuti Umum">Ganti syif Firdaus (AIS03996) Cuti Umum</option>
+            <option value="custom">Custom...</option>
+          </select>
+        </label>
+        <label id="reqTaskCustomField" style="margin-top:10px;display:none"><span>Custom tugasan</span><input id="reqTaskCustom" type="text" placeholder="Taip tugasan sendiri"></label>
         <div class="actions">
           <button id="reqSaveBtn" class="btn secondary" type="button">Simpan Rekod</button>
           <button id="reqWhatsAppBtn" class="btn primary" type="button">Simpan + WhatsApp</button>
