@@ -112,6 +112,17 @@ export async function onRequest({request,env}){
       return json({ok:true,item:await one(env,key)},201);
     }
 
+    if(action==='delete'){
+      const key=text(d.id,120);
+      const current=key?await one(env,key):null;
+      if(!current)return json({ok:false,error:'Rekod tidak dijumpai'},404);
+      await env.DB.batch([
+        env.DB.prepare('DELETE FROM s2_breakdown_updates WHERE breakdown_id=?').bind(key),
+        env.DB.prepare('DELETE FROM s2_breakdowns WHERE id=?').bind(key)
+      ]);
+      return json({ok:true,deleted:true,id:key});
+    }
+
     if(action==='update'||action==='close'){
       const key=text(d.id,120);
       const current=key?await one(env,key):null;
