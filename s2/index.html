@@ -123,7 +123,7 @@ async function deleteItem(id){
     if(!$('historySection').classList.contains('hidden'))await loadHistory();
   }catch(e){notice(e.message,'error')}
 }
-function shareOngoing(){if(!active.length)return notice('Tiada breakdown ongoing.','error');const lines=['*BREAKDOWN ONGOING – LRA SEMENYIH 2*',''];active.forEach((r,i)=>{lines.push('*'+(i+1)+'. '+r.asset+'*');lines.push('Rosak: '+fmt(r.broken_at));if(r.wr_no)lines.push('WR No: '+r.wr_no);lines.push('Status: '+(r.current_status||'-'));lines.push('Kritikal: '+(Number(r.critical)===1?'🔴 YA':'🟢 TIDAK'));lines.push('')});window.location.href='https://wa.me/?text='+encodeURIComponent(lines.join('\n'))}
+function shareOngoing(){if(!active.length)return notice('Tiada breakdown ongoing.','error');const lines=['*BREAKDOWN ONGOING – LRA SEMENYIH 2*',''];active.forEach((r,i)=>{lines.push('*'+(i+1)+'. '+r.asset+'*');lines.push('Rosak: '+fmt(r.broken_at));if(r.wr_no)lines.push('WR No: '+r.wr_no);lines.push('Masalah: '+(r.issue||'-'));lines.push('Status: '+(r.current_status||'-'));lines.push('Kritikal: '+(Number(r.critical)===1?'🔴 YA':'🟢 TIDAK'));lines.push('')});window.location.href='https://wa.me/?text='+encodeURIComponent(lines.join('\n'))}
 $('leader').value=localStorage.getItem('s2_leader')||'';$('brokenAt').value=nowLocal();if(!accessKey())$('accessBox').classList.remove('hidden');else loadActive();setInterval(()=>{if(!$('activeSection').classList.contains('hidden'))loadActive()},30000);
 </script>
 </body>
