@@ -141,8 +141,8 @@
         </div>
         <div class="otbox">
           <div class="otname">Off Day</div>
-          <input id="shiftOffHours" aria-label="Jam OT Off Day syif" type="number" inputmode="decimal" min="0" step="0.01" value="0">
-          <div class="rule">Semua jam ×1.5</div>
+          <input id="shiftOffDays" aria-label="Bilangan hari Off Day syif" type="number" inputmode="numeric" min="0" step="1" value="0">
+          <div class="rule">1 hari = 12j ×1.5</div>
           <div id="shiftOffAmount" class="amount">RM0.00</div>
         </div>
         <div class="otbox">
@@ -339,7 +339,7 @@
         sip: 11.90 / REF_GROSS
       };
       const PCB_RATIO = 318.45 / REF_GROSS;
-      const ids = ['basic','shift','laundry','skm','shiftNormalHours','shiftOffHours','shiftRest8Days','shiftRest12Days','shiftPh8Days','shiftPh12Days','mealRate','shiftMealDays','quarters','ghs','gtl','union','normalOtHours','offOtHours','restOtHours','restOtDays','phOtHours','phOtDays','nonShiftMealDays','customThreshold','pcbManual'];
+      const ids = ['basic','shift','laundry','skm','shiftNormalHours','shiftOffDays','shiftRest8Days','shiftRest12Days','shiftPh8Days','shiftPh12Days','mealRate','shiftMealDays','quarters','ghs','gtl','union','normalOtHours','offOtHours','restOtHours','restOtDays','phOtHours','phOtDays','nonShiftMealDays','customThreshold','pcbManual'];
       const $ = id => document.getElementById(id);
       const num = id => Math.max(0, Number($(id).value) || 0);
       const money = value => new Intl.NumberFormat('ms-MY',{style:'currency',currency:'MYR'}).format(Number.isFinite(value) ? value : 0);
@@ -457,7 +457,8 @@
         const laundry = num('laundry');
         const skm = num('skm');
         const shiftNormalHours = num('shiftNormalHours');
-        const shiftOffHours = num('shiftOffHours');
+        const shiftOffDays = Math.floor(num('shiftOffDays'));
+        const shiftOffHours = shiftOffDays * 12;
         const shiftRest8Days = Math.floor(num('shiftRest8Days'));
         const shiftRest12Days = Math.floor(num('shiftRest12Days'));
         const shiftPh8Days = Math.floor(num('shiftPh8Days'));
@@ -471,7 +472,7 @@
         const hourly = otBase / 26 / 8;
 
         const shiftNormalAmount = isShift ? shiftNormalHours * hourly * 1.5 : 0;
-        const shiftOffAmount = isShift ? shiftOffHours * hourly * 1.5 : 0;
+        const shiftOffAmount = isShift ? shiftOffDays * (12 * hourly * 1.5) : 0;
         const shiftRest8Amount = isShift ? shiftRest8Days * (8 * hourly * 1.5) : 0;
         const shiftRest12Amount = isShift ? shiftRest12Days * ((8 * hourly * 1.5) + (4 * hourly * 2)) : 0;
         const shiftPh8Amount = isShift ? shiftPh8Days * (8 * hourly * 2) : 0;
@@ -607,14 +608,17 @@
           ids.forEach(id => {
             if (stored[id] !== undefined && Number.isFinite(Number(stored[id]))) $(id).value = stored[id];
           });
+          if (stored.shiftOffDays === undefined && stored.shiftOffHours !== undefined) {
+            $('shiftOffDays').value = Math.max(0, Math.round((Number(stored.shiftOffHours)||0) / 12));
+          }
           if (stored.normalOtHours === undefined && stored.ot15Hours !== undefined && Number.isFinite(Number(stored.ot15Hours))) {
             $('normalOtHours').value = stored.ot15Hours;
           }
           if (stored.shiftNormalHours === undefined && stored.normalDays !== undefined) {
             $('shiftNormalHours').value = (Number(stored.normalDays)||0) * 4;
           }
-          if (stored.shiftOffHours === undefined) {
-            $('shiftOffHours').value = ((Number(stored.off8Days)||0) * 8) + ((Number(stored.off12Days)||0) * 12);
+          if (stored.shiftOffDays === undefined && stored.shiftOffHours === undefined) {
+            $('shiftOffDays').value = (Number(stored.off8Days)||0) + (Number(stored.off12Days)||0);
           }
           if (stored.shiftRest8Days === undefined || stored.shiftRest12Days === undefined) {
             if (stored.shiftRestDays !== undefined && stored.shiftRestHours !== undefined) {
@@ -647,7 +651,7 @@
       }
 
       function reset() {
-        const defaults = {basic:'',shift:'',laundry:'',skm:'',shiftNormalHours:0,shiftOffHours:0,shiftRest8Days:0,shiftRest12Days:0,shiftPh8Days:0,shiftPh12Days:0,mealRate:10,shiftMealDays:0,quarters:'',ghs:'',gtl:'',union:'',normalOtHours:0,offOtHours:0,restOtHours:0,restOtDays:0,phOtHours:0,phOtDays:0,nonShiftMealDays:0,customThreshold:3111,pcbManual:0};
+        const defaults = {basic:'',shift:'',laundry:'',skm:'',shiftNormalHours:0,shiftOffDays:0,shiftRest8Days:0,shiftRest12Days:0,shiftPh8Days:0,shiftPh12Days:0,mealRate:10,shiftMealDays:0,quarters:'',ghs:'',gtl:'',union:'',normalOtHours:0,offOtHours:0,restOtHours:0,restOtDays:0,phOtHours:0,phOtDays:0,nonShiftMealDays:0,customThreshold:3111,pcbManual:0};
         Object.entries(defaults).forEach(([id,value]) => $(id).value = value);
         $('workMode').value = 'shift';
         $('pcbStatus').value = '3111';
