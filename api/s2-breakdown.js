@@ -22,6 +22,7 @@ async function ensure(env){
     env.DB.prepare(`CREATE TABLE IF NOT EXISTS s2_breakdowns(
       id TEXT PRIMARY KEY,
       asset TEXT NOT NULL,
+      wr_no TEXT NOT NULL DEFAULT '',
       broken_at TEXT NOT NULL,
       issue TEXT NOT NULL DEFAULT '',
       current_status TEXT NOT NULL DEFAULT '',
@@ -45,6 +46,10 @@ async function ensure(env){
     env.DB.prepare('CREATE INDEX IF NOT EXISTS idx_s2_breakdowns_status ON s2_breakdowns(case_status,updated_at)'),
     env.DB.prepare('CREATE INDEX IF NOT EXISTS idx_s2_updates_breakdown ON s2_breakdown_updates(breakdown_id,created_at)')
   ]);
+  const cols=await env.DB.prepare('PRAGMA table_info(s2_breakdowns)').all();
+  if(!(cols.results||[]).some(x=>x.name==='wr_no')){
+    await env.DB.prepare("ALTER TABLE s2_breakdowns ADD COLUMN wr_no TEXT NOT NULL DEFAULT ''").run();
+  }
 }
 
 async function list(env,scope='active'){
@@ -99,13 +104,13 @@ export async function onRequest({request,env}){
       if(!asset)return json({ok:false,error:'Asset diperlukan'},400);
       const created=now(),key=id('s2');
       const brokenAt=text(d.brokenAt,40)||created;
-      const issue=text(d.issue,1200),currentStatus=text(d.currentStatus,1200);
+      const issue=text(d.issue,1200),currentStatus=text(d.currentStatus,1200),wrNo=text(d.wrNo,120);
       const leader=text(d.leader,120)||'-';
       const critical=d.critical===true||String(d.critical).toUpperCase()==='YA'?1:0;
       const caseStatus=normalizeStatus(d.caseStatus,'ONGOING');
       await env.DB.batch([
-        env.DB.prepare(`INSERT INTO s2_breakdowns(id,asset,broken_at,issue,current_status,critical,case_status,leader,created_at,updated_at,closed_at)
-          VALUES(?,?,?,?,?,?,?,?,?,?,?)`).bind(key,asset,brokenAt,issue,currentStatus,critical,caseStatus,leader,created,created,caseStatus==='CLOSED'?created:null),
+        env.DB.prepare(`INSERT INTO s2_breakdowns(id,asset,wr_no,broken_at,issue,current_status,critical,case_status,leader,created_at,updated_at,closed_at)
+          VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`).bind(key,asset,wrNo,brokenAt,issue,currentStatus,critical,caseStatus,leader,created,created,caseStatus==='CLOSED'?created:null),
         env.DB.prepare(`INSERT INTO s2_breakdown_updates(id,breakdown_id,leader,note,case_status,critical,created_at)
           VALUES(?,?,?,?,?,?,?)`).bind(id('upd'),key,leader,currentStatus||issue||'Breakdown direkodkan',caseStatus,critical,created)
       ]);
@@ -130,12 +135,13 @@ export async function onRequest({request,env}){
       const updated=now();
       const leader=text(d.leader,120)||current.leader||'-';
       const note=text(d.currentStatus,1200)||current.current_status||'-';
+      const wrNo=d.wrNo===undefined?String(current.wr_no||''):text(d.wrNo,120);
       const critical=d.critical===undefined?Number(current.critical||0):(d.critical===true||String(d.critical).toUpperCase()==='YA'?1:0);
       const caseStatus=action==='close'?'CLOSED':normalizeStatus(d.caseStatus,current.case_status||'ONGOING');
       const closedAt=caseStatus==='CLOSED'?(current.closed_at||updated):null;
       await env.DB.batch([
-        env.DB.prepare('UPDATE s2_breakdowns SET current_status=?,critical=?,case_status=?,leader=?,updated_at=?,closed_at=? WHERE id=?')
-          .bind(note,critical,caseStatus,leader,updated,closedAt,key),
+        env.DB.prepare('UPDATE s2_breakdowns SET wr_no=?,current_status=?,critical=?,case_status=?,leader=?,updated_at=?,closed_at=? WHERE id=?')
+          .bind(wrNo,note,critical,caseStatus,leader,updated,closedAt,key),
         env.DB.prepare(`INSERT INTO s2_breakdown_updates(id,breakdown_id,leader,note,case_status,critical,created_at)
           VALUES(?,?,?,?,?,?,?)`).bind(id('upd'),key,leader,note,caseStatus,critical,updated)
       ]);
