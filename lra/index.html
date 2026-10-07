@@ -57,6 +57,16 @@ details.more[open]>summary:after{content:"−"}
 .small{font-size:9px;color:var(--muted);line-height:1.45}.historyItem{padding:8px 0;border-top:1px solid var(--line);font-size:10px}.historyItem:first-child{border-top:0}.historyItem button{margin-top:5px;margin-right:4px;border:0;border-radius:7px;padding:5px 7px;font-weight:800;font-size:9px;background:var(--soft);color:var(--accent)}
 .bottom{position:fixed;z-index:20;left:0;right:0;bottom:0;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:rgba(238,244,242,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid rgba(194,211,205,.72)}
 .bottomIn{max-width:620px;margin:auto;display:grid;grid-template-columns:.78fr 1.22fr;gap:8px}.bottom .btn{min-height:48px;font-size:14px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:8px;padding:4px;background:#dfeae7;border:1px solid #d2dfdb;border-radius:12px;position:sticky;top:6px;z-index:15;box-shadow:0 4px 14px #17352b12}
+.tabBtn{border:0;border-radius:9px;min-height:38px;padding:6px 4px;background:transparent;color:#58716a;font-size:10px;font-weight:850;line-height:1.15}
+.tabBtn.active{background:#fff;color:var(--accent-dark);box-shadow:0 2px 8px #17352b14}
+.panel{display:none}.panel.active{display:block}
+.pumpGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 8px}.pumpGrid>*{min-width:0}
+.statusRun{border-color:#acd9bd!important;background:#f0faf4!important;color:#236b43!important;font-weight:850}
+.statusStop{border-color:#e7c3c3!important;background:#fff6f6!important;color:#9b3e3e!important;font-weight:850}
+.reportMeta{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:9px}.reportMeta>*{min-width:0}
+.pumpPreview{white-space:pre-wrap;background:#f7faf9;border:1px solid var(--line);border-radius:10px;padding:9px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;line-height:1.45;color:#29423b;margin-top:8px;max-height:260px;overflow:auto}
+.subtle{font-size:9px;color:var(--muted);margin-top:5px}
 @media(max-width:390px){.wrap{padding-left:8px;padding-right:8px}.head{padding:12px}.head h1{font-size:17px}.card{padding:10px}.autoRow{gap:5px}.stat{padding:7px 6px}.stat b{font-size:10.5px}}
 </style>
 </head>
@@ -67,6 +77,14 @@ details.more[open]>summary:after{content:"−"}
     <button id="installBtn" class="install">Pasang</button>
   </header>
 
+  <nav class="tabs" aria-label="Jenis report">
+    <button class="tabBtn active" data-tab="ops">Operasi</button>
+    <button class="tabBtn" data-tab="intakeB">Intake B</button>
+    <button class="tabBtn" data-tab="intakeC">Intake C</button>
+    <button class="tabBtn" data-tab="twps">TWPS</button>
+  </nav>
+
+  <div id="panel-ops" class="panel active">
   <section class="card">
     <div class="quickTitle"><h2>Report</h2><span class="modeChip">2 JAM SEKALI</span></div>
     <div class="dateTimeGrid">
@@ -130,31 +148,185 @@ details.more[open]>summary:after{content:"−"}
     <summary>History Report</summary>
     <div class="moreBody"><div id="history" class="small" style="padding-top:8px">Belum ada report.</div></div>
   </details>
+  </div>
+
+  <div id="panel-intakeB" class="panel">
+    <section class="card">
+      <div class="quickTitle"><h2>RWTPS · Intake B</h2><span class="modeChip">PUMP STATUS</span></div>
+      <div class="reportMeta">
+        <div class="field"><label>Tarikh</label><input id="ibDate" type="date"></div>
+        <div class="field"><label>Masa</label><input id="ibTime" type="time" step="60"></div>
+      </div>
+      <div class="pumpGrid">
+        <div class="field"><label>Pump No.1</label><select id="ibP1" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
+        <div class="field"><label>Pump No.2</label><select id="ibP2" class="pumpStatus"><option value="Run">Run</option><option value="Stop">Stop</option></select></div>
+        <div class="field"><label>Paras Pond B (m)</label><input id="ibPondB" inputmode="decimal" value="5.98"></div>
+        <div class="field"><label>Paras Pond C (m)</label><input id="ibPondC" inputmode="decimal" value="11.96"></div>
+      </div>
+      <details class="more" style="margin:7px 0 0"><summary>Preview WhatsApp</summary><div class="moreBody"><div id="ibPreview" class="pumpPreview"></div></div></details>
+    </section>
+  </div>
+
+  <div id="panel-intakeC" class="panel">
+    <section class="card">
+      <div class="quickTitle"><h2>RWPS · Intake C</h2><span class="modeChip">PUMP STATUS</span></div>
+      <div class="reportMeta">
+        <div class="field"><label>Tarikh</label><input id="icDate" type="date"></div>
+        <div class="field"><label>Masa</label><input id="icTime" type="time" step="60"></div>
+      </div>
+      <div class="pumpGrid">
+        <div class="field"><label>Pump No.1</label><select id="icP1" class="pumpStatus"><option value="Run">Run</option><option value="Stop">Stop</option></select></div>
+        <div class="field"><label>Pump No.2</label><select id="icP2" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
+        <div class="field"><label>Pump No.3</label><select id="icP3" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
+        <div class="field"><label>Pump No.4</label><select id="icP4" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
+        <div class="field"><label>Total Pumping</label><select id="icTotal"><option value="63">63 MLD</option><option value="126">126 MLD</option></select></div>
+        <div class="field"><label>RW Inflow (m3/h)</label><input id="icRw" inputmode="decimal" value="2518"></div>
+        <div class="field"><label>Pond B (m)</label><input id="icPondB" inputmode="decimal" value="5.93"></div>
+        <div class="field"><label>Pond C (m)</label><input id="icPondC" inputmode="decimal" value="11.96"></div>
+      </div>
+      <details class="more" style="margin:7px 0 0"><summary>Preview WhatsApp</summary><div class="moreBody"><div id="icPreview" class="pumpPreview"></div></div></details>
+    </section>
+  </div>
+
+  <div id="panel-twps" class="panel">
+    <section class="card">
+      <div class="quickTitle"><h2>TWPS</h2><span class="modeChip">PUMP STATUS</span></div>
+      <div class="reportMeta">
+        <div class="field"><label>Tarikh</label><input id="twpsDate" type="date"></div>
+        <div class="field"><label>Masa</label><input id="twpsTime" type="time" step="60"></div>
+      </div>
+      <div class="pumpGrid">
+        <div class="field"><label>Pump No.1</label><select id="twpsP1" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
+        <div class="field"><label>Pump No.2</label><select id="twpsP2" class="pumpStatus"><option value="Run">Run</option><option value="Stop">Stop</option></select></div>
+        <div class="field"><label>Pump No.3</label><select id="twpsP3" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
+        <div class="field"><label>Pump No.4</label><select id="twpsP4" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
+        <div class="field"><label>Total Pumping</label><select id="twpsTotal"><option value="50">50 MLD</option><option value="100">100 MLD</option></select></div>
+        <div class="field"><label>TW Outflow (m3/h)</label><input id="twpsOut" inputmode="decimal" value="2236"></div>
+        <div class="field"><label>CWT 1 (m)</label><input id="twpsCwt1" inputmode="decimal" value="4.07"></div>
+        <div class="field"><label>CWT 2</label><input id="twpsCwt2" value="(*)"></div>
+        <div class="field"><label>DP 1 (m)</label><input id="twpsDp1" inputmode="decimal" value="7.76"></div>
+        <div class="field"><label>DP 2 (m)</label><input id="twpsDp2" inputmode="decimal" value="8.05"></div>
+      </div>
+      <div class="toggle" style="margin-top:4px"><div><strong>CWT 2 Maintenance *</strong><small>Sensor ULS rosak</small></div><label class="switch"><input id="twpsMaint" type="checkbox" checked><span class="slider"></span></label></div>
+      <details class="more" style="margin:7px 0 0"><summary>Preview WhatsApp</summary><div class="moreBody"><div id="twpsPreview" class="pumpPreview"></div></div></details>
+    </section>
+  </div>
 </div>
 
 <div class="bottom"><div class="bottomIn"><button id="share" class="btn light">Share</button><button id="wa" class="btn wa">Buka WhatsApp</button></div></div>
 <script>
-const $=x=>document.getElementById(x), ids=['date','time','river','riverMax','rwp','twp','rw','tank1','tank2','tw','pond1','pond2','pondOut','riverMaint','tankMaint','note'];
+const $=x=>document.getElementById(x);
+const ids=['date','time','river','riverMax','rwp','twp','rw','tank1','tank2','tw','pond1','pond2','pondOut','riverMaint','tankMaint','note'];
+const pumpIds=['ibDate','ibTime','ibP1','ibP2','ibPondB','ibPondC','icDate','icTime','icP1','icP2','icP3','icP4','icTotal','icRw','icPondB','icPondC','twpsDate','twpsTime','twpsP1','twpsP2','twpsP3','twpsP4','twpsTotal','twpsOut','twpsCwt1','twpsCwt2','twpsDp1','twpsDp2','twpsMaint'];
+let activeTab='ops';
+
 const slots=['08:00','10:00','12:00','14:00','16:00','18:00','20:00','22:00','00:00','02:00','04:00','06:00'];
 $('time').innerHTML=slots.map(x=>'<option value="'+x+'">'+x.replace(':','')+'</option>').join('');
+
 function localDate(){let d=new Date(),o=d.getTimezoneOffset();return new Date(d-o*60000).toISOString().slice(0,10)}
+function localTime(){const d=new Date(),z=n=>String(n).padStart(2,'0');return z(d.getHours())+':'+z(d.getMinutes())}
 function defaultSlot(){let h=new Date().getHours(),e=Math.floor(h/2)*2,s=String(e).padStart(2,'0')+':00';return slots.includes(s)?s:'08:00'}
-function v(x){return String($(x).value||'').trim()}function n(x){let z=Number(v(x));return Number.isFinite(z)?z:null}function ck(x){return $(x).checked}
-function rwP(){return v('rwp')==='63'?{a:2200,b:2300}:{a:4200,b:4500}}function twP(){return v('twp')==='50'?{n:2200,p:7.0}:{n:4200,p:7.6}}
-function mld(){let x=n('pondOut');return x===null?null:x*24/1000}function clean(x,d=3){return x===null?'':x.toFixed(d).replace(/0+$/,'').replace(/\.$/,'')}
-function fdate(x){let a=x.split('-');return a.length===3?a[2]+'/'+a[1]+'/'+a[0]:x}function ftime(x){return x.replace(':','')+'hrs'}
-function text(){let r=rwP(),t=twP(),m=mld(),L=[];L.push('*Status Operasi LRA Semenyih 2*');L.push('*'+fdate(v('date'))+'@'+ftime(v('time'))+'*');L.push('');L.push('Paras Sg Langat : '+v('river')+'m'+(ck('riverMaint')?'*':'')+' (paras maksima : '+v('riverMax')+'m)');L.push('');L.push('Kadar Pengepaman');L.push('RWP : '+v('rwp')+'Mld');L.push('TWP : '+v('twp')+'Mld');L.push('');L.push('RW Inflow : '+v('rw')+'m3/h');L.push('Normal : '+r.a+'m3/h~'+r.b+'m3/h');L.push('Tangki Air Bersih');L.push('No.1 : '+v('tank1')+'m');L.push('No.2 : '+v('tank2'));L.push('');L.push('TW Outflow : '+v('tw')+'m3/h');L.push('Normal : '+t.n+'m3/h');L.push('Delivery Pressure: '+t.p.toFixed(1)+'bar');L.push('');L.push('Kolam Desa Putra,');L.push('No.1 : '+v('pond1')+'m');L.push('No.2 : '+v('pond2')+'m');L.push('Outflow : '+clean(m)+'Mld');L.push('');if(ck('riverMaint'))L.push('_(*) Paras Sg Langat tidak tepat under maintenance (Scada Lost comm)_');if(ck('tankMaint'))L.push('_(**) Paras tangki no.2 under maintenance (sensor ULS rosak)_.');if(v('note'))L.push('_'+v('note')+'_');return L.join('\n')}
-function draft(){let o={};ids.forEach(x=>o[x]=$(x).type==='checkbox'?$(x).checked:$(x).value);return o}function saveDraft(){localStorage.setItem('rqLraPwa',JSON.stringify(draft()))}
-function refresh(){let r=rwP(),t=twP(),m=mld();$('rwNormal').textContent=r.a+'m3/h ~ '+r.b+'m3/h';$('twNormal').textContent=t.n+' m3/h';$('pressure').textContent=t.p.toFixed(1)+' bar';$('pondMld').textContent=(m===null?'-':clean(m))+' MLD';$('preview').textContent=text();let a=n('rw'),b=n('tw'),msg=[];if(a!==null&&(a<r.a||a>r.b))msg.push('RW '+a+' di luar '+r.a+'-'+r.b);if(b!==null&&b<t.n)msg.push('TW '+b+' di bawah '+t.n);$('notice').className='notice '+(msg.length?'warn':'ok');$('notice').textContent=msg.length?'Semak: '+msg.join('. '):'OK - bacaan utama dalam julat.';saveDraft()}
-function load(){let o=null;try{o=JSON.parse(localStorage.getItem('rqLraPwa')||'null')}catch(e){};$('date').value=(o&&o.date)||localDate();$('time').value=(o&&o.time)||defaultSlot();if(o)ids.forEach(x=>{if(o[x]===undefined)return;if($(x).type==='checkbox')$(x).checked=!!o[x];else $(x).value=o[x]})}
+function v(x){return String($(x)?.value||'').trim()}
+function n(x){let z=Number(v(x));return Number.isFinite(z)?z:null}
+function ck(x){return !!$(x)?.checked}
+function rwP(){return v('rwp')==='63'?{a:2200,b:2300}:{a:4200,b:4500}}
+function twP(){return v('twp')==='50'?{n:2200,p:7.0}:{n:4200,p:7.6}}
+function mld(){let x=n('pondOut');return x===null?null:x*24/1000}
+function clean(x,d=3){return x===null?'':x.toFixed(d).replace(/0+$/,'').replace(/\.$/,'')}
+function fdate(x){let a=(x||'').split('-');return a.length===3?a[2]+'/'+a[1]+'/'+a[0]:x}
+function ftime(x){return String(x||'').replace(':','')+'hrs'}
+
+function opsText(){
+ let r=rwP(),t=twP(),m=mld(),L=[];
+ L.push('*Status Operasi LRA Semenyih 2*','*'+fdate(v('date'))+'@'+ftime(v('time'))+'*','');
+ L.push('Paras Sg Langat : '+v('river')+'m'+(ck('riverMaint')?'*':'')+' (paras maksima : '+v('riverMax')+'m)','');
+ L.push('Kadar Pengepaman','RWP : '+v('rwp')+'Mld','TWP : '+v('twp')+'Mld','');
+ L.push('RW Inflow : '+v('rw')+'m3/h','Normal : '+r.a+'m3/h~'+r.b+'m3/h','Tangki Air Bersih','No.1 : '+v('tank1')+'m','No.2 : '+v('tank2'),'');
+ L.push('TW Outflow : '+v('tw')+'m3/h','Normal : '+t.n+'m3/h','Delivery Pressure: '+t.p.toFixed(1)+'bar','');
+ L.push('Kolam Desa Putra,','No.1 : '+v('pond1')+'m','No.2 : '+v('pond2')+'m','Outflow : '+clean(m)+'Mld','');
+ if(ck('riverMaint'))L.push('_(*) Paras Sg Langat tidak tepat under maintenance (Scada Lost comm)_');
+ if(ck('tankMaint'))L.push('_(**) Paras tangki no.2 under maintenance (sensor ULS rosak)_.');
+ if(v('note'))L.push('_'+v('note')+'_');
+ return L.join('\n');
+}
+function pumpLine(no,status,mark=false){return 'Pump : No.'+no+' '+(mark?'*':'')+'('+status+')'+(mark?'*':'')}
+function intakeBText(){
+ const L=['*RWTPS*','*INTAKE B*',fdate(v('ibDate')),ftime(v('ibTime')),'','_Status Pump_',''];
+ L.push('Pump No.1 *('+v('ibP1')+')*','Pump No.2 *('+v('ibP2')+')*','','_Paras_','Pond B : ('+v('ibPondB')+'m)','Pond C : ('+v('ibPondC')+'m)');
+ return L.join('\n');
+}
+function intakeCText(){
+ const L=['*RWPS*','*INTAKE C*',fdate(v('icDate')),ftime(v('icTime')),'','_Status Pump_'];
+ [1,2,3,4].forEach(i=>L.push(pumpLine(i,v('icP'+i),false)));
+ L.push('','Total pumping : '+v('icTotal')+'Mld','Rw Inflow : '+v('icRw')+'m3/h','','_Paras_','Pond B : ('+v('icPondB')+'m)','Pond C : ('+v('icPondC')+'m)');
+ return L.join('\n');
+}
+function twpsText(){
+ const L=['*TWPS*',fdate(v('twpsDate')),ftime(v('twpsTime')),'','_Status Pump_'];
+ [1,2,3,4].forEach(i=>L.push(pumpLine(i,v('twpsP'+i),false)));
+ L.push('','Total Pumping : '+v('twpsTotal')+'Mld','Tw Outflow = '+v('twpsOut')+'m3/h','','_Paras_','CWT 1 : '+v('twpsCwt1')+'m','CWT 2 : '+v('twpsCwt2'),'DP 1 : '+v('twpsDp1')+'m','DP 2 : '+v('twpsDp2')+'m');
+ if(ck('twpsMaint'))L.push('','_(*) Paras tangki no.2 under maintenance (sensor ULS rosak)_');
+ return L.join('\n');
+}
+function currentText(){return activeTab==='intakeB'?intakeBText():activeTab==='intakeC'?intakeCText():activeTab==='twps'?twpsText():opsText()}
+
+function draft(){let o={};ids.forEach(x=>o[x]=$(x).type==='checkbox'?$(x).checked:$(x).value);return o}
+function saveDraft(){localStorage.setItem('rqLraPwa',JSON.stringify(draft()))}
+function savePumpDraft(){let o={};pumpIds.forEach(x=>{if(!$(x))return;o[x]=$(x).type==='checkbox'?$(x).checked:$(x).value});localStorage.setItem('rqLraPumpDraft',JSON.stringify(o))}
+function styleStatus(sel){if(!sel)return;sel.classList.toggle('statusRun',sel.value==='Run');sel.classList.toggle('statusStop',sel.value==='Stop')}
+
+function refresh(){
+ let r=rwP(),t=twP(),m=mld();
+ $('rwNormal').textContent=r.a+'m3/h ~ '+r.b+'m3/h';$('twNormal').textContent=t.n+' m3/h';$('pressure').textContent=t.p.toFixed(1)+' bar';$('pondMld').textContent=(m===null?'-':clean(m))+' MLD';$('preview').textContent=opsText();
+ let a=n('rw'),b=n('tw'),msg=[];if(a!==null&&(a<r.a||a>r.b))msg.push('RW '+a+' di luar '+r.a+'-'+r.b);if(b!==null&&b<t.n)msg.push('TW '+b+' di bawah '+t.n);
+ $('notice').className='notice '+(msg.length?'warn':'ok');$('notice').textContent=msg.length?'Semak: '+msg.join('. '):'OK - bacaan utama dalam julat.';
+ saveDraft();
+}
+function refreshPump(){
+ $('ibPreview').textContent=intakeBText();$('icPreview').textContent=intakeCText();$('twpsPreview').textContent=twpsText();
+ document.querySelectorAll('.pumpStatus').forEach(styleStatus);savePumpDraft();
+}
+function load(){
+ let o=null;try{o=JSON.parse(localStorage.getItem('rqLraPwa')||'null')}catch(e){}
+ $('date').value=(o&&o.date)||localDate();$('time').value=(o&&o.time)||defaultSlot();
+ if(o)ids.forEach(x=>{if(o[x]===undefined)return;if($(x).type==='checkbox')$(x).checked=!!o[x];else $(x).value=o[x]});
+ let p=null;try{p=JSON.parse(localStorage.getItem('rqLraPumpDraft')||'null')}catch(e){}
+ ['ibDate','icDate','twpsDate'].forEach(x=>$(x).value=(p&&p[x])||localDate());
+ ['ibTime','icTime','twpsTime'].forEach(x=>$(x).value=(p&&p[x])||localTime());
+ if(p)pumpIds.forEach(x=>{if(p[x]===undefined||!$(x))return;if($(x).type==='checkbox')$(x).checked=!!p[x];else $(x).value=p[x]});
+}
 function hist(){let h=JSON.parse(localStorage.getItem('rqLraHist')||'[]');$('history').innerHTML=h.length?h.map(x=>'<div class="historyItem"><b>'+x.date+' @ '+x.time.replace(':','')+'</b><br>'+x.flow+'<br><button onclick="openHist('+x.id+')">Buka</button><button onclick="waHist('+x.id+')">WhatsApp</button></div>').join(''):'Belum ada report.'}
-window.openHist=id=>{let h=JSON.parse(localStorage.getItem('rqLraHist')||'[]'),x=h.find(y=>y.id===id);if(!x)return;Object.entries(x.data).forEach(([k,z])=>{if(!$(k))return;if($(k).type==='checkbox')$(k).checked=!!z;else $(k).value=z});refresh();scrollTo({top:0,behavior:'smooth'})};window.waHist=id=>{let h=JSON.parse(localStorage.getItem('rqLraHist')||'[]'),x=h.find(y=>y.id===id);if(x)location.href='https://wa.me/?text='+encodeURIComponent(x.text)};
-$('save').onclick=()=>{let h=JSON.parse(localStorage.getItem('rqLraHist')||'[]');h.unshift({id:Date.now(),date:fdate(v('date')),time:v('time'),flow:'RWP '+v('rwp')+' / TWP '+v('twp'),text:text(),data:draft()});localStorage.setItem('rqLraHist',JSON.stringify(h.slice(0,60)));hist();$('notice').textContent='Report disimpan.'};
-let timer=null;$('remind').onclick=async()=>{let d=new Date(v('date')+'T'+v('time')+':00');if(d<=new Date()){alert('Pilih masa report selepas masa sekarang.');return}if('Notification'in window&&Notification.permission==='default')try{await Notification.requestPermission()}catch(e){};localStorage.setItem('rqLraReminder',JSON.stringify({at:d.getTime(),time:v('time')}));arm();alert('Reminder '+v('time').replace(':','')+'hrs disimpan.')};function arm(){if(timer)clearTimeout(timer);let x;try{x=JSON.parse(localStorage.getItem('rqLraReminder')||'null')}catch(e){}if(!x)return;let ms=x.at-Date.now();if(ms<=0){fire();return}timer=setTimeout(fire,Math.min(ms,2147483647))}function fire(){let x=JSON.parse(localStorage.getItem('rqLraReminder')||'null');if(!x)return;if('Notification'in window&&Notification.permission==='granted')new Notification('Reqoo LRA Report',{body:'Report '+x.time.replace(':','')+'hrs sedia dihantar.'});localStorage.removeItem('rqLraReminder');alert('Masa report '+x.time.replace(':','')+'hrs. Report sedia dihantar.')}
-$('wa').onclick=()=>location.href='https://wa.me/?text='+encodeURIComponent(text());$('share').onclick=async()=>{if(navigator.share)try{await navigator.share({title:'Status Operasi LRA Semenyih 2',text:text()});return}catch(e){};try{await navigator.clipboard.writeText(text());alert('Report dah copy.')}catch(e){location.href='https://wa.me/?text='+encodeURIComponent(text())}};
+window.openHist=id=>{let h=JSON.parse(localStorage.getItem('rqLraHist')||'[]'),x=h.find(y=>y.id===id);if(!x)return;Object.entries(x.data).forEach(([k,z])=>{if(!$(k))return;if($(k).type==='checkbox')$(k).checked=!!z;else $(k).value=z});refresh();switchTab('ops');scrollTo({top:0,behavior:'smooth'})}
+window.waHist=id=>{let h=JSON.parse(localStorage.getItem('rqLraHist')||'[]'),x=h.find(y=>y.id===id);if(x)location.href='https://wa.me/?text='+encodeURIComponent(x.text)}
+$('save').onclick=()=>{let h=JSON.parse(localStorage.getItem('rqLraHist')||'[]');h.unshift({id:Date.now(),date:fdate(v('date')),time:v('time'),flow:'RWP '+v('rwp')+' / TWP '+v('twp'),text:opsText(),data:draft()});localStorage.setItem('rqLraHist',JSON.stringify(h.slice(0,60)));hist();$('notice').textContent='Report disimpan.'}
+
+function switchTab(tab){
+ activeTab=tab;localStorage.setItem('rqLraActiveTab',tab);
+ document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+ document.querySelectorAll('.tabBtn').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));
+ $('panel-'+tab).classList.add('active');
+}
+document.querySelectorAll('.tabBtn').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+
+let timer=null;
+$('remind').onclick=async()=>{let d=new Date(v('date')+'T'+v('time')+':00');if(d<=new Date()){alert('Pilih masa report selepas masa sekarang.');return}if('Notification'in window&&Notification.permission==='default')try{await Notification.requestPermission()}catch(e){};localStorage.setItem('rqLraReminder',JSON.stringify({at:d.getTime(),time:v('time')}));arm();alert('Reminder '+v('time').replace(':','')+'hrs disimpan.')}
+function arm(){if(timer)clearTimeout(timer);let x;try{x=JSON.parse(localStorage.getItem('rqLraReminder')||'null')}catch(e){}if(!x)return;let ms=x.at-Date.now();if(ms<=0){fire();return}timer=setTimeout(fire,Math.min(ms,2147483647))}
+function fire(){let x=JSON.parse(localStorage.getItem('rqLraReminder')||'null');if(!x)return;if('Notification'in window&&Notification.permission==='granted')new Notification('Reqoo LRA Report',{body:'Report '+x.time.replace(':','')+'hrs sedia dihantar.'});localStorage.removeItem('rqLraReminder');alert('Masa report '+x.time.replace(':','')+'hrs. Report sedia dihantar.')}
+
+$('wa').onclick=()=>location.href='https://wa.me/?text='+encodeURIComponent(currentText());
+$('share').onclick=async()=>{if(navigator.share)try{await navigator.share({title:'LRA Semenyih 2',text:currentText()});return}catch(e){};try{await navigator.clipboard.writeText(currentText());alert('Report dah copy.')}catch(e){location.href='https://wa.me/?text='+encodeURIComponent(currentText())}};
+
 ids.forEach(x=>$(x).addEventListener('input',refresh));['rwp','twp','time'].forEach(x=>$(x).addEventListener('change',refresh));
-let installPrompt=null;function standalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e});$('installBtn').onclick=async()=>{if(standalone())return alert('App dah dipasang.');if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;return}alert('iPhone: buka link ini dalam Safari > tekan Share > Add to Home Screen.');};if(standalone())$('installBtn').style.display='none';
-load();refresh();hist();arm();if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
+pumpIds.forEach(x=>{if(!$(x))return;$(x).addEventListener('input',refreshPump);$(x).addEventListener('change',refreshPump)});
+
+let installPrompt=null;
+function standalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e});
+$('installBtn').onclick=async()=>{if(standalone())return alert('App dah dipasang.');if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;return}alert('iPhone: buka link ini dalam Safari > tekan Share > Add to Home Screen.');};
+if(standalone())$('installBtn').style.display='none';
+
+load();refresh();refreshPump();hist();arm();switchTab(localStorage.getItem('rqLraActiveTab')||'ops');
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
 </script>
 </body>
 </html>
