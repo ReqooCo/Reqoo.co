@@ -67,6 +67,11 @@ details.more[open]>summary:after{content:"−"}
 .changeTag input{appearance:none;-webkit-appearance:none;width:12px;height:12px;min-height:0;margin:0;padding:0;border:1.5px solid #9bb0a9;border-radius:50%;background:#fff}
 .changeTag input:checked{background:#2f7565;border-color:#2f7565;box-shadow:inset 0 0 0 2px #fff}
 .changeTag:has(input:checked){color:#245e51;background:#e6f2ee;border-color:#bfd8d0}
+.problemTag{display:inline-flex;align-items:center;gap:4px;font-size:8.5px;font-weight:850;color:#7f7462;background:#f6f3ed;border:1px solid #e5ddd0;border-radius:999px;padding:4px 6px;cursor:pointer;user-select:none;white-space:nowrap}
+.problemTag input{appearance:none;-webkit-appearance:none;width:12px;height:12px;min-height:0;margin:0;padding:0;border:1.5px solid #b8aa91;border-radius:50%;background:#fff}
+.problemTag input:checked{background:#a66d25;border-color:#a66d25;box-shadow:inset 0 0 0 2px #fff}
+.problemTag:has(input:checked){color:#8a5b18;background:#fff3df;border-color:#e4c895}
+.field.problemOn>input{border-color:#deb879;background:#fffaf1}
 .statusRun{border-color:#acd9bd!important;background:#f0faf4!important;color:#236b43!important;font-weight:850}
 .statusStop{border-color:#e7c3c3!important;background:#fff6f6!important;color:#9b3e3e!important;font-weight:850}
 .reportMeta{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:9px}.reportMeta>*{min-width:0}
@@ -110,12 +115,12 @@ details.more[open]>summary:after{content:"−"}
       <div class="sectionLine"></div>
 
       <div class="field"><label>Paras Sg Langat <span>(m)</span></label><input id="river" inputmode="decimal" value="6.13"></div>
-      <div class="field"><label>Tangki Air No.1 <span>(m)</span></label><input id="tank1" inputmode="decimal" value="4.03"></div>
+      <div class="field" id="tank1Field"><div class="pumpHead"><label>Tangki Air No.1 <span>(m)</span></label><label class="problemTag"><input id="tank1Problem" type="checkbox">Problem</label></div><input id="tank1" inputmode="decimal" value="4.03"></div>
 
-      <div class="field"><label>Tangki Air No.2</label><input id="tank2" value="(**)"></div>
-      <div class="field"><label>Desa Putra No.1 <span>(m)</span></label><input id="pond1" inputmode="decimal" value="7.55"></div>
+      <div class="field" id="tank2Field"><div class="pumpHead"><label>Tangki Air No.2</label><label class="problemTag"><input id="tank2Problem" type="checkbox" checked>Problem</label></div><input id="tank2" inputmode="decimal" value="" placeholder="Bacaan terakhir / kosong"></div>
+      <div class="field" id="pond1Field"><div class="pumpHead"><label>Desa Putra No.1 <span>(m)</span></label><label class="problemTag"><input id="pond1Problem" type="checkbox">Problem</label></div><input id="pond1" inputmode="decimal" value="7.55"></div>
 
-      <div class="field"><label>Desa Putra No.2 <span>(m)</span></label><input id="pond2" inputmode="decimal" value="7.81"></div>
+      <div class="field" id="pond2Field"><div class="pumpHead"><label>Desa Putra No.2 <span>(m)</span></label><label class="problemTag"><input id="pond2Problem" type="checkbox">Problem</label></div><input id="pond2" inputmode="decimal" value="7.81"></div>
       <div class="field"><label>DP Outflow <span>(m3/h)</span></label><input id="pondOut" inputmode="decimal" value="3692.25"></div>
     </div>
 
@@ -136,7 +141,6 @@ details.more[open]>summary:after{content:"−"}
       </div>
       <div class="toggle"><div><strong>Sg Langat *</strong><small>Nota hanya keluar bila Maintenance ON</small></div><label class="switch"><input id="riverMaint" type="checkbox" checked><span class="slider"></span></label></div>
       <div id="riverReasonWrap" class="maintReason"><label>Sebab / catatan Sg Langat</label><input id="riverReason" value="SCADA Lost Comm" placeholder="Contoh: SCADA Lost Comm"></div>
-      <div class="toggle"><div><strong>Tangki No.2 (**)</strong><small>Nota hanya keluar bila Maintenance ON</small></div><label class="switch"><input id="tankMaint" type="checkbox" checked><span class="slider"></span></label></div>
       <div id="tankReasonWrap" class="maintReason"><label>Sebab / catatan Tangki No.2</label><input id="tankReason" value="sensor ULS rosak" placeholder="Contoh: sensor ULS rosak"></div>
       <label style="margin-top:8px">Nota tambahan</label><textarea id="note" rows="2" placeholder="Optional"></textarea>
     </div>
@@ -167,8 +171,8 @@ details.more[open]>summary:after{content:"−"}
       <div class="pumpGrid">
         <div class="field"><div class="pumpHead"><label>Pump No.1</label><label class="changeTag"><input id="ibC1" type="checkbox">Berubah</label></div><select id="ibP1" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
         <div class="field"><div class="pumpHead"><label>Pump No.2</label><label class="changeTag"><input id="ibC2" type="checkbox">Berubah</label></div><select id="ibP2" class="pumpStatus"><option value="Run">Run</option><option value="Stop">Stop</option></select></div>
-        <div class="field"><label>Paras Pond B (m)</label><input id="ibPondB" inputmode="decimal" value="5.98"></div>
-        <div class="field"><label>Paras Pond C (m)</label><input id="ibPondC" inputmode="decimal" value="11.96"></div>
+        <div class="field" id="ibPondBField"><div class="pumpHead"><label>Paras Pond B (m)</label><label class="problemTag"><input id="ibPondBProblem" type="checkbox">Problem</label></div><input id="ibPondB" inputmode="decimal" value="5.98"></div>
+        <div class="field" id="ibPondCField"><div class="pumpHead"><label>Paras Pond C (m)</label><label class="problemTag"><input id="ibPondCProblem" type="checkbox">Problem</label></div><input id="ibPondC" inputmode="decimal" value="11.96"></div>
       </div>
       <details class="more" style="margin:7px 0 0"><summary>Preview WhatsApp</summary><div class="moreBody"><div id="ibPreview" class="pumpPreview"></div></div></details>
     </section>
@@ -188,8 +192,8 @@ details.more[open]>summary:after{content:"−"}
         <div class="field"><div class="pumpHead"><label>Pump No.4</label><label class="changeTag"><input id="icC4" type="checkbox">Berubah</label></div><select id="icP4" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
         <div class="field"><label>Total Pumping</label><select id="icTotal"><option value="63">63 MLD</option><option value="126">126 MLD</option></select></div>
         <div class="field"><label>RW Inflow (m3/h)</label><input id="icRw" inputmode="decimal" value="2518"></div>
-        <div class="field"><label>Pond B (m)</label><input id="icPondB" inputmode="decimal" value="5.93"></div>
-        <div class="field"><label>Pond C (m)</label><input id="icPondC" inputmode="decimal" value="11.96"></div>
+        <div class="field" id="icPondBField"><div class="pumpHead"><label>Pond B (m)</label><label class="problemTag"><input id="icPondBProblem" type="checkbox">Problem</label></div><input id="icPondB" inputmode="decimal" value="5.93"></div>
+        <div class="field" id="icPondCField"><div class="pumpHead"><label>Pond C (m)</label><label class="problemTag"><input id="icPondCProblem" type="checkbox">Problem</label></div><input id="icPondC" inputmode="decimal" value="11.96"></div>
       </div>
       <details class="more" style="margin:7px 0 0"><summary>Preview WhatsApp</summary><div class="moreBody"><div id="icPreview" class="pumpPreview"></div></div></details>
     </section>
@@ -209,12 +213,11 @@ details.more[open]>summary:after{content:"−"}
         <div class="field"><div class="pumpHead"><label>Pump No.4</label><label class="changeTag"><input id="twpsC4" type="checkbox">Berubah</label></div><select id="twpsP4" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
         <div class="field"><label>Total Pumping</label><select id="twpsTotal"><option value="50">50 MLD</option><option value="100">100 MLD</option></select></div>
         <div class="field"><label>TW Outflow (m3/h)</label><input id="twpsOut" inputmode="decimal" value="2236"></div>
-        <div class="field"><label>CWT 1 (m)</label><input id="twpsCwt1" inputmode="decimal" value="4.07"></div>
-        <div class="field"><label>CWT 2</label><input id="twpsCwt2" value="(*)"></div>
-        <div class="field"><label>DP 1 (m)</label><input id="twpsDp1" inputmode="decimal" value="7.76"></div>
-        <div class="field"><label>DP 2 (m)</label><input id="twpsDp2" inputmode="decimal" value="8.05"></div>
+        <div class="field" id="twpsCwt1Field"><div class="pumpHead"><label>CWT 1 (m)</label><label class="problemTag"><input id="twpsCwt1Problem" type="checkbox">Problem</label></div><input id="twpsCwt1" inputmode="decimal" value="4.07"></div>
+        <div class="field" id="twpsCwt2Field"><div class="pumpHead"><label>CWT 2</label><label class="problemTag"><input id="twpsCwt2Problem" type="checkbox" checked>Problem</label></div><input id="twpsCwt2" inputmode="decimal" value="" placeholder="Bacaan terakhir / kosong"></div>
+        <div class="field" id="twpsDp1Field"><div class="pumpHead"><label>DP 1 (m)</label><label class="problemTag"><input id="twpsDp1Problem" type="checkbox">Problem</label></div><input id="twpsDp1" inputmode="decimal" value="7.76"></div>
+        <div class="field" id="twpsDp2Field"><div class="pumpHead"><label>DP 2 (m)</label><label class="problemTag"><input id="twpsDp2Problem" type="checkbox">Problem</label></div><input id="twpsDp2" inputmode="decimal" value="8.05"></div>
       </div>
-      <div class="toggle" style="margin-top:4px"><div><strong>CWT 2 Maintenance *</strong><small>Nota hanya keluar bila Maintenance ON</small></div><label class="switch"><input id="twpsMaint" type="checkbox" checked><span class="slider"></span></label></div>
       <div id="twpsReasonWrap" class="maintReason"><label>Sebab / catatan CWT 2</label><input id="twpsReason" value="sensor ULS rosak" placeholder="Contoh: sensor ULS rosak"></div>
       <details class="more" style="margin:7px 0 0"><summary>Preview WhatsApp</summary><div class="moreBody"><div id="twpsPreview" class="pumpPreview"></div></div></details>
     </section>
@@ -224,8 +227,8 @@ details.more[open]>summary:after{content:"−"}
 <div class="bottom"><div class="bottomIn"><button id="share" class="btn light">Share</button><button id="wa" class="btn wa">Buka WhatsApp</button></div></div>
 <script>
 const $=x=>document.getElementById(x);
-const ids=['date','time','river','riverMax','rwp','twp','rw','tank1','tank2','tw','pond1','pond2','pondOut','riverMaint','riverReason','tankMaint','tankReason','note'];
-const pumpIds=['ibDate','ibTime','ibP1','ibP2','ibC1','ibC2','ibPondB','ibPondC','icDate','icTime','icP1','icP2','icP3','icP4','icC1','icC2','icC3','icC4','icTotal','icRw','icPondB','icPondC','twpsDate','twpsTime','twpsP1','twpsP2','twpsP3','twpsP4','twpsC1','twpsC2','twpsC3','twpsC4','twpsTotal','twpsOut','twpsCwt1','twpsCwt2','twpsDp1','twpsDp2','twpsMaint','twpsReason'];
+const ids=['date','time','river','riverMax','rwp','twp','rw','tank1','tank1Problem','tank2','tank2Problem','tw','pond1','pond1Problem','pond2','pond2Problem','pondOut','riverMaint','riverReason','tankReason','note'];
+const pumpIds=['ibDate','ibTime','ibP1','ibP2','ibC1','ibC2','ibPondB','ibPondBProblem','ibPondC','ibPondCProblem','icDate','icTime','icP1','icP2','icP3','icP4','icC1','icC2','icC3','icC4','icTotal','icRw','icPondB','icPondBProblem','icPondC','icPondCProblem','twpsDate','twpsTime','twpsP1','twpsP2','twpsP3','twpsP4','twpsC1','twpsC2','twpsC3','twpsC4','twpsTotal','twpsOut','twpsCwt1','twpsCwt1Problem','twpsCwt2','twpsCwt2Problem','twpsDp1','twpsDp1Problem','twpsDp2','twpsDp2Problem','twpsReason'];
 let activeTab='ops';
 
 const slots=['08:00','10:00','12:00','14:00','16:00','18:00','20:00','22:00','00:00','02:00','04:00','06:00'];
@@ -244,56 +247,80 @@ function clean(x,d=3){return x===null?'':x.toFixed(d).replace(/0+$/,'').replace(
 function fdate(x){let a=(x||'').split('-');return a.length===3?a[2]+'/'+a[1]+'/'+a[0]:x}
 function ftime(x){return String(x||'').replace(':','')+'hrs'}
 function marker(x){const m=String(x||'').trim().match(/^\(\*+\)$/);return m?m[0]:''}
-function levelVal(x){const z=String(x||'').trim();return marker(z)?z:(z?z+'m':'')}
-function autoLevelNote(field,label,reason='level problem'){const m=marker(v(field));return m?'_'+m+' '+label+' under maintenance ('+reason+')_':''}
+function levelVal(x){const z=String(x||'').trim();return z?z+'m':''}
+function assignedMarker(problemIds,target,offset=0){const on=problemIds.filter(id=>ck(id));const i=on.indexOf(target);return i<0?'':'('+'*'.repeat(i+1+offset)+')'}
+function problemValue(field,problemId,problemIds,offset=0,wrapped=false){const m=assignedMarker(problemIds,problemId,offset);if(m)return m;const z=v(field);return wrapped?(z?'('+z+'m)':''):(z?z+'m':'')}
+function problemNote(problemId,problemIds,label,reason='level problem',offset=0){const m=assignedMarker(problemIds,problemId,offset);return m?'_'+m+' '+label+' under maintenance ('+reason+')_':''}
 
 function opsText(){
  let r=rwP(),t=twP(),m=mld(),L=[];
+ const probs=['tank1Problem','tank2Problem','pond1Problem','pond2Problem'],offset=ck('riverMaint')?1:0;
  L.push('*Status Operasi LRA Semenyih 2*','*'+fdate(v('date'))+'@'+ftime(v('time'))+'*','');
- L.push('Paras Sg Langat : '+(marker(v('river'))?v('river'):v('river')+'m'+(ck('riverMaint')?'*':''))+' (paras maksima : '+levelVal(v('riverMax'))+')','');
+ L.push('Paras Sg Langat : '+v('river')+'m'+(ck('riverMaint')?'*':'')+' (paras maksima : '+levelVal(v('riverMax'))+')','');
  L.push('Kadar Pengepaman','RWP : '+v('rwp')+'Mld','TWP : '+v('twp')+'Mld','');
- L.push('RW Inflow : '+v('rw')+'m3/h','Normal : '+r.a+'m3/h~'+r.b+'m3/h','Tangki Air Bersih','No.1 : '+levelVal(v('tank1')),'No.2 : '+levelVal(v('tank2')),'');
+ L.push('RW Inflow : '+v('rw')+'m3/h','Normal : '+r.a+'m3/h~'+r.b+'m3/h','Tangki Air Bersih',
+   'No.1 : '+problemValue('tank1','tank1Problem',probs,offset),
+   'No.2 : '+problemValue('tank2','tank2Problem',probs,offset),'');
  L.push('TW Outflow : '+v('tw')+'m3/h','Normal : '+t.n+'m3/h','Delivery Pressure: '+t.p.toFixed(1)+'bar','');
- L.push('Kolam Desa Putra,','No.1 : '+levelVal(v('pond1')),'No.2 : '+levelVal(v('pond2')),'Outflow : '+clean(m)+'Mld','');
+ L.push('Kolam Desa Putra,',
+   'No.1 : '+problemValue('pond1','pond1Problem',probs,offset),
+   'No.2 : '+problemValue('pond2','pond2Problem',probs,offset),
+   'Outflow : '+clean(m)+'Mld','');
  if(ck('riverMaint'))L.push('_(*) Paras Sg Langat tidak tepat under maintenance'+(v('riverReason')?' ('+v('riverReason')+')':'')+'_');
- if(ck('tankMaint'))L.push('_(**) Paras tangki no.2 under maintenance'+(v('tankReason')?' ('+v('tankReason')+')':'')+'_');
- const opAuto=[
-   ['river','Paras Sg Langat',ck('riverMaint')],
-   ['tank1','Paras Tangki Air Bersih No.1',false],
-   ['tank2','Paras Tangki Air Bersih No.2',ck('tankMaint')],
-   ['pond1','Paras Desa Putra No.1',false],
-   ['pond2','Paras Desa Putra No.2',false]
- ];
- opAuto.forEach(([field,label,handled])=>{const z=autoLevelNote(field,label);if(z&&!handled)L.push(z)});
+ const notes=[
+   problemNote('tank1Problem',probs,'Paras Tangki Air Bersih No.1','level problem',offset),
+   problemNote('tank2Problem',probs,'Paras Tangki Air Bersih No.2',v('tankReason')||'level problem',offset),
+   problemNote('pond1Problem',probs,'Paras Desa Putra No.1','level problem',offset),
+   problemNote('pond2Problem',probs,'Paras Desa Putra No.2','level problem',offset)
+ ].filter(Boolean);
+ L.push(...notes);
  if(v('note'))L.push('_'+v('note')+'_');
  return L.join('\n');
 }
 function pumpLine(no,status,changed=false,prefix='Pump : No.'){return prefix+no+' '+(changed?'*':'')+'('+status+')'+(changed?'*':'')}
 function intakeBText(){
+ const probs=['ibPondBProblem','ibPondCProblem'];
  const L=['*RWTPS*','*INTAKE B*',fdate(v('ibDate')),ftime(v('ibTime')),'','_Status Pump_',''];
- L.push(pumpLine(1,v('ibP1'),ck('ibC1'),'Pump No.'),pumpLine(2,v('ibP2'),ck('ibC2'),'Pump No.'),'','_Paras_','Pond B : '+(marker(v('ibPondB'))?v('ibPondB'):'('+v('ibPondB')+'m)'),'Pond C : '+(marker(v('ibPondC'))?v('ibPondC'):'('+v('ibPondC')+'m)'));
- const n1=autoLevelNote('ibPondB','Paras Pond B'),n2=autoLevelNote('ibPondC','Paras Pond C');if(n1)L.push('',n1);if(n2)L.push(n2);
+ L.push(pumpLine(1,v('ibP1'),ck('ibC1'),'Pump No.'),pumpLine(2,v('ibP2'),ck('ibC2'),'Pump No.'),'','_Paras_',
+   'Pond B : '+problemValue('ibPondB','ibPondBProblem',probs,0,true),
+   'Pond C : '+problemValue('ibPondC','ibPondCProblem',probs,0,true));
+ const notes=[
+   problemNote('ibPondBProblem',probs,'Paras Pond B'),
+   problemNote('ibPondCProblem',probs,'Paras Pond C')
+ ].filter(Boolean);
+ if(notes.length)L.push('',...notes);
  return L.join('\n');
 }
 function intakeCText(){
+ const probs=['icPondBProblem','icPondCProblem'];
  const L=['*RWPS*','*INTAKE C*',fdate(v('icDate')),ftime(v('icTime')),'','_Status Pump_'];
  [1,2,3,4].forEach(i=>L.push(pumpLine(i,v('icP'+i),ck('icC'+i))));
- L.push('','Total pumping : '+v('icTotal')+'Mld','Rw Inflow : '+v('icRw')+'m3/h','','_Paras_','Pond B : '+(marker(v('icPondB'))?v('icPondB'):'('+v('icPondB')+'m)'),'Pond C : '+(marker(v('icPondC'))?v('icPondC'):'('+v('icPondC')+'m)'));
- const n1=autoLevelNote('icPondB','Paras Pond B'),n2=autoLevelNote('icPondC','Paras Pond C');if(n1)L.push('',n1);if(n2)L.push(n2);
+ L.push('','Total pumping : '+v('icTotal')+'Mld','Rw Inflow : '+v('icRw')+'m3/h','','_Paras_',
+   'Pond B : '+problemValue('icPondB','icPondBProblem',probs,0,true),
+   'Pond C : '+problemValue('icPondC','icPondCProblem',probs,0,true));
+ const notes=[
+   problemNote('icPondBProblem',probs,'Paras Pond B'),
+   problemNote('icPondCProblem',probs,'Paras Pond C')
+ ].filter(Boolean);
+ if(notes.length)L.push('',...notes);
  return L.join('\n');
 }
 function twpsText(){
+ const probs=['twpsCwt1Problem','twpsCwt2Problem','twpsDp1Problem','twpsDp2Problem'];
  const L=['*TWPS*',fdate(v('twpsDate')),ftime(v('twpsTime')),'','_Status Pump_'];
  [1,2,3,4].forEach(i=>L.push(pumpLine(i,v('twpsP'+i),ck('twpsC'+i))));
- L.push('','Total Pumping : '+v('twpsTotal')+'Mld','Tw Outflow = '+v('twpsOut')+'m3/h','','_Paras_','CWT 1 : '+levelVal(v('twpsCwt1')),'CWT 2 : '+levelVal(v('twpsCwt2')),'DP 1 : '+levelVal(v('twpsDp1')),'DP 2 : '+levelVal(v('twpsDp2')));
- if(ck('twpsMaint'))L.push('','_(*) Paras tangki no.2 under maintenance'+(v('twpsReason')?' ('+v('twpsReason')+')':'')+'_');
- const twAuto=[
-   ['twpsCwt1','Paras CWT 1',false],
-   ['twpsCwt2','Paras CWT 2',ck('twpsMaint')],
-   ['twpsDp1','Paras Desa Putra No.1',false],
-   ['twpsDp2','Paras Desa Putra No.2',false]
- ];
- twAuto.forEach(([field,label,handled])=>{const z=autoLevelNote(field,label);if(z&&!handled)L.push(z)});
+ L.push('','Total Pumping : '+v('twpsTotal')+'Mld','Tw Outflow = '+v('twpsOut')+'m3/h','','_Paras_',
+   'CWT 1 : '+problemValue('twpsCwt1','twpsCwt1Problem',probs),
+   'CWT 2 : '+problemValue('twpsCwt2','twpsCwt2Problem',probs),
+   'DP 1 : '+problemValue('twpsDp1','twpsDp1Problem',probs),
+   'DP 2 : '+problemValue('twpsDp2','twpsDp2Problem',probs));
+ const notes=[
+   problemNote('twpsCwt1Problem',probs,'Paras CWT 1'),
+   problemNote('twpsCwt2Problem',probs,'Paras CWT 2',v('twpsReason')||'level problem'),
+   problemNote('twpsDp1Problem',probs,'Paras Desa Putra No.1'),
+   problemNote('twpsDp2Problem',probs,'Paras Desa Putra No.2')
+ ].filter(Boolean);
+ if(notes.length)L.push('',...notes);
  return L.join('\n');
 }
 function currentText(){return activeTab==='intakeB'?intakeBText():activeTab==='intakeC'?intakeCText():activeTab==='twps'?twpsText():opsText()}
@@ -303,29 +330,18 @@ function saveDraft(){localStorage.setItem('rqLraPwa',JSON.stringify(draft()))}
 function savePumpDraft(){let o={};pumpIds.forEach(x=>{if(!$(x))return;o[x]=$(x).type==='checkbox'?$(x).checked:$(x).value});localStorage.setItem('rqLraPumpDraft',JSON.stringify(o))}
 function styleStatus(sel){if(!sel)return;sel.classList.toggle('statusRun',sel.value==='Run');sel.classList.toggle('statusStop',sel.value==='Stop')}
 function syncMaintenance(){
- const pairs=[
-  ['riverMaint','riverReasonWrap',null],
-  ['tankMaint','tankReasonWrap','tank2'],
-  ['twpsMaint','twpsReasonWrap','twpsCwt2']
+ if($('riverReasonWrap'))$('riverReasonWrap').classList.toggle('hidden',!ck('riverMaint'));
+ if($('tankReasonWrap'))$('tankReasonWrap').classList.toggle('hidden',!ck('tank2Problem'));
+ if($('twpsReasonWrap'))$('twpsReasonWrap').classList.toggle('hidden',!ck('twpsCwt2Problem'));
+ const map=[
+  ['tank1Problem','tank1Field'],['tank2Problem','tank2Field'],['pond1Problem','pond1Field'],['pond2Problem','pond2Field'],
+  ['ibPondBProblem','ibPondBField'],['ibPondCProblem','ibPondCField'],
+  ['icPondBProblem','icPondBField'],['icPondCProblem','icPondCField'],
+  ['twpsCwt1Problem','twpsCwt1Field'],['twpsCwt2Problem','twpsCwt2Field'],['twpsDp1Problem','twpsDp1Field'],['twpsDp2Problem','twpsDp2Field']
  ];
- pairs.forEach(([toggle,wrap,reading])=>{
-   if(!$(toggle)||!$(wrap))return;
-   const on=$(toggle).checked;
-   $(wrap).classList.toggle('hidden',!on);
-   if(reading){
-     const el=$(reading);
-     if(on){
-       if(!el.value.trim()||/^\(\*+\)$/.test(el.value.trim())===false && (toggle==='twpsMaint'||toggle==='tankMaint')){
-         if(toggle==='twpsMaint' && el.value.trim() && !/^\(\*+\)$/.test(el.value.trim())) el.dataset.lastReading=el.value.trim();
-         if(toggle==='tankMaint' && el.value.trim() && !/^\(\*+\)$/.test(el.value.trim())) el.dataset.lastReading=el.value.trim();
-       }
-       el.value=toggle==='tankMaint'?'(**)':'(*)';
-     }else if(/^\(\*+\)$/.test(el.value.trim())){
-       el.value=el.dataset.lastReading||'';
-     }
-   }
- });
+ map.forEach(([p,f])=>{if($(p)&&$(f))$(f).classList.toggle('problemOn',ck(p))});
 }
+
 
 function refresh(){
  syncMaintenance();
@@ -343,11 +359,22 @@ function refreshPump(){
 function load(){
  let o=null;try{o=JSON.parse(localStorage.getItem('rqLraPwa')||'null')}catch(e){}
  $('date').value=(o&&o.date)||localDate();$('time').value=(o&&o.time)||defaultSlot();
- if(o)ids.forEach(x=>{if(o[x]===undefined)return;if($(x).type==='checkbox')$(x).checked=!!o[x];else $(x).value=o[x]});
+ if(o)ids.forEach(x=>{if(o[x]===undefined||!$(x))return;if($(x).type==='checkbox')$(x).checked=!!o[x];else $(x).value=o[x]});
+ if(o){
+   if(o.tankMaint===true)$('tank2Problem').checked=true;
+   if(marker(o.tank2)){$('tank2Problem').checked=true;$('tank2').value=''}
+ }
  let p=null;try{p=JSON.parse(localStorage.getItem('rqLraPumpDraft')||'null')}catch(e){}
  ['ibDate','icDate','twpsDate'].forEach(x=>$(x).value=(p&&p[x])||localDate());
  ['ibTime','icTime','twpsTime'].forEach(x=>$(x).value=(p&&p[x])||localTime());
  if(p)pumpIds.forEach(x=>{if(p[x]===undefined||!$(x))return;if($(x).type==='checkbox')$(x).checked=!!p[x];else $(x).value=p[x]});
+ if(p){
+   if(p.twpsMaint===true)$('twpsCwt2Problem').checked=true;
+   if(marker(p.twpsCwt2)){$('twpsCwt2Problem').checked=true;$('twpsCwt2').value=''}
+   for(const [field,prob] of [['ibPondB','ibPondBProblem'],['ibPondC','ibPondCProblem'],['icPondB','icPondBProblem'],['icPondC','icPondCProblem'],['twpsCwt1','twpsCwt1Problem'],['twpsDp1','twpsDp1Problem'],['twpsDp2','twpsDp2Problem']]){
+     if(marker(p[field])){$(prob).checked=true;$(field).value=''}
+   }
+ }
 }
 function hist(){let h=JSON.parse(localStorage.getItem('rqLraHist')||'[]');$('history').innerHTML=h.length?h.map(x=>'<div class="historyItem"><b>'+x.date+' @ '+x.time.replace(':','')+'</b><br>'+x.flow+'<br><button onclick="openHist('+x.id+')">Buka</button><button onclick="waHist('+x.id+')">WhatsApp</button></div>').join(''):'Belum ada report.'}
 window.openHist=id=>{let h=JSON.parse(localStorage.getItem('rqLraHist')||'[]'),x=h.find(y=>y.id===id);if(!x)return;Object.entries(x.data).forEach(([k,z])=>{if(!$(k))return;if($(k).type==='checkbox')$(k).checked=!!z;else $(k).value=z});refresh();switchTab('ops');scrollTo({top:0,behavior:'smooth'})}
@@ -370,9 +397,9 @@ function fire(){let x=JSON.parse(localStorage.getItem('rqLraReminder')||'null');
 $('wa').onclick=()=>location.href='https://wa.me/?text='+encodeURIComponent(currentText());
 $('share').onclick=async()=>{if(navigator.share)try{await navigator.share({title:'LRA Semenyih 2',text:currentText()});return}catch(e){};try{await navigator.clipboard.writeText(currentText());alert('Report dah copy.')}catch(e){location.href='https://wa.me/?text='+encodeURIComponent(currentText())}};
 
-ids.forEach(x=>$(x).addEventListener('input',refresh));['rwp','twp','time','riverMaint','tankMaint'].forEach(x=>$(x).addEventListener('change',refresh));
+ids.forEach(x=>$(x).addEventListener('input',refresh));['rwp','twp','time','riverMaint'].forEach(x=>$(x).addEventListener('change',refresh));
 pumpIds.forEach(x=>{if(!$(x))return;$(x).addEventListener('input',refreshPump);$(x).addEventListener('change',refreshPump)});
-$('twpsMaint').addEventListener('change',refreshPump);
+
 
 let installPrompt=null;
 function standalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}
