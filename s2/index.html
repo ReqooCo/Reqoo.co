@@ -16,7 +16,7 @@ textarea{min-height:68px;resize:vertical}.tabs{display:grid;grid-template-column
 .btn-red{background:#fdeaea;color:var(--red)}.btn-amber{background:#fff1dd;color:var(--amber)}.toolbar{display:grid;grid-template-columns:1fr auto;gap:7px;margin-bottom:10px}
 .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:0 4px 16px rgba(0,0,0,.04)}
 .top{display:flex;justify-content:space-between;gap:8px}.asset{font-size:17px;font-weight:900}.sub{font-size:11px;color:var(--muted);margin-top:3px}.badge{padding:5px 8px;border-radius:999px;font-size:10px;font-weight:900;height:max-content}
-.badge.red{background:#fde5e5;color:#a82020}.badge.green{background:#e5f5ec;color:#176b49}.current{background:#f7faf8;border-left:4px solid var(--green);padding:9px;border-radius:8px;margin-top:9px;font-size:14px}
+.badge.red{background:#fde5e5;color:#a82020}.badge.green{background:#e5f5ec;color:#176b49}.current{background:#f7faf8;border-left:4px solid var(--green);padding:9px;border-radius:8px;margin-top:9px;font-size:14px}.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}.chip{font-size:11px;background:#eef3f0;color:#476058;border-radius:999px;padding:4px 7px}.age{font-weight:900;color:#8a5b00}.deleteLink{width:100%;background:transparent;color:#a34a4a;border:0;padding:8px 4px 2px;font-size:11px;font-weight:700;cursor:pointer}
 .meta{font-size:12px;color:#5e7169;margin-top:8px;line-height:1.5}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.full{grid-column:1/-1}
 .hidden{display:none}.empty{text-align:center;color:var(--muted);padding:26px 8px}.error{background:#fdeaea;color:#8f2424;padding:10px;border-radius:10px;margin-bottom:9px;font-size:13px}.ok{background:#e7f4ed;color:#176445;padding:10px;border-radius:10px;margin-bottom:9px;font-size:13px}
 .small{font-size:11px;color:var(--muted)}@media(max-width:560px){.grid{grid-template-columns:1fr}.full{grid-column:auto}}
@@ -44,7 +44,7 @@ textarea{min-height:68px;resize:vertical}.tabs{display:grid;grid-template-column
 
   <section id="activeSection">
     <div class="toolbar">
-      <button class="btn btn-green" onclick="shareOngoing()">📲 Share Ongoing</button>
+      <button class="btn btn-green" onclick="shareOngoing()">📲 Ongoing Summary</button>
       <button class="btn btn-light" onclick="loadActive()">↻</button>
     </div>
     <div id="activeList"><div class="card empty">Loading...</div></div>
@@ -53,12 +53,15 @@ textarea{min-height:68px;resize:vertical}.tabs{display:grid;grid-template-column
   <section id="addSection" class="hidden">
     <div class="card">
       <div class="grid">
-        <div class="full"><label>Lokasi</label><input id="location" placeholder="Contoh: TWPS"></div><div class="full"><label>Asset / Equipment</label><input id="asset" placeholder="Contoh: TW Pam No.1"></div><div class="full"><label>WR No.</label><input id="wrNo" inputmode="numeric" placeholder="Contoh: 20260000003350"></div>
+        <div class="full"><label>Lokasi</label><input id="location" list="locationList" placeholder="Pilih / taip lokasi"><datalist id="locationList"><option value="TWPS"><option value="RWPS"><option value="Chemical Building"><option value="Filter"><option value="Reservoir"></datalist></div>
+   <div class="full"><label>Asset / Equipment</label><input id="asset" placeholder="Contoh: TW Pam No.1"></div>
+   <div><label>WR No.</label><input id="wrNo" inputmode="numeric" placeholder="Boleh isi kemudian"></div>
+   <div><label>PIC / Tindakan</label><input id="actionBy" list="actionList" value="M&E Prod"><datalist id="actionList"><option value="M&E Prod"><option value="Electrical"><option value="Mechanical"><option value="Vendor"><option value="Operation"></datalist></div>
         <div><label>Tarikh & Masa Rosak</label><input id="brokenAt" type="datetime-local"></div>
         <div><label>Kritikal?</label><select id="critical"><option value="TIDAK">🟢 TIDAK</option><option value="YA">🔴 YA</option></select></div>
         <div class="full"><label>Masalah</label><textarea id="issue" placeholder="Contoh: Pump trip dan gagal restart"></textarea></div>
         <div class="full"><label>Status Semasa</label><textarea id="currentStatus" placeholder="Contoh: Standby pump running, technician checking"></textarea></div>
-        <div><label>Status Kes</label><select id="caseStatus"><option>OPEN</option><option selected>ONGOING</option><option>MONITORING</option></select></div>
+        <select id="caseStatus" class="hidden"><option selected>ONGOING</option></select>
       </div>
       <div class="actions"><button class="btn btn-light" onclick="createBreakdown(false)">Simpan Sahaja</button><button class="btn btn-green" onclick="createBreakdown(true)">📲 Simpan & Send WhatsApp</button></div>
     </div>
@@ -76,6 +79,14 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function nowLocal(){const d=new Date(),z=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())+'T'+z(d.getHours())+':'+z(d.getMinutes())}
 function fmt(v){if(!v)return'-';const d=new Date(v);return d.toLocaleString('ms-MY',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false})}
+function ageText(v){
+  if(!v)return'-';
+  const mins=Math.max(0,Math.floor((Date.now()-new Date(v).getTime())/60000));
+  const d=Math.floor(mins/1440),h=Math.floor((mins%1440)/60),m=mins%60;
+  if(d>0)return d+' hari '+h+' jam';
+  if(h>0)return h+' jam '+m+' min';
+  return m+' min';
+}
 function saveLeader(){localStorage.setItem('s2_leader',$('leader').value.trim())}
 function leader(){return $('leader').value.trim()||'-'}
 function notice(msg,type='ok'){ $('notice').innerHTML='<div class="'+type+'">'+esc(msg)+'</div>'; setTimeout(()=>{$('notice').innerHTML=''},3000)}
@@ -84,14 +95,17 @@ function showTab(t){['active','add','history'].forEach(x=>{$(x+'Section').classL
 function card(r){
   const crit=Number(r.critical)===1;
   return '<div class="card">'+
-    '<div class="top"><div><div class="asset">'+esc(r.asset)+'</div><div class="sub">'+esc(r.case_status)+'</div></div>'+
-    '<span class="badge '+(crit?'red':'green')+'">'+(crit?'🔴 KRITIKAL':'🟢 TIDAK KRITIKAL')+'</span></div>'+
-    '<div class="meta"><b>Rosak:</b> '+fmt(r.broken_at)+(r.location?'<br><b>Lokasi:</b> '+esc(r.location):'')+(r.wr_no?'<br><b>WR No:</b> '+esc(r.wr_no):'')+'<br><b>Masalah:</b> '+esc(r.issue||'-')+'</div>'+
-    '<div class="current"><b>Status semasa:</b><br>'+esc(r.current_status||'-')+'</div>'+
-    '<div class="meta"><b>Last update:</b> '+fmt(r.updated_at)+' • '+esc(r.leader||'-')+'</div>'+
+    '<div class="top"><div><div class="asset">'+esc(r.asset)+'</div><div class="sub">'+esc(r.location||'Lokasi belum diisi')+' • '+esc(r.case_status)+'</div></div>'+
+    '<span class="badge '+(crit?'red':'green')+'">'+(crit?'🔴 KRITIKAL':'🟢 NORMAL')+'</span></div>'+
+    '<div class="chips"><span class="chip age">⏱ '+ageText(r.broken_at)+'</span>'+
+    '<span class="chip">👤 '+esc(r.action_by||'M&E Prod')+'</span>'+
+    (r.wr_no?'<span class="chip">WR '+esc(r.wr_no)+'</span>':'')+'</div>'+
+    '<div class="meta"><b>Masalah:</b> '+esc(r.issue||'-')+'</div>'+
+    '<div class="current"><b>Status:</b> '+esc(r.current_status||'-')+'</div>'+
+    '<div class="meta">Update '+fmt(r.updated_at)+' • '+esc(r.leader||'-')+'</div>'+
     '<div class="actions"><button class="btn btn-amber" onclick="updateItem(\''+r.id+'\')">Update</button>'+
-    '<button class="btn btn-red" onclick="closeItem(\''+r.id+'\')">Close Case</button></div>'+
-    '<button class="btn btn-red" style="width:100%;margin-top:8px" onclick="deleteItem(\''+r.id+'\')">🗑 Delete Report</button>'+
+    '<button class="btn btn-red" onclick="closeItem(\''+r.id+'\')">Close</button></div>'+
+    '<button class="deleteLink" onclick="deleteItem(\''+r.id+'\')">Delete report</button>'+
     '</div>';
 }
 function historyCard(r){
@@ -99,10 +113,10 @@ function historyCard(r){
   return '<div class="card">'+
     '<div class="top"><div><div class="asset">'+esc(r.asset)+'</div><div class="sub">CLOSED</div></div>'+
     '<span class="badge '+(crit?'red':'green')+'">'+(crit?'🔴 KRITIKAL':'🟢 TIDAK KRITIKAL')+'</span></div>'+
-    '<div class="meta"><b>Rosak:</b> '+fmt(r.broken_at)+(r.location?'<br><b>Lokasi:</b> '+esc(r.location):'')+(r.wr_no?'<br><b>WR No:</b> '+esc(r.wr_no):'')+'<br><b>Masalah:</b> '+esc(r.issue||'-')+'</div>'+
+    '<div class="meta"><b>Rosak:</b> '+fmt(r.broken_at)+(r.location?'<br><b>Lokasi:</b> '+esc(r.location):'')+(r.action_by?'<br><b>PIC:</b> '+esc(r.action_by):'')+(r.wr_no?'<br><b>WR No:</b> '+esc(r.wr_no):'')+'<br><b>Masalah:</b> '+esc(r.issue||'-')+'</div>'+
     '<div class="current"><b>Status akhir:</b><br>'+esc(r.current_status||'-')+'</div>'+
     '<div class="meta"><b>Closed:</b> '+fmt(r.closed_at||r.updated_at)+' • '+esc(r.leader||'-')+'</div>'+
-    '<button class="btn btn-red" style="width:100%;margin-top:9px" onclick="deleteItem(\''+r.id+'\')">🗑 Delete Report</button>'+
+    '<button class="deleteLink" onclick="deleteItem(\''+r.id+'\')">Delete report</button>'+
     '</div>';
 }
 async function loadActive(){try{const j=await api('GET',null,'?scope=active');active=j.items||[];$('count').textContent=active.length?'('+active.length+')':'';$('activeList').innerHTML=active.length?active.map(card).join(''):'<div class="card empty">Tiada breakdown ongoing.</div>'}catch(e){$('activeList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
@@ -128,47 +142,56 @@ function officialBreakdownText(r){
     '1. '+(r.issue||'-')+'\n   \n'+
     '*Nota :*\n\n'+
     'i. WR No  : '+(r.wr_no||'-')+'\n\n'+
-    'Mohon bantuan dan tindakan pihak M&E Prod.\n\n'+
+    'Mohon bantuan dan tindakan pihak '+(r.action_by||'M&E Prod')+'.\n\n'+
     'Terima kasih.';
 }
 async function createBreakdown(shareWhatsApp=false){
   const asset=$('asset').value.trim();
   if(!asset)return notice('Isi asset / equipment.','error');
+  const duplicate=active.find(r=>String(r.asset||'').trim().toLowerCase()===asset.toLowerCase());
+  if(duplicate&&!confirm(asset+' masih ada breakdown ongoing.\n\nTeruskan buat report baru?'))return;
   const payload={
     action:'create',
     location:$('location').value.trim(),
+    actionBy:$('actionBy').value.trim()||'M&E Prod',
     asset,
     brokenAt:$('brokenAt').value||nowLocal(),
     wrNo:$('wrNo').value.trim(),
     issue:$('issue').value.trim(),
     currentStatus:$('currentStatus').value.trim(),
     critical:$('critical').value,
-    caseStatus:$('caseStatus').value,
+    caseStatus:'ONGOING',
     leader:leader()
   };
   try{
     const saved=await api('POST',payload);
     const item=saved.item||{
-      location:payload.location,asset:payload.asset,broken_at:payload.brokenAt,
-      wr_no:payload.wrNo,issue:payload.issue
+      location:payload.location,action_by:payload.actionBy,asset:payload.asset,
+      broken_at:payload.brokenAt,wr_no:payload.wrNo,issue:payload.issue
     };
-    $('location').value='';
-    $('asset').value='';
-    $('wrNo').value='';
-    $('issue').value='';
-    $('currentStatus').value='';
-    $('brokenAt').value=nowLocal();
+    $('location').value='';$('asset').value='';$('wrNo').value='';$('actionBy').value='M&E Prod';
+    $('issue').value='';$('currentStatus').value='';$('brokenAt').value=nowLocal();
     notice('Breakdown disimpan.');
     if(shareWhatsApp){
       window.location.href='https://wa.me/?text='+encodeURIComponent(officialBreakdownText(item));
       setTimeout(()=>{showTab('active');loadActive()},300);
       return;
     }
-    showTab('active');
-    await loadActive();
+    showTab('active');await loadActive();
   }catch(e){notice(e.message,'error')}
 }
-async function updateItem(id){const r=active.find(x=>x.id===id);if(!r)return;const wrNo=prompt('WR No. (boleh kosong):',r.wr_no||'');if(wrNo===null)return;const status=prompt('Status semasa:',r.current_status||'');if(status===null)return;const cs=prompt('Status kes: OPEN / ONGOING / MONITORING',r.case_status||'ONGOING');if(cs===null)return;const critical=confirm('Kritikal sekarang?\nOK = YA, Cancel = TIDAK')?'YA':'TIDAK';try{await api('POST',{action:'update',id,wrNo,currentStatus:status,caseStatus:cs,critical,leader:leader()});notice('Status dikemas kini.');await loadActive()}catch(e){notice(e.message,'error')}}
+async function updateItem(id){
+  const r=active.find(x=>x.id===id);if(!r)return;
+  const actionBy=prompt('PIC / tindakan:',r.action_by||'M&E Prod');if(actionBy===null)return;
+  const wrNo=prompt('WR No. (boleh kosong):',r.wr_no||'');if(wrNo===null)return;
+  const status=prompt('Status semasa:',r.current_status||'');if(status===null)return;
+  const cs=prompt('Status kes: OPEN / ONGOING / MONITORING',r.case_status||'ONGOING');if(cs===null)return;
+  const critical=confirm('Kritikal sekarang?\nOK = YA, Cancel = TIDAK')?'YA':'TIDAK';
+  try{
+    await api('POST',{action:'update',id,actionBy,wrNo,currentStatus:status,caseStatus:cs,critical,leader:leader()});
+    notice('Status dikemas kini.');await loadActive()
+  }catch(e){notice(e.message,'error')}
+}
 async function closeItem(id){const r=active.find(x=>x.id===id);if(!r)return;const status=prompt('Status akhir / tindakan:',r.current_status||'Selesai / kembali normal');if(status===null)return;if(!confirm('Close breakdown '+r.asset+'?'))return;try{await api('POST',{action:'close',id,currentStatus:status,leader:leader()});notice('Breakdown ditutup.');await loadActive()}catch(e){notice(e.message,'error')}}
 async function deleteItem(id){
   const r=active.find(x=>x.id===id)||history.find(x=>x.id===id);
@@ -182,7 +205,22 @@ async function deleteItem(id){
     if(!$('historySection').classList.contains('hidden'))await loadHistory();
   }catch(e){notice(e.message,'error')}
 }
-function shareOngoing(){if(!active.length)return notice('Tiada breakdown ongoing.','error');const lines=['*BREAKDOWN ONGOING – LRA SEMENYIH 2*',''];active.forEach((r,i)=>{lines.push('*'+(i+1)+'. '+r.asset+'*');lines.push('Rosak: '+fmt(r.broken_at));if(r.location)lines.push('Lokasi: '+r.location);if(r.wr_no)lines.push('WR No: '+r.wr_no);lines.push('Masalah: '+(r.issue||'-'));lines.push('Status: '+(r.current_status||'-'));lines.push('Kritikal: '+(Number(r.critical)===1?'🔴 YA':'🟢 TIDAK'));lines.push('')});window.location.href='https://wa.me/?text='+encodeURIComponent(lines.join('\n'))}
+function shareOngoing(){
+  if(!active.length)return notice('Tiada breakdown ongoing.','error');
+  const lines=['*BREAKDOWN ONGOING – LRA SEMENYIH 2*',''];
+  active.forEach((r,i)=>{
+    lines.push('*'+(i+1)+'. '+r.asset+'*');
+    if(r.location)lines.push('Lokasi: '+r.location);
+    lines.push('Tempoh: '+ageText(r.broken_at));
+    lines.push('Masalah: '+(r.issue||'-'));
+    lines.push('Status: '+(r.current_status||'-'));
+    lines.push('PIC: '+(r.action_by||'M&E Prod'));
+    if(r.wr_no)lines.push('WR No: '+r.wr_no);
+    lines.push('Kritikal: '+(Number(r.critical)===1?'🔴 YA':'🟢 TIDAK'));
+    lines.push('');
+  });
+  window.location.href='https://wa.me/?text='+encodeURIComponent(lines.join('\n'));
+}
 $('leader').value=localStorage.getItem('s2_leader')||'';$('brokenAt').value=nowLocal();if(!accessKey())$('accessBox').classList.remove('hidden');else loadActive();setInterval(()=>{if(!$('activeSection').classList.contains('hidden'))loadActive()},30000);
 </script>
 </body>
