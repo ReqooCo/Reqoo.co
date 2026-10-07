@@ -53,14 +53,14 @@ textarea{min-height:68px;resize:vertical}.tabs{display:grid;grid-template-column
   <section id="addSection" class="hidden">
     <div class="card">
       <div class="grid">
-        <div class="full"><label>Asset / Equipment</label><input id="asset" placeholder="Contoh: TW Pam No.1"></div><div class="full"><label>WR No.</label><input id="wrNo" inputmode="numeric" placeholder="Contoh: 20260000003350"></div>
+        <div class="full"><label>Lokasi</label><input id="location" placeholder="Contoh: TWPS"></div><div class="full"><label>Asset / Equipment</label><input id="asset" placeholder="Contoh: TW Pam No.1"></div><div class="full"><label>WR No.</label><input id="wrNo" inputmode="numeric" placeholder="Contoh: 20260000003350"></div>
         <div><label>Tarikh & Masa Rosak</label><input id="brokenAt" type="datetime-local"></div>
         <div><label>Kritikal?</label><select id="critical"><option value="TIDAK">🟢 TIDAK</option><option value="YA">🔴 YA</option></select></div>
         <div class="full"><label>Masalah</label><textarea id="issue" placeholder="Contoh: Pump trip dan gagal restart"></textarea></div>
         <div class="full"><label>Status Semasa</label><textarea id="currentStatus" placeholder="Contoh: Standby pump running, technician checking"></textarea></div>
         <div><label>Status Kes</label><select id="caseStatus"><option>OPEN</option><option selected>ONGOING</option><option>MONITORING</option></select></div>
       </div>
-      <button class="btn btn-green" style="width:100%" onclick="createBreakdown()">Simpan Breakdown</button>
+      <div class="actions"><button class="btn btn-light" onclick="createBreakdown(false)">Simpan Sahaja</button><button class="btn btn-green" onclick="createBreakdown(true)">📲 Simpan & Send WhatsApp</button></div>
     </div>
   </section>
 
@@ -86,7 +86,7 @@ function card(r){
   return '<div class="card">'+
     '<div class="top"><div><div class="asset">'+esc(r.asset)+'</div><div class="sub">'+esc(r.case_status)+'</div></div>'+
     '<span class="badge '+(crit?'red':'green')+'">'+(crit?'🔴 KRITIKAL':'🟢 TIDAK KRITIKAL')+'</span></div>'+
-    '<div class="meta"><b>Rosak:</b> '+fmt(r.broken_at)+(r.wr_no?'<br><b>WR No:</b> '+esc(r.wr_no):'')+'<br><b>Masalah:</b> '+esc(r.issue||'-')+'</div>'+
+    '<div class="meta"><b>Rosak:</b> '+fmt(r.broken_at)+(r.location?'<br><b>Lokasi:</b> '+esc(r.location):'')+(r.wr_no?'<br><b>WR No:</b> '+esc(r.wr_no):'')+'<br><b>Masalah:</b> '+esc(r.issue||'-')+'</div>'+
     '<div class="current"><b>Status semasa:</b><br>'+esc(r.current_status||'-')+'</div>'+
     '<div class="meta"><b>Last update:</b> '+fmt(r.updated_at)+' • '+esc(r.leader||'-')+'</div>'+
     '<div class="actions"><button class="btn btn-amber" onclick="updateItem(\''+r.id+'\')">Update</button>'+
@@ -99,7 +99,7 @@ function historyCard(r){
   return '<div class="card">'+
     '<div class="top"><div><div class="asset">'+esc(r.asset)+'</div><div class="sub">CLOSED</div></div>'+
     '<span class="badge '+(crit?'red':'green')+'">'+(crit?'🔴 KRITIKAL':'🟢 TIDAK KRITIKAL')+'</span></div>'+
-    '<div class="meta"><b>Rosak:</b> '+fmt(r.broken_at)+(r.wr_no?'<br><b>WR No:</b> '+esc(r.wr_no):'')+'<br><b>Masalah:</b> '+esc(r.issue||'-')+'</div>'+
+    '<div class="meta"><b>Rosak:</b> '+fmt(r.broken_at)+(r.location?'<br><b>Lokasi:</b> '+esc(r.location):'')+(r.wr_no?'<br><b>WR No:</b> '+esc(r.wr_no):'')+'<br><b>Masalah:</b> '+esc(r.issue||'-')+'</div>'+
     '<div class="current"><b>Status akhir:</b><br>'+esc(r.current_status||'-')+'</div>'+
     '<div class="meta"><b>Closed:</b> '+fmt(r.closed_at||r.updated_at)+' • '+esc(r.leader||'-')+'</div>'+
     '<button class="btn btn-red" style="width:100%;margin-top:9px" onclick="deleteItem(\''+r.id+'\')">🗑 Delete Report</button>'+
@@ -107,8 +107,67 @@ function historyCard(r){
 }
 async function loadActive(){try{const j=await api('GET',null,'?scope=active');active=j.items||[];$('count').textContent=active.length?'('+active.length+')':'';$('activeList').innerHTML=active.length?active.map(card).join(''):'<div class="card empty">Tiada breakdown ongoing.</div>'}catch(e){$('activeList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
 async function loadHistory(){try{const j=await api('GET',null,'?scope=history');history=j.items||[];renderHistory()}catch(e){$('historyList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
-function renderHistory(){const q=($('search').value||'').toLowerCase();const rows=history.filter(r=>(r.asset+' '+(r.wr_no||'')+' '+r.issue+' '+r.current_status).toLowerCase().includes(q));$('historyList').innerHTML=rows.length?rows.map(historyCard).join(''):'<div class="card empty">Tiada rekod.</div>'}
-async function createBreakdown(){const asset=$('asset').value.trim();if(!asset)return notice('Isi asset / equipment.','error');try{await api('POST',{action:'create',asset,brokenAt:$('brokenAt').value||nowLocal(),wrNo:$('wrNo').value.trim(),issue:$('issue').value.trim(),currentStatus:$('currentStatus').value.trim(),critical:$('critical').value,caseStatus:$('caseStatus').value,leader:leader()});$('asset').value='';$('wrNo').value='';$('issue').value='';$('currentStatus').value='';$('brokenAt').value=nowLocal();notice('Breakdown disimpan.');showTab('active');await loadActive()}catch(e){notice(e.message,'error')}}
+function renderHistory(){const q=($('search').value||'').toLowerCase();const rows=history.filter(r=>(r.location+' '+r.asset+' '+(r.wr_no||'')+' '+r.issue+' '+r.current_status).toLowerCase().includes(q));$('historyList').innerHTML=rows.length?rows.map(historyCard).join(''):'<div class="card empty">Tiada rekod.</div>'}
+function fmtOfficialDate(v){
+  if(!v)return'-';
+  const d=new Date(v);
+  return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+}
+function fmtOfficialTime(v){
+  if(!v)return'-';
+  const d=new Date(v);
+  return String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0')+'hrs';
+}
+function officialBreakdownText(r){
+  return '*LRA Semenyih 2*\n*Breakdown Report*\n\n'+
+    'Tarikh  : '+fmtOfficialDate(r.broken_at)+'\n'+
+    'Masa   : '+fmtOfficialTime(r.broken_at)+'\n'+
+    'Lokasi : '+(r.location||'-')+'\n'+
+    'Komponen/ Peralatan / Jentera : \n'+(r.asset||'-')+'\n\n'+
+    '*Butiran/ Keterangan Kerosakan :* Berdasarkan pemerhatian dan pemantauan, didapati, \n\n'+
+    '1. '+(r.issue||'-')+'\n   \n'+
+    '*Nota :*\n\n'+
+    'i. WR No  : '+(r.wr_no||'-')+'\n\n'+
+    'Mohon bantuan dan tindakan pihak M&E Prod.\n\n'+
+    'Terima kasih.';
+}
+async function createBreakdown(shareWhatsApp=false){
+  const asset=$('asset').value.trim();
+  if(!asset)return notice('Isi asset / equipment.','error');
+  const payload={
+    action:'create',
+    location:$('location').value.trim(),
+    asset,
+    brokenAt:$('brokenAt').value||nowLocal(),
+    wrNo:$('wrNo').value.trim(),
+    issue:$('issue').value.trim(),
+    currentStatus:$('currentStatus').value.trim(),
+    critical:$('critical').value,
+    caseStatus:$('caseStatus').value,
+    leader:leader()
+  };
+  try{
+    const saved=await api('POST',payload);
+    const item=saved.item||{
+      location:payload.location,asset:payload.asset,broken_at:payload.brokenAt,
+      wr_no:payload.wrNo,issue:payload.issue
+    };
+    $('location').value='';
+    $('asset').value='';
+    $('wrNo').value='';
+    $('issue').value='';
+    $('currentStatus').value='';
+    $('brokenAt').value=nowLocal();
+    notice('Breakdown disimpan.');
+    if(shareWhatsApp){
+      window.location.href='https://wa.me/?text='+encodeURIComponent(officialBreakdownText(item));
+      setTimeout(()=>{showTab('active');loadActive()},300);
+      return;
+    }
+    showTab('active');
+    await loadActive();
+  }catch(e){notice(e.message,'error')}
+}
 async function updateItem(id){const r=active.find(x=>x.id===id);if(!r)return;const wrNo=prompt('WR No. (boleh kosong):',r.wr_no||'');if(wrNo===null)return;const status=prompt('Status semasa:',r.current_status||'');if(status===null)return;const cs=prompt('Status kes: OPEN / ONGOING / MONITORING',r.case_status||'ONGOING');if(cs===null)return;const critical=confirm('Kritikal sekarang?\nOK = YA, Cancel = TIDAK')?'YA':'TIDAK';try{await api('POST',{action:'update',id,wrNo,currentStatus:status,caseStatus:cs,critical,leader:leader()});notice('Status dikemas kini.');await loadActive()}catch(e){notice(e.message,'error')}}
 async function closeItem(id){const r=active.find(x=>x.id===id);if(!r)return;const status=prompt('Status akhir / tindakan:',r.current_status||'Selesai / kembali normal');if(status===null)return;if(!confirm('Close breakdown '+r.asset+'?'))return;try{await api('POST',{action:'close',id,currentStatus:status,leader:leader()});notice('Breakdown ditutup.');await loadActive()}catch(e){notice(e.message,'error')}}
 async function deleteItem(id){
@@ -123,7 +182,7 @@ async function deleteItem(id){
     if(!$('historySection').classList.contains('hidden'))await loadHistory();
   }catch(e){notice(e.message,'error')}
 }
-function shareOngoing(){if(!active.length)return notice('Tiada breakdown ongoing.','error');const lines=['*BREAKDOWN ONGOING – LRA SEMENYIH 2*',''];active.forEach((r,i)=>{lines.push('*'+(i+1)+'. '+r.asset+'*');lines.push('Rosak: '+fmt(r.broken_at));if(r.wr_no)lines.push('WR No: '+r.wr_no);lines.push('Masalah: '+(r.issue||'-'));lines.push('Status: '+(r.current_status||'-'));lines.push('Kritikal: '+(Number(r.critical)===1?'🔴 YA':'🟢 TIDAK'));lines.push('')});window.location.href='https://wa.me/?text='+encodeURIComponent(lines.join('\n'))}
+function shareOngoing(){if(!active.length)return notice('Tiada breakdown ongoing.','error');const lines=['*BREAKDOWN ONGOING – LRA SEMENYIH 2*',''];active.forEach((r,i)=>{lines.push('*'+(i+1)+'. '+r.asset+'*');lines.push('Rosak: '+fmt(r.broken_at));if(r.location)lines.push('Lokasi: '+r.location);if(r.wr_no)lines.push('WR No: '+r.wr_no);lines.push('Masalah: '+(r.issue||'-'));lines.push('Status: '+(r.current_status||'-'));lines.push('Kritikal: '+(Number(r.critical)===1?'🔴 YA':'🟢 TIDAK'));lines.push('')});window.location.href='https://wa.me/?text='+encodeURIComponent(lines.join('\n'))}
 $('leader').value=localStorage.getItem('s2_leader')||'';$('brokenAt').value=nowLocal();if(!accessKey())$('accessBox').classList.remove('hidden');else loadActive();setInterval(()=>{if(!$('activeSection').classList.contains('hidden'))loadActive()},30000);
 </script>
 </body>
