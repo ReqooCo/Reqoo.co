@@ -71,7 +71,7 @@ details.more[open]>summary:after{content:"−"}
 .statusStop{border-color:#e7c3c3!important;background:#fff6f6!important;color:#9b3e3e!important;font-weight:850}
 .reportMeta{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:9px}.reportMeta>*{min-width:0}
 .pumpPreview{white-space:pre-wrap;background:#f7faf9;border:1px solid var(--line);border-radius:10px;padding:9px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;line-height:1.45;color:#29423b;margin-top:8px;max-height:260px;overflow:auto}
-.subtle{font-size:9px;color:var(--muted);margin-top:5px}
+.subtle{font-size:9px;color:var(--muted);margin-top:5px}.maintReason{margin-top:7px}.maintReason.hidden{display:none}.maintReason label{font-size:9.5px}.maintReason input{min-height:38px;font-size:13px}
 @media(max-width:390px){.wrap{padding-left:8px;padding-right:8px}.head{padding:12px}.head h1{font-size:17px}.card{padding:10px}.autoRow{gap:5px}.stat{padding:7px 6px}.stat b{font-size:10.5px}}
 </style>
 </head>
@@ -134,8 +134,10 @@ details.more[open]>summary:after{content:"−"}
       <div class="grid" style="padding-top:9px">
         <div class="field full"><label>Paras maksima Sg Langat (m)</label><input id="riverMax" inputmode="decimal" value="10.11"></div>
       </div>
-      <div class="toggle"><div><strong>Sg Langat *</strong><small>SCADA Lost Comm / bacaan tidak tepat</small></div><label class="switch"><input id="riverMaint" type="checkbox" checked><span class="slider"></span></label></div>
-      <div class="toggle"><div><strong>Tangki No.2 (**)</strong><small>Sensor ULS rosak</small></div><label class="switch"><input id="tankMaint" type="checkbox" checked><span class="slider"></span></label></div>
+      <div class="toggle"><div><strong>Sg Langat *</strong><small>Nota hanya keluar bila Maintenance ON</small></div><label class="switch"><input id="riverMaint" type="checkbox" checked><span class="slider"></span></label></div>
+      <div id="riverReasonWrap" class="maintReason"><label>Sebab / catatan Sg Langat</label><input id="riverReason" value="SCADA Lost Comm" placeholder="Contoh: SCADA Lost Comm"></div>
+      <div class="toggle"><div><strong>Tangki No.2 (**)</strong><small>Nota hanya keluar bila Maintenance ON</small></div><label class="switch"><input id="tankMaint" type="checkbox" checked><span class="slider"></span></label></div>
+      <div id="tankReasonWrap" class="maintReason"><label>Sebab / catatan Tangki No.2</label><input id="tankReason" value="sensor ULS rosak" placeholder="Contoh: sensor ULS rosak"></div>
       <label style="margin-top:8px">Nota tambahan</label><textarea id="note" rows="2" placeholder="Optional"></textarea>
     </div>
   </details>
@@ -212,7 +214,8 @@ details.more[open]>summary:after{content:"−"}
         <div class="field"><label>DP 1 (m)</label><input id="twpsDp1" inputmode="decimal" value="7.76"></div>
         <div class="field"><label>DP 2 (m)</label><input id="twpsDp2" inputmode="decimal" value="8.05"></div>
       </div>
-      <div class="toggle" style="margin-top:4px"><div><strong>CWT 2 Maintenance *</strong><small>Sensor ULS rosak</small></div><label class="switch"><input id="twpsMaint" type="checkbox" checked><span class="slider"></span></label></div>
+      <div class="toggle" style="margin-top:4px"><div><strong>CWT 2 Maintenance *</strong><small>Nota hanya keluar bila Maintenance ON</small></div><label class="switch"><input id="twpsMaint" type="checkbox" checked><span class="slider"></span></label></div>
+      <div id="twpsReasonWrap" class="maintReason"><label>Sebab / catatan CWT 2</label><input id="twpsReason" value="sensor ULS rosak" placeholder="Contoh: sensor ULS rosak"></div>
       <details class="more" style="margin:7px 0 0"><summary>Preview WhatsApp</summary><div class="moreBody"><div id="twpsPreview" class="pumpPreview"></div></div></details>
     </section>
   </div>
@@ -221,8 +224,8 @@ details.more[open]>summary:after{content:"−"}
 <div class="bottom"><div class="bottomIn"><button id="share" class="btn light">Share</button><button id="wa" class="btn wa">Buka WhatsApp</button></div></div>
 <script>
 const $=x=>document.getElementById(x);
-const ids=['date','time','river','riverMax','rwp','twp','rw','tank1','tank2','tw','pond1','pond2','pondOut','riverMaint','tankMaint','note'];
-const pumpIds=['ibDate','ibTime','ibP1','ibP2','ibC1','ibC2','ibPondB','ibPondC','icDate','icTime','icP1','icP2','icP3','icP4','icC1','icC2','icC3','icC4','icTotal','icRw','icPondB','icPondC','twpsDate','twpsTime','twpsP1','twpsP2','twpsP3','twpsP4','twpsC1','twpsC2','twpsC3','twpsC4','twpsTotal','twpsOut','twpsCwt1','twpsCwt2','twpsDp1','twpsDp2','twpsMaint'];
+const ids=['date','time','river','riverMax','rwp','twp','rw','tank1','tank2','tw','pond1','pond2','pondOut','riverMaint','riverReason','tankMaint','tankReason','note'];
+const pumpIds=['ibDate','ibTime','ibP1','ibP2','ibC1','ibC2','ibPondB','ibPondC','icDate','icTime','icP1','icP2','icP3','icP4','icC1','icC2','icC3','icC4','icTotal','icRw','icPondB','icPondC','twpsDate','twpsTime','twpsP1','twpsP2','twpsP3','twpsP4','twpsC1','twpsC2','twpsC3','twpsC4','twpsTotal','twpsOut','twpsCwt1','twpsCwt2','twpsDp1','twpsDp2','twpsMaint','twpsReason'];
 let activeTab='ops';
 
 const slots=['08:00','10:00','12:00','14:00','16:00','18:00','20:00','22:00','00:00','02:00','04:00','06:00'];
@@ -249,8 +252,8 @@ function opsText(){
  L.push('RW Inflow : '+v('rw')+'m3/h','Normal : '+r.a+'m3/h~'+r.b+'m3/h','Tangki Air Bersih','No.1 : '+v('tank1')+'m','No.2 : '+v('tank2'),'');
  L.push('TW Outflow : '+v('tw')+'m3/h','Normal : '+t.n+'m3/h','Delivery Pressure: '+t.p.toFixed(1)+'bar','');
  L.push('Kolam Desa Putra,','No.1 : '+v('pond1')+'m','No.2 : '+v('pond2')+'m','Outflow : '+clean(m)+'Mld','');
- if(ck('riverMaint'))L.push('_(*) Paras Sg Langat tidak tepat under maintenance (Scada Lost comm)_');
- if(ck('tankMaint'))L.push('_(**) Paras tangki no.2 under maintenance (sensor ULS rosak)_.');
+ if(ck('riverMaint'))L.push('_(*) Paras Sg Langat tidak tepat under maintenance'+(v('riverReason')?' ('+v('riverReason')+')':'')+'_');
+ if(ck('tankMaint'))L.push('_(**) Paras tangki no.2 under maintenance'+(v('tankReason')?' ('+v('tankReason')+')':'')+'_');
  if(v('note'))L.push('_'+v('note')+'_');
  return L.join('\n');
 }
@@ -270,7 +273,7 @@ function twpsText(){
  const L=['*TWPS*',fdate(v('twpsDate')),ftime(v('twpsTime')),'','_Status Pump_'];
  [1,2,3,4].forEach(i=>L.push(pumpLine(i,v('twpsP'+i),ck('twpsC'+i))));
  L.push('','Total Pumping : '+v('twpsTotal')+'Mld','Tw Outflow = '+v('twpsOut')+'m3/h','','_Paras_','CWT 1 : '+v('twpsCwt1')+'m','CWT 2 : '+v('twpsCwt2'),'DP 1 : '+v('twpsDp1')+'m','DP 2 : '+v('twpsDp2')+'m');
- if(ck('twpsMaint'))L.push('','_(*) Paras tangki no.2 under maintenance (sensor ULS rosak)_');
+ if(ck('twpsMaint'))L.push('','_(*) Paras tangki no.2 under maintenance'+(v('twpsReason')?' ('+v('twpsReason')+')':'')+'_');
  return L.join('\n');
 }
 function currentText(){return activeTab==='intakeB'?intakeBText():activeTab==='intakeC'?intakeCText():activeTab==='twps'?twpsText():opsText()}
@@ -279,8 +282,33 @@ function draft(){let o={};ids.forEach(x=>o[x]=$(x).type==='checkbox'?$(x).checke
 function saveDraft(){localStorage.setItem('rqLraPwa',JSON.stringify(draft()))}
 function savePumpDraft(){let o={};pumpIds.forEach(x=>{if(!$(x))return;o[x]=$(x).type==='checkbox'?$(x).checked:$(x).value});localStorage.setItem('rqLraPumpDraft',JSON.stringify(o))}
 function styleStatus(sel){if(!sel)return;sel.classList.toggle('statusRun',sel.value==='Run');sel.classList.toggle('statusStop',sel.value==='Stop')}
+function syncMaintenance(){
+ const pairs=[
+  ['riverMaint','riverReasonWrap',null],
+  ['tankMaint','tankReasonWrap','tank2'],
+  ['twpsMaint','twpsReasonWrap','twpsCwt2']
+ ];
+ pairs.forEach(([toggle,wrap,reading])=>{
+   if(!$(toggle)||!$(wrap))return;
+   const on=$(toggle).checked;
+   $(wrap).classList.toggle('hidden',!on);
+   if(reading){
+     const el=$(reading);
+     if(on){
+       if(!el.value.trim()||/^\(\*+\)$/.test(el.value.trim())===false && (toggle==='twpsMaint'||toggle==='tankMaint')){
+         if(toggle==='twpsMaint' && el.value.trim() && !/^\(\*+\)$/.test(el.value.trim())) el.dataset.lastReading=el.value.trim();
+         if(toggle==='tankMaint' && el.value.trim() && !/^\(\*+\)$/.test(el.value.trim())) el.dataset.lastReading=el.value.trim();
+       }
+       el.value=toggle==='tankMaint'?'(**)':'(*)';
+     }else if(/^\(\*+\)$/.test(el.value.trim())){
+       el.value=el.dataset.lastReading||'';
+     }
+   }
+ });
+}
 
 function refresh(){
+ syncMaintenance();
  let r=rwP(),t=twP(),m=mld();
  $('rwNormal').textContent=r.a+'m3/h ~ '+r.b+'m3/h';$('twNormal').textContent=t.n+' m3/h';$('pressure').textContent=t.p.toFixed(1)+' bar';$('pondMld').textContent=(m===null?'-':clean(m))+' MLD';$('preview').textContent=opsText();
  let a=n('rw'),b=n('tw'),msg=[];if(a!==null&&(a<r.a||a>r.b))msg.push('RW '+a+' di luar '+r.a+'-'+r.b);if(b!==null&&b<t.n)msg.push('TW '+b+' di bawah '+t.n);
@@ -288,6 +316,7 @@ function refresh(){
  saveDraft();
 }
 function refreshPump(){
+ syncMaintenance();
  $('ibPreview').textContent=intakeBText();$('icPreview').textContent=intakeCText();$('twpsPreview').textContent=twpsText();
  document.querySelectorAll('.pumpStatus').forEach(styleStatus);savePumpDraft();
 }
@@ -321,8 +350,9 @@ function fire(){let x=JSON.parse(localStorage.getItem('rqLraReminder')||'null');
 $('wa').onclick=()=>location.href='https://wa.me/?text='+encodeURIComponent(currentText());
 $('share').onclick=async()=>{if(navigator.share)try{await navigator.share({title:'LRA Semenyih 2',text:currentText()});return}catch(e){};try{await navigator.clipboard.writeText(currentText());alert('Report dah copy.')}catch(e){location.href='https://wa.me/?text='+encodeURIComponent(currentText())}};
 
-ids.forEach(x=>$(x).addEventListener('input',refresh));['rwp','twp','time'].forEach(x=>$(x).addEventListener('change',refresh));
+ids.forEach(x=>$(x).addEventListener('input',refresh));['rwp','twp','time','riverMaint','tankMaint'].forEach(x=>$(x).addEventListener('change',refresh));
 pumpIds.forEach(x=>{if(!$(x))return;$(x).addEventListener('input',refreshPump);$(x).addEventListener('change',refreshPump)});
+$('twpsMaint').addEventListener('change',refreshPump);
 
 let installPrompt=null;
 function standalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}
@@ -330,7 +360,7 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installProm
 $('installBtn').onclick=async()=>{if(standalone())return alert('App dah dipasang.');if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;return}alert('iPhone: buka link ini dalam Safari > tekan Share > Add to Home Screen.');};
 if(standalone())$('installBtn').style.display='none';
 
-load();refresh();refreshPump();hist();arm();switchTab(localStorage.getItem('rqLraActiveTab')||'ops');
+load();syncMaintenance();refresh();refreshPump();hist();arm();switchTab(localStorage.getItem('rqLraActiveTab')||'ops');
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
 </script>
 </body>
