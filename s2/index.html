@@ -211,7 +211,6 @@ function shareOngoing(){
   active.forEach((r,i)=>{
     lines.push('*'+(i+1)+'. '+r.asset+'*');
     if(r.location)lines.push('Lokasi: '+r.location);
-    lines.push('Tempoh: '+ageText(r.broken_at));
     lines.push('Masalah: '+(r.issue||'-'));
     lines.push('Status: '+(r.current_status||'-'));
     lines.push('PIC: '+(r.action_by||'M&E Prod'));
