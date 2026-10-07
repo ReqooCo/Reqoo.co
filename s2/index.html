@@ -19,7 +19,7 @@ textarea{min-height:68px;resize:vertical}.tabs{display:grid;grid-template-column
 .badge.red{background:#fde5e5;color:#a82020}.badge.green{background:#e5f5ec;color:#176b49}.current{background:#f7faf8;border-left:4px solid var(--green);padding:9px;border-radius:8px;margin-top:9px;font-size:14px}.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}.chip{font-size:11px;background:#eef3f0;color:#476058;border-radius:999px;padding:4px 7px}.age{font-weight:900;color:#8a5b00}.deleteLink{width:100%;background:transparent;color:#a34a4a;border:0;padding:8px 4px 2px;font-size:11px;font-weight:700;cursor:pointer}
 .meta{font-size:12px;color:#5e7169;margin-top:8px;line-height:1.5}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.full{grid-column:1/-1}
 .hidden{display:none}.empty{text-align:center;color:var(--muted);padding:26px 8px}.error{background:#fdeaea;color:#8f2424;padding:10px;border-radius:10px;margin-bottom:9px;font-size:13px}.ok{background:#e7f4ed;color:#176445;padding:10px;border-radius:10px;margin-bottom:9px;font-size:13px}
-.small{font-size:11px;color:var(--muted)}@media(max-width:560px){.grid{grid-template-columns:1fr}.full{grid-column:auto}}
+.small{font-size:11px;color:var(--muted)}.historyTools{display:flex;gap:7px;margin-bottom:10px}.historyTools .btn{flex:1}.monthlyPanel{margin-bottom:12px}.monthlyBar{display:grid;grid-template-columns:1fr auto;gap:7px;align-items:end}.monthlySummary{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:10px 0}.stat{background:#f7faf8;border:1px solid var(--line);border-radius:12px;padding:9px;text-align:center}.stat b{display:block;font-size:20px}.stat span{font-size:10px;color:var(--muted)}.monthlyItem{border-top:1px solid var(--line);padding:10px 0}.monthlyItem:first-child{border-top:0}.monthlyItem .miTitle{font-weight:900}.monthlyItem .miMeta{font-size:11px;color:var(--muted);margin-top:2px}.monthlyItem .miText{font-size:13px;margin-top:5px;line-height:1.4}.monthlyActions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}@media(max-width:560px){.monthlySummary{grid-template-columns:1fr 1fr}}@media(max-width:560px){.grid{grid-template-columns:1fr}.full{grid-column:auto}}
 </style>
 </head>
 <body>
@@ -68,13 +68,29 @@ textarea{min-height:68px;resize:vertical}.tabs{display:grid;grid-template-column
   </section>
 
   <section id="historySection" class="hidden">
+    <div class="historyTools">
+      <button class="btn btn-light" onclick="toggleMonthly()">📊 Laporan Bulanan</button>
+    </div>
+    <div id="monthlyPanel" class="card monthlyPanel hidden">
+      <div class="monthlyBar">
+        <div><label>Bulan Meeting</label><input id="meetingMonth" type="month" onchange="loadMonthly()"></div>
+        <button class="btn btn-light" onclick="loadMonthly()">↻</button>
+      </div>
+      <div id="monthlyTitle" style="font-weight:900;margin-top:2px"></div>
+      <div id="monthlySummary" class="monthlySummary"></div>
+      <div id="monthlyList"></div>
+      <div class="monthlyActions">
+        <button class="btn btn-green" onclick="shareMonthly()">📲 Share Summary</button>
+        <button class="btn btn-light" onclick="printMonthly()">🖨 Print / PDF</button>
+      </div>
+    </div>
     <input id="search" placeholder="Cari asset / masalah..." oninput="renderHistory()">
     <div id="historyList"><div class="card empty">Loading...</div></div>
   </section>
 </div>
 <script>
 const API='/api/s2-breakdown';
-let active=[],history=[];
+let active=[],history=[],monthly=[];
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function nowLocal(){const d=new Date(),z=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())+'T'+z(d.getHours())+':'+z(d.getMinutes())}
@@ -122,6 +138,87 @@ function historyCard(r){
 async function loadActive(){try{const j=await api('GET',null,'?scope=active');active=j.items||[];$('count').textContent=active.length?'('+active.length+')':'';$('activeList').innerHTML=active.length?active.map(card).join(''):'<div class="card empty">Tiada breakdown ongoing.</div>'}catch(e){$('activeList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
 async function loadHistory(){try{const j=await api('GET',null,'?scope=history');history=j.items||[];renderHistory()}catch(e){$('historyList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
 function renderHistory(){const q=($('search').value||'').toLowerCase();const rows=history.filter(r=>(r.location+' '+r.asset+' '+(r.action_by||'')+' '+(r.wr_no||'')+' '+r.issue+' '+r.current_status).toLowerCase().includes(q));$('historyList').innerHTML=rows.length?rows.map(historyCard).join(''):'<div class="card empty">Tiada rekod.</div>'}
+
+function monthName(v){
+  if(!v)return'';
+  const [y,m]=v.split('-').map(Number);
+  return new Date(y,m-1,1).toLocaleDateString('ms-MY',{month:'long',year:'numeric'});
+}
+function defaultMeetingMonth(){
+  const d=new Date(),z=n=>String(n).padStart(2,'0');
+  return d.getFullYear()+'-'+z(d.getMonth()+1);
+}
+function toggleMonthly(){
+  const panel=$('monthlyPanel');
+  panel.classList.toggle('hidden');
+  if(!panel.classList.contains('hidden')){
+    if(!$('meetingMonth').value)$('meetingMonth').value=defaultMeetingMonth();
+    loadMonthly();
+  }
+}
+async function loadMonthly(){
+  const month=$('meetingMonth').value||defaultMeetingMonth();
+  $('meetingMonth').value=month;
+  $('monthlyList').innerHTML='<div class="empty">Loading...</div>';
+  try{
+    const j=await api('GET',null,'?scope=month&month='+encodeURIComponent(month));
+    monthly=j.items||[];
+    renderMonthly();
+  }catch(e){
+    $('monthlyList').innerHTML='<div class="error">'+esc(e.message)+'</div>';
+  }
+}
+function renderMonthly(){
+  const total=monthly.length;
+  const closed=monthly.filter(r=>r.case_status==='CLOSED').length;
+  const ongoing=total-closed;
+  const critical=monthly.filter(r=>Number(r.critical)===1).length;
+  $('monthlyTitle').textContent='Breakdown '+monthName($('meetingMonth').value);
+  $('monthlySummary').innerHTML=
+    '<div class="stat"><b>'+total+'</b><span>Total</span></div>'+
+    '<div class="stat"><b>'+ongoing+'</b><span>Ongoing</span></div>'+
+    '<div class="stat"><b>'+closed+'</b><span>Closed</span></div>'+
+    '<div class="stat"><b>'+critical+'</b><span>Kritikal</span></div>';
+  $('monthlyList').innerHTML=monthly.length?monthly.map((r,i)=>
+    '<div class="monthlyItem"><div class="miTitle">'+(i+1)+'. '+esc(r.asset)+'</div>'+
+    '<div class="miMeta">'+fmt(r.broken_at)+' • '+esc(r.location||'-')+' • '+esc(r.case_status)+'</div>'+
+    '<div class="miText"><b>Masalah:</b> '+esc(r.issue||'-')+'<br><b>Status:</b> '+esc(r.current_status||'-')+
+    '<br><b>PIC:</b> '+esc(r.action_by||'M&E Prod')+(r.wr_no?'<br><b>WR:</b> '+esc(r.wr_no):'')+
+    (Number(r.critical)===1?'<br><b>🔴 Kritikal</b>':'')+'</div></div>'
+  ).join(''):'<div class="empty">Tiada breakdown untuk bulan ini.</div>';
+}
+function monthlyText(){
+  const total=monthly.length,closed=monthly.filter(r=>r.case_status==='CLOSED').length;
+  const ongoing=total-closed,critical=monthly.filter(r=>Number(r.critical)===1).length;
+  const lines=['*LRA Semenyih 2*','*Monthly Breakdown Summary – '+monthName($('meetingMonth').value)+'*','',
+    'Total Breakdown: '+total,'Ongoing: '+ongoing,'Closed: '+closed,'Kritikal: '+critical,''];
+  monthly.forEach((r,i)=>{
+    lines.push('*'+(i+1)+'. '+r.asset+'*');
+    lines.push('Tarikh: '+fmt(r.broken_at));
+    if(r.location)lines.push('Lokasi: '+r.location);
+    lines.push('Masalah: '+(r.issue||'-'));
+    lines.push('Status: '+(r.current_status||'-'));
+    lines.push('PIC: '+(r.action_by||'M&E Prod'));
+    if(r.wr_no)lines.push('WR No: '+r.wr_no);
+    if(Number(r.critical)===1)lines.push('Kritikal: 🔴 YA');
+    lines.push('');
+  });
+  return lines.join('\n');
+}
+function shareMonthly(){
+  if(!monthly.length)return notice('Tiada breakdown untuk bulan dipilih.','error');
+  window.location.href='https://wa.me/?text='+encodeURIComponent(monthlyText());
+}
+function printMonthly(){
+  const month=monthName($('meetingMonth').value);
+  const total=monthly.length,closed=monthly.filter(r=>r.case_status==='CLOSED').length;
+  const ongoing=total-closed,critical=monthly.filter(r=>Number(r.critical)===1).length;
+  const rows=monthly.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(fmt(r.broken_at))+'</td><td>'+esc(r.location||'-')+'</td><td>'+esc(r.asset)+'</td><td>'+esc(r.issue||'-')+'</td><td>'+esc(r.action_by||'M&E Prod')+'</td><td>'+esc(r.wr_no||'-')+'</td><td>'+esc(r.current_status||'-')+'</td><td>'+esc(r.case_status)+'</td></tr>').join('');
+  const w=window.open('','_blank');
+  if(!w)return notice('Browser block print window.','error');
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>S2 Monthly Breakdown</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#111}h1{font-size:20px;margin:0 0 4px}p{margin:3px 0}.summary{margin:14px 0;font-weight:700}table{width:100%;border-collapse:collapse;font-size:10px}th,td{border:1px solid #bbb;padding:6px;vertical-align:top}th{background:#eee}@page{size:landscape;margin:10mm}</style></head><body><h1>LRA Semenyih 2 — Monthly Breakdown Report</h1><p>'+esc(month)+'</p><div class="summary">Total: '+total+' &nbsp; | &nbsp; Ongoing: '+ongoing+' &nbsp; | &nbsp; Closed: '+closed+' &nbsp; | &nbsp; Kritikal: '+critical+'</div><table><thead><tr><th>#</th><th>Tarikh</th><th>Lokasi</th><th>Asset</th><th>Masalah</th><th>PIC</th><th>WR No.</th><th>Status Semasa</th><th>Kes</th></tr></thead><tbody>'+rows+'</tbody></table></body></html>');
+  w.document.close();w.focus();setTimeout(()=>w.print(),250);
+}
 function fmtOfficialDate(v){
   if(!v)return'-';
   const d=new Date(v);
@@ -220,7 +317,7 @@ function shareOngoing(){
   });
   window.location.href='https://wa.me/?text='+encodeURIComponent(lines.join('\n'));
 }
-$('leader').value=localStorage.getItem('s2_leader')||'';$('brokenAt').value=nowLocal();if(!accessKey())$('accessBox').classList.remove('hidden');else loadActive();setInterval(()=>{if(!$('activeSection').classList.contains('hidden'))loadActive()},30000);
+$('leader').value=localStorage.getItem('s2_leader')||'';$('brokenAt').value=nowLocal();$('meetingMonth').value=defaultMeetingMonth();if(!accessKey())$('accessBox').classList.remove('hidden');else loadActive();setInterval(()=>{if(!$('activeSection').classList.contains('hidden'))loadActive()},30000);
 </script>
 </body>
 </html>
