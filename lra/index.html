@@ -243,37 +243,57 @@ function mld(){let x=n('pondOut');return x===null?null:x*24/1000}
 function clean(x,d=3){return x===null?'':x.toFixed(d).replace(/0+$/,'').replace(/\.$/,'')}
 function fdate(x){let a=(x||'').split('-');return a.length===3?a[2]+'/'+a[1]+'/'+a[0]:x}
 function ftime(x){return String(x||'').replace(':','')+'hrs'}
+function marker(x){const m=String(x||'').trim().match(/^\(\*+\)$/);return m?m[0]:''}
+function levelVal(x){const z=String(x||'').trim();return marker(z)?z:(z?z+'m':'')}
+function autoLevelNote(field,label,reason='level problem'){const m=marker(v(field));return m?'_'+m+' '+label+' under maintenance ('+reason+')_':''}
 
 function opsText(){
  let r=rwP(),t=twP(),m=mld(),L=[];
  L.push('*Status Operasi LRA Semenyih 2*','*'+fdate(v('date'))+'@'+ftime(v('time'))+'*','');
- L.push('Paras Sg Langat : '+v('river')+'m'+(ck('riverMaint')?'*':'')+' (paras maksima : '+v('riverMax')+'m)','');
+ L.push('Paras Sg Langat : '+(marker(v('river'))?v('river'):v('river')+'m'+(ck('riverMaint')?'*':''))+' (paras maksima : '+levelVal(v('riverMax'))+')','');
  L.push('Kadar Pengepaman','RWP : '+v('rwp')+'Mld','TWP : '+v('twp')+'Mld','');
- L.push('RW Inflow : '+v('rw')+'m3/h','Normal : '+r.a+'m3/h~'+r.b+'m3/h','Tangki Air Bersih','No.1 : '+v('tank1')+'m','No.2 : '+v('tank2'),'');
+ L.push('RW Inflow : '+v('rw')+'m3/h','Normal : '+r.a+'m3/h~'+r.b+'m3/h','Tangki Air Bersih','No.1 : '+levelVal(v('tank1')),'No.2 : '+levelVal(v('tank2')),'');
  L.push('TW Outflow : '+v('tw')+'m3/h','Normal : '+t.n+'m3/h','Delivery Pressure: '+t.p.toFixed(1)+'bar','');
- L.push('Kolam Desa Putra,','No.1 : '+v('pond1')+'m','No.2 : '+v('pond2')+'m','Outflow : '+clean(m)+'Mld','');
+ L.push('Kolam Desa Putra,','No.1 : '+levelVal(v('pond1')),'No.2 : '+levelVal(v('pond2')),'Outflow : '+clean(m)+'Mld','');
  if(ck('riverMaint'))L.push('_(*) Paras Sg Langat tidak tepat under maintenance'+(v('riverReason')?' ('+v('riverReason')+')':'')+'_');
  if(ck('tankMaint'))L.push('_(**) Paras tangki no.2 under maintenance'+(v('tankReason')?' ('+v('tankReason')+')':'')+'_');
+ const opAuto=[
+   ['river','Paras Sg Langat',ck('riverMaint')],
+   ['tank1','Paras Tangki Air Bersih No.1',false],
+   ['tank2','Paras Tangki Air Bersih No.2',ck('tankMaint')],
+   ['pond1','Paras Desa Putra No.1',false],
+   ['pond2','Paras Desa Putra No.2',false]
+ ];
+ opAuto.forEach(([field,label,handled])=>{const z=autoLevelNote(field,label);if(z&&!handled)L.push(z)});
  if(v('note'))L.push('_'+v('note')+'_');
  return L.join('\n');
 }
 function pumpLine(no,status,changed=false,prefix='Pump : No.'){return prefix+no+' '+(changed?'*':'')+'('+status+')'+(changed?'*':'')}
 function intakeBText(){
  const L=['*RWTPS*','*INTAKE B*',fdate(v('ibDate')),ftime(v('ibTime')),'','_Status Pump_',''];
- L.push(pumpLine(1,v('ibP1'),ck('ibC1'),'Pump No.'),pumpLine(2,v('ibP2'),ck('ibC2'),'Pump No.'),'','_Paras_','Pond B : ('+v('ibPondB')+'m)','Pond C : ('+v('ibPondC')+'m)');
+ L.push(pumpLine(1,v('ibP1'),ck('ibC1'),'Pump No.'),pumpLine(2,v('ibP2'),ck('ibC2'),'Pump No.'),'','_Paras_','Pond B : '+(marker(v('ibPondB'))?v('ibPondB'):'('+v('ibPondB')+'m)'),'Pond C : '+(marker(v('ibPondC'))?v('ibPondC'):'('+v('ibPondC')+'m)'));
+ const n1=autoLevelNote('ibPondB','Paras Pond B'),n2=autoLevelNote('ibPondC','Paras Pond C');if(n1)L.push('',n1);if(n2)L.push(n2);
  return L.join('\n');
 }
 function intakeCText(){
  const L=['*RWPS*','*INTAKE C*',fdate(v('icDate')),ftime(v('icTime')),'','_Status Pump_'];
  [1,2,3,4].forEach(i=>L.push(pumpLine(i,v('icP'+i),ck('icC'+i))));
- L.push('','Total pumping : '+v('icTotal')+'Mld','Rw Inflow : '+v('icRw')+'m3/h','','_Paras_','Pond B : ('+v('icPondB')+'m)','Pond C : ('+v('icPondC')+'m)');
+ L.push('','Total pumping : '+v('icTotal')+'Mld','Rw Inflow : '+v('icRw')+'m3/h','','_Paras_','Pond B : '+(marker(v('icPondB'))?v('icPondB'):'('+v('icPondB')+'m)'),'Pond C : '+(marker(v('icPondC'))?v('icPondC'):'('+v('icPondC')+'m)'));
+ const n1=autoLevelNote('icPondB','Paras Pond B'),n2=autoLevelNote('icPondC','Paras Pond C');if(n1)L.push('',n1);if(n2)L.push(n2);
  return L.join('\n');
 }
 function twpsText(){
  const L=['*TWPS*',fdate(v('twpsDate')),ftime(v('twpsTime')),'','_Status Pump_'];
  [1,2,3,4].forEach(i=>L.push(pumpLine(i,v('twpsP'+i),ck('twpsC'+i))));
- L.push('','Total Pumping : '+v('twpsTotal')+'Mld','Tw Outflow = '+v('twpsOut')+'m3/h','','_Paras_','CWT 1 : '+v('twpsCwt1')+'m','CWT 2 : '+v('twpsCwt2'),'DP 1 : '+v('twpsDp1')+'m','DP 2 : '+v('twpsDp2')+'m');
+ L.push('','Total Pumping : '+v('twpsTotal')+'Mld','Tw Outflow = '+v('twpsOut')+'m3/h','','_Paras_','CWT 1 : '+levelVal(v('twpsCwt1')),'CWT 2 : '+levelVal(v('twpsCwt2')),'DP 1 : '+levelVal(v('twpsDp1')),'DP 2 : '+levelVal(v('twpsDp2')));
  if(ck('twpsMaint'))L.push('','_(*) Paras tangki no.2 under maintenance'+(v('twpsReason')?' ('+v('twpsReason')+')':'')+'_');
+ const twAuto=[
+   ['twpsCwt1','Paras CWT 1',false],
+   ['twpsCwt2','Paras CWT 2',ck('twpsMaint')],
+   ['twpsDp1','Paras Desa Putra No.1',false],
+   ['twpsDp2','Paras Desa Putra No.2',false]
+ ];
+ twAuto.forEach(([field,label,handled])=>{const z=autoLevelNote(field,label);if(z&&!handled)L.push(z)});
  return L.join('\n');
 }
 function currentText(){return activeTab==='intakeB'?intakeBText():activeTab==='intakeC'?intakeCText():activeTab==='twps'?twpsText():opsText()}
