@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d6b4d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="LRA Report">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Reqoo LRA Report</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icon.svg">
+<style>
+:root{--bg:#f3f6f5;--card:#fff;--text:#17352b;--muted:#718078;--green:#0d6b4d;--green2:#e7f2ed;--line:#dbe5e0;--red:#b52c2c;--amber:#a96500}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:var(--text)}button,input,select,textarea{font:inherit}.wrap{max-width:720px;margin:auto;padding:14px 14px 100px}.head{background:linear-gradient(135deg,#0d6b4d,#164f3d);color:#fff;padding:17px;border-radius:18px;margin-bottom:10px;display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.head h1{margin:0 0 4px;font-size:21px}.head p{margin:0;font-size:12px;opacity:.9}.install{border:1px solid #ffffff55;background:#ffffff18;color:#fff;border-radius:999px;padding:8px 10px;font-weight:800;font-size:11px;white-space:nowrap}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:0 4px 16px #0000000a}.card h2{font-size:14px;margin:0 0 11px;color:var(--green)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.full{grid-column:1/-1}label{display:block;font-size:11px;font-weight:800;margin:0 0 5px;color:#50665d}input,select,textarea{width:100%;border:1px solid var(--line);border-radius:11px;padding:11px;background:#fff;color:var(--text);margin-bottom:9px;outline:none}input:focus,select:focus,textarea:focus{border-color:#69a890;box-shadow:0 0 0 3px #e7f2ed}.auto{background:#f7faf8;border:1px solid var(--line);border-left:4px solid var(--green);padding:9px 10px;border-radius:10px;margin-bottom:9px;font-size:12px}.auto b{display:block;color:var(--green);font-size:14px;margin-top:2px}.pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}.stat{background:#f7faf8;border:1px solid var(--line);border-radius:11px;padding:9px}.stat small{display:block;color:var(--muted);font-size:10px}.stat b{display:block;margin-top:3px;font-size:15px}.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid #edf2ef}.toggle:first-of-type{border-top:0}.toggle strong{font-size:12px}.toggle small{display:block;color:var(--muted);font-size:10px;margin-top:2px}.switch{position:relative;width:44px;height:26px;flex:0 0 auto}.switch input{display:none}.slider{position:absolute;inset:0;background:#bcc9c3;border-radius:999px}.slider:before{content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.18s}.switch input:checked+.slider{background:var(--green)}.switch input:checked+.slider:before{transform:translateX(18px)}.preview{white-space:pre-wrap;background:#f8faf9;border:1px solid var(--line);border-radius:12px;padding:12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.55;max-height:360px;overflow:auto}.notice{font-size:11px;padding:9px 10px;border-radius:10px;margin-top:9px}.ok{background:#e7f4ed;color:#176445}.warn{background:#fff1dd;color:#8a5b00}.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}.btn{border:0;border-radius:12px;padding:11px;font-weight:800;cursor:pointer}.green{background:var(--green);color:#fff}.light{background:var(--green2);color:var(--green)}.wa{background:#24c76a;color:#062d18}.small{font-size:10px;color:var(--muted);line-height:1.45}.historyItem{padding:9px 0;border-top:1px solid var(--line);font-size:12px}.historyItem:first-child{border-top:0}.historyItem button{margin-top:6px;margin-right:5px;border:0;border-radius:8px;padding:6px 8px;font-weight:800;font-size:10px;background:var(--green2);color:var(--green)}.bottom{position:fixed;left:0;right:0;bottom:0;background:linear-gradient(180deg,transparent,#f3f6f5 24%,#f3f6f5);padding:12px 14px calc(12px + env(safe-area-inset-bottom))}.bottomIn{max-width:720px;margin:auto;display:grid;grid-template-columns:.8fr 1.2fr;gap:8px}@media(max-width:560px){.wrap{padding-top:10px}.head h1{font-size:19px}.grid{gap:8px}.card{padding:12px}.preview{max-height:280px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="head"><div><h1>Reqoo - LRA Report</h1><p>Status Operasi LRA Semenyih 2</p></div><button id="installBtn" class="install">Pasang App</button></header>
+
+  <section class="card"><h2>Report</h2><div class="grid"><div><label>Tarikh</label><input id="date" type="date"></div><div><label>Masa report - 2 jam sekali</label><select id="time"></select></div></div></section>
+
+  <section class="card"><h2>Sungai & Pengepaman</h2><div class="grid">
+    <div><label>Paras Sg Langat (m)</label><input id="river" inputmode="decimal" value="6.13"></div><div><label>Paras maksima (m)</label><input id="riverMax" inputmode="decimal" value="10.11"></div>
+    <div><label>RWP</label><select id="rwp"><option value="126">126 MLD</option><option value="63">63 MLD</option></select></div><div><label>TWP</label><select id="twp"><option value="100">100 MLD</option><option value="50">50 MLD</option></select></div>
+    <div class="full"><label>RW Inflow (m3/h)</label><input id="rw" inputmode="decimal" value="4213"></div>
+  </div><div class="auto">Normal RW ikut RWP<b id="rwNormal">4200m3/h ~ 4500m3/h</b></div></section>
+
+  <section class="card"><h2>Tangki Air Bersih & TW</h2><div class="grid">
+    <div><label>Tangki No.1 (m)</label><input id="tank1" inputmode="decimal" value="4.03"></div><div><label>Tangki No.2 (m / status)</label><input id="tank2" value="(**)"></div>
+    <div class="full"><label>TW Outflow (m3/h)</label><input id="tw" inputmode="decimal" value="4156"></div>
+  </div><div class="pair"><div class="stat"><small>Normal TW</small><b id="twNormal">4200 m3/h</b></div><div class="stat"><small>Delivery Pressure</small><b id="pressure">7.6 bar</b></div></div></section>
+
+  <section class="card"><h2>Kolam Desa Putra</h2><div class="grid">
+    <div><label>No.1 (m)</label><input id="pond1" inputmode="decimal" value="7.55"></div><div><label>No.2 (m)</label><input id="pond2" inputmode="decimal" value="7.81"></div>
+    <div class="full"><label>Outflow (m3/h)</label><input id="pondOut" inputmode="decimal" value="3692.25"></div>
+  </div><div class="auto">Auto conversion: m3/h x 24 / 1000<b id="pondMld">88.614 MLD</b></div></section>
+
+  <section class="card"><h2>Status Maintenance</h2>
+    <div class="toggle"><div><strong>Sg Langat *</strong><small>SCADA Lost Comm / bacaan tidak tepat</small></div><label class="switch"><input id="riverMaint" type="checkbox" checked><span class="slider"></span></label></div>
+    <div class="toggle"><div><strong>Tangki No.2 (**)</strong><small>Sensor ULS rosak</small></div><label class="switch"><input id="tankMaint" type="checkbox" checked><span class="slider"></span></label></div>
+    <label style="margin-top:8px">Nota tambahan</label><textarea id="note" rows="2" placeholder="Optional"></textarea>
+  </section>
+
+  <section class="card"><h2>Preview WhatsApp</h2><div id="preview" class="preview"></div><div id="notice" class="notice ok">OK - bacaan utama dalam julat.</div><div class="btns"><button id="save" class="btn light">Simpan History</button><button id="remind" class="btn green">Set Reminder</button></div><p class="small">Data dan history disimpan dalam telefon ini sahaja. Reminder PWA paling stabil bila app masih aktif; WhatsApp tetap perlukan tekan Send.</p></section>
+
+  <section class="card"><h2>History</h2><div id="history" class="small">Belum ada report.</div></section>
+</div>
+<div class="bottom"><div class="bottomIn"><button id="share" class="btn light">Share</button><button id="wa" class="btn wa">Buka WhatsApp</button></div></div>
+<script>
+const $=x=>document.getElementById(x), ids=['date','time','river','riverMax','rwp','twp','rw','tank1','tank2','tw','pond1','pond2','pondOut','riverMaint','tankMaint','note'];
+const slots=['08:00','10:00','12:00','14:00','16:00','18:00','20:00','22:00','00:00','02:00','04:00','06:00'];
+$('time').innerHTML=slots.map(x=>'<option value="'+x+'">'+x.replace(':','')+'</option>').join('');
+function localDate(){let d=new Date(),o=d.getTimezoneOffset();return new Date(d-o*60000).toISOString().slice(0,10)}
+function defaultSlot(){let h=new Date().getHours(),e=Math.floor(h/2)*2,s=String(e).padStart(2,'0')+':00';return slots.includes(s)?s:'08:00'}
+function v(x){return String($(x).value||'').trim()}function n(x){let z=Number(v(x));return Number.isFinite(z)?z:null}function ck(x){return $(x).checked}
+function rwP(){return v('rwp')==='63'?{a:2200,b:2300}:{a:4200,b:4500}}function twP(){return v('twp')==='50'?{n:2200,p:7.0}:{n:4200,p:7.6}}
+function mld(){let x=n('pondOut');return x===null?null:x*24/1000}function clean(x,d=3){return x===null?'':x.toFixed(d).replace(/0+$/,'').replace(/\.$/,'')}
+function fdate(x){let a=x.split('-');return a.length===3?a[2]+'/'+a[1]+'/'+a[0]:x}function ftime(x){return x.replace(':','')+'hrs'}
+function text(){let r=rwP(),t=twP(),m=mld(),L=[];L.push('*Status Operasi LRA Semenyih 2*');L.push('*'+fdate(v('date'))+'@'+ftime(v('time'))+'*');L.push('');L.push('Paras Sg Langat : '+v('river')+'m'+(ck('riverMaint')?'*':'')+' (paras maksima : '+v('riverMax')+'m)');L.push('');L.push('Kadar Pengepaman');L.push('RWP : '+v('rwp')+'Mld');L.push('TWP : '+v('twp')+'Mld');L.push('');L.push('RW Inflow : '+v('rw')+'m3/h');L.push('Normal : '+r.a+'m3/h~'+r.b+'m3/h');L.push('Tangki Air Bersih');L.push('No.1 : '+v('tank1')+'m');L.push('No.2 : '+v('tank2'));L.push('');L.push('TW Outflow : '+v('tw')+'m3/h');L.push('Normal : '+t.n+'m3/h');L.push('Delivery Pressure: '+t.p.toFixed(1)+'bar');L.push('');L.push('Kolam Desa Putra,');L.push('No.1 : '+v('pond1')+'m');L.push('No.2 : '+v('pond2')+'m');L.push('Outflow : '+clean(m)+'Mld');L.push('');if(ck('riverMaint'))L.push('_(*) Paras Sg Langat tidak tepat under maintenance (Scada Lost comm)_');if(ck('tankMaint'))L.push('_(**) Paras tangki no.2 under maintenance (sensor ULS rosak)_.');if(v('note'))L.push('_'+v('note')+'_');return L.join('\n')}
+function draft(){let o={};ids.forEach(x=>o[x]=$(x).type==='checkbox'?$(x).checked:$(x).value);return o}function saveDraft(){localStorage.setItem('rqLraPwa',JSON.stringify(draft()))}
+function refresh(){let r=rwP(),t=twP(),m=mld();$('rwNormal').textContent=r.a+'m3/h ~ '+r.b+'m3/h';$('twNormal').textContent=t.n+' m3/h';$('pressure').textContent=t.p.toFixed(1)+' bar';$('pondMld').textContent=(m===null?'-':clean(m))+' MLD';$('preview').textContent=text();let a=n('rw'),b=n('tw'),msg=[];if(a!==null&&(a<r.a||a>r.b))msg.push('RW '+a+' di luar '+r.a+'-'+r.b);if(b!==null&&b<t.n)msg.push('TW '+b+' di bawah '+t.n);$('notice').className='notice '+(msg.length?'warn':'ok');$('notice').textContent=msg.length?'Semak: '+msg.join('. '):'OK - bacaan utama dalam julat.';saveDraft()}
+function load(){let o=null;try{o=JSON.parse(localStorage.getItem('rqLraPwa')||'null')}catch(e){};$('date').value=(o&&o.date)||localDate();$('time').value=(o&&o.time)||defaultSlot();if(o)ids.forEach(x=>{if(o[x]===undefined)return;if($(x).type==='checkbox')$(x).checked=!!o[x];else $(x).value=o[x]})}
+function hist(){let h=JSON.parse(localStorage.getItem('rqLraHist')||'[]');$('history').innerHTML=h.length?h.map(x=>'<div class="historyItem"><b>'+x.date+' @ '+x.time.replace(':','')+'</b><br>'+x.flow+'<br><button onclick="openHist('+x.id+')">Buka</button><button onclick="waHist('+x.id+')">WhatsApp</button></div>').join(''):'Belum ada report.'}
+window.openHist=id=>{let h=JSON.parse(localStorage.getItem('rqLraHist')||'[]'),x=h.find(y=>y.id===id);if(!x)return;Object.entries(x.data).forEach(([k,z])=>{if(!$(k))return;if($(k).type==='checkbox')$(k).checked=!!z;else $(k).value=z});refresh();scrollTo({top:0,behavior:'smooth'})};window.waHist=id=>{let h=JSON.parse(localStorage.getItem('rqLraHist')||'[]'),x=h.find(y=>y.id===id);if(x)location.href='https://wa.me/?text='+encodeURIComponent(x.text)};
+$('save').onclick=()=>{let h=JSON.parse(localStorage.getItem('rqLraHist')||'[]');h.unshift({id:Date.now(),date:fdate(v('date')),time:v('time'),flow:'RWP '+v('rwp')+' / TWP '+v('twp'),text:text(),data:draft()});localStorage.setItem('rqLraHist',JSON.stringify(h.slice(0,60)));hist();$('notice').textContent='Report disimpan.'};
+let timer=null;$('remind').onclick=async()=>{let d=new Date(v('date')+'T'+v('time')+':00');if(d<=new Date()){alert('Pilih masa report selepas masa sekarang.');return}if('Notification'in window&&Notification.permission==='default')try{await Notification.requestPermission()}catch(e){};localStorage.setItem('rqLraReminder',JSON.stringify({at:d.getTime(),time:v('time')}));arm();alert('Reminder '+v('time').replace(':','')+'hrs disimpan.')};function arm(){if(timer)clearTimeout(timer);let x;try{x=JSON.parse(localStorage.getItem('rqLraReminder')||'null')}catch(e){}if(!x)return;let ms=x.at-Date.now();if(ms<=0){fire();return}timer=setTimeout(fire,Math.min(ms,2147483647))}function fire(){let x=JSON.parse(localStorage.getItem('rqLraReminder')||'null');if(!x)return;if('Notification'in window&&Notification.permission==='granted')new Notification('Reqoo LRA Report',{body:'Report '+x.time.replace(':','')+'hrs sedia dihantar.'});localStorage.removeItem('rqLraReminder');alert('Masa report '+x.time.replace(':','')+'hrs. Report sedia dihantar.')}
+$('wa').onclick=()=>location.href='https://wa.me/?text='+encodeURIComponent(text());$('share').onclick=async()=>{if(navigator.share)try{await navigator.share({title:'Status Operasi LRA Semenyih 2',text:text()});return}catch(e){};try{await navigator.clipboard.writeText(text());alert('Report dah copy.')}catch(e){location.href='https://wa.me/?text='+encodeURIComponent(text())}};
+ids.forEach(x=>$(x).addEventListener('input',refresh));['rwp','twp','time'].forEach(x=>$(x).addEventListener('change',refresh));
+let installPrompt=null;function standalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e});$('installBtn').onclick=async()=>{if(standalone())return alert('App dah dipasang.');if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;return}alert('iPhone: buka link ini dalam Safari > tekan Share > Add to Home Screen.');};if(standalone())$('installBtn').style.display='none';
+load();refresh();hist();arm();if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
+</script>
+</body>
+</html>
