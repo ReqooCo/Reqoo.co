@@ -22,7 +22,7 @@ textarea{min-height:68px;resize:vertical}.tabs{display:grid;grid-template-column
 .small{font-size:11px;color:var(--muted)}.historyTools{display:flex;gap:7px;margin-bottom:10px}.historyTools .btn{flex:1}.monthlyPanel{margin-bottom:12px}.monthlyBar{display:grid;grid-template-columns:1fr auto;gap:7px;align-items:end}.monthlySummary{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:10px 0}.stat{background:#f7faf8;border:1px solid var(--line);border-radius:12px;padding:9px;text-align:center}.stat b{display:block;font-size:20px}.stat span{font-size:10px;color:var(--muted)}.monthlyItem{border-top:1px solid var(--line);padding:10px 0}.monthlyItem:first-child{border-top:0}.monthlyItem .miTitle{font-weight:900}.monthlyItem .miMeta{font-size:11px;color:var(--muted);margin-top:2px}.monthlyItem .miText{font-size:13px;margin-top:5px;line-height:1.4}.monthlyActions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}@media(max-width:560px){.monthlySummary{grid-template-columns:1fr 1fr}}@media(max-width:560px){.grid{grid-template-columns:1fr}.full{grid-column:auto}}
 </style>
 </head>
-<body>
+<body><div style="position:relative;z-index:2;padding:10px 18px;background:#f6f1e7;border-bottom:1px solid #ddd2c4;font:13px/1.5 system-ui,sans-serif;text-align:center"><a href="https://reqoo.co/apps/" style="color:#365343;text-decoration:underline;display:inline-block;padding:4px 8px">← Semua app REQOO</a></div>
 <div class="wrap">
   <div class="head"><h1>S2 Breakdown Log</h1><p>Log dalaman syif • LRA Semenyih 2</p></div>
   <div class="leaderBox">
@@ -135,7 +135,7 @@ function historyCard(r){
     '<button class="deleteLink" onclick="deleteItem(\''+r.id+'\')">Delete report</button>'+
     '</div>';
 }
-async function loadActive(){try{const j=await api('GET',null,'?scope=active');active=j.items||[];$('count').textContent=active.length?'('+active.length+')':'';$('activeList').innerHTML=active.length?active.map(card).join(''):'<div class="card empty">Tiada breakdown ongoing.</div>'}catch(e){$('activeList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
+async function loadActive(){if(!accessKey()){$('accessBox').classList.remove('hidden');$('activeList').innerHTML='<div class="card empty">Masukkan access code S2 untuk melihat rekod.</div>';return}try{const j=await api('GET',null,'?scope=active');active=j.items||[];$('count').textContent=active.length?'('+active.length+')':'';$('activeList').innerHTML=active.length?active.map(card).join(''):'<div class="card empty">Tiada breakdown ongoing.</div>'}catch(e){$('activeList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
 async function loadHistory(){try{const j=await api('GET',null,'?scope=history');history=j.items||[];renderHistory()}catch(e){$('historyList').innerHTML='<div class="error">'+esc(e.message)+'</div>'}}
 function renderHistory(){const q=($('search').value||'').toLowerCase();const rows=history.filter(r=>(r.location+' '+r.asset+' '+(r.action_by||'')+' '+(r.wr_no||'')+' '+r.issue+' '+r.current_status).toLowerCase().includes(q));$('historyList').innerHTML=rows.length?rows.map(historyCard).join(''):'<div class="card empty">Tiada rekod.</div>'}
 
@@ -317,7 +317,7 @@ function shareOngoing(){
   });
   window.location.href='https://wa.me/?text='+encodeURIComponent(lines.join('\n'));
 }
-$('leader').value=localStorage.getItem('s2_leader')||'';$('brokenAt').value=nowLocal();$('meetingMonth').value=defaultMeetingMonth();if(!accessKey())$('accessBox').classList.remove('hidden');else loadActive();setInterval(()=>{if(!$('activeSection').classList.contains('hidden'))loadActive()},30000);
+$('leader').value=localStorage.getItem('s2_leader')||'';$('brokenAt').value=nowLocal();$('meetingMonth').value=defaultMeetingMonth();loadActive();setInterval(()=>{if(!$('activeSection').classList.contains('hidden'))loadActive()},30000);
 </script>
 </body>
 </html>

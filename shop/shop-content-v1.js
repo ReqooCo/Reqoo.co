@@ -4,7 +4,7 @@ const CONTENT_API='/api/shop-content',HERO_API='/api/shop-hero';
 const $=(s,r=document)=>r.querySelector(s);
 const all=(s,r=document)=>[...r.querySelectorAll(s)];
 function applyHero(data){const url=String(data?.url||'').trim(),img=$('.rqBotHeroVisual>img');if(url&&img)img.src=url}
-function mainLink(x){const raw=String(x?.link||'').trim();if(location.pathname!=='/'&&location.pathname!=='')return raw;if(raw&&raw!=='#catalogue')return raw;const t=String(x?.title||'').toLowerCase();if(t.includes('plaque'))return'/plaque/';if(t.includes('tumbler'))return'/tumbler/';return'/shop/'}
+function mainLink(x){const raw=String(x?.link||'').trim();if(location.pathname!=='/'&&location.pathname!=='')return raw;const t=String(x?.title||'').toLowerCase();if(raw&&!['#catalogue','/shop/'].includes(raw))return raw;if(t.includes('plaque'))return'/plaque/';if(t.includes('tumbler'))return'/tumbler/';return'/shop/?q='+encodeURIComponent(String(x?.title||'').trim())}
 function applyContent(data){
  const c=data?.content||data||{},sec=c.section||{},items=Array.isArray(c.items)?c.items:[];
  const root=$('.rqBotStories');if(!root)return;

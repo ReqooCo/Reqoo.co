@@ -51,3 +51,7 @@ Admin feature pages also use stable filenames. Update the same file and bump onl
 - `finance.css/js`
 
 Specialized document/shop compatibility modules may remain versioned until their dependency chains are flattened separately.
+
+## App directory
+
+`/apps/` groups the existing apps into Shop, Belajar, Kerja and Studio. Demo apps are separate. See [App directory and compatibility](docs/APP-DIRECTORY.md).

@@ -1,8 +1,31 @@
-const CACHE='reqoo-admin-v1';
+// Each app owns only its own cache namespace and URL scope.
+const PREFIX='reqoo-admin-v', CACHE=PREFIX+'2';
 const ASSETS=['./admin.html','./manifest.webmanifest','./assets/icon-192.png','./assets/icon-512.png'];
-self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));
-self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))));
-self.addEventListener('fetch',e=>{
-  if(e.request.method!=='GET') return;
-  e.respondWith(fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return r}).catch(()=>caches.match(e.request)));
+const APP_PATH='/shop/';
+self.addEventListener('install',event=>{
+  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
+});
+self.addEventListener('activate',event=>{
+  event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith(PREFIX)&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()));
+});
+self.addEventListener('fetch',event=>{
+  const url=new URL(event.request.url);
+  // API responses and other apps must never enter this app's offline cache.
+  if(event.request.method!=='GET'||url.origin!==self.location.origin||!url.pathname.startsWith(APP_PATH))return;
+  event.respondWith((async()=>{
+    const cache=await caches.open(CACHE);
+    try{
+      const response=await fetch(event.request);
+      if(response.ok)event.waitUntil(cache.put(event.request,response.clone()).catch(()=>{}));
+      return response;
+    }catch(error){
+      const hit=await cache.match(event.request);
+      if(hit)return hit;
+      if(event.request.mode==='navigate'){
+        const page=await cache.match(new URL('admin.html',self.registration.scope).href);
+        if(page)return page;
+      }
+      throw error;
+    }
+  })());
 });
