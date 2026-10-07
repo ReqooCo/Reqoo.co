@@ -98,6 +98,12 @@ export async function onRequest({request,env}){
         return json({ok:true,item:row,updates:await timeline(env,key)});
       }
       const scope=text(url.searchParams.get('scope'),20).toLowerCase()||'active';
+      if(scope==='month'){
+        const month=text(url.searchParams.get('month'),7);
+        if(!/^\d{4}-\d{2}$/.test(month))return json({ok:false,error:'Bulan tidak sah'},400);
+        const q=await env.DB.prepare("SELECT * FROM s2_breakdowns WHERE substr(broken_at,1,7)=? ORDER BY broken_at ASC LIMIT 1000").bind(month).all();
+        return json({ok:true,items:q.results||[],month,server_time:now()});
+      }
       return json({ok:true,items:await list(env,scope),server_time:now()});
     }
 
