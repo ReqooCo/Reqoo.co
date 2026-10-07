@@ -13,100 +13,125 @@
 <link rel="apple-touch-icon" href="./icon.svg">
 <style>
 :root{
-  --bg:#edf3f2;--card:#ffffff;--text:#17332e;--muted:#71847e;
-  --accent:#2f7565;--accent-dark:#255f53;--soft:#e8f2ef;--line:#d7e2de;
-  --red:#b44747;--amber:#9a6b17;--wa:#59c979
+  --bg:#eef4f2;--card:#fff;--text:#18352f;--muted:#72867f;
+  --accent:#2f7565;--accent-dark:#255f53;--soft:#e9f3f0;--line:#d7e3df;
+  --amber:#956818;--wa:#58c978
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{background:var(--bg)}
-body{margin:0;background:linear-gradient(180deg,#eaf1ef 0,#f4f7f6 42%,#eef3f2 100%);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);font-size:14px}
+body{margin:0;background:linear-gradient(180deg,#eaf1ef,#f6f8f7 45%,#eef4f2);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);font-size:14px}
 button,input,select,textarea{font:inherit}
-.wrap{max-width:620px;margin:auto;padding:10px 10px 92px}
-.head{background:linear-gradient(135deg,#347866,#255e52);color:#fff;padding:14px 15px;border-radius:16px;margin-bottom:9px;display:flex;justify-content:space-between;gap:10px;align-items:center;box-shadow:0 8px 22px rgba(31,86,72,.16)}
-.head h1{margin:0 0 2px;font-size:18px;line-height:1.2;letter-spacing:-.2px}
-.head p{margin:0;font-size:11px;opacity:.86}
-.install{border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.10);color:#fff;border-radius:999px;padding:7px 10px;font-weight:800;font-size:10px;white-space:nowrap}
-.card{background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:15px;padding:12px;margin-bottom:8px;box-shadow:0 3px 12px rgba(28,69,59,.045)}
-.card h2{font-size:14px;line-height:1.2;margin:0 0 10px;color:var(--accent);letter-spacing:-.1px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.full{grid-column:1/-1}
-label{display:block;font-size:10.5px;font-weight:800;margin:0 0 4px;color:#526a63;line-height:1.2}
-input,select,textarea{width:100%;min-height:43px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fbfdfc;color:var(--text);margin:0 0 8px;outline:none;font-size:16px}
-textarea{min-height:58px;resize:vertical}
+.wrap{max-width:620px;margin:auto;padding:10px 10px 94px}
+.head{background:linear-gradient(135deg,#357b68,#275f54);color:#fff;padding:13px 14px;border-radius:16px;margin-bottom:8px;display:flex;justify-content:space-between;gap:10px;align-items:center;box-shadow:0 8px 22px rgba(31,86,72,.14)}
+.head h1{margin:0 0 2px;font-size:18px;line-height:1.2}.head p{margin:0;font-size:11px;opacity:.86}
+.install{border:1px solid #ffffff55;background:#ffffff16;color:#fff;border-radius:999px;padding:7px 10px;font-weight:800;font-size:10px;white-space:nowrap}
+.card{background:rgba(255,255,255,.97);border:1px solid var(--line);border-radius:15px;padding:11px;margin-bottom:8px;box-shadow:0 3px 12px rgba(28,69,59,.04)}
+.card h2{font-size:14px;margin:0 0 9px;color:var(--accent);line-height:1.2}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:7px 8px}
+.grid>*{min-width:0}.full{grid-column:1/-1}
+.dateTimeGrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}.dateTimeGrid>*{min-width:0}
+label{display:block;font-size:10.5px;font-weight:800;margin:0 0 4px;color:#536b64;line-height:1.2}
+input,select,textarea{display:block;width:100%;max-width:100%;min-width:0;min-height:42px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fbfdfc;color:var(--text);margin:0;outline:none;font-size:15px}
+input[type=date]{-webkit-appearance:none;appearance:none}
+textarea{min-height:56px;resize:vertical}
 input:focus,select:focus,textarea:focus{border-color:#78aa9e;box-shadow:0 0 0 3px rgba(94,151,136,.12);background:#fff}
-.auto{background:#f2f7f5;border:1px solid #d9e6e2;border-left:3px solid var(--accent);padding:8px 10px;border-radius:9px;margin:1px 0 0;font-size:10.5px;color:#566d66}
-.auto b{display:block;color:var(--accent);font-size:13px;margin-top:2px}
-.pair{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.stat{background:#f3f7f6;border:1px solid #dbe5e1;border-radius:10px;padding:8px 9px}
-.stat small{display:block;color:var(--muted);font-size:9.5px}
-.stat b{display:block;margin-top:2px;font-size:13px;color:#294f45}
-.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid #e7eeeb}
-.toggle:first-of-type{border-top:0}
-.toggle strong{font-size:11.5px}
-.toggle small{display:block;color:var(--muted);font-size:9.5px;margin-top:2px}
-.switch{position:relative;width:42px;height:25px;flex:0 0 auto}
-.switch input{display:none}
-.slider{position:absolute;inset:0;background:#b9c8c3;border-radius:999px}
-.slider:before{content:"";position:absolute;width:19px;height:19px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.18s;box-shadow:0 1px 4px #0002}
-.switch input:checked+.slider{background:#4b9a87}
-.switch input:checked+.slider:before{transform:translateX(17px)}
-.preview{white-space:pre-wrap;background:#f7faf9;border:1px solid var(--line);border-radius:10px;padding:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;line-height:1.5;max-height:300px;overflow:auto;color:#29423b}
-.notice{font-size:10px;padding:8px 9px;border-radius:9px;margin-top:8px;font-weight:650}
-.ok{background:#e7f3ec;color:#286447}
-.warn{background:#fff3df;color:#855e14}
-.btns{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
-.btn{border:0;border-radius:11px;min-height:44px;padding:9px 11px;font-weight:850;font-size:13px;cursor:pointer}
-.green{background:var(--accent);color:#fff}
-.light{background:#e6f0ed;color:var(--accent-dark)}
-.wa{background:var(--wa);color:#082c19}
-.small{font-size:9.5px;color:var(--muted);line-height:1.45;margin-bottom:0}
-.historyItem{padding:8px 0;border-top:1px solid var(--line);font-size:11px}
-.historyItem:first-child{border-top:0}
-.historyItem button{margin-top:5px;margin-right:4px;border:0;border-radius:7px;padding:5px 7px;font-weight:800;font-size:9px;background:var(--soft);color:var(--accent)}
-.bottom{position:fixed;z-index:20;left:0;right:0;bottom:0;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:rgba(238,243,242,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid rgba(194,211,205,.7)}
-.bottomIn{max-width:620px;margin:auto;display:grid;grid-template-columns:.78fr 1.22fr;gap:8px}
-.bottom .btn{min-height:48px;font-size:14px}
-@media(max-width:390px){
-  .wrap{padding-left:8px;padding-right:8px}
-  .card{padding:11px}
-  .head{padding:13px}
-  .head h1{font-size:17px}
-  input,select,textarea{padding-left:9px;padding-right:9px}
-}
+.quickTitle{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}.quickTitle h2{margin:0}.modeChip{font-size:9px;font-weight:850;letter-spacing:.3px;color:var(--accent-dark);background:var(--soft);border:1px solid #d5e5e0;border-radius:999px;padding:5px 8px}
+.field{min-width:0}.sectionLine{grid-column:1/-1;height:1px;background:#edf2f0;margin:1px 0}
+.autoRow{display:grid;grid-template-columns:1.25fr 1fr .9fr;gap:6px;margin-top:8px}
+.stat{background:#f3f7f6;border:1px solid #dbe5e1;border-radius:9px;padding:7px 8px;min-width:0}
+.stat small{display:block;color:var(--muted);font-size:8.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stat b{display:block;margin-top:2px;font-size:11px;color:#294f45;white-space:nowrap}
+.convert{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:7px;background:#f2f7f5;border:1px solid #d8e6e1;border-left:3px solid var(--accent);padding:7px 9px;border-radius:9px;font-size:9px;color:var(--muted)}
+.convert b{color:var(--accent);font-size:12px;white-space:nowrap}
+.notice{font-size:9.5px;padding:7px 9px;border-radius:9px;margin-top:8px;font-weight:700}.ok{background:#e7f3ec;color:#286447}.warn{background:#fff3df;color:#855e14}
+details.more{background:#fff;border:1px solid var(--line);border-radius:13px;margin-bottom:8px;overflow:hidden}
+details.more>summary{list-style:none;cursor:pointer;padding:11px 12px;font-size:12px;font-weight:850;color:var(--accent);display:flex;align-items:center;justify-content:space-between}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary:after{content:"＋";font-size:16px;font-weight:500;color:#66827a}
+details.more[open]>summary:after{content:"−"}
+.moreBody{padding:0 11px 11px;border-top:1px solid #edf2f0}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid #edf2f0}.toggle:first-child{border-top:0}
+.toggle strong{font-size:11px}.toggle small{display:block;color:var(--muted);font-size:9px;margin-top:2px}
+.switch{position:relative;width:40px;height:24px;flex:0 0 auto}.switch input{display:none}.slider{position:absolute;inset:0;background:#bdcbc6;border-radius:999px}.slider:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.18s;box-shadow:0 1px 4px #0002}.switch input:checked+.slider{background:#4b9a87}.switch input:checked+.slider:before{transform:translateX(16px)}
+.preview{white-space:pre-wrap;background:#f7faf9;border:1px solid var(--line);border-radius:10px;padding:9px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;line-height:1.45;max-height:280px;overflow:auto;color:#29423b;margin-top:9px}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}.btn{border:0;border-radius:11px;min-height:43px;padding:9px 11px;font-weight:850;font-size:12px;cursor:pointer}.green{background:var(--accent);color:#fff}.light{background:#e6f0ed;color:var(--accent-dark)}.wa{background:var(--wa);color:#082c19}
+.small{font-size:9px;color:var(--muted);line-height:1.45}.historyItem{padding:8px 0;border-top:1px solid var(--line);font-size:10px}.historyItem:first-child{border-top:0}.historyItem button{margin-top:5px;margin-right:4px;border:0;border-radius:7px;padding:5px 7px;font-weight:800;font-size:9px;background:var(--soft);color:var(--accent)}
+.bottom{position:fixed;z-index:20;left:0;right:0;bottom:0;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:rgba(238,244,242,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid rgba(194,211,205,.72)}
+.bottomIn{max-width:620px;margin:auto;display:grid;grid-template-columns:.78fr 1.22fr;gap:8px}.bottom .btn{min-height:48px;font-size:14px}
+@media(max-width:390px){.wrap{padding-left:8px;padding-right:8px}.head{padding:12px}.head h1{font-size:17px}.card{padding:10px}.autoRow{gap:5px}.stat{padding:7px 6px}.stat b{font-size:10.5px}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header class="head"><div><h1>Reqoo · LRA Report</h1><p>Status Operasi LRA Semenyih 2</p></div><button id="installBtn" class="install">Pasang</button></header>
+  <header class="head">
+    <div><h1>Reqoo · LRA Report</h1><p>Status Operasi LRA Semenyih 2</p></div>
+    <button id="installBtn" class="install">Pasang</button>
+  </header>
 
-  <section class="card"><h2>Report</h2><div class="grid"><div><label>Tarikh</label><input id="date" type="date"></div><div><label>Masa report - 2 jam sekali</label><select id="time"></select></div></div></section>
-
-  <section class="card"><h2>Sungai & Pengepaman</h2><div class="grid">
-    <div><label>Paras Sg Langat (m)</label><input id="river" inputmode="decimal" value="6.13"></div><div><label>Paras maksima (m)</label><input id="riverMax" inputmode="decimal" value="10.11"></div>
-    <div><label>RWP</label><select id="rwp"><option value="126">126 MLD</option><option value="63">63 MLD</option></select></div><div><label>TWP</label><select id="twp"><option value="100">100 MLD</option><option value="50">50 MLD</option></select></div>
-    <div class="full"><label>RW Inflow (m3/h)</label><input id="rw" inputmode="decimal" value="4213"></div>
-  </div><div class="auto">Normal RW ikut RWP<b id="rwNormal">4200m3/h ~ 4500m3/h</b></div></section>
-
-  <section class="card"><h2>Tangki Air Bersih & TW</h2><div class="grid">
-    <div><label>Tangki No.1 (m)</label><input id="tank1" inputmode="decimal" value="4.03"></div><div><label>Tangki No.2 (m / status)</label><input id="tank2" value="(**)"></div>
-    <div class="full"><label>TW Outflow (m3/h)</label><input id="tw" inputmode="decimal" value="4156"></div>
-  </div><div class="pair"><div class="stat"><small>Normal TW</small><b id="twNormal">4200 m3/h</b></div><div class="stat"><small>Delivery Pressure</small><b id="pressure">7.6 bar</b></div></div></section>
-
-  <section class="card"><h2>Kolam Desa Putra</h2><div class="grid">
-    <div><label>No.1 (m)</label><input id="pond1" inputmode="decimal" value="7.55"></div><div><label>No.2 (m)</label><input id="pond2" inputmode="decimal" value="7.81"></div>
-    <div class="full"><label>Outflow (m3/h)</label><input id="pondOut" inputmode="decimal" value="3692.25"></div>
-  </div><div class="auto">Auto conversion: m3/h x 24 / 1000<b id="pondMld">88.614 MLD</b></div></section>
-
-  <section class="card"><h2>Status Maintenance</h2>
-    <div class="toggle"><div><strong>Sg Langat *</strong><small>SCADA Lost Comm / bacaan tidak tepat</small></div><label class="switch"><input id="riverMaint" type="checkbox" checked><span class="slider"></span></label></div>
-    <div class="toggle"><div><strong>Tangki No.2 (**)</strong><small>Sensor ULS rosak</small></div><label class="switch"><input id="tankMaint" type="checkbox" checked><span class="slider"></span></label></div>
-    <label style="margin-top:8px">Nota tambahan</label><textarea id="note" rows="2" placeholder="Optional"></textarea>
+  <section class="card">
+    <div class="quickTitle"><h2>Report</h2><span class="modeChip">2 JAM SEKALI</span></div>
+    <div class="dateTimeGrid">
+      <div class="field"><label>Tarikh</label><input id="date" type="date"></div>
+      <div class="field"><label>Masa report</label><select id="time"></select></div>
+    </div>
   </section>
 
-  <section class="card"><h2>Preview WhatsApp</h2><div id="preview" class="preview"></div><div id="notice" class="notice ok">OK - bacaan utama dalam julat.</div><div class="btns"><button id="save" class="btn light">Simpan History</button><button id="remind" class="btn green">Set Reminder</button></div><p class="small">Data dan history disimpan dalam telefon ini sahaja. Reminder PWA paling stabil bila app masih aktif; WhatsApp tetap perlukan tekan Send.</p></section>
+  <section class="card">
+    <div class="quickTitle"><h2>Quick Report</h2><span class="modeChip">OPERASI</span></div>
+    <div class="grid">
+      <div class="field"><label>RWP</label><select id="rwp"><option value="126">126 MLD</option><option value="63">63 MLD</option></select></div>
+      <div class="field"><label>TWP</label><select id="twp"><option value="100">100 MLD</option><option value="50">50 MLD</option></select></div>
 
-  <section class="card"><h2>History</h2><div id="history" class="small">Belum ada report.</div></section>
+      <div class="field"><label>RW Inflow <span>(m3/h)</span></label><input id="rw" inputmode="decimal" value="4213"></div>
+      <div class="field"><label>TW Outflow <span>(m3/h)</span></label><input id="tw" inputmode="decimal" value="4156"></div>
+
+      <div class="sectionLine"></div>
+
+      <div class="field"><label>Paras Sg Langat <span>(m)</span></label><input id="river" inputmode="decimal" value="6.13"></div>
+      <div class="field"><label>Tangki Air No.1 <span>(m)</span></label><input id="tank1" inputmode="decimal" value="4.03"></div>
+
+      <div class="field"><label>Tangki Air No.2</label><input id="tank2" value="(**)"></div>
+      <div class="field"><label>Desa Putra No.1 <span>(m)</span></label><input id="pond1" inputmode="decimal" value="7.55"></div>
+
+      <div class="field"><label>Desa Putra No.2 <span>(m)</span></label><input id="pond2" inputmode="decimal" value="7.81"></div>
+      <div class="field"><label>DP Outflow <span>(m3/h)</span></label><input id="pondOut" inputmode="decimal" value="3692.25"></div>
+    </div>
+
+    <div class="autoRow">
+      <div class="stat"><small>Normal RW</small><b id="rwNormal">4200~4500</b></div>
+      <div class="stat"><small>Normal TW</small><b id="twNormal">4200 m3/h</b></div>
+      <div class="stat"><small>Pressure</small><b id="pressure">7.6 bar</b></div>
+    </div>
+    <div class="convert"><span>Desa Putra auto conversion</span><b id="pondMld">88.614 MLD</b></div>
+    <div id="notice" class="notice ok">OK - bacaan utama dalam julat.</div>
+  </section>
+
+  <details class="more">
+    <summary>Tetapan & Maintenance</summary>
+    <div class="moreBody">
+      <div class="grid" style="padding-top:9px">
+        <div class="field full"><label>Paras maksima Sg Langat (m)</label><input id="riverMax" inputmode="decimal" value="10.11"></div>
+      </div>
+      <div class="toggle"><div><strong>Sg Langat *</strong><small>SCADA Lost Comm / bacaan tidak tepat</small></div><label class="switch"><input id="riverMaint" type="checkbox" checked><span class="slider"></span></label></div>
+      <div class="toggle"><div><strong>Tangki No.2 (**)</strong><small>Sensor ULS rosak</small></div><label class="switch"><input id="tankMaint" type="checkbox" checked><span class="slider"></span></label></div>
+      <label style="margin-top:8px">Nota tambahan</label><textarea id="note" rows="2" placeholder="Optional"></textarea>
+    </div>
+  </details>
+
+  <details class="more">
+    <summary>Preview WhatsApp & Simpan</summary>
+    <div class="moreBody">
+      <div id="preview" class="preview"></div>
+      <div class="btns"><button id="save" class="btn light">Simpan History</button><button id="remind" class="btn green">Set Reminder</button></div>
+      <p class="small">Data dan history disimpan dalam telefon ini sahaja. WhatsApp masih perlukan tekan Send.</p>
+    </div>
+  </details>
+
+  <details class="more">
+    <summary>History Report</summary>
+    <div class="moreBody"><div id="history" class="small" style="padding-top:8px">Belum ada report.</div></div>
+  </details>
 </div>
+
 <div class="bottom"><div class="bottomIn"><button id="share" class="btn light">Share</button><button id="wa" class="btn wa">Buka WhatsApp</button></div></div>
 <script>
 const $=x=>document.getElementById(x), ids=['date','time','river','riverMax','rwp','twp','rw','tank1','tank2','tw','pond1','pond2','pondOut','riverMaint','tankMaint','note'];
