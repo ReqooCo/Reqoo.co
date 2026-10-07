@@ -62,6 +62,11 @@ details.more[open]>summary:after{content:"−"}
 .tabBtn.active{background:#fff;color:var(--accent-dark);box-shadow:0 2px 8px #17352b14}
 .panel{display:none}.panel.active{display:block}
 .pumpGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 8px}.pumpGrid>*{min-width:0}
+.pumpHead{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:4px}.pumpHead label{margin:0}
+.changeTag{display:inline-flex;align-items:center;gap:4px;font-size:8.5px;font-weight:850;color:#71847e;background:#f1f5f4;border:1px solid #dce7e3;border-radius:999px;padding:4px 6px;cursor:pointer;user-select:none;white-space:nowrap}
+.changeTag input{appearance:none;-webkit-appearance:none;width:12px;height:12px;min-height:0;margin:0;padding:0;border:1.5px solid #9bb0a9;border-radius:50%;background:#fff}
+.changeTag input:checked{background:#2f7565;border-color:#2f7565;box-shadow:inset 0 0 0 2px #fff}
+.changeTag:has(input:checked){color:#245e51;background:#e6f2ee;border-color:#bfd8d0}
 .statusRun{border-color:#acd9bd!important;background:#f0faf4!important;color:#236b43!important;font-weight:850}
 .statusStop{border-color:#e7c3c3!important;background:#fff6f6!important;color:#9b3e3e!important;font-weight:850}
 .reportMeta{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:9px}.reportMeta>*{min-width:0}
@@ -158,8 +163,8 @@ details.more[open]>summary:after{content:"−"}
         <div class="field"><label>Masa</label><input id="ibTime" type="time" step="60"></div>
       </div>
       <div class="pumpGrid">
-        <div class="field"><label>Pump No.1</label><select id="ibP1" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
-        <div class="field"><label>Pump No.2</label><select id="ibP2" class="pumpStatus"><option value="Run">Run</option><option value="Stop">Stop</option></select></div>
+        <div class="field"><div class="pumpHead"><label>Pump No.1</label><label class="changeTag"><input id="ibC1" type="checkbox">Berubah</label></div><select id="ibP1" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
+        <div class="field"><div class="pumpHead"><label>Pump No.2</label><label class="changeTag"><input id="ibC2" type="checkbox">Berubah</label></div><select id="ibP2" class="pumpStatus"><option value="Run">Run</option><option value="Stop">Stop</option></select></div>
         <div class="field"><label>Paras Pond B (m)</label><input id="ibPondB" inputmode="decimal" value="5.98"></div>
         <div class="field"><label>Paras Pond C (m)</label><input id="ibPondC" inputmode="decimal" value="11.96"></div>
       </div>
@@ -175,10 +180,10 @@ details.more[open]>summary:after{content:"−"}
         <div class="field"><label>Masa</label><input id="icTime" type="time" step="60"></div>
       </div>
       <div class="pumpGrid">
-        <div class="field"><label>Pump No.1</label><select id="icP1" class="pumpStatus"><option value="Run">Run</option><option value="Stop">Stop</option></select></div>
-        <div class="field"><label>Pump No.2</label><select id="icP2" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
-        <div class="field"><label>Pump No.3</label><select id="icP3" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
-        <div class="field"><label>Pump No.4</label><select id="icP4" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
+        <div class="field"><div class="pumpHead"><label>Pump No.1</label><label class="changeTag"><input id="icC1" type="checkbox">Berubah</label></div><select id="icP1" class="pumpStatus"><option value="Run">Run</option><option value="Stop">Stop</option></select></div>
+        <div class="field"><div class="pumpHead"><label>Pump No.2</label><label class="changeTag"><input id="icC2" type="checkbox">Berubah</label></div><select id="icP2" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
+        <div class="field"><div class="pumpHead"><label>Pump No.3</label><label class="changeTag"><input id="icC3" type="checkbox">Berubah</label></div><select id="icP3" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
+        <div class="field"><div class="pumpHead"><label>Pump No.4</label><label class="changeTag"><input id="icC4" type="checkbox">Berubah</label></div><select id="icP4" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
         <div class="field"><label>Total Pumping</label><select id="icTotal"><option value="63">63 MLD</option><option value="126">126 MLD</option></select></div>
         <div class="field"><label>RW Inflow (m3/h)</label><input id="icRw" inputmode="decimal" value="2518"></div>
         <div class="field"><label>Pond B (m)</label><input id="icPondB" inputmode="decimal" value="5.93"></div>
@@ -196,10 +201,10 @@ details.more[open]>summary:after{content:"−"}
         <div class="field"><label>Masa</label><input id="twpsTime" type="time" step="60"></div>
       </div>
       <div class="pumpGrid">
-        <div class="field"><label>Pump No.1</label><select id="twpsP1" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
-        <div class="field"><label>Pump No.2</label><select id="twpsP2" class="pumpStatus"><option value="Run">Run</option><option value="Stop">Stop</option></select></div>
-        <div class="field"><label>Pump No.3</label><select id="twpsP3" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
-        <div class="field"><label>Pump No.4</label><select id="twpsP4" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
+        <div class="field"><div class="pumpHead"><label>Pump No.1</label><label class="changeTag"><input id="twpsC1" type="checkbox">Berubah</label></div><select id="twpsP1" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
+        <div class="field"><div class="pumpHead"><label>Pump No.2</label><label class="changeTag"><input id="twpsC2" type="checkbox">Berubah</label></div><select id="twpsP2" class="pumpStatus"><option value="Run">Run</option><option value="Stop">Stop</option></select></div>
+        <div class="field"><div class="pumpHead"><label>Pump No.3</label><label class="changeTag"><input id="twpsC3" type="checkbox">Berubah</label></div><select id="twpsP3" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
+        <div class="field"><div class="pumpHead"><label>Pump No.4</label><label class="changeTag"><input id="twpsC4" type="checkbox">Berubah</label></div><select id="twpsP4" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
         <div class="field"><label>Total Pumping</label><select id="twpsTotal"><option value="50">50 MLD</option><option value="100">100 MLD</option></select></div>
         <div class="field"><label>TW Outflow (m3/h)</label><input id="twpsOut" inputmode="decimal" value="2236"></div>
         <div class="field"><label>CWT 1 (m)</label><input id="twpsCwt1" inputmode="decimal" value="4.07"></div>
@@ -217,7 +222,7 @@ details.more[open]>summary:after{content:"−"}
 <script>
 const $=x=>document.getElementById(x);
 const ids=['date','time','river','riverMax','rwp','twp','rw','tank1','tank2','tw','pond1','pond2','pondOut','riverMaint','tankMaint','note'];
-const pumpIds=['ibDate','ibTime','ibP1','ibP2','ibPondB','ibPondC','icDate','icTime','icP1','icP2','icP3','icP4','icTotal','icRw','icPondB','icPondC','twpsDate','twpsTime','twpsP1','twpsP2','twpsP3','twpsP4','twpsTotal','twpsOut','twpsCwt1','twpsCwt2','twpsDp1','twpsDp2','twpsMaint'];
+const pumpIds=['ibDate','ibTime','ibP1','ibP2','ibC1','ibC2','ibPondB','ibPondC','icDate','icTime','icP1','icP2','icP3','icP4','icC1','icC2','icC3','icC4','icTotal','icRw','icPondB','icPondC','twpsDate','twpsTime','twpsP1','twpsP2','twpsP3','twpsP4','twpsC1','twpsC2','twpsC3','twpsC4','twpsTotal','twpsOut','twpsCwt1','twpsCwt2','twpsDp1','twpsDp2','twpsMaint'];
 let activeTab='ops';
 
 const slots=['08:00','10:00','12:00','14:00','16:00','18:00','20:00','22:00','00:00','02:00','04:00','06:00'];
@@ -249,21 +254,21 @@ function opsText(){
  if(v('note'))L.push('_'+v('note')+'_');
  return L.join('\n');
 }
-function pumpLine(no,status,mark=false){return 'Pump : No.'+no+' '+(mark?'*':'')+'('+status+')'+(mark?'*':'')}
+function pumpLine(no,status,changed=false,prefix='Pump : No.'){return prefix+no+' '+(changed?'*':'')+'('+status+')'+(changed?'*':'')}
 function intakeBText(){
  const L=['*RWTPS*','*INTAKE B*',fdate(v('ibDate')),ftime(v('ibTime')),'','_Status Pump_',''];
- L.push('Pump No.1 *('+v('ibP1')+')*','Pump No.2 *('+v('ibP2')+')*','','_Paras_','Pond B : ('+v('ibPondB')+'m)','Pond C : ('+v('ibPondC')+'m)');
+ L.push(pumpLine(1,v('ibP1'),ck('ibC1'),'Pump No.'),pumpLine(2,v('ibP2'),ck('ibC2'),'Pump No.'),'','_Paras_','Pond B : ('+v('ibPondB')+'m)','Pond C : ('+v('ibPondC')+'m)');
  return L.join('\n');
 }
 function intakeCText(){
  const L=['*RWPS*','*INTAKE C*',fdate(v('icDate')),ftime(v('icTime')),'','_Status Pump_'];
- [1,2,3,4].forEach(i=>L.push(pumpLine(i,v('icP'+i),false)));
+ [1,2,3,4].forEach(i=>L.push(pumpLine(i,v('icP'+i),ck('icC'+i))));
  L.push('','Total pumping : '+v('icTotal')+'Mld','Rw Inflow : '+v('icRw')+'m3/h','','_Paras_','Pond B : ('+v('icPondB')+'m)','Pond C : ('+v('icPondC')+'m)');
  return L.join('\n');
 }
 function twpsText(){
  const L=['*TWPS*',fdate(v('twpsDate')),ftime(v('twpsTime')),'','_Status Pump_'];
- [1,2,3,4].forEach(i=>L.push(pumpLine(i,v('twpsP'+i),false)));
+ [1,2,3,4].forEach(i=>L.push(pumpLine(i,v('twpsP'+i),ck('twpsC'+i))));
  L.push('','Total Pumping : '+v('twpsTotal')+'Mld','Tw Outflow = '+v('twpsOut')+'m3/h','','_Paras_','CWT 1 : '+v('twpsCwt1')+'m','CWT 2 : '+v('twpsCwt2'),'DP 1 : '+v('twpsDp1')+'m','DP 2 : '+v('twpsDp2')+'m');
  if(ck('twpsMaint'))L.push('','_(*) Paras tangki no.2 under maintenance (sensor ULS rosak)_');
  return L.join('\n');
