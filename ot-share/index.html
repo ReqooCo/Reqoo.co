@@ -597,8 +597,7 @@
 
       function ensureMonth(key) {
         if(!monthlyData[key]) {
-          const hasAny = monthFields.some(id=>num(id)>0);
-          monthlyData[key] = hasAny ? readMonthForm() : requestOnlyMonth(key);
+          monthlyData[key] = requests.some(r=>r.month===key) ? requestOnlyMonth(key) : emptyMonth($('workMode').value);
           saveMonthlyData();
         }
       }
@@ -1104,6 +1103,7 @@
         updateModeUI();
         updatePcbUI();
         calculate();
+        if(activeMonth) saveMonthForm(activeMonth);
         save(false);
         $('savedMsg').textContent = 'Dikembalikan ke template kosong.';
         setTimeout(() => { $('savedMsg').textContent = ''; }, 1800);
@@ -1135,12 +1135,18 @@
       ids.forEach(id => {
         $(id).addEventListener('input', () => {
           calculate();
+          if(monthFields.includes(id)) saveMonthForm(activeMonth);
           save(false);
         });
       });
       $('workMode').addEventListener('change', () => {
         updateModeUI();
         calculate();
+        if(activeMonth) saveMonthForm(activeMonth);
+        if($('reqWorkMode')) {
+          $('reqWorkMode').value = $('workMode').value;
+          updateReqCategoryOptions();
+        }
         save(false);
       });
       $('pcbStatus').addEventListener('change', () => {
@@ -1153,6 +1159,58 @@
         calculate();
         save(false);
       });
+      document.querySelectorAll('.tab-btn').forEach(btn=>btn.addEventListener('click',()=>switchTab(btn.dataset.tab)));
+
+      $('todayMonthBtn').addEventListener('click',()=>{
+        if(activeMonth) saveMonthForm(activeMonth);
+        activeMonth=currentMonthKey();
+        $('calcMonth').value=activeMonth;
+        ensureMonth(activeMonth);
+        loadMonthForm(activeMonth);
+      });
+      $('calcMonth').addEventListener('change',()=>{
+        if(activeMonth) saveMonthForm(activeMonth);
+        activeMonth=$('calcMonth').value||currentMonthKey();
+        ensureMonth(activeMonth);
+        loadMonthForm(activeMonth);
+      });
+
+      ['reqName','reqPosition','reqStaffId','reqLocation','reqSupervisor'].forEach(id=>{
+        $(id).addEventListener('input',()=>{saveRequestProfile();savedCurrentRequestId=null;updateRequestPreview()});
+      });
+      ['reqDate','reqStart','reqEnd','reqHours','reqTask'].forEach(id=>{
+        $(id).addEventListener('input',()=>{savedCurrentRequestId=null;updateRequestPreview()});
+      });
+      $('reqWorkMode').addEventListener('change',()=>{
+        savedCurrentRequestId=null;
+        $('workMode').value=$('reqWorkMode').value;
+        updateModeUI();
+        updateReqCategoryOptions();
+        if(activeMonth) saveMonthForm(activeMonth);
+        calculate();
+        save(false);
+      });
+      $('reqCategory').addEventListener('change',()=>{savedCurrentRequestId=null;normalizeRequestHours()});
+      $('reqSaveBtn').addEventListener('click',()=>saveRequestRecord());
+      $('reqWhatsAppBtn').addEventListener('click',()=>{
+        const rec=saveRequestRecord();
+        if(!rec)return;
+        window.open('https://wa.me/?text='+encodeURIComponent(buildWhatsAppText()),'_blank');
+      });
+
+      $('recordThisMonthBtn').addEventListener('click',()=>{$('recordMonth').value=currentMonthKey();renderRecords()});
+      $('recordMonth').addEventListener('change',renderRecords);
+      $('syncRecordToCalcBtn').addEventListener('click',()=>{
+        if(activeMonth) saveMonthForm(activeMonth);
+        activeMonth=$('recordMonth').value||currentMonthKey();
+        $('calcMonth').value=activeMonth;
+        ensureMonth(activeMonth);
+        loadMonthForm(activeMonth);
+        $('reqWorkMode').value=$('workMode').value;
+        updateReqCategoryOptions();
+        switchTab('calc');
+      });
+
       $('addCommitBtn').addEventListener('click', () => {
         commitments.push(newCommit('', 0));
         saveCommitments();
@@ -1162,6 +1220,7 @@
         if (rows.length) rows[rows.length - 1].focus();
       });
       $('saveBtn').addEventListener('click', () => {
+        saveMonthForm(activeMonth);
         saveCommitments();
         save(true);
       });
@@ -1174,10 +1233,27 @@
       if (isiOS && !standalone) $('installHint').classList.add('show');
 
       load();
+      loadRequests();
+      loadMonthlyData();
+      activeMonth=currentMonthKey();
+      $('calcMonth').value=activeMonth;
+      ensureMonth(activeMonth);
+      loadMonthForm(activeMonth);
+
       updateModeUI();
       updatePcbUI();
       loadCommitments();
       renderCommitments();
+
+      loadRequestProfile();
+      $('reqWorkMode').value=$('workMode').value;
+      updateReqCategoryOptions();
+      const today=new Date();
+      $('reqDate').value=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+      $('recordMonth').value=activeMonth;
+      renderRecords();
+      updateRequestPreview();
+
       calculate();
       updateNetwork();
 
