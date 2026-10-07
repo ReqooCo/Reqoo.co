@@ -430,6 +430,9 @@
     (() => {
       const KEY = 'ot-air-selangor-share-v1';
       const COMMIT_KEY = 'ot-air-selangor-share-commitments-v1';
+      const PROFILE_KEY = 'ot-air-selangor-share-request-profile-v1';
+      const REQUEST_KEY = 'ot-air-selangor-share-requests-v1';
+      const MONTH_KEY = 'ot-air-selangor-share-monthly-v1';
       const REF_GROSS = 7503.91;
       const RATIOS = {
         epf: 531 / REF_GROSS,
@@ -443,6 +446,10 @@
       const num = id => Math.max(0, Number($(id).value) || 0);
       const money = value => new Intl.NumberFormat('ms-MY',{style:'currency',currency:'MYR'}).format(Number.isFinite(value) ? value : 0);
       let commitments = [];
+      let requests = [];
+      let monthlyData = {};
+      let activeMonth = '';
+      let savedCurrentRequestId = null;
 
       function newCommit(name = '', amount = 0) {
         return { id: 'c_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,6), name, amount: Math.max(0, Number(amount) || 0) };
@@ -523,6 +530,345 @@
           row.append(name,amount,remove);
           root.appendChild(row);
         });
+      }
+
+      const monthFields = [
+        'shiftNormalHours','shiftOffDays','shiftRest8Days','shiftRest12Days','shiftPh8Days','shiftPh12Days','shiftMealDays',
+        'normalOtHours','offOtHours','restOtHours','restOtDays','phOtHours','phOtDays','nonShiftMealDays'
+      ];
+      const monthNames = ['Januari','Februari','Mac','April','Mei','Jun','Julai','Ogos','September','Oktober','November','Disember'];
+      const dayNames = ['Ahad','Isnin','Selasa','Rabu','Khamis','Jumaat','Sabtu'];
+
+      function currentMonthKey() {
+        const d = new Date();
+        return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+      }
+
+      function dateToMonthKey(dateStr) {
+        return /^\d{4}-\d{2}-\d{2}$/.test(dateStr) ? dateStr.slice(0,7) : currentMonthKey();
+      }
+
+      function monthLabel(key) {
+        const [y,m] = String(key||'').split('-').map(Number);
+        return m>=1 && m<=12 ? monthNames[m-1] + ' ' + y : '';
+      }
+
+      function formatDateMY(dateStr) {
+        if(!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return '';
+        const [y,m,d] = dateStr.split('-');
+        return d + '/' + m + '/' + y;
+      }
+
+      function weekdayMY(dateStr) {
+        const d = new Date(dateStr + 'T12:00:00');
+        return Number.isNaN(d.getTime()) ? '' : dayNames[d.getDay()];
+      }
+
+      function emptyMonth(mode='shift') {
+        return {
+          workMode:mode,
+          shiftNormalHours:0,shiftOffDays:0,shiftRest8Days:0,shiftRest12Days:0,shiftPh8Days:0,shiftPh12Days:0,shiftMealDays:0,
+          normalOtHours:0,offOtHours:0,restOtHours:0,restOtDays:0,phOtHours:0,phOtDays:0,nonShiftMealDays:0
+        };
+      }
+
+      function readMonthForm() {
+        const out = emptyMonth($('workMode').value);
+        monthFields.forEach(id=>out[id]=num(id));
+        return out;
+      }
+
+      function loadMonthlyData() {
+        try {
+          const x = JSON.parse(localStorage.getItem(MONTH_KEY) || '{}');
+          monthlyData = x && typeof x === 'object' ? x : {};
+        } catch(e) { monthlyData = {}; }
+      }
+
+      function saveMonthlyData() {
+        try { localStorage.setItem(MONTH_KEY, JSON.stringify(monthlyData)); } catch(e) {}
+      }
+
+      function saveMonthForm(key=activeMonth) {
+        if(!key) return;
+        monthlyData[key] = readMonthForm();
+        saveMonthlyData();
+      }
+
+      function ensureMonth(key) {
+        if(!monthlyData[key]) {
+          const hasAny = monthFields.some(id=>num(id)>0);
+          monthlyData[key] = hasAny ? readMonthForm() : requestOnlyMonth(key);
+          saveMonthlyData();
+        }
+      }
+
+      function loadMonthForm(key) {
+        if(!key) return;
+        ensureMonth(key);
+        const m = monthlyData[key];
+        $('workMode').value = m.workMode === 'nonshift' ? 'nonshift' : 'shift';
+        monthFields.forEach(id=>$(id).value = Number(m[id]) || 0);
+        updateModeUI();
+        calculate();
+      }
+
+      function loadRequests() {
+        try {
+          const x = JSON.parse(localStorage.getItem(REQUEST_KEY) || '[]');
+          requests = Array.isArray(x) ? x : [];
+        } catch(e) { requests = []; }
+      }
+
+      function saveRequests() {
+        try { localStorage.setItem(REQUEST_KEY, JSON.stringify(requests)); } catch(e) {}
+      }
+
+      function loadRequestProfile() {
+        try {
+          const p = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
+          $('reqName').value = p.name || '';
+          $('reqPosition').value = p.position || '';
+          $('reqStaffId').value = p.staffId || '';
+          $('reqLocation').value = p.location || '';
+          $('reqSupervisor').value = p.supervisor || '';
+        } catch(e) {}
+      }
+
+      function saveRequestProfile() {
+        const p = {
+          name:$('reqName').value.trim(),
+          position:$('reqPosition').value.trim(),
+          staffId:$('reqStaffId').value.trim(),
+          location:$('reqLocation').value.trim(),
+          supervisor:$('reqSupervisor').value.trim()
+        };
+        try { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); } catch(e) {}
+        return p;
+      }
+
+      function categoryOptions(mode) {
+        return mode === 'shift'
+          ? [
+              ['normal','Normal'],['off','Off Day'],['rest8','Rest Day 8 jam'],['rest12','Rest Day 12 jam'],
+              ['ph8','Public Holiday 8 jam'],['ph12','Public Holiday 12 jam']
+            ]
+          : [['normal','Normal'],['off','Off Day'],['rest','Rest Day'],['ph','Public Holiday']];
+      }
+
+      function categoryLabel(mode,cat) {
+        const found = categoryOptions(mode).find(x=>x[0]===cat);
+        return found ? found[1] : cat;
+      }
+
+      function updateReqCategoryOptions() {
+        const mode = $('reqWorkMode').value;
+        const old = $('reqCategory').value;
+        $('reqCategory').innerHTML = '';
+        categoryOptions(mode).forEach(([v,label])=>{
+          const o=document.createElement('option'); o.value=v; o.textContent=label; $('reqCategory').appendChild(o);
+        });
+        if(categoryOptions(mode).some(x=>x[0]===old)) $('reqCategory').value=old;
+        normalizeRequestHours();
+      }
+
+      function requestContribution(mode,cat,hours) {
+        const x = emptyMonth(mode);
+        if(mode==='shift') {
+          if(cat==='normal') x.shiftNormalHours=hours;
+          else if(cat==='off') x.shiftOffDays=1;
+          else if(cat==='rest8') x.shiftRest8Days=1;
+          else if(cat==='rest12') x.shiftRest12Days=1;
+          else if(cat==='ph8') x.shiftPh8Days=1;
+          else if(cat==='ph12') x.shiftPh12Days=1;
+          x.shiftMealDays=1;
+        } else {
+          if(cat==='normal') x.normalOtHours=hours;
+          else if(cat==='off') x.offOtHours=hours;
+          else if(cat==='rest'){ x.restOtHours=hours; x.restOtDays=1; }
+          else if(cat==='ph'){ x.phOtHours=hours; x.phOtDays=1; }
+          x.nonShiftMealDays=1;
+        }
+        return x;
+      }
+
+      function requestOnlyMonth(month) {
+        const list=requests.filter(r=>r.month===month);
+        const mode=list.length ? list[list.length-1].mode : $('workMode').value;
+        const out=emptyMonth(mode);
+        list.forEach(r=>{
+          const add=requestContribution(r.mode,r.category,Number(r.hours)||0);
+          monthFields.forEach(k=>out[k]=(Number(out[k])||0)+(Number(add[k])||0));
+          out.workMode=r.mode;
+        });
+        return out;
+      }
+
+      function applyContribution(month,mode,cat,hours,sign=1) {
+        const existed=!!monthlyData[month];
+        if(!existed && sign>0) {
+          monthlyData[month]=requestOnlyMonth(month);
+        } else {
+          if(!monthlyData[month]) monthlyData[month]=emptyMonth(mode);
+          const add=requestContribution(mode,cat,hours);
+          monthFields.forEach(k=>{
+            monthlyData[month][k]=Math.max(0,(Number(monthlyData[month][k])||0)+(Number(add[k])||0)*sign);
+          });
+          monthlyData[month].workMode=mode;
+        }
+        saveMonthlyData();
+        if(month===activeMonth) loadMonthForm(month);
+      }
+
+      function monthSummary(month) {
+        const m=monthlyData[month] || emptyMonth('shift');
+        const mode=m.workMode==='nonshift'?'nonshift':'shift';
+        if(mode==='shift') {
+          const normal=Number(m.shiftNormalHours)||0;
+          const offDays=Number(m.shiftOffDays)||0;
+          const r8=Number(m.shiftRest8Days)||0, r12=Number(m.shiftRest12Days)||0;
+          const p8=Number(m.shiftPh8Days)||0, p12=Number(m.shiftPh12Days)||0;
+          const restDays=r8+r12, phDays=p8+p12;
+          const restHours=r8*8+r12*12, phHours=p8*8+p12*12;
+          return {mode,normal,offDays,restDays,phDays,restHours,phHours,accum:normal+offDays*12+restHours};
+        }
+        const normal=Number(m.normalOtHours)||0, off=Number(m.offOtHours)||0;
+        const rest=Number(m.restOtHours)||0, ph=Number(m.phOtHours)||0;
+        const restDays=Number(m.restOtDays)||0, phDays=Number(m.phOtDays)||0;
+        return {mode,normal,off,rest,ph,restDays,phDays,accum:normal+off+rest+ph};
+      }
+
+      function dashHours(v) {
+        return v>0 ? v.toFixed(2).replace(/\.00$/,'')+' Jam' : '-';
+      }
+
+      function dashDays(v) {
+        return v>0 ? v+' Hari' : '-';
+      }
+
+      function buildWhatsAppText() {
+        const p=saveRequestProfile();
+        const date=$('reqDate').value;
+        const month=dateToMonthKey(date);
+        const s=monthSummary(month);
+        const mode=$('reqWorkMode').value;
+        let summary='';
+        if(mode==='shift') {
+          summary =
+            'Normal : '+dashHours(s.normal||0)+'\n'+
+            'Offday : '+dashDays(s.offDays||0)+'\n'+
+            'Restday : '+dashDays(s.restDays||0)+'\n'+
+            'Public Holiday : '+dashDays(s.phDays||0)+'\n'+
+            '*Jumlah OT Terkumpul :* '+((s.accum||0).toFixed(2).replace(/\.00$/,''))+' Jam';
+        } else {
+          summary =
+            'Normal : '+dashHours(s.normal||0)+'\n'+
+            'Offday : '+dashHours(s.off||0)+'\n'+
+            'Restday : '+dashHours(s.rest||0)+'\n'+
+            'Public Holiday : '+dashHours(s.ph||0)+'\n'+
+            '*Jumlah OT Terkumpul :* '+((s.accum||0).toFixed(2).replace(/\.00$/,''))+' Jam';
+        }
+        return 'Assalamualaikum bos, mohon kelulusan\n\n'+
+          '*ARAHAN KERJA LEBIH MASA*\n\n'+
+          '*Nama:* '+(p.name||'-')+'\n'+
+          '*Jawatan:* '+(p.position||'-')+'\n'+
+          '*No ID:* '+(p.staffId||'-')+'\n'+
+          '*Lokasi Bertugas:* '+(p.location||'-')+'\n'+
+          '*Tarikh Bertugas:* '+(formatDateMY(date)||'-')+'\n'+
+          '*Hari Bertugas:* '+(weekdayMY(date)||'-')+'\n'+
+          '*Masa Mula:* '+($('reqStart').value.trim()||'-')+'\n'+
+          '*Masa Tamat:* '+($('reqEnd').value.trim()||'-')+'\n'+
+          '*PEMOHONAN OT :* '+num('reqHours').toFixed(2).replace(/\.00$/,'')+' Jam\n\n'+
+          '*OT Terkumpul '+monthLabel(month)+'*\n'+summary+'\n\n'+
+          '*Ketua/Penyelia :* '+(p.supervisor||'-')+'\n\n'+
+          '*Tugasan :*\n'+($('reqTask').value.trim()||'-');
+      }
+
+      function updateRequestPreview() {
+        $('reqPreview').textContent=buildWhatsAppText();
+      }
+
+      function normalizeRequestHours() {
+        const mode=$('reqWorkMode').value, cat=$('reqCategory').value;
+        if(mode==='shift') {
+          if(cat==='rest8'||cat==='ph8') $('reqHours').value=8;
+          if(cat==='off'||cat==='rest12'||cat==='ph12') $('reqHours').value=12;
+        }
+        updateRequestPreview();
+      }
+
+      function requestFingerprint() {
+        return [$('reqWorkMode').value,$('reqDate').value,$('reqCategory').value,$('reqStart').value.trim(),$('reqEnd').value.trim(),num('reqHours'),$('reqTask').value.trim()].join('|');
+      }
+
+      function saveRequestRecord() {
+        const date=$('reqDate').value;
+        if(!date){$('reqMsg').textContent='Pilih tarikh bertugas dulu.';return null}
+        const mode=$('reqWorkMode').value, cat=$('reqCategory').value, hours=num('reqHours');
+        if(hours<=0){$('reqMsg').textContent='Masukkan jam OT.';return null}
+        const fp=requestFingerprint();
+        if(savedCurrentRequestId){
+          const old=requests.find(r=>r.id===savedCurrentRequestId);
+          if(old&&old.fingerprint===fp)return old;
+        }
+        saveRequestProfile();
+        const rec={id:'ot_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,6),mode,date,month:dateToMonthKey(date),category:cat,hours,start:$('reqStart').value.trim(),end:$('reqEnd').value.trim(),task:$('reqTask').value.trim(),createdAt:Date.now(),fingerprint:fp};
+        requests.push(rec); saveRequests();
+        applyContribution(rec.month,rec.mode,rec.category,rec.hours,1);
+        savedCurrentRequestId=rec.id;
+        $('reqMsg').textContent='Rekod disimpan dan calculator '+monthLabel(rec.month)+' dikemas kini.';
+        $('recordMonth').value=rec.month;
+        renderRecords(); updateRequestPreview();
+        return rec;
+      }
+
+      function deleteRequest(id) {
+        const rec=requests.find(r=>r.id===id);
+        if(!rec)return;
+        applyContribution(rec.month,rec.mode,rec.category,rec.hours,-1);
+        requests=requests.filter(r=>r.id!==id); saveRequests();
+        if(savedCurrentRequestId===id)savedCurrentRequestId=null;
+        renderRecords(); updateRequestPreview();
+      }
+
+      function renderRecords() {
+        const month=$('recordMonth').value||currentMonthKey();
+        const s=monthSummary(month);
+        $('recMode').textContent=s.mode==='shift'?'Syif 12 jam':'Bukan syif';
+        if(s.mode==='shift'){
+          $('recNormal').textContent=(s.normal||0).toFixed(2).replace(/\.00$/,'')+' jam';
+          $('recOff').textContent=(s.offDays||0)+' hari';
+          $('recRest').textContent=(s.restDays||0)+' hari';
+          $('recPh').textContent=(s.phDays||0)+' hari';
+        }else{
+          $('recNormal').textContent=(s.normal||0).toFixed(2).replace(/\.00$/,'')+' jam';
+          $('recOff').textContent=(s.off||0).toFixed(2).replace(/\.00$/,'')+' jam';
+          $('recRest').textContent=(s.rest||0).toFixed(2).replace(/\.00$/,'')+' jam';
+          $('recPh').textContent=(s.ph||0).toFixed(2).replace(/\.00$/,'')+' jam';
+        }
+        $('recAccum').textContent=(s.accum||0).toFixed(2).replace(/\.00$/,'')+' jam';
+        const root=$('recordList'); root.innerHTML='';
+        const list=requests.filter(r=>r.month===month).sort((a,b)=>String(b.date).localeCompare(String(a.date))||b.createdAt-a.createdAt);
+        if(!list.length){const e=document.createElement('div');e.className='empty';e.textContent='Belum ada rekod OT untuk bulan ini.';root.appendChild(e);return}
+        list.forEach(r=>{
+          const item=document.createElement('div');item.className='record-item';
+          const head=document.createElement('div');head.className='record-head';
+          const left=document.createElement('div');
+          const t=document.createElement('div');t.className='record-title';t.textContent=formatDateMY(r.date)+' • '+categoryLabel(r.mode,r.category)+' • '+r.hours+' jam';
+          const meta=document.createElement('div');meta.className='record-meta';meta.textContent=(r.start||'-')+'–'+(r.end||'-')+' • '+weekdayMY(r.date);
+          left.append(t,meta);
+          const del=document.createElement('button');del.type='button';del.className='record-delete';del.textContent='Delete';del.addEventListener('click',()=>deleteRequest(r.id));
+          head.append(left,del);item.append(head);
+          if(r.task){const task=document.createElement('div');task.className='record-task';task.textContent=r.task;item.append(task)}
+          root.appendChild(item);
+        });
+      }
+
+      function switchTab(name) {
+        document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));
+        ['calc','request','records'].forEach(n=>$('tab'+n.charAt(0).toUpperCase()+n.slice(1)).classList.toggle('active',n===name));
+        if(name==='request')updateRequestPreview();
+        if(name==='records')renderRecords();
       }
 
       function values() {
