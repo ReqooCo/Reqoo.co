@@ -72,6 +72,7 @@ details.more[open]>summary:after{content:"−"}
 .problemTag input:checked{background:#a66d25;border-color:#a66d25;box-shadow:inset 0 0 0 2px #fff}
 .problemTag:has(input:checked){color:#8a5b18;background:#fff3df;border-color:#e4c895}
 .field.problemOn>input{border-color:#deb879;background:#fffaf1}
+.problemNoteWrap{margin-top:5px}.problemNoteWrap.hidden{display:none}.problemNoteWrap label{font-size:8.5px;color:#8a6a39}.problemNoteWrap input{min-height:34px;font-size:11px;padding:6px 8px;background:#fffdf8;border-color:#ead9ba}
 .statusRun{border-color:#acd9bd!important;background:#f0faf4!important;color:#236b43!important;font-weight:850}
 .statusStop{border-color:#e7c3c3!important;background:#fff6f6!important;color:#9b3e3e!important;font-weight:850}
 .reportMeta{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:9px}.reportMeta>*{min-width:0}
@@ -115,12 +116,12 @@ details.more[open]>summary:after{content:"−"}
       <div class="sectionLine"></div>
 
       <div class="field"><label>Paras Sg Langat <span>(m)</span></label><input id="river" inputmode="decimal" value="6.13"></div>
-      <div class="field" id="tank1Field"><div class="pumpHead"><label>Tangki Air No.1 <span>(m)</span></label><label class="problemTag"><input id="tank1Problem" type="checkbox">Problem</label></div><input id="tank1" inputmode="decimal" value="4.03"></div>
+      <div class="field" id="tank1Field"><div class="pumpHead"><label>Tangki Air No.1 <span>(m)</span></label><label class="problemTag"><input id="tank1Problem" type="checkbox">Problem</label></div><input id="tank1" inputmode="decimal" value="4.03"><div id="tank1NoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="tank1Note" value="Paras Tangki Air Bersih No.1 under maintenance (level problem)"></div></div>
 
-      <div class="field" id="tank2Field"><div class="pumpHead"><label>Tangki Air No.2</label><label class="problemTag"><input id="tank2Problem" type="checkbox" checked>Problem</label></div><input id="tank2" inputmode="decimal" value="" placeholder="Bacaan terakhir / kosong"></div>
-      <div class="field" id="pond1Field"><div class="pumpHead"><label>Desa Putra No.1 <span>(m)</span></label><label class="problemTag"><input id="pond1Problem" type="checkbox">Problem</label></div><input id="pond1" inputmode="decimal" value="7.55"></div>
+      <div class="field" id="tank2Field"><div class="pumpHead"><label>Tangki Air No.2</label><label class="problemTag"><input id="tank2Problem" type="checkbox" checked>Problem</label></div><input id="tank2" inputmode="decimal" value="" placeholder="Bacaan terakhir / kosong"><div id="tank2NoteWrap" class="problemNoteWrap"><label>Nota WhatsApp</label><input id="tank2Note" value="Paras tangki no.2 under maintenance (sensor ULS rosak)"></div></div>
+      <div class="field" id="pond1Field"><div class="pumpHead"><label>Desa Putra No.1 <span>(m)</span></label><label class="problemTag"><input id="pond1Problem" type="checkbox">Problem</label></div><input id="pond1" inputmode="decimal" value="7.55"><div id="pond1NoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="pond1Note" value="Paras Desa Putra No.1 under maintenance (level problem)"></div></div>
 
-      <div class="field" id="pond2Field"><div class="pumpHead"><label>Desa Putra No.2 <span>(m)</span></label><label class="problemTag"><input id="pond2Problem" type="checkbox">Problem</label></div><input id="pond2" inputmode="decimal" value="7.81"></div>
+      <div class="field" id="pond2Field"><div class="pumpHead"><label>Desa Putra No.2 <span>(m)</span></label><label class="problemTag"><input id="pond2Problem" type="checkbox">Problem</label></div><input id="pond2" inputmode="decimal" value="7.81"><div id="pond2NoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="pond2Note" value="Paras Desa Putra No.2 under maintenance (level problem)"></div></div>
       <div class="field"><label>DP Outflow <span>(m3/h)</span></label><input id="pondOut" inputmode="decimal" value="3692.25"></div>
     </div>
 
@@ -141,7 +142,7 @@ details.more[open]>summary:after{content:"−"}
       </div>
       <div class="toggle"><div><strong>Sg Langat *</strong><small>Nota hanya keluar bila Maintenance ON</small></div><label class="switch"><input id="riverMaint" type="checkbox" checked><span class="slider"></span></label></div>
       <div id="riverReasonWrap" class="maintReason"><label>Sebab / catatan Sg Langat</label><input id="riverReason" value="SCADA Lost Comm" placeholder="Contoh: SCADA Lost Comm"></div>
-      <div id="tankReasonWrap" class="maintReason"><label>Sebab / catatan Tangki No.2</label><input id="tankReason" value="sensor ULS rosak" placeholder="Contoh: sensor ULS rosak"></div>
+      
       <label style="margin-top:8px">Nota tambahan</label><textarea id="note" rows="2" placeholder="Optional"></textarea>
     </div>
   </details>
@@ -171,8 +172,8 @@ details.more[open]>summary:after{content:"−"}
       <div class="pumpGrid">
         <div class="field"><div class="pumpHead"><label>Pump No.1</label><label class="changeTag"><input id="ibC1" type="checkbox">Berubah</label></div><select id="ibP1" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
         <div class="field"><div class="pumpHead"><label>Pump No.2</label><label class="changeTag"><input id="ibC2" type="checkbox">Berubah</label></div><select id="ibP2" class="pumpStatus"><option value="Run">Run</option><option value="Stop">Stop</option></select></div>
-        <div class="field" id="ibPondBField"><div class="pumpHead"><label>Paras Pond B (m)</label><label class="problemTag"><input id="ibPondBProblem" type="checkbox">Problem</label></div><input id="ibPondB" inputmode="decimal" value="5.98"></div>
-        <div class="field" id="ibPondCField"><div class="pumpHead"><label>Paras Pond C (m)</label><label class="problemTag"><input id="ibPondCProblem" type="checkbox">Problem</label></div><input id="ibPondC" inputmode="decimal" value="11.96"></div>
+        <div class="field" id="ibPondBField"><div class="pumpHead"><label>Paras Pond B (m)</label><label class="problemTag"><input id="ibPondBProblem" type="checkbox">Problem</label></div><input id="ibPondB" inputmode="decimal" value="5.98"><div id="ibPondBNoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="ibPondBNote" value="Paras Pond B under maintenance (level problem)"></div></div>
+        <div class="field" id="ibPondCField"><div class="pumpHead"><label>Paras Pond C (m)</label><label class="problemTag"><input id="ibPondCProblem" type="checkbox">Problem</label></div><input id="ibPondC" inputmode="decimal" value="11.96"><div id="ibPondCNoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="ibPondCNote" value="Paras Pond C under maintenance (level problem)"></div></div>
       </div>
       <details class="more" style="margin:7px 0 0"><summary>Preview WhatsApp</summary><div class="moreBody"><div id="ibPreview" class="pumpPreview"></div></div></details>
     </section>
@@ -192,8 +193,8 @@ details.more[open]>summary:after{content:"−"}
         <div class="field"><div class="pumpHead"><label>Pump No.4</label><label class="changeTag"><input id="icC4" type="checkbox">Berubah</label></div><select id="icP4" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
         <div class="field"><label>Total Pumping</label><select id="icTotal"><option value="63">63 MLD</option><option value="126">126 MLD</option></select></div>
         <div class="field"><label>RW Inflow (m3/h)</label><input id="icRw" inputmode="decimal" value="2518"></div>
-        <div class="field" id="icPondBField"><div class="pumpHead"><label>Pond B (m)</label><label class="problemTag"><input id="icPondBProblem" type="checkbox">Problem</label></div><input id="icPondB" inputmode="decimal" value="5.93"></div>
-        <div class="field" id="icPondCField"><div class="pumpHead"><label>Pond C (m)</label><label class="problemTag"><input id="icPondCProblem" type="checkbox">Problem</label></div><input id="icPondC" inputmode="decimal" value="11.96"></div>
+        <div class="field" id="icPondBField"><div class="pumpHead"><label>Pond B (m)</label><label class="problemTag"><input id="icPondBProblem" type="checkbox">Problem</label></div><input id="icPondB" inputmode="decimal" value="5.93"><div id="icPondBNoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="icPondBNote" value="Paras Pond B under maintenance (level problem)"></div></div>
+        <div class="field" id="icPondCField"><div class="pumpHead"><label>Pond C (m)</label><label class="problemTag"><input id="icPondCProblem" type="checkbox">Problem</label></div><input id="icPondC" inputmode="decimal" value="11.96"><div id="icPondCNoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="icPondCNote" value="Paras Pond C under maintenance (level problem)"></div></div>
       </div>
       <details class="more" style="margin:7px 0 0"><summary>Preview WhatsApp</summary><div class="moreBody"><div id="icPreview" class="pumpPreview"></div></div></details>
     </section>
@@ -213,12 +214,12 @@ details.more[open]>summary:after{content:"−"}
         <div class="field"><div class="pumpHead"><label>Pump No.4</label><label class="changeTag"><input id="twpsC4" type="checkbox">Berubah</label></div><select id="twpsP4" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
         <div class="field"><label>Total Pumping</label><select id="twpsTotal"><option value="50">50 MLD</option><option value="100">100 MLD</option></select></div>
         <div class="field"><label>TW Outflow (m3/h)</label><input id="twpsOut" inputmode="decimal" value="2236"></div>
-        <div class="field" id="twpsCwt1Field"><div class="pumpHead"><label>CWT 1 (m)</label><label class="problemTag"><input id="twpsCwt1Problem" type="checkbox">Problem</label></div><input id="twpsCwt1" inputmode="decimal" value="4.07"></div>
-        <div class="field" id="twpsCwt2Field"><div class="pumpHead"><label>CWT 2</label><label class="problemTag"><input id="twpsCwt2Problem" type="checkbox" checked>Problem</label></div><input id="twpsCwt2" inputmode="decimal" value="" placeholder="Bacaan terakhir / kosong"></div>
-        <div class="field" id="twpsDp1Field"><div class="pumpHead"><label>DP 1 (m)</label><label class="problemTag"><input id="twpsDp1Problem" type="checkbox">Problem</label></div><input id="twpsDp1" inputmode="decimal" value="7.76"></div>
-        <div class="field" id="twpsDp2Field"><div class="pumpHead"><label>DP 2 (m)</label><label class="problemTag"><input id="twpsDp2Problem" type="checkbox">Problem</label></div><input id="twpsDp2" inputmode="decimal" value="8.05"></div>
+        <div class="field" id="twpsCwt1Field"><div class="pumpHead"><label>CWT 1 (m)</label><label class="problemTag"><input id="twpsCwt1Problem" type="checkbox">Problem</label></div><input id="twpsCwt1" inputmode="decimal" value="4.07"><div id="twpsCwt1NoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="twpsCwt1Note" value="Paras CWT 1 under maintenance (level problem)"></div></div>
+        <div class="field" id="twpsCwt2Field"><div class="pumpHead"><label>CWT 2</label><label class="problemTag"><input id="twpsCwt2Problem" type="checkbox" checked>Problem</label></div><input id="twpsCwt2" inputmode="decimal" value="" placeholder="Bacaan terakhir / kosong"><div id="twpsCwt2NoteWrap" class="problemNoteWrap"><label>Nota WhatsApp</label><input id="twpsCwt2Note" value="Paras tangki no.2 under maintenance (sensor ULS rosak)"></div></div>
+        <div class="field" id="twpsDp1Field"><div class="pumpHead"><label>DP 1 (m)</label><label class="problemTag"><input id="twpsDp1Problem" type="checkbox">Problem</label></div><input id="twpsDp1" inputmode="decimal" value="7.76"><div id="twpsDp1NoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="twpsDp1Note" value="Paras Desa Putra No.1 under maintenance (level problem)"></div></div>
+        <div class="field" id="twpsDp2Field"><div class="pumpHead"><label>DP 2 (m)</label><label class="problemTag"><input id="twpsDp2Problem" type="checkbox">Problem</label></div><input id="twpsDp2" inputmode="decimal" value="8.05"><div id="twpsDp2NoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="twpsDp2Note" value="Paras Desa Putra No.2 under maintenance (level problem)"></div></div>
       </div>
-      <div id="twpsReasonWrap" class="maintReason"><label>Sebab / catatan CWT 2</label><input id="twpsReason" value="sensor ULS rosak" placeholder="Contoh: sensor ULS rosak"></div>
+      
       <details class="more" style="margin:7px 0 0"><summary>Preview WhatsApp</summary><div class="moreBody"><div id="twpsPreview" class="pumpPreview"></div></div></details>
     </section>
   </div>
@@ -227,8 +228,8 @@ details.more[open]>summary:after{content:"−"}
 <div class="bottom"><div class="bottomIn"><button id="share" class="btn light">Share</button><button id="wa" class="btn wa">Buka WhatsApp</button></div></div>
 <script>
 const $=x=>document.getElementById(x);
-const ids=['date','time','river','riverMax','rwp','twp','rw','tank1','tank1Problem','tank2','tank2Problem','tw','pond1','pond1Problem','pond2','pond2Problem','pondOut','riverMaint','riverReason','tankReason','note'];
-const pumpIds=['ibDate','ibTime','ibP1','ibP2','ibC1','ibC2','ibPondB','ibPondBProblem','ibPondC','ibPondCProblem','icDate','icTime','icP1','icP2','icP3','icP4','icC1','icC2','icC3','icC4','icTotal','icRw','icPondB','icPondBProblem','icPondC','icPondCProblem','twpsDate','twpsTime','twpsP1','twpsP2','twpsP3','twpsP4','twpsC1','twpsC2','twpsC3','twpsC4','twpsTotal','twpsOut','twpsCwt1','twpsCwt1Problem','twpsCwt2','twpsCwt2Problem','twpsDp1','twpsDp1Problem','twpsDp2','twpsDp2Problem','twpsReason'];
+const ids=['date','time','river','riverMax','rwp','twp','rw','tank1','tank1Problem','tank1Note','tank2','tank2Problem','tank2Note','tw','pond1','pond1Problem','pond1Note','pond2','pond2Problem','pond2Note','pondOut','riverMaint','riverReason','note'];
+const pumpIds=['ibDate','ibTime','ibP1','ibP2','ibC1','ibC2','ibPondB','ibPondBProblem','ibPondBNote','ibPondC','ibPondCProblem','ibPondCNote','icDate','icTime','icP1','icP2','icP3','icP4','icC1','icC2','icC3','icC4','icTotal','icRw','icPondB','icPondBProblem','icPondBNote','icPondC','icPondCProblem','icPondCNote','twpsDate','twpsTime','twpsP1','twpsP2','twpsP3','twpsP4','twpsC1','twpsC2','twpsC3','twpsC4','twpsTotal','twpsOut','twpsCwt1','twpsCwt1Problem','twpsCwt1Note','twpsCwt2','twpsCwt2Problem','twpsCwt2Note','twpsDp1','twpsDp1Problem','twpsDp1Note','twpsDp2','twpsDp2Problem','twpsDp2Note'];
 let activeTab='ops';
 
 const slots=['08:00','10:00','12:00','14:00','16:00','18:00','20:00','22:00','00:00','02:00','04:00','06:00'];
@@ -250,7 +251,7 @@ function marker(x){const m=String(x||'').trim().match(/^\(\*+\)$/);return m?m[0]
 function levelVal(x){const z=String(x||'').trim();return z?z+'m':''}
 function assignedMarker(problemIds,target,offset=0){const on=problemIds.filter(id=>ck(id));const i=on.indexOf(target);return i<0?'':'('+'*'.repeat(i+1+offset)+')'}
 function problemValue(field,problemId,problemIds,offset=0,wrapped=false){const m=assignedMarker(problemIds,problemId,offset);if(m)return m;const z=v(field);return wrapped?(z?'('+z+'m)':''):(z?z+'m':'')}
-function problemNote(problemId,problemIds,label,reason='level problem',offset=0){const m=assignedMarker(problemIds,problemId,offset);return m?'_'+m+' '+label+' under maintenance ('+reason+')_':''}
+function problemNote(problemId,problemIds,noteId,fallback,offset=0){const m=assignedMarker(problemIds,problemId,offset);if(!m)return'';const body=v(noteId)||fallback;return '_'+m+' '+body+'_'}
 
 function opsText(){
  let r=rwP(),t=twP(),m=mld(),L=[];
@@ -268,10 +269,10 @@ function opsText(){
    'Outflow : '+clean(m)+'Mld','');
  if(ck('riverMaint'))L.push('_(*) Paras Sg Langat tidak tepat under maintenance'+(v('riverReason')?' ('+v('riverReason')+')':'')+'_');
  const notes=[
-   problemNote('tank1Problem',probs,'Paras Tangki Air Bersih No.1','level problem',offset),
-   problemNote('tank2Problem',probs,'Paras Tangki Air Bersih No.2',v('tankReason')||'level problem',offset),
-   problemNote('pond1Problem',probs,'Paras Desa Putra No.1','level problem',offset),
-   problemNote('pond2Problem',probs,'Paras Desa Putra No.2','level problem',offset)
+   problemNote('tank1Problem',probs,'tank1Note','Paras Tangki Air Bersih No.1 under maintenance (level problem)',offset),
+   problemNote('tank2Problem',probs,'tank2Note','Paras tangki no.2 under maintenance (sensor ULS rosak)',offset),
+   problemNote('pond1Problem',probs,'pond1Note','Paras Desa Putra No.1 under maintenance (level problem)',offset),
+   problemNote('pond2Problem',probs,'pond2Note','Paras Desa Putra No.2 under maintenance (level problem)',offset)
  ].filter(Boolean);
  L.push(...notes);
  if(v('note'))L.push('_'+v('note')+'_');
@@ -285,8 +286,8 @@ function intakeBText(){
    'Pond B : '+problemValue('ibPondB','ibPondBProblem',probs,0,true),
    'Pond C : '+problemValue('ibPondC','ibPondCProblem',probs,0,true));
  const notes=[
-   problemNote('ibPondBProblem',probs,'Paras Pond B'),
-   problemNote('ibPondCProblem',probs,'Paras Pond C')
+   problemNote('ibPondBProblem',probs,'ibPondBNote','Paras Pond B under maintenance (level problem)'),
+   problemNote('ibPondCProblem',probs,'ibPondCNote','Paras Pond C under maintenance (level problem)')
  ].filter(Boolean);
  if(notes.length)L.push('',...notes);
  return L.join('\n');
@@ -299,8 +300,8 @@ function intakeCText(){
    'Pond B : '+problemValue('icPondB','icPondBProblem',probs,0,true),
    'Pond C : '+problemValue('icPondC','icPondCProblem',probs,0,true));
  const notes=[
-   problemNote('icPondBProblem',probs,'Paras Pond B'),
-   problemNote('icPondCProblem',probs,'Paras Pond C')
+   problemNote('icPondBProblem',probs,'icPondBNote','Paras Pond B under maintenance (level problem)'),
+   problemNote('icPondCProblem',probs,'icPondCNote','Paras Pond C under maintenance (level problem)')
  ].filter(Boolean);
  if(notes.length)L.push('',...notes);
  return L.join('\n');
@@ -315,10 +316,10 @@ function twpsText(){
    'DP 1 : '+problemValue('twpsDp1','twpsDp1Problem',probs),
    'DP 2 : '+problemValue('twpsDp2','twpsDp2Problem',probs));
  const notes=[
-   problemNote('twpsCwt1Problem',probs,'Paras CWT 1'),
-   problemNote('twpsCwt2Problem',probs,'Paras CWT 2',v('twpsReason')||'level problem'),
-   problemNote('twpsDp1Problem',probs,'Paras Desa Putra No.1'),
-   problemNote('twpsDp2Problem',probs,'Paras Desa Putra No.2')
+   problemNote('twpsCwt1Problem',probs,'twpsCwt1Note','Paras CWT 1 under maintenance (level problem)'),
+   problemNote('twpsCwt2Problem',probs,'twpsCwt2Note','Paras tangki no.2 under maintenance (sensor ULS rosak)'),
+   problemNote('twpsDp1Problem',probs,'twpsDp1Note','Paras Desa Putra No.1 under maintenance (level problem)'),
+   problemNote('twpsDp2Problem',probs,'twpsDp2Note','Paras Desa Putra No.2 under maintenance (level problem)')
  ].filter(Boolean);
  if(notes.length)L.push('',...notes);
  return L.join('\n');
@@ -331,15 +332,17 @@ function savePumpDraft(){let o={};pumpIds.forEach(x=>{if(!$(x))return;o[x]=$(x).
 function styleStatus(sel){if(!sel)return;sel.classList.toggle('statusRun',sel.value==='Run');sel.classList.toggle('statusStop',sel.value==='Stop')}
 function syncMaintenance(){
  if($('riverReasonWrap'))$('riverReasonWrap').classList.toggle('hidden',!ck('riverMaint'));
- if($('tankReasonWrap'))$('tankReasonWrap').classList.toggle('hidden',!ck('tank2Problem'));
- if($('twpsReasonWrap'))$('twpsReasonWrap').classList.toggle('hidden',!ck('twpsCwt2Problem'));
  const map=[
-  ['tank1Problem','tank1Field'],['tank2Problem','tank2Field'],['pond1Problem','pond1Field'],['pond2Problem','pond2Field'],
-  ['ibPondBProblem','ibPondBField'],['ibPondCProblem','ibPondCField'],
-  ['icPondBProblem','icPondBField'],['icPondCProblem','icPondCField'],
-  ['twpsCwt1Problem','twpsCwt1Field'],['twpsCwt2Problem','twpsCwt2Field'],['twpsDp1Problem','twpsDp1Field'],['twpsDp2Problem','twpsDp2Field']
+  ['tank1Problem','tank1Field','tank1NoteWrap'],['tank2Problem','tank2Field','tank2NoteWrap'],['pond1Problem','pond1Field','pond1NoteWrap'],['pond2Problem','pond2Field','pond2NoteWrap'],
+  ['ibPondBProblem','ibPondBField','ibPondBNoteWrap'],['ibPondCProblem','ibPondCField','ibPondCNoteWrap'],
+  ['icPondBProblem','icPondBField','icPondBNoteWrap'],['icPondCProblem','icPondCField','icPondCNoteWrap'],
+  ['twpsCwt1Problem','twpsCwt1Field','twpsCwt1NoteWrap'],['twpsCwt2Problem','twpsCwt2Field','twpsCwt2NoteWrap'],
+  ['twpsDp1Problem','twpsDp1Field','twpsDp1NoteWrap'],['twpsDp2Problem','twpsDp2Field','twpsDp2NoteWrap']
  ];
- map.forEach(([p,f])=>{if($(p)&&$(f))$(f).classList.toggle('problemOn',ck(p))});
+ map.forEach(([p,f,w])=>{
+   if($(p)&&$(f))$(f).classList.toggle('problemOn',ck(p));
+   if($(p)&&$(w))$(w).classList.toggle('hidden',!ck(p));
+ });
 }
 
 
@@ -363,6 +366,7 @@ function load(){
  if(o){
    if(o.tankMaint===true)$('tank2Problem').checked=true;
    if(marker(o.tank2)){$('tank2Problem').checked=true;$('tank2').value=''}
+   if(o.tankReason&&!o.tank2Note)$('tank2Note').value='Paras tangki no.2 under maintenance ('+o.tankReason+')';
  }
  let p=null;try{p=JSON.parse(localStorage.getItem('rqLraPumpDraft')||'null')}catch(e){}
  ['ibDate','icDate','twpsDate'].forEach(x=>$(x).value=(p&&p[x])||localDate());
@@ -370,6 +374,7 @@ function load(){
  if(p)pumpIds.forEach(x=>{if(p[x]===undefined||!$(x))return;if($(x).type==='checkbox')$(x).checked=!!p[x];else $(x).value=p[x]});
  if(p){
    if(p.twpsMaint===true)$('twpsCwt2Problem').checked=true;
+   if(p.twpsReason&&!p.twpsCwt2Note)$('twpsCwt2Note').value='Paras tangki no.2 under maintenance ('+p.twpsReason+')';
    if(marker(p.twpsCwt2)){$('twpsCwt2Problem').checked=true;$('twpsCwt2').value=''}
    for(const [field,prob] of [['ibPondB','ibPondBProblem'],['ibPondC','ibPondCProblem'],['icPondB','icPondBProblem'],['icPondC','icPondCProblem'],['twpsCwt1','twpsCwt1Problem'],['twpsDp1','twpsDp1Problem'],['twpsDp2','twpsDp2Problem']]){
      if(marker(p[field])){$(prob).checked=true;$(field).value=''}
