@@ -353,11 +353,11 @@ function currentText(){return activeTab==='intakeB'?intakeBText():activeTab==='i
 
 
 const CHEMS=[
- {k:'pacl1',name:'PACl, 15% Tank No.1',initial:41.869,direct:true},
+ {k:'pacl1',name:'PACl, 15% Tank No.1',initial:32.037,direct:true},
  {k:'pacl2',name:'PACl, 15% Tank No.2',initial:53.019,direct:true},
- {k:'lime',name:'Lime',initial:34.290},
- {k:'chlorine',name:'Klorin',initial:16.836},
- {k:'fluoride',name:'Fluoride',initial:5.100},
+ {k:'lime',name:'Lime',initial:34.280},
+ {k:'chlorine',name:'Klorin',initial:15.932},
+ {k:'fluoride',name:'Fluoride',initial:5.050},
  {k:'polymer',name:'Polymer AN934 (RTF)',initial:1.330},
  {k:'carbon',name:'Activated Carbon',initial:7.500},
  {k:'calhypo',name:'Calcium Hypoclorite',initial:1.440}
@@ -366,6 +366,15 @@ let stockState={};
 function fmtMt(x){return Number(x||0).toFixed(3)}
 function loadStock(){
  try{stockState=JSON.parse(localStorage.getItem('rqLraChemStock')||'null')||{}}catch(e){stockState={}}
+ const seedKey='rqLraChemSeed_2026-10-07';
+ if(!localStorage.getItem(seedKey)){
+   stockState={
+     pacl1:32.037,pacl2:53.019,lime:34.280,chlorine:15.932,
+     fluoride:5.050,polymer:1.330,carbon:7.500,calhypo:1.440
+   };
+   localStorage.setItem(seedKey,'1');
+   localStorage.setItem('rqLraChemStock',JSON.stringify(stockState));
+ }
  CHEMS.forEach(c=>{if(!Number.isFinite(Number(stockState[c.k])))stockState[c.k]=c.initial});
  localStorage.setItem('rqLraChemStock',JSON.stringify(stockState));
  if($('stockDate')&&!$('stockDate').value)$('stockDate').value=localDate();
