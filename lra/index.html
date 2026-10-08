@@ -349,7 +349,7 @@ function twpsText(){
  if(notes.length)L.push('',...notes);
  return L.join('\n');
 }
-function currentText(){return activeTab==='intakeB'?intakeBText():activeTab==='intakeC'?intakeCText():activeTab==='twps'?twpsText():activeTab==='stock'?stockText():opsText()}
+function currentText(){return activeTab==='intakeB'?intakeBText():activeTab==='intakeC'?intakeCText():activeTab==='twps'?twpsText():activeTab==='stock'?stockText(true):opsText()}
 
 
 const CHEMS=[
