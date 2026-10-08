@@ -353,8 +353,8 @@ function currentText(){return activeTab==='intakeB'?intakeBText():activeTab==='i
 
 
 const CHEMS=[
- {k:'pacl1',name:'PACl, 15% Tank No.1',initial:41.869},
- {k:'pacl2',name:'PACl, 15% Tank No.2',initial:53.019},
+ {k:'pacl1',name:'PACl, 15% Tank No.1',initial:41.869,direct:true},
+ {k:'pacl2',name:'PACl, 15% Tank No.2',initial:53.019,direct:true},
  {k:'lime',name:'Lime',initial:34.290},
  {k:'chlorine',name:'Klorin',initial:16.836},
  {k:'fluoride',name:'Fluoride',initial:5.100},
@@ -373,41 +373,58 @@ function loadStock(){
  renderStockHistory();
 }
 function stockNew(c){
- const use=Number($('use_'+c.k)?.value||0),add=Number($('add_'+c.k)?.value||0);
  const cur=Number(stockState[c.k]||0);
+ if(c.direct){
+   const el=$('direct_'+c.k);
+   if(!el||String(el.value).trim()==='')return cur;
+   const direct=Number(el.value);
+   return Number.isFinite(direct)?direct:cur;
+ }
+ const use=Number($('use_'+c.k)?.value||0),add=Number($('add_'+c.k)?.value||0);
  return cur-(Number.isFinite(use)?use/1000:0)+(Number.isFinite(add)?add/1000:0);
 }
 function renderStock(){
  if(!$('stockList'))return;
- $('stockList').innerHTML=CHEMS.map(c=>`
+ $('stockList').innerHTML=CHEMS.map(c=>{
+   const controls=c.direct
+    ? '<div><label>Masukkan stok terkini (MT)</label><input id="direct_'+c.k+'" inputmode="decimal" value="'+fmtMt(stockState[c.k])+'"></div>'
+    : '<div class="stockTx"><div><label>Guna (- kg)</label><input id="use_'+c.k+'" inputmode="decimal" placeholder="0"></div><div><label>Terima (+ kg)</label><input id="add_'+c.k+'" inputmode="decimal" placeholder="0"></div></div>';
+   return `
    <div class="stockRow">
     <div class="stockTop">
       <div class="stockName">${c.name}</div>
       <div class="stockBalance"><small>Stok semasa</small><b id="bal_${c.k}">${fmtMt(stockState[c.k])} MT</b></div>
     </div>
-    <div class="stockTx">
-      <div><label>Guna (- kg)</label><input id="use_${c.k}" inputmode="decimal" placeholder="0"></div>
-      <div><label>Terima (+ kg)</label><input id="add_${c.k}" inputmode="decimal" placeholder="0"></div>
-    </div>
-    <div class="stockProjected"><span>Stok baru</span><b id="new_${c.k}">${fmtMt(stockState[c.k])} MT</b></div>
-   </div>`).join('');
+    ${controls}
+    <div class="stockProjected"><span>${c.direct?'Nilai report':'Stok baru'}</span><b id="new_${c.k}">${fmtMt(stockState[c.k])} MT</b></div>
+   </div>`;
+ }).join('');
  CHEMS.forEach(c=>{
-   ['use_'+c.k,'add_'+c.k].forEach(id=>$(id).addEventListener('input',previewStock));
+   const list=c.direct?['direct_'+c.k]:['use_'+c.k,'add_'+c.k];
+   list.forEach(id=>$(id).addEventListener('input',previewStock));
  });
  previewStock();
 }
 function previewStock(){
  let bad=false,changed=false;
  CHEMS.forEach(c=>{
-   const x=stockNew(c),use=Number($('use_'+c.k)?.value||0),add=Number($('add_'+c.k)?.value||0);
+   const x=stockNew(c);
    if($('new_'+c.k))$('new_'+c.k).textContent=fmtMt(x)+' MT';
    if(x<0)bad=true;
-   if((Number.isFinite(use)&&use>0)||(Number.isFinite(add)&&add>0))changed=true;
+   if(c.direct){
+     const raw=String($('direct_'+c.k)?.value||'').trim();
+     const direct=Number(raw);
+     if(raw!==''&&(!Number.isFinite(direct)||direct<0))bad=true;
+     if(Number.isFinite(direct)&&Math.abs(direct-Number(stockState[c.k]||0))>0.000001)changed=true;
+   }else{
+     const use=Number($('use_'+c.k)?.value||0),add=Number($('add_'+c.k)?.value||0);
+     if((Number.isFinite(use)&&use>0)||(Number.isFinite(add)&&add>0))changed=true;
+   }
  });
  const box=$('stockNotice');
  if(box){
    box.className='notice '+(bad?'warn':'ok');
-   box.textContent=bad?'Stok baru tak boleh kurang daripada 0 MT.':changed?'Semak stok baru, kemudian tekan Simpan Perubahan.':'Masukkan penggunaan atau penerimaan dalam kg.';
+   box.textContent=bad?'Semak nilai stok. Nilai tak boleh negatif.':changed?'Semak nilai baru, kemudian tekan Simpan Perubahan.':'PACl: masukkan stok terus dalam MT. Bahan lain: guna/terima dalam kg.';
  }
  if($('stockPreview'))$('stockPreview').textContent=stockText(true);
 }
@@ -427,13 +444,22 @@ function stockText(projected=false){
 function commitStock(){
  const before={...stockState},changes=[];
  for(const c of CHEMS){
-   const use=Number($('use_'+c.k)?.value||0),add=Number($('add_'+c.k)?.value||0),next=stockNew(c);
+   const next=stockNew(c);
    if(next<0){alert(c.name+': stok tak boleh kurang daripada 0 MT.');return}
-   if((Number.isFinite(use)&&use>0)||(Number.isFinite(add)&&add>0)){
-     changes.push({k:c.k,name:c.name,use:Number.isFinite(use)?use:0,add:Number.isFinite(add)?add:0,before:Number(stockState[c.k]),after:next});
+   if(c.direct){
+     const raw=String($('direct_'+c.k)?.value||'').trim(),direct=Number(raw);
+     if(raw===''||!Number.isFinite(direct)){alert(c.name+': masukkan nilai stok dalam MT.');return}
+     if(Math.abs(direct-Number(stockState[c.k]||0))>0.000001){
+       changes.push({k:c.k,name:c.name,type:'set',value:direct,before:Number(stockState[c.k]),after:direct});
+     }
+   }else{
+     const use=Number($('use_'+c.k)?.value||0),add=Number($('add_'+c.k)?.value||0);
+     if((Number.isFinite(use)&&use>0)||(Number.isFinite(add)&&add>0)){
+       changes.push({k:c.k,name:c.name,type:'tx',use:Number.isFinite(use)?use:0,add:Number.isFinite(add)?add:0,before:Number(stockState[c.k]),after:next});
+     }
    }
  }
- if(!changes.length){alert('Tiada penggunaan atau penerimaan dimasukkan.');return}
+ if(!changes.length){alert('Tiada perubahan stok dimasukkan.');return}
  CHEMS.forEach(c=>stockState[c.k]=stockNew(c));
  localStorage.setItem('rqLraChemStock',JSON.stringify(stockState));
  let h=[];try{h=JSON.parse(localStorage.getItem('rqLraChemHistory')||'[]')}catch(e){}
@@ -456,7 +482,7 @@ function renderStockHistory(){
  if(!$('stockHistory'))return;
  let h=[];try{h=JSON.parse(localStorage.getItem('rqLraChemHistory')||'[]')}catch(e){}
  $('stockHistory').innerHTML=h.length?h.slice(0,12).map(x=>{
-   const parts=(x.changes||[]).map(c=>c.name+': '+(c.use?'-'+c.use+'kg ':'')+(c.add?'+'+c.add+'kg':'')).join('<br>');
+   const parts=(x.changes||[]).map(c=>c.type==='set'?c.name+': '+fmtMt(c.before)+' → '+fmtMt(c.after)+' MT':c.name+': '+(c.use?'-'+c.use+'kg ':'')+(c.add?'+'+c.add+'kg':'')).join('<br>');
    return '<div class="stockHistItem"><b>'+fdate(x.date)+'</b><br>'+parts+'</div>';
  }).join(''):'Belum ada transaksi.';
 }
