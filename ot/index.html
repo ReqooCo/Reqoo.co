@@ -361,7 +361,7 @@
       </section>
     </div>
 
-    <div class="foot">Kalkulator peribadi • Boleh digunakan offline selepas dibuka sekali • Build 16</div>
+    <div class="foot">Kalkulator peribadi • Boleh digunakan offline selepas dibuka sekali • Build 17</div>
   </main>
 
   <script>
@@ -665,11 +665,55 @@
         updateRequestPreview();
       }
 
+      function previewMonthSummary(month) {
+        const s = {...monthSummary(month)};
+        const fp = requestFingerprint();
+        const alreadySaved = savedCurrentRequestId && requests.some(r=>r.id===savedCurrentRequestId && r.fingerprint===fp);
+        if (alreadySaved) return s;
+
+        const cat = $('reqCategory').value;
+        const hours = num('reqHours');
+        if (hours <= 0) return s;
+
+        if (cat === 'normal') s.normal = (s.normal||0) + hours;
+        else if (cat === 'off') {
+          s.offDays = (s.offDays||0) + 1;
+          s.offHours = (s.offHours||0) + 12;
+          s.accum = (s.accum||0) + 12;
+          return s;
+        } else if (cat === 'rest8') {
+          s.r8 = (s.r8||0) + 1;
+          s.restDays = (s.restDays||0) + 1;
+          s.restHours = (s.restHours||0) + 8;
+          s.accum = (s.accum||0) + 8;
+          return s;
+        } else if (cat === 'rest12') {
+          s.r12 = (s.r12||0) + 1;
+          s.restDays = (s.restDays||0) + 1;
+          s.restHours = (s.restHours||0) + 12;
+          s.accum = (s.accum||0) + 12;
+          return s;
+        } else if (cat === 'ph8') {
+          s.p8 = (s.p8||0) + 1;
+          s.phDays = (s.phDays||0) + 1;
+          s.phHours = (s.phHours||0) + 8;
+          return s;
+        } else if (cat === 'ph12') {
+          s.p12 = (s.p12||0) + 1;
+          s.phDays = (s.phDays||0) + 1;
+          s.phHours = (s.phHours||0) + 12;
+          return s;
+        }
+
+        s.accum = (s.accum||0) + hours;
+        return s;
+      }
+
       function buildWhatsAppText() {
         const p = saveRequestProfile();
         const date = $('reqDate').value;
         const month = dateToMonthKey(date);
-        const s = monthSummary(month);
+        const s = previewMonthSummary(month);
         return 'Assalamualaikum bos, mohon kelulusan untuk kerja lebih masa.\n\n' +
           '*ARAHAN KERJA LEBIH MASA*\n\n' +
           '*Nama:* ' + (p.name||'-') + '\n' +
