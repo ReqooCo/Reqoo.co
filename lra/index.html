@@ -40,7 +40,7 @@ input:focus,select:focus,textarea:focus{border-color:#78aa9e;box-shadow:0 0 0 3p
 .autoRow{display:grid;grid-template-columns:1.25fr 1fr .9fr;gap:6px;margin-top:8px}
 .stat{background:#f3f7f6;border:1px solid #dbe5e1;border-radius:9px;padding:7px 8px;min-width:0}
 .stat small{display:block;color:var(--muted);font-size:8.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stat b{display:block;margin-top:2px;font-size:11px;color:#294f45;white-space:nowrap}
-.convert{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:7px;background:#f2f7f5;border:1px solid #d8e6e1;border-left:3px solid var(--accent);padding:7px 9px;border-radius:9px;font-size:9px;color:var(--muted)}
+.convert{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:7px;background:#f2f7f5;border:1px solid #d8e6e1;border-left:3px solid var(--accent);padding:7px 9px;border-radius:9px;font-size:9px;color:var(--muted)}.readonlyField{min-height:42px;border:1px solid #d8e6e1;border-radius:10px;background:#f2f7f5;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px}.readonlyField small{font-size:9px;color:var(--muted)}.readonlyField b{font-size:14px;color:var(--accent);white-space:nowrap}
 .convert b{color:var(--accent);font-size:12px;white-space:nowrap}
 .notice{font-size:9.5px;padding:7px 9px;border-radius:9px;margin-top:8px;font-weight:700}.ok{background:#e7f3ec;color:#286447}.warn{background:#fff3df;color:#855e14}
 details.more{background:#fff;border:1px solid var(--line);border-radius:13px;margin-bottom:8px;overflow:hidden}
@@ -77,7 +77,7 @@ details.more[open]>summary:after{content:"−"}
 .statusStop{border-color:#e7c3c3!important;background:#fff6f6!important;color:#9b3e3e!important;font-weight:850}
 .reportMeta{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:9px}.reportMeta>*{min-width:0}
 .pumpPreview{white-space:pre-wrap;background:#f7faf9;border:1px solid var(--line);border-radius:10px;padding:9px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;line-height:1.45;color:#29423b;margin-top:8px;max-height:260px;overflow:auto}
-.stockList{display:grid;gap:7px}.stockRow{background:#f8fbfa;border:1px solid #dbe6e2;border-radius:11px;padding:9px}.stockTop{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:7px}.stockName{font-size:11px;font-weight:850;color:#355d52;line-height:1.3}.stockBalance{text-align:right;white-space:nowrap}.stockBalance small{display:block;font-size:8px;color:var(--muted)}.stockBalance b{display:block;font-size:14px;color:var(--accent)}.stockTx{display:grid;grid-template-columns:1fr 1fr;gap:6px}.stockTx label{font-size:8.5px}.stockTx input{min-height:37px;font-size:13px;padding:6px 8px}.stockProjected{margin-top:6px;font-size:9px;color:var(--muted);display:flex;justify-content:space-between;gap:8px}.stockProjected b{color:#31594e}.stockActions{display:grid;grid-template-columns:1.2fr .8fr;gap:7px;margin-top:9px}.stockHistory{margin-top:9px;border-top:1px solid #e4ece9;padding-top:8px}.stockHistItem{font-size:9px;color:#5c746d;padding:5px 0;border-top:1px dashed #e1e9e6}.stockHistItem:first-child{border-top:0}
+.stockList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.stockList>*{min-width:0}.stockRow{background:#f8fbfa;border:1px solid #dbe6e2;border-radius:11px;padding:9px}.stockTop{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:7px}.stockName{font-size:10.5px;font-weight:850;color:#355d52;line-height:1.25}.stockBalance{text-align:right;white-space:nowrap}.stockBalance small{display:block;font-size:8px;color:var(--muted)}.stockBalance b{display:block;font-size:14px;color:var(--accent)}.stockTx{display:grid;grid-template-columns:1fr;gap:5px}.stockTx label{font-size:8.5px}.stockTx input{min-height:37px;font-size:13px;padding:6px 8px}.stockProjected{margin-top:6px;font-size:9px;color:var(--muted);display:flex;justify-content:space-between;gap:8px}.stockProjected b{color:#31594e}.stockActions{display:grid;grid-template-columns:1.2fr .8fr;gap:7px;margin-top:9px}.stockHistory{margin-top:9px;border-top:1px solid #e4ece9;padding-top:8px}.stockHistItem{font-size:9px;color:#5c746d;padding:5px 0;border-top:1px dashed #e1e9e6}.stockHistItem:first-child{border-top:0}
 .subtle{font-size:9px;color:var(--muted);margin-top:5px}.maintReason{margin-top:7px}.maintReason.hidden{display:none}.maintReason label{font-size:9.5px}.maintReason input{min-height:38px;font-size:13px}
 @media(max-width:390px){.wrap{padding-left:8px;padding-right:8px}.head{padding:12px}.head h1{font-size:17px}.card{padding:10px}.autoRow{gap:5px}.stat{padding:7px 6px}.stat b{font-size:10.5px}}
 </style>
@@ -117,14 +117,34 @@ details.more[open]>summary:after{content:"−"}
 
       <div class="sectionLine"></div>
 
-      <div class="field"><label>Paras Sg Langat <span>(m)</span></label><input id="river" inputmode="decimal" value="6.13"></div>
-      <div class="field" id="tank1Field"><div class="pumpHead"><label>Tangki Air No.1 <span>(m)</span></label><label class="problemTag"><input id="tank1Problem" type="checkbox">Problem</label></div><input id="tank1" inputmode="decimal" value="4.03"><div id="tank1NoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="tank1Note" value="Paras Tangki Air Bersih No.1 under maintenance (level problem)"></div></div>
+      <div class="field" id="tank1Field">
+        <div class="pumpHead"><label>Tangki Air No.1 <span>(m)</span></label><label class="problemTag"><input id="tank1Problem" type="checkbox">Problem</label></div>
+        <input id="tank1" inputmode="decimal" value="4.03">
+        <div id="tank1NoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="tank1Note" value="Paras Tangki Air Bersih No.1 under maintenance (level problem)"></div>
+      </div>
+      <div class="field" id="tank2Field">
+        <div class="pumpHead"><label>Tangki Air No.2</label><label class="problemTag"><input id="tank2Problem" type="checkbox" checked>Problem</label></div>
+        <input id="tank2" inputmode="decimal" value="" placeholder="Bacaan terakhir / kosong">
+        <div id="tank2NoteWrap" class="problemNoteWrap"><label>Nota WhatsApp</label><input id="tank2Note" value="Paras tangki no.2 under maintenance (sensor ULS rosak)"></div>
+      </div>
 
-      <div class="field" id="tank2Field"><div class="pumpHead"><label>Tangki Air No.2</label><label class="problemTag"><input id="tank2Problem" type="checkbox" checked>Problem</label></div><input id="tank2" inputmode="decimal" value="" placeholder="Bacaan terakhir / kosong"><div id="tank2NoteWrap" class="problemNoteWrap"><label>Nota WhatsApp</label><input id="tank2Note" value="Paras tangki no.2 under maintenance (sensor ULS rosak)"></div></div>
-      <div class="field" id="pond1Field"><div class="pumpHead"><label>Desa Putra No.1 <span>(m)</span></label><label class="problemTag"><input id="pond1Problem" type="checkbox">Problem</label></div><input id="pond1" inputmode="decimal" value="7.55"><div id="pond1NoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="pond1Note" value="Paras Desa Putra No.1 under maintenance (level problem)"></div></div>
+      <div class="field" id="pond1Field">
+        <div class="pumpHead"><label>Desa Putra No.1 <span>(m)</span></label><label class="problemTag"><input id="pond1Problem" type="checkbox">Problem</label></div>
+        <input id="pond1" inputmode="decimal" value="7.55">
+        <div id="pond1NoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="pond1Note" value="Paras Desa Putra No.1 under maintenance (level problem)"></div>
+      </div>
+      <div class="field" id="pond2Field">
+        <div class="pumpHead"><label>Desa Putra No.2 <span>(m)</span></label><label class="problemTag"><input id="pond2Problem" type="checkbox">Problem</label></div>
+        <input id="pond2" inputmode="decimal" value="7.81">
+        <div id="pond2NoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="pond2Note" value="Paras Desa Putra No.2 under maintenance (level problem)"></div>
+      </div>
 
-      <div class="field" id="pond2Field"><div class="pumpHead"><label>Desa Putra No.2 <span>(m)</span></label><label class="problemTag"><input id="pond2Problem" type="checkbox">Problem</label></div><input id="pond2" inputmode="decimal" value="7.81"><div id="pond2NoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="pond2Note" value="Paras Desa Putra No.2 under maintenance (level problem)"></div></div>
       <div class="field"><label>DP Outflow <span>(m3/h)</span></label><input id="pondOut" inputmode="decimal" value="3692.25"></div>
+      <div class="field"><label>DP Outflow <span>(MLD)</span></label><div class="readonlyField"><small>Auto</small><b id="pondMld">88.614 MLD</b></div></div>
+
+      <div class="sectionLine"></div>
+
+      <div class="field full"><label>Paras Sg Langat <span>(m)</span></label><input id="river" inputmode="decimal" value="6.13"></div>
     </div>
 
     <div class="autoRow">
@@ -132,7 +152,6 @@ details.more[open]>summary:after{content:"−"}
       <div class="stat"><small>Normal TW</small><b id="twNormal">4200 m3/h</b></div>
       <div class="stat"><small>Pressure</small><b id="pressure">7.6 bar</b></div>
     </div>
-    <div class="convert"><span>Desa Putra auto conversion</span><b id="pondMld">88.614 MLD</b></div>
     <div id="notice" class="notice ok">OK - bacaan utama dalam julat.</div>
   </section>
 
@@ -193,6 +212,7 @@ details.more[open]>summary:after{content:"−"}
         <div class="field"><div class="pumpHead"><label>Pump No.2</label><label class="changeTag"><input id="icC2" type="checkbox">Berubah</label></div><select id="icP2" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
         <div class="field"><div class="pumpHead"><label>Pump No.3</label><label class="changeTag"><input id="icC3" type="checkbox">Berubah</label></div><select id="icP3" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
         <div class="field"><div class="pumpHead"><label>Pump No.4</label><label class="changeTag"><input id="icC4" type="checkbox">Berubah</label></div><select id="icP4" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
+        <div class="sectionLine"></div>
         <div class="field"><label>Total Pumping</label><select id="icTotal"><option value="63">63 MLD</option><option value="126">126 MLD</option></select></div>
         <div class="field"><label>RW Inflow (m3/h)</label><input id="icRw" inputmode="decimal" value="2518"></div>
         <div class="field" id="icPondBField"><div class="pumpHead"><label>Pond B (m)</label><label class="problemTag"><input id="icPondBProblem" type="checkbox">Problem</label></div><input id="icPondB" inputmode="decimal" value="5.93"><div id="icPondBNoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="icPondBNote" value="Paras Pond B under maintenance (level problem)"></div></div>
@@ -214,8 +234,10 @@ details.more[open]>summary:after{content:"−"}
         <div class="field"><div class="pumpHead"><label>Pump No.2</label><label class="changeTag"><input id="twpsC2" type="checkbox">Berubah</label></div><select id="twpsP2" class="pumpStatus"><option value="Run">Run</option><option value="Stop">Stop</option></select></div>
         <div class="field"><div class="pumpHead"><label>Pump No.3</label><label class="changeTag"><input id="twpsC3" type="checkbox">Berubah</label></div><select id="twpsP3" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
         <div class="field"><div class="pumpHead"><label>Pump No.4</label><label class="changeTag"><input id="twpsC4" type="checkbox">Berubah</label></div><select id="twpsP4" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
+        <div class="sectionLine"></div>
         <div class="field"><label>Total Pumping</label><select id="twpsTotal"><option value="50">50 MLD</option><option value="100">100 MLD</option></select></div>
         <div class="field"><label>TW Outflow (m3/h)</label><input id="twpsOut" inputmode="decimal" value="2236"></div>
+        <div class="sectionLine"></div>
         <div class="field" id="twpsCwt1Field"><div class="pumpHead"><label>CWT 1 (m)</label><label class="problemTag"><input id="twpsCwt1Problem" type="checkbox">Problem</label></div><input id="twpsCwt1" inputmode="decimal" value="4.07"><div id="twpsCwt1NoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="twpsCwt1Note" value="Paras CWT 1 under maintenance (level problem)"></div></div>
         <div class="field" id="twpsCwt2Field"><div class="pumpHead"><label>CWT 2</label><label class="problemTag"><input id="twpsCwt2Problem" type="checkbox" checked>Problem</label></div><input id="twpsCwt2" inputmode="decimal" value="" placeholder="Bacaan terakhir / kosong"><div id="twpsCwt2NoteWrap" class="problemNoteWrap"><label>Nota WhatsApp</label><input id="twpsCwt2Note" value="Paras tangki no.2 under maintenance (sensor ULS rosak)"></div></div>
         <div class="field" id="twpsDp1Field"><div class="pumpHead"><label>DP 1 (m)</label><label class="problemTag"><input id="twpsDp1Problem" type="checkbox">Problem</label></div><input id="twpsDp1" inputmode="decimal" value="7.76"><div id="twpsDp1NoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="twpsDp1Note" value="Paras Desa Putra No.1 under maintenance (level problem)"></div></div>
