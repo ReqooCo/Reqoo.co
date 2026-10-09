@@ -285,6 +285,20 @@ $('time').innerHTML=slots.map(x=>'<option value="'+x+'">'+x.replace(':','')+'</o
 function localDate(){let d=new Date(),o=d.getTimezoneOffset();return new Date(d-o*60000).toISOString().slice(0,10)}
 function localTime(){const d=new Date(),z=n=>String(n).padStart(2,'0');return z(d.getHours())+':'+z(d.getMinutes())}
 function defaultSlot(){let h=new Date().getHours(),e=Math.floor(h/2)*2,s=String(e).padStart(2,'0')+':00';return slots.includes(s)?s:'08:00'}
+let lastAutoDate=localDate();
+function syncAutoDates(){
+ const today=localDate();
+ if(today===lastAutoDate)return;
+ const dateIds=['date','ibDate','icDate','twpsDate','stockDate'];
+ dateIds.forEach(id=>{
+   const el=$(id);
+   if(el && (!el.value || el.value===lastAutoDate)) el.value=today;
+ });
+ lastAutoDate=today;
+ refresh();
+ refreshPump();
+ if($('stockPreview')) previewStock();
+}
 function v(x){return String($(x)?.value||'').trim()}
 function n(x){let z=Number(v(x));return Number.isFinite(z)?z:null}
 function ck(x){return !!$(x)?.checked}
@@ -399,7 +413,7 @@ function loadStock(){
  }
  CHEMS.forEach(c=>{if(!Number.isFinite(Number(stockState[c.k])))stockState[c.k]=c.initial});
  localStorage.setItem('rqLraChemStock',JSON.stringify(stockState));
- if($('stockDate')&&!$('stockDate').value)$('stockDate').value=localDate();
+ if($('stockDate'))$('stockDate').value=localDate();
  renderStock();
  renderStockHistory();
 }
@@ -553,7 +567,7 @@ function refreshPump(){
 }
 function load(){
  let o=null;try{o=JSON.parse(localStorage.getItem('rqLraPwa')||'null')}catch(e){}
- $('date').value=(o&&o.date)||localDate();$('time').value=(o&&o.time)||defaultSlot();
+ $('date').value=localDate();$('time').value=(o&&o.time)||defaultSlot();
  if(o)ids.forEach(x=>{if(o[x]===undefined||!$(x))return;if($(x).type==='checkbox')$(x).checked=!!o[x];else $(x).value=o[x]});
  if(o){
    if(o.tankMaint===true)$('tank2Problem').checked=true;
@@ -561,7 +575,7 @@ function load(){
    if(o.tankReason&&!o.tank2Note)$('tank2Note').value='Paras tangki no.2 under maintenance ('+o.tankReason+')';
  }
  let p=null;try{p=JSON.parse(localStorage.getItem('rqLraPumpDraft')||'null')}catch(e){}
- ['ibDate','icDate','twpsDate'].forEach(x=>$(x).value=(p&&p[x])||localDate());
+ ['ibDate','icDate','twpsDate'].forEach(x=>$(x).value=localDate());
  ['ibTime','icTime','twpsTime'].forEach(x=>$(x).value=(p&&p[x])||localTime());
  if(p)pumpIds.forEach(x=>{if(p[x]===undefined||!$(x))return;if($(x).type==='checkbox')$(x).checked=!!p[x];else $(x).value=p[x]});
  if(p){
@@ -607,6 +621,8 @@ function standalone(){return matchMedia('(display-mode: standalone)').matches||n
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e});
 $('installBtn').onclick=async()=>{if(standalone())return alert('App dah dipasang.');if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;return}alert('iPhone: buka link ini dalam Safari > tekan Share > Add to Home Screen.');};
 if(standalone())$('installBtn').style.display='none';
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncAutoDates()});
+window.addEventListener('focus',syncAutoDates);
 
 load();syncMaintenance();refresh();refreshPump();hist();arm();loadStock();switchTab(localStorage.getItem('rqLraActiveTab')||'ops');
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
