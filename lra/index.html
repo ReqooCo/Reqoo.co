@@ -568,7 +568,7 @@ function refreshPump(){
 function load(){
  let o=null;try{o=JSON.parse(localStorage.getItem('rqLraPwa')||'null')}catch(e){}
  $('date').value=localDate();$('time').value=(o&&o.time)||defaultSlot();
- if(o)ids.forEach(x=>{if(o[x]===undefined||!$(x))return;if($(x).type==='checkbox')$(x).checked=!!o[x];else $(x).value=o[x]});
+ if(o)ids.forEach(x=>{if(x==='date'||o[x]===undefined||!$(x))return;if($(x).type==='checkbox')$(x).checked=!!o[x];else $(x).value=o[x]});
  if(o){
    if(o.tankMaint===true)$('tank2Problem').checked=true;
    if(marker(o.tank2)){$('tank2Problem').checked=true;$('tank2').value=''}
@@ -577,7 +577,7 @@ function load(){
  let p=null;try{p=JSON.parse(localStorage.getItem('rqLraPumpDraft')||'null')}catch(e){}
  ['ibDate','icDate','twpsDate'].forEach(x=>$(x).value=localDate());
  ['ibTime','icTime','twpsTime'].forEach(x=>$(x).value=(p&&p[x])||localTime());
- if(p)pumpIds.forEach(x=>{if(p[x]===undefined||!$(x))return;if($(x).type==='checkbox')$(x).checked=!!p[x];else $(x).value=p[x]});
+ if(p)pumpIds.forEach(x=>{if(['ibDate','icDate','twpsDate'].includes(x)||p[x]===undefined||!$(x))return;if($(x).type==='checkbox')$(x).checked=!!p[x];else $(x).value=p[x]});
  if(p){
    if(p.twpsMaint===true)$('twpsCwt2Problem').checked=true;
    if(p.twpsReason&&!p.twpsCwt2Note)$('twpsCwt2Note').value='Paras tangki no.2 under maintenance ('+p.twpsReason+')';
@@ -586,6 +586,8 @@ function load(){
      if(marker(p[field])){$(prob).checked=true;$(field).value=''}
    }
  }
+ const today=localDate();
+ ['date','ibDate','icDate','twpsDate'].forEach(id=>{if($(id))$(id).value=today});
 }
 function hist(){let h=JSON.parse(localStorage.getItem('rqLraHist')||'[]');$('history').innerHTML=h.length?h.map(x=>'<div class="historyItem"><b>'+x.date+' @ '+x.time.replace(':','')+'</b><br>'+x.flow+'<br><button onclick="openHist('+x.id+')">Buka</button><button onclick="waHist('+x.id+')">WhatsApp</button></div>').join(''):'Belum ada report.'}
 window.openHist=id=>{let h=JSON.parse(localStorage.getItem('rqLraHist')||'[]'),x=h.find(y=>y.id===id);if(!x)return;Object.entries(x.data).forEach(([k,z])=>{if(!$(k))return;if($(k).type==='checkbox')$(k).checked=!!z;else $(k).value=z});refresh();switchTab('ops');scrollTo({top:0,behavior:'smooth'})}
