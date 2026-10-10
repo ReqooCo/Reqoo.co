@@ -141,6 +141,7 @@ textarea{resize:vertical;min-height:64px}
 </div></section>
 </div>
 <div id="olaFields">
+<div class="status" id="alStatus" style="margin:0 0 10px">Aluminium SW & TW setiap 4 jam: 0300, 0700, 1100, 1500, 1900, 2300.</div>
 <section class="card">
  <div class="sectionHead"><span class="sectionNo">01</span><b>Raw Water</b><span>Air Mentah</span></div>
  <div class="grid">
@@ -153,7 +154,7 @@ textarea{resize:vertical;min-height:64px}
  <div class="grid">
   <div class="field"><label for="settledTurb">Turb <small>(NTU)</small></label><input id="settledTurb" inputmode="decimal" autocomplete="off" placeholder="0.67"></div>
   <div class="field"><label for="settledPh">pH</label><input id="settledPh" inputmode="decimal" autocomplete="off" placeholder="7.11"></div>
-  <div class="field labelFull"><label for="settledAl">Aluminium <small>(mg/L)</small></label><input id="settledAl" inputmode="decimal" autocomplete="off" placeholder="0.052"></div>
+  <div id="settledAlWrap" class="field labelFull"><label for="settledAl">Aluminium <small>(mg/L)</small></label><input id="settledAl" inputmode="decimal" autocomplete="off" placeholder="0.052"></div>
  </div>
 </section>
 <section class="card">
@@ -170,7 +171,7 @@ textarea{resize:vertical;min-height:64px}
   <div class="field"><label for="treatedPh">pH</label><input id="treatedPh" inputmode="decimal" autocomplete="off" placeholder="6.88"></div>
   <div class="field"><label for="treatedCl">Free Cl₂ <small>(mg/L)</small></label><input id="treatedCl" inputmode="decimal" autocomplete="off" placeholder="2.04"></div>
   <div class="field"><label for="treatedFl">Fluoride <small>(mg/L)</small></label><input id="treatedFl" inputmode="decimal" autocomplete="off" placeholder="0.42"></div>
-  <div class="field"><label for="treatedAl">Aluminium <small>(mg/L)</small></label><input id="treatedAl" inputmode="decimal" autocomplete="off" placeholder="0045 (semak nilai)"></div>
+  <div id="treatedAlWrap" class="field"><label for="treatedAl">Aluminium <small>(mg/L)</small></label><input id="treatedAl" inputmode="decimal" autocomplete="off" placeholder="0045 (semak nilai)"></div>
   <div class="field"><label for="treatedColour">Colour <small>(ACU)</small></label><input id="treatedColour" inputmode="decimal" autocomplete="off" placeholder="2"></div>
  </div>
 </section>
@@ -203,11 +204,13 @@ textarea{resize:vertical;min-height:64px}
 </div></footer>
 <script>
 const $=id=>document.getElementById(id);
-const OLA_FIELDS=['rawTurb','rawPh','settledTurb','settledPh','settledAl','filteredTurb','filteredPh','treatedTurb','treatedPh','treatedCl','treatedFl','treatedAl','treatedColour'];
+const OLA_FIELDS=['rawTurb','rawPh','settledTurb','settledPh','filteredTurb','filteredPh','treatedTurb','treatedPh','treatedCl','treatedFl','treatedColour'];
+const OLA_ALUMINIUM_FIELDS=['settledAl','treatedAl'];
+const OLA_ALUMINIUM_SLOTS=new Set(['03:00','11:00','19:00']);
 const LAB_FIELDS=["labRawTurb","labRawPh","labRawMn","labRawAmmonia","labRawColour","labRawIron","labRawAl","labRawFl","labRawOdour","labSettledTurb","labSettledPh","labSettledColour","labSettledMn","labSettledIron","labSettledAmmonia","labSettledAl","labSettledOdour","labFilteredTurb","labFilteredPh","labFilteredAmmonia","labFilteredMn","labTreatedTurb","labTreatedPh","labTreatedColourTCU","labTreatedColourACU","labTreatedCl","labTreatedFl","labTreatedAl","labTreatedMn","labTreatedIron","labTreatedAmmonia","labTreatedOdour"];
 const ODOUR_FIELDS=new Set(['labRawOdour','labSettledOdour','labTreatedOdour']);
-const allFields=[...OLA_FIELDS,...LAB_FIELDS];
-function activeFields(){return FULL.has($('time').value)?LAB_FIELDS:OLA_FIELDS}
+const allFields=[...OLA_FIELDS,...OLA_ALUMINIUM_FIELDS,...LAB_FIELDS];
+function activeFields(){const time=$('time').value;return FULL.has(time)?LAB_FIELDS:(OLA_ALUMINIUM_SLOTS.has(time)?[...OLA_FIELDS,...OLA_ALUMINIUM_FIELDS]:OLA_FIELDS)}
 const SLOTS=['01:00','03:00','05:00','07:00','09:00','11:00','13:00','15:00','17:00','19:00','21:00','23:00'];
 const FULL=new Set(['07:00','15:00','23:00']);
 const DRAFT_PREFIX='reqoo-wq-s2-draft-';
@@ -237,6 +240,10 @@ function render(){
  $('fullPanel').classList.toggle('hide',!full);
  $('olaFields').classList.toggle('hide',full);
  $('fluorideWrap').classList.toggle('hide',full);
+ const aluminiumOLA=OLA_ALUMINIUM_SLOTS.has($('time').value);
+ $('settledAlWrap').classList.toggle('hide',!aluminiumOLA);
+ $('treatedAlWrap').classList.toggle('hide',!aluminiumOLA);
+ $('alStatus').textContent=aluminiumOLA?'Slot ini termasuk ujian Aluminium SW & TW (4 jam sekali).':'Aluminium SW & TW diambil setiap 4 jam: 0300, 0700, 1100, 1500, 1900 & 2300.';
  $('copy').disabled=false;$('wa').disabled=false;
  $('slotStatus').textContent=(full?'Lab Test':'WQ OLA')+' · '+dateText($('date').value)+' @ '+timeText($('time').value);
  $('preview').textContent=reportText(getData());
@@ -297,7 +304,7 @@ function renderReport(d){
  '','*_Settled Water_*',
  'Turb     : '+vu('settledTurb','NTU'),
  'pH        : '+vu('settledPh'),
- 'Aluminium: '+vu('settledAl','mg/L'),
+ ...(OLA_ALUMINIUM_SLOTS.has(d.reportTime)?['Aluminium: '+vu('settledAl','mg/L'),]:[]),
  '','*_Filtered Water_*',
  'Turb     : '+vu('filteredTurb','NTU'),
  'pH        : '+vu('filteredPh'),
@@ -306,7 +313,7 @@ function renderReport(d){
  'pH          : '+vu('treatedPh'),
  'Free cl2 : '+vu('treatedCl','mg/L'),
  'Fluoride : '+vu('treatedFl','mg/L'),
- 'Aluminium : '+vu('treatedAl','mg/L'),
+ ...(OLA_ALUMINIUM_SLOTS.has(d.reportTime)?['Aluminium : '+vu('treatedAl','mg/L'),]:[]),
  'Colour : '+vu('treatedColour','ACU')];
  if(d.fluorideNote)lines.push('','*Bacaan Fluoride diambil dari OLA Fluoride no 2*');
  if(d.otherNote)lines.push('','*'+d.otherNote.replace(/\*/g,'')+'*');
@@ -314,7 +321,7 @@ function renderReport(d){
 }
 function reportText(d){return renderReport(d)}
 function validateClient(d){
- const fields=FULL.has(d.reportTime)?LAB_FIELDS:OLA_FIELDS;
+ const fields=FULL.has(d.reportTime)?LAB_FIELDS:(OLA_ALUMINIUM_SLOTS.has(d.reportTime)?[...OLA_FIELDS,...OLA_ALUMINIUM_FIELDS]:OLA_FIELDS);
  const missing=fields.filter(k=>!String(d.values[k]||'').trim());
  if(missing.length)return 'Masih ada '+missing.length+' bacaan kosong. Isi bacaan atau tanda - jika tiada.';
  const bad=fields.filter(k=>{
