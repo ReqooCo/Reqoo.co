@@ -28,6 +28,15 @@ button,input,select,textarea{font:inherit}
 .grid>*{min-width:0}
 .field label{display:block;font-size:11px;font-weight:750;color:#536e64;margin-bottom:5px}
 .field label small{font-size:9px;color:#789087;font-weight:600}
+.problemHead{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-bottom:5px;flex-wrap:wrap}
+.problemHead>label:first-child{margin:0;min-width:0}
+.problemTag{display:inline-flex!important;align-items:center;gap:4px;border:1px solid #dfd8cb;background:#f7f5f1;color:#817668!important;border-radius:999px;padding:3px 7px;font-size:9px!important;font-weight:800!important;line-height:1.15;white-space:nowrap;cursor:pointer;margin:0!important}
+.problemTag input{width:13px;height:13px;min-height:13px;margin:0;accent-color:#bc7c1b}
+.problemTag:has(input:checked){background:#fff0d9;border-color:#e5ba7a;color:#905d16!important}
+.field.isProblem>input:not([type=checkbox]){border-color:#e7ba73;background:#fffaf0}
+.problemNote{margin-top:6px}.problemNote label{color:#a37230!important;font-size:9px!important}
+.problemNote input{min-height:37px;padding:7px 8px;font-size:11px;background:#fffaf1;border-color:#ebd4ab}
+
 input,select,textarea{display:block;width:100%;min-width:0;max-width:100%;background:#f9fcfb;color:var(--ink);font-size:16px;padding:10px;border-radius:10px;border:1px solid #d5e4de;min-height:45px;outline:none}
 input:focus,select:focus,textarea:focus{border-color:#7eb9a6;box-shadow:0 0 0 3px #66a99520;background:#fff}
 input[type=date]{appearance:none;-webkit-appearance:none}
@@ -220,17 +229,72 @@ function slotNow(){const h=new Date().getHours();const nearest=h%2===1?h:h-1;ret
 function dateText(v){const p=v.split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:v}
 function timeText(v){const h=Number(v.slice(0,2));if(!h)return'';return String(h>12?h-12:h).padStart(2,'0')+'00'+(h>=12?'pm':'am')}
 function key(){return DRAFT_PREFIX+($('date').value||today())+'-'+$('time').value}
-function values(){const o={};activeFields().forEach(k=>o[k]=$(k).value.trim());return o}
+function setupProblemControls(){
+ allFields.forEach(id=>{
+   const input=$(id),field=input.closest('.field'),oldLabel=field?.querySelector('label[for="'+id+'"]');
+   if(!field||!oldLabel)return;
+   const head=document.createElement('div');
+   head.className='problemHead';
+   oldLabel.before(head);head.appendChild(oldLabel);
+   const tag=document.createElement('label');
+   tag.className='problemTag';
+   const checkbox=document.createElement('input');
+   checkbox.type='checkbox';checkbox.id='problem_'+id;
+   tag.append(checkbox,document.createTextNode('Problem'));
+   head.appendChild(tag);
+   const noteBox=document.createElement('div');
+   noteBox.className='problemNote hide';
+   const noteLabel=document.createElement('label');noteLabel.setAttribute('for','note_'+id);noteLabel.textContent='Nota WhatsApp';
+   const noteInput=document.createElement('input');
+   noteInput.type='text';noteInput.id='note_'+id;noteInput.maxLength=200;
+   const area=field.closest('section')?.querySelector('.sectionHead b')?.textContent||'WQ';
+   const reading=oldLabel.textContent.replace(/\s*\(.*$/,'').trim();
+   noteInput.value='Bacaan '+area+' '+reading+' under maintenance / bacaan tidak tepat';
+   noteInput.dataset.default=noteInput.value;
+   noteBox.append(noteLabel,noteInput);
+   field.appendChild(noteBox);
+   checkbox.addEventListener('change',()=>{
+     updateProblemView(id);saveDraft();render();
+   });
+   noteInput.addEventListener('input',()=>{saveDraft();render()});
+ });
+}
+function updateProblemView(id){
+ const input=$(id),field=input?.closest('.field'),problem=!!$('problem_'+id)?.checked;
+ field?.classList.toggle('isProblem',problem);
+ field?.querySelector('.problemNote')?.classList.toggle('hide',!problem);
+}
+function getProblems(){
+ const result={};
+ activeFields().forEach(id=>{
+   if($('problem_'+id)?.checked){
+     const note=$('note_'+id);
+     result[id]=note?.value.trim()||note?.dataset.default||'Bacaan WQ bermasalah';
+   }
+ });
+ return result;
+}
+function setProblems(problems){
+ const source=problems&&typeof problems==='object'?problems:{};
+ allFields.forEach(id=>{
+   const checked=Object.prototype.hasOwnProperty.call(source,id)&&typeof source[id]==='string';
+   if($('problem_'+id))$('problem_'+id).checked=checked;
+   const note=$('note_'+id);
+   if(note)note.value=checked?(source[id]||note.dataset.default):note.dataset.default;
+   updateProblemView(id);
+ });
+}
+function values(){const o={};activeFields().forEach(k=>o[k]=$(k).value.trim());o._problems=getProblems();return o}
 function getData(){return{reportDate:$('date').value,reportTime:$('time').value,values:values(),fluorideNote:$('fluorideNote').checked,otherNote:$('otherNote').value.trim(),operator:$('operator').value.trim()}}
 function saveDraft(){
  const o=getData();
  localStorage.setItem(key(),JSON.stringify(o));
  $('draftStatus').textContent='Draf tempatan disimpan';
 }
-function clearValues(){allFields.forEach(id=>$(id).value='');$('fluorideNote').checked=true;$('otherNote').value=''}
+function clearValues(){allFields.forEach(id=>$(id).value='');setProblems({});$('fluorideNote').checked=true;$('otherNote').value=''}
 function loadDraft(){
  clearValues();const raw=localStorage.getItem(key());
- if(raw){try{const d=JSON.parse(raw);activeFields().forEach(id=>$(id).value=d.values?.[id]||'');$('fluorideNote').checked=d.fluorideNote!==false;$('otherNote').value=d.otherNote||'';$('draftStatus').textContent='Draf untuk slot ini dipulihkan'}catch{$('draftStatus').textContent='Draf baharu'}}
+ if(raw){try{const d=JSON.parse(raw);activeFields().forEach(id=>$(id).value=d.values?.[id]||'');setProblems(d.values?._problems||d.problems||{});$('fluorideNote').checked=d.fluorideNote!==false;$('otherNote').value=d.otherNote||'';$('draftStatus').textContent='Draf untuk slot ini dipulihkan'}catch{$('draftStatus').textContent='Draf baharu'}}
  else $('draftStatus').textContent='Draf baharu · bacaan kosong';
  render();
 }
@@ -252,7 +316,20 @@ function render(){
  box.textContent=invalid||'Semua bacaan diisi. Sedia simpan online & pilih group WhatsApp.';
 }
 function renderReport(d){
- const v=d.values,vu=(key,unit='')=>v[key]==='-'?'-':v[key]+unit;
+ const v=d.values;
+ const problems=v._problems&&typeof v._problems==='object'?v._problems:{};
+ const order=FULL.has(d.reportTime)?LAB_FIELDS:[
+   'rawTurb','rawPh','settledTurb','settledPh',
+   ...(OLA_ALUMINIUM_SLOTS.has(d.reportTime)?['settledAl']:[]),
+   'filteredTurb','filteredPh','treatedTurb','treatedPh','treatedCl','treatedFl',
+   ...(OLA_ALUMINIUM_SLOTS.has(d.reportTime)?['treatedAl']:[]),'treatedColour'
+ ];
+ const activeProblems=order.filter(key=>Object.prototype.hasOwnProperty.call(problems,key));
+ const marker=key=>{const pos=activeProblems.indexOf(key);return pos<0?'':'('+ '*'.repeat(pos+1)+')'};
+ const vu=(key,unit='')=>{const val=String(v[key]||'').trim();return(val&&val!=='-'?val+unit:'-')+marker(key)};
+ const appendProblems=lines=>{
+   if(activeProblems.length)lines.push('',...activeProblems.map(key=>'_'+marker(key)+' '+problems[key]+'_'));
+ };
  const [year,month,day]=d.reportDate.split('-');
  const hh=Number(d.reportTime.slice(0,2));
  const at=String(hh>12?hh-12:hh).padStart(2,'0')+'00'+(hh>=12?'pm':'am');
@@ -294,6 +371,7 @@ function renderReport(d){
    'Ferum               : '+vu('labTreatedIron','mg/L'),
    'Ammonia         : '+vu('labTreatedAmmonia','mg/L'),
    'Bau                    : '+vu('labTreatedOdour')];
+   appendProblems(lines);
    if(d.otherNote)lines.push('','*'+d.otherNote.replace(/\*/g,'')+'*');
    return lines.join('\n');
  }
@@ -315,6 +393,7 @@ function renderReport(d){
  'Fluoride : '+vu('treatedFl','mg/L'),
  ...(OLA_ALUMINIUM_SLOTS.has(d.reportTime)?['Aluminium : '+vu('treatedAl','mg/L'),]:[]),
  'Colour : '+vu('treatedColour','ACU')];
+ appendProblems(lines);
  if(d.fluorideNote)lines.push('','*Bacaan Fluoride diambil dari OLA Fluoride no 2*');
  if(d.otherNote)lines.push('','*'+d.otherNote.replace(/\*/g,'')+'*');
  return lines.join('\n');
@@ -322,10 +401,12 @@ function renderReport(d){
 function reportText(d){return renderReport(d)}
 function validateClient(d){
  const fields=FULL.has(d.reportTime)?LAB_FIELDS:(OLA_ALUMINIUM_SLOTS.has(d.reportTime)?[...OLA_FIELDS,...OLA_ALUMINIUM_FIELDS]:OLA_FIELDS);
- const missing=fields.filter(k=>!String(d.values[k]||'').trim());
+ const problems=d.values._problems||{};
+ const missing=fields.filter(k=>!String(d.values[k]||'').trim()&&!Object.prototype.hasOwnProperty.call(problems,k));
  if(missing.length)return 'Masih ada '+missing.length+' bacaan kosong. Isi bacaan atau tanda - jika tiada.';
  const bad=fields.filter(k=>{
    const x=String(d.values[k]||'').trim();
+   if(!x&&Object.prototype.hasOwnProperty.call(problems,k))return false;
    return ODOUR_FIELDS.has(k)?!/^(?:[\p{L}\d][\p{L}\d _./()-]{0,28}|-)$/u.test(x):!/^(?:\d+(?:\.\d+)?|\.\d+|-)$/.test(x);
  });
  if(bad.length)return 'Semak format bacaan: '+bad.join(', ');
@@ -358,6 +439,7 @@ async function checkOnline(silent=false){
        const existing=activeFields().some(k=>$(k).value.trim());
        if(existing&&!confirm('Gantikan bacaan yang sedang diisi dengan rekod online slot ini?'))return;
        activeFields().forEach(k=>$(k).value=d.report.values[k]||'');
+       setProblems(d.report.values._problems||{});
        $('fluorideNote').checked=d.report.fluorideNote!==false;
        $('otherNote').value=d.report.otherNote||'';
        saveDraft();render();
@@ -391,6 +473,7 @@ SLOTS.forEach(slot=>{
  opt.value=slot;opt.textContent=slot.replace(':','')+'hrs'+(FULL.has(slot)?' · FULL TEST':'');
  $('time').append(opt);
 });
+setupProblemControls();
 lastAutoDate=today();
 $('date').value=lastAutoDate;$('time').value=slotNow();
 $('operator').value=localStorage.getItem('s2_wq_operator')||localStorage.getItem('s2_leader')||'';
