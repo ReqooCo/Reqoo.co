@@ -80,7 +80,8 @@ details.more[open]>summary:after{content:"−"}
 .stockDashboard{margin:0 0 9px;background:#f7faf9;border:1px solid #d8e6e1;border-radius:12px;overflow:hidden}.stockDashHead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;background:#eef6f3;border-bottom:1px solid #d8e6e1}.stockDashHead b{font-size:11px;color:#2f7565}.stockDashHead span{font-size:8px;color:var(--muted);text-align:right}.stockDashGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:#dfe9e5}.stockDashRow{display:grid;grid-template-columns:minmax(0,1fr) auto 28px;align-items:center;gap:6px;padding:7px 8px;background:#f9fbfa;min-width:0}.stockDashName{font-size:9px;font-weight:780;color:#46675e;line-height:1.2;min-width:0}.stockDashValue{font-size:12px;font-weight:900;color:#2f7565;white-space:nowrap}.stockEdit{width:27px;height:27px;min-height:27px;border:1px solid #cfe0da;border-radius:8px;background:#fff;color:#35695c;font-size:12px;padding:0;display:grid;place-items:center}.stockEdit:active{transform:scale(.96)}.stockEntryWrap{margin-top:9px}.stockEntryWrap summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 11px;background:#eef6f3;border:1px solid #d8e6e1;border-radius:11px;font-size:10px;font-weight:850;color:#35695c}.stockEntryWrap summary::-webkit-details-marker{display:none}.stockEntryWrap summary:after{content:'+';font-size:17px;line-height:1}.stockEntryWrap[open] summary:after{content:'−'}.stockEntryBody{padding-top:8px}
 .stockList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.stockList>*{min-width:0}.stockRow{background:#f8fbfa;border:1px solid #dbe6e2;border-radius:11px;padding:9px}.stockTop{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:7px}.stockName{font-size:10.5px;font-weight:850;color:#355d52;line-height:1.25}.stockBalance{text-align:right;white-space:nowrap}.stockBalance small{display:block;font-size:8px;color:var(--muted)}.stockBalance b{display:block;font-size:14px;color:var(--accent)}.stockTx{display:grid;grid-template-columns:1fr;gap:5px}.stockTx label{font-size:8.5px}.stockTx input{min-height:37px;font-size:13px;padding:6px 8px}.stockProjected{margin-top:6px;font-size:9px;color:var(--muted);display:flex;justify-content:space-between;gap:8px}.stockProjected b{color:#31594e}.stockActions{display:grid;grid-template-columns:1.2fr .8fr;gap:7px;margin-top:9px}.stockHistory{margin-top:9px;border-top:1px solid #e4ece9;padding-top:8px}.stockHistItem{font-size:9px;color:#5c746d;padding:5px 0;border-top:1px dashed #e1e9e6}.stockHistItem:first-child{border-top:0}.stockSync{margin:-2px 0 9px;padding:7px 9px;border-radius:9px;background:#eef6f3;border:1px solid #d8e6e1;font-size:9px;color:#5a756d;line-height:1.45}.stockSync b{color:#2f7565}.stockAccess{display:none;margin-bottom:9px;padding:9px;border:1px solid #e4c895;background:#fff8eb;border-radius:10px}.stockAccess .stockActions{margin-top:6px;grid-template-columns:1fr auto}.stockAccess input{min-height:38px;font-size:13px}.stockAccess button{min-width:92px}
 .subtle{font-size:9px;color:var(--muted);margin-top:5px}.maintReason{margin-top:7px}.maintReason.hidden{display:none}.maintReason label{font-size:9.5px}.maintReason input{min-height:38px;font-size:13px}
-@media(max-width:390px){.wrap{padding-left:8px;padding-right:8px}.head{padding:12px}.head h1{font-size:17px}.card{padding:10px}.autoRow{gap:5px}.stat{padding:7px 6px}.stat b{font-size:10.5px}}
+.liveBoard{background:#fff;border:1px solid var(--line);border-radius:15px;margin-bottom:8px;overflow:hidden;box-shadow:0 3px 12px rgba(28,69,59,.04)}.liveHead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;background:#edf6f3;border-bottom:1px solid #dbe7e3}.liveHead b{display:block;font-size:12px;color:var(--accent)}.liveHead small{display:block;margin-top:1px;font-size:8px;color:var(--muted)}.liveGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:#dfe9e5}.liveCard{background:#fbfdfc;padding:8px 9px;min-width:0}.liveCardHead{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-bottom:6px}.liveCardHead b{font-size:9.5px;color:#3d6258}.liveEditBtn{border:0;background:#e9f3f0;color:#2f7565;border-radius:7px;min-height:25px;padding:4px 7px;font-size:8px;font-weight:850}.liveFlow{display:grid;grid-template-columns:1fr 1fr;gap:5px}.liveMetric{background:#f1f6f4;border-radius:7px;padding:5px 6px;min-width:0}.liveMetric small{display:block;font-size:7.5px;color:var(--muted)}.liveMetric b{display:block;margin-top:1px;font-size:11px;color:#235e50;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.livePumps{display:flex;flex-wrap:wrap;gap:4px}.livePump{display:inline-flex;align-items:center;gap:3px;border-radius:999px;padding:4px 6px;font-size:8px;font-weight:900;border:1px solid #dce6e2;background:#f2f5f4;color:#71827d}.livePump.run{background:#e9f7ee;border-color:#bcdcc7;color:#246944}.livePump.stop{background:#fff1f1;border-color:#e8caca;color:#9a4444}.liveStamp{margin-top:5px;font-size:7.5px;color:#7c8d88;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.liveEmpty{font-size:8.5px;color:#8a9894;padding:4px 0}.liveAccess{display:none;padding:8px 10px;border-bottom:1px solid #eadfca;background:#fff9ee}.liveAccess .row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px}.liveAccess input{min-height:36px;font-size:12px}.liveAccess button{min-height:36px;border:0;border-radius:9px;padding:7px 10px;background:var(--accent);color:#fff;font-size:9px;font-weight:850}.onlineRow{display:flex;align-items:center;gap:7px;margin-top:8px}.onlineSave{flex:1;min-height:39px;background:#dff0eb;color:#245e51;border:1px solid #c7dfd8;font-size:10px}.onlineMsg{font-size:8px;color:var(--muted);min-width:0}
+@media(max-width:390px){.wrap{padding-left:8px;padding-right:8px}.head{padding:12px}.head h1{font-size:17px}.card{padding:10px}.autoRow{gap:5px}.stat{padding:7px 6px}.stat b{font-size:10.5px}.liveCard{padding:7px}.livePump{font-size:7.5px;padding:4px 5px}}
 </style>
 </head>
 <body><div style="position:relative;z-index:2;padding:10px 18px;background:#f6f1e7;border-bottom:1px solid #ddd2c4;font:13px/1.5 system-ui,sans-serif;text-align:center"><a href="https://reqoo.co/apps/" style="color:#365343;text-decoration:underline;display:inline-block;padding:4px 8px">← Semua app REQOO</a></div>
@@ -89,6 +90,19 @@ details.more[open]>summary:after{content:"−"}
     <div><h1>Reqoo · LRA Report</h1><p>Status Operasi LRA Semenyih 2</p></div>
     <button id="installBtn" class="install">Pasang</button>
   </header>
+
+  <section class="liveBoard" id="liveBoard">
+    <div class="liveHead">
+      <div><b>Status Semasa Loji</b><small id="liveMeta">Auto refresh setiap 30 saat</small></div>
+      <span class="modeChip">DB LIVE</span>
+    </div>
+    <div id="liveAccessBox" class="liveAccess">
+      <div class="row"><input id="liveAccessKey" type="password" placeholder="Access code S2"><button id="liveAccessSave" type="button">Sambung</button></div>
+    </div>
+    <div id="liveGrid" class="liveGrid">
+      <div class="liveCard"><div class="liveEmpty">Menyambung status operasi…</div></div>
+    </div>
+  </section>
 
   <nav class="tabs" aria-label="Jenis report">
     <button class="tabBtn active" data-tab="ops">Operasi</button>
@@ -154,6 +168,7 @@ details.more[open]>summary:after{content:"−"}
       <div class="stat"><small>Pressure</small><b id="pressure">7.6 bar</b></div>
     </div>
     <div id="notice" class="notice ok">OK - bacaan utama dalam julat.</div>
+    <div class="onlineRow"><button id="opsOnlineSave" class="btn onlineSave" type="button">☁️ Simpan Status Online</button><span id="opsOnlineMsg" class="onlineMsg"></span></div>
   </section>
 
   <details class="more">
@@ -197,6 +212,7 @@ details.more[open]>summary:after{content:"−"}
         <div class="field" id="ibPondBField"><div class="pumpHead"><label>Paras Pond B (m)</label><label class="problemTag"><input id="ibPondBProblem" type="checkbox">Problem</label></div><input id="ibPondB" inputmode="decimal" value="5.98"><div id="ibPondBNoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="ibPondBNote" value="Paras Pond B under maintenance (level problem)"></div></div>
         <div class="field" id="ibPondCField"><div class="pumpHead"><label>Paras Pond C (m)</label><label class="problemTag"><input id="ibPondCProblem" type="checkbox">Problem</label></div><input id="ibPondC" inputmode="decimal" value="11.96"><div id="ibPondCNoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="ibPondCNote" value="Paras Pond C under maintenance (level problem)"></div></div>
       </div>
+      <div class="onlineRow"><button id="ibOnlineSave" class="btn onlineSave" type="button">☁️ Simpan Status Online</button><span id="ibOnlineMsg" class="onlineMsg"></span></div>
       <details class="more" style="margin:7px 0 0"><summary>Preview WhatsApp</summary><div class="moreBody"><div id="ibPreview" class="pumpPreview"></div></div></details>
     </section>
   </div>
@@ -219,6 +235,7 @@ details.more[open]>summary:after{content:"−"}
         <div class="field" id="icPondBField"><div class="pumpHead"><label>Pond B (m)</label><label class="problemTag"><input id="icPondBProblem" type="checkbox">Problem</label></div><input id="icPondB" inputmode="decimal" value="5.93"><div id="icPondBNoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="icPondBNote" value="Paras Pond B under maintenance (level problem)"></div></div>
         <div class="field" id="icPondCField"><div class="pumpHead"><label>Pond C (m)</label><label class="problemTag"><input id="icPondCProblem" type="checkbox">Problem</label></div><input id="icPondC" inputmode="decimal" value="11.96"><div id="icPondCNoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="icPondCNote" value="Paras Pond C under maintenance (level problem)"></div></div>
       </div>
+      <div class="onlineRow"><button id="icOnlineSave" class="btn onlineSave" type="button">☁️ Simpan Status Online</button><span id="icOnlineMsg" class="onlineMsg"></span></div>
       <details class="more" style="margin:7px 0 0"><summary>Preview WhatsApp</summary><div class="moreBody"><div id="icPreview" class="pumpPreview"></div></div></details>
     </section>
   </div>
@@ -244,6 +261,7 @@ details.more[open]>summary:after{content:"−"}
         <div class="field" id="twpsDp1Field"><div class="pumpHead"><label>DP 1 (m)</label><label class="problemTag"><input id="twpsDp1Problem" type="checkbox">Problem</label></div><input id="twpsDp1" inputmode="decimal" value="7.76"><div id="twpsDp1NoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="twpsDp1Note" value="Paras Desa Putra No.1 under maintenance (level problem)"></div></div>
         <div class="field" id="twpsDp2Field"><div class="pumpHead"><label>DP 2 (m)</label><label class="problemTag"><input id="twpsDp2Problem" type="checkbox">Problem</label></div><input id="twpsDp2" inputmode="decimal" value="8.05"><div id="twpsDp2NoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="twpsDp2Note" value="Paras Desa Putra No.2 under maintenance (level problem)"></div></div>
       </div>
+      <div class="onlineRow"><button id="twpsOnlineSave" class="btn onlineSave" type="button">☁️ Simpan Status Online</button><span id="twpsOnlineMsg" class="onlineMsg"></span></div>
       
       <details class="more" style="margin:7px 0 0"><summary>Preview WhatsApp</summary><div class="moreBody"><div id="twpsPreview" class="pumpPreview"></div></div></details>
     </section>
@@ -399,6 +417,106 @@ function twpsText(){
 }
 function currentText(){return activeTab==='intakeB'?intakeBText():activeTab==='intakeC'?intakeCText():activeTab==='twps'?twpsText():activeTab==='stock'?stockText(true):opsText()}
 
+
+const LIVE_API='/api/s2-live';
+let liveState={},liveLoading=false;
+function liveAccess(){return localStorage.getItem('s2_access_key')||''}
+function showLiveAccess(show=true){
+ if($('liveAccessBox'))$('liveAccessBox').style.display=show?'block':'none';
+ if(show&&$('liveAccessKey')&&!$('liveAccessKey').value)$('liveAccessKey').value=liveAccess();
+}
+async function liveApi(method='GET',data=null){
+ const key=liveAccess();
+ if(!key){showLiveAccess(true);throw new Error('Masukkan access code S2.')}
+ const opt={method,headers:{'content-type':'application/json','X-S2-Key':key}};
+ if(data)opt.body=JSON.stringify(data);
+ const r=await fetch(LIVE_API,opt);
+ const j=await r.json().catch(()=>({ok:false,error:'Respons server tidak sah'}));
+ if(r.status===401){showLiveAccess(true);throw new Error('Access code S2 tidak sah.')}
+ if(!r.ok||!j.ok)throw new Error(j.error||'Ralat database');
+ showLiveAccess(false);
+ return j;
+}
+function liveStamp(item){
+ if(!item?.updated_at)return'Belum ada update online';
+ const d=new Date(item.updated_at);
+ const tm=Number.isNaN(d.getTime())?item.updated_at:String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0')+'hrs';
+ return tm+' · '+(item.updated_shift||'-');
+}
+function livePumpChip(no,status){
+ const st=String(status||'').toLowerCase(),cls=st==='run'?'run':st==='stop'?'stop':'';
+ return '<span class="livePump '+cls+'">P'+no+' '+(status||'-').toUpperCase()+'</span>';
+}
+function liveCard(section,title,body,item){
+ return '<div class="liveCard"><div class="liveCardHead"><b>'+title+'</b><button type="button" class="liveEditBtn" data-live-jump="'+section+'">Update</button></div>'+
+   (item?body:'<div class="liveEmpty">Belum ada status online.</div>')+
+   '<div class="liveStamp">'+liveStamp(item)+'</div></div>';
+}
+function renderLive(){
+ if(!$('liveGrid'))return;
+ const o=liveState.ops,b=liveState.intakeB,c=liveState.intakeC,t=liveState.twps;
+ const od=o?.data||{},bd=b?.data||{},cd=c?.data||{},td=t?.data||{};
+ const opsBody='<div class="liveFlow"><div class="liveMetric"><small>RWP</small><b>'+(od.rwp||'-')+' MLD</b></div><div class="liveMetric"><small>TWP</small><b>'+(od.twp||'-')+' MLD</b></div><div class="liveMetric"><small>RW</small><b>'+(od.rw||'-')+' m³/h</b></div><div class="liveMetric"><small>TW</small><b>'+(od.tw||'-')+' m³/h</b></div></div>';
+ const ibBody='<div class="livePumps">'+livePumpChip(1,bd.p1)+livePumpChip(2,bd.p2)+'</div>';
+ const icBody='<div class="livePumps">'+[1,2,3,4].map(i=>livePumpChip(i,cd['p'+i])).join('')+'</div><div class="liveStamp">'+(cd.total?cd.total+' MLD':'')+'</div>';
+ const twBody='<div class="livePumps">'+[1,2,3,4].map(i=>livePumpChip(i,td['p'+i])).join('')+'</div><div class="liveStamp">'+(td.total?td.total+' MLD':'')+'</div>';
+ $('liveGrid').innerHTML=
+   liveCard('ops','Operasi',opsBody,o)+
+   liveCard('intakeB','Intake B · RWTPS',ibBody,b)+
+   liveCard('intakeC','Intake C · RWPS',icBody,c)+
+   liveCard('twps','TWPS',twBody,t);
+ $('liveGrid').querySelectorAll('[data-live-jump]').forEach(btn=>btn.addEventListener('click',()=>jumpLive(btn.dataset.liveJump)));
+ const items=Object.values(liveState).filter(Boolean).sort((a,b)=>String(b.updated_at).localeCompare(String(a.updated_at)));
+ $('liveMeta').textContent=items.length?'Latest '+liveStamp(items[0])+' · refresh 30s':'Belum ada data online · refresh 30s';
+}
+async function loadLive(silent=false){
+ if(liveLoading)return;
+ liveLoading=true;
+ try{
+   const j=await liveApi('GET');
+   liveState=j.state||{};
+   renderLive();
+ }catch(e){
+   if(!silent&&$('liveMeta'))$('liveMeta').textContent=e.message;
+ }finally{liveLoading=false}
+}
+function jumpLive(section){
+ const tab=section==='ops'?'ops':section;
+ switchTab(tab);
+ setTimeout(()=>document.getElementById('panel-'+tab)?.scrollIntoView({behavior:'smooth',block:'start'}),60);
+}
+function livePayload(section){
+ if(section==='ops')return{
+   reportDate:v('date'),reportTime:v('time'),
+   data:{rwp:v('rwp'),twp:v('twp'),rw:v('rw'),tw:v('tw'),river:v('river'),tank1:v('tank1'),tank2:v('tank2'),pond1:v('pond1'),pond2:v('pond2'),pondOut:v('pondOut')}
+ };
+ if(section==='intakeB')return{
+   reportDate:v('ibDate'),reportTime:v('ibTime'),
+   data:{p1:v('ibP1'),p2:v('ibP2'),pondB:v('ibPondB'),pondC:v('ibPondC')}
+ };
+ if(section==='intakeC')return{
+   reportDate:v('icDate'),reportTime:v('icTime'),
+   data:{p1:v('icP1'),p2:v('icP2'),p3:v('icP3'),p4:v('icP4'),total:v('icTotal'),rw:v('icRw'),pondB:v('icPondB'),pondC:v('icPondC')}
+ };
+ return{
+   reportDate:v('twpsDate'),reportTime:v('twpsTime'),
+   data:{p1:v('twpsP1'),p2:v('twpsP2'),p3:v('twpsP3'),p4:v('twpsP4'),total:v('twpsTotal'),out:v('twpsOut'),cwt1:v('twpsCwt1'),cwt2:v('twpsCwt2'),dp1:v('twpsDp1'),dp2:v('twpsDp2')}
+ };
+}
+async function saveLive(section){
+ const ids={ops:'opsOnlineSave',intakeB:'ibOnlineSave',intakeC:'icOnlineSave',twps:'twpsOnlineSave'};
+ const msgs={ops:'opsOnlineMsg',intakeB:'ibOnlineMsg',intakeC:'icOnlineMsg',twps:'twpsOnlineMsg'};
+ const btn=$(ids[section]),msg=$(msgs[section]);
+ if(btn)btn.disabled=true;if(msg)msg.textContent='Menyimpan…';
+ try{
+   const p=livePayload(section);
+   const j=await liveApi('POST',{action:'save',section,reportDate:p.reportDate,reportTime:p.reportTime,operator:stockOperator(),shift:stockShift(),data:p.data});
+   liveState=j.state||{};renderLive();
+   if(msg)msg.textContent='✓ Online';
+ }catch(e){
+   if(msg)msg.textContent=e.message;
+ }finally{if(btn)btn.disabled=false}
+}
 
 const CHEM_API='/api/s2-chemical';
 const CHEMS=[
@@ -708,7 +826,12 @@ document.querySelectorAll('.tabBtn').forEach(b=>b.onclick=()=>switchTab(b.datase
 $('stockCommit').onclick=commitStock;
 $('stockUndo').onclick=undoStock;
 $('stockDate').addEventListener('change',previewStock);
-$('stockAccessSave').onclick=()=>{const k=v('stockAccessKey');if(!k)return;localStorage.setItem('s2_access_key',k);loadStock(false)};
+$('stockAccessSave').onclick=()=>{const k=v('stockAccessKey');if(!k)return;localStorage.setItem('s2_access_key',k);loadStock(false);loadLive(true)};
+$('liveAccessSave').onclick=()=>{const k=v('liveAccessKey');if(!k)return;localStorage.setItem('s2_access_key',k);showLiveAccess(false);loadLive(false);if(activeTab==='stock')loadStock(true)};
+$('opsOnlineSave').onclick=()=>saveLive('ops');
+$('ibOnlineSave').onclick=()=>saveLive('intakeB');
+$('icOnlineSave').onclick=()=>saveLive('intakeC');
+$('twpsOnlineSave').onclick=()=>saveLive('twps');
 
 let timer=null;
 $('remind').onclick=async()=>{let d=new Date(v('date')+'T'+v('time')+':00');if(d<=new Date()){alert('Pilih masa report selepas masa sekarang.');return}if('Notification'in window&&Notification.permission==='default')try{await Notification.requestPermission()}catch(e){};localStorage.setItem('rqLraReminder',JSON.stringify({at:d.getTime(),time:v('time')}));arm();alert('Reminder '+v('time').replace(':','')+'hrs disimpan.')}
@@ -727,10 +850,10 @@ function standalone(){return matchMedia('(display-mode: standalone)').matches||n
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e});
 $('installBtn').onclick=async()=>{if(standalone())return alert('App dah dipasang.');if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;return}alert('iPhone: buka link ini dalam Safari > tekan Share > Add to Home Screen.');};
 if(standalone())$('installBtn').style.display='none';
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){syncAutoDates();if(activeTab==='stock'&&!stockHasPending())loadStock(true)}});
-window.addEventListener('focus',()=>{syncAutoDates();if(activeTab==='stock'&&!stockHasPending())loadStock(true)});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){syncAutoDates();loadLive(true);if(activeTab==='stock'&&!stockHasPending())loadStock(true)}});
+window.addEventListener('focus',()=>{syncAutoDates();loadLive(true);if(activeTab==='stock'&&!stockHasPending())loadStock(true)});
 
-load();syncMaintenance();refresh();refreshPump();hist();arm();loadStock(true);setInterval(()=>{if(activeTab==='stock'&&!stockHasPending())loadStock(true)},30000);switchTab(localStorage.getItem('rqLraActiveTab')||'ops');
+load();syncMaintenance();refresh();refreshPump();hist();arm();loadLive(true);loadStock(true);setInterval(()=>{loadLive(true);if(activeTab==='stock'&&!stockHasPending())loadStock(true)},30000);switchTab(localStorage.getItem('rqLraActiveTab')||'ops');
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
 </script>
 </body>
