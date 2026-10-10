@@ -77,7 +77,8 @@ details.more[open]>summary:after{content:"−"}
 .statusStop{border-color:#e7c3c3!important;background:#fff6f6!important;color:#9b3e3e!important;font-weight:850}
 .reportMeta{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:9px}.reportMeta>*{min-width:0}
 .pumpPreview{white-space:pre-wrap;background:#f7faf9;border:1px solid var(--line);border-radius:10px;padding:9px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;line-height:1.45;color:#29423b;margin-top:8px;max-height:260px;overflow:auto}
-.stockList{display:grid;grid-template-columns:1fr;gap:7px}.stockList>*{min-width:0}.stockRow{background:#f8fbfa;border:1px solid #dbe6e2;border-radius:11px;padding:10px}.stockTop{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:7px}.stockName{font-size:11px;font-weight:850;color:#355d52;line-height:1.25}.stockBalance{text-align:right;white-space:nowrap}.stockBalance small{display:block;font-size:8px;color:var(--muted)}.stockBalance b{display:block;font-size:14px;color:var(--accent)}.stockDirect label{font-size:9px}.stockDirect input{min-height:42px;font-size:15px;padding:7px 9px;font-weight:750}.stockAdjust{margin-top:7px;border-top:1px dashed #dbe6e2;padding-top:6px}.stockAdjust summary{font-size:9px;font-weight:800;color:#547168;cursor:pointer}.stockTx{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}.stockTx label{font-size:8.5px}.stockTx input{min-height:37px;font-size:13px;padding:6px 8px}.stockProjected{margin-top:6px;font-size:9px;color:var(--muted);display:flex;justify-content:space-between;gap:8px}.stockProjected b{color:#31594e}.stockActions{display:grid;grid-template-columns:1.2fr .8fr;gap:7px;margin-top:9px}.stockHistory{margin-top:9px;border-top:1px solid #e4ece9;padding-top:8px}.stockHistItem{font-size:9px;color:#5c746d;padding:5px 0;border-top:1px dashed #e1e9e6}.stockHistItem:first-child{border-top:0}.stockSync{margin:-2px 0 9px;padding:7px 9px;border-radius:9px;background:#eef6f3;border:1px solid #d8e6e1;font-size:9px;color:#5a756d;line-height:1.45}.stockSync b{color:#2f7565}.stockAccess{display:none;margin-bottom:9px;padding:9px;border:1px solid #e4c895;background:#fff8eb;border-radius:10px}.stockAccess .stockActions{margin-top:6px;grid-template-columns:1fr auto}.stockAccess input{min-height:38px;font-size:13px}.stockAccess button{min-width:92px}
+.stockDashboard{margin:0 0 10px;background:#f7faf9;border:1px solid #d8e6e1;border-radius:12px;overflow:hidden}.stockDashHead{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;background:#eef6f3;border-bottom:1px solid #d8e6e1}.stockDashHead b{font-size:11px;color:#2f7565}.stockDashHead span{font-size:8.5px;color:var(--muted)}.stockDashRow{display:grid;grid-template-columns:minmax(0,1fr) auto 34px;align-items:center;gap:8px;padding:8px 10px;border-top:1px solid #e5eeeb}.stockDashRow:first-of-type{border-top:0}.stockDashName{font-size:10px;font-weight:750;color:#46675e;min-width:0}.stockDashValue{font-size:13px;font-weight:900;color:#2f7565;white-space:nowrap}.stockEdit{width:32px;height:32px;min-height:32px;border:1px solid #cfe0da;border-radius:9px;background:#fff;color:#35695c;font-size:14px;padding:0;display:grid;place-items:center}.stockEdit:active{transform:scale(.96)}
+.stockList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.stockList>*{min-width:0}.stockRow{background:#f8fbfa;border:1px solid #dbe6e2;border-radius:11px;padding:9px}.stockTop{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:7px}.stockName{font-size:10.5px;font-weight:850;color:#355d52;line-height:1.25}.stockBalance{text-align:right;white-space:nowrap}.stockBalance small{display:block;font-size:8px;color:var(--muted)}.stockBalance b{display:block;font-size:14px;color:var(--accent)}.stockTx{display:grid;grid-template-columns:1fr;gap:5px}.stockTx label{font-size:8.5px}.stockTx input{min-height:37px;font-size:13px;padding:6px 8px}.stockProjected{margin-top:6px;font-size:9px;color:var(--muted);display:flex;justify-content:space-between;gap:8px}.stockProjected b{color:#31594e}.stockActions{display:grid;grid-template-columns:1.2fr .8fr;gap:7px;margin-top:9px}.stockHistory{margin-top:9px;border-top:1px solid #e4ece9;padding-top:8px}.stockHistItem{font-size:9px;color:#5c746d;padding:5px 0;border-top:1px dashed #e1e9e6}.stockHistItem:first-child{border-top:0}.stockSync{margin:-2px 0 9px;padding:7px 9px;border-radius:9px;background:#eef6f3;border:1px solid #d8e6e1;font-size:9px;color:#5a756d;line-height:1.45}.stockSync b{color:#2f7565}.stockAccess{display:none;margin-bottom:9px;padding:9px;border:1px solid #e4c895;background:#fff8eb;border-radius:10px}.stockAccess .stockActions{margin-top:6px;grid-template-columns:1fr auto}.stockAccess input{min-height:38px;font-size:13px}.stockAccess button{min-width:92px}
 .subtle{font-size:9px;color:var(--muted);margin-top:5px}.maintReason{margin-top:7px}.maintReason.hidden{display:none}.maintReason label{font-size:9.5px}.maintReason input{min-height:38px;font-size:13px}
 @media(max-width:390px){.wrap{padding-left:8px;padding-right:8px}.head{padding:12px}.head h1{font-size:17px}.card{padding:10px}.autoRow{gap:5px}.stat{padding:7px 6px}.stat b{font-size:10.5px}}
 </style>
@@ -257,6 +258,7 @@ details.more[open]>summary:after{content:"−"}
         <div class="stockActions"><input id="stockAccessKey" type="password" placeholder="Kod sama macam Breakdown"><button id="stockAccessSave" class="btn green" type="button">Sambung</button></div>
       </div>
       <div id="stockSyncMeta" class="stockSync">Menyambung ke database S2…</div>
+      <div id="stockDashboard" class="stockDashboard"></div>
       <div class="stockList" id="stockList"></div>
       <div id="stockNotice" class="notice ok" style="margin-top:9px">Syif pagi isi penggunaan 24 jam. Penerimaan stok boleh direkod bila-bila masa.</div>
       <div class="stockActions">
@@ -459,78 +461,95 @@ async function loadStock(silent=false){
    if($('stockNotice')){$('stockNotice').className='notice warn';$('stockNotice').textContent=e.message}
  }finally{stockLoading=false}
 }
+function renderStockDashboard(){
+ if(!$('stockDashboard'))return;
+ $('stockDashboard').innerHTML=
+   '<div class="stockDashHead"><b>Stok Semasa</b><span>✏️ Edit jika bacaan DB perlu dibetulkan</span></div>'+
+   CHEMS.map(c=>'<div class="stockDashRow"><div class="stockDashName">'+c.name+'</div><div class="stockDashValue">'+fmtMt(stockState[c.k])+' MT</div><button class="stockEdit" type="button" data-chem="'+c.k+'" aria-label="Edit '+c.name+'">✏️</button></div>').join('');
+ $('stockDashboard').querySelectorAll('.stockEdit').forEach(btn=>btn.addEventListener('click',()=>editDashboardStock(btn.dataset.chem)));
+}
+async function editDashboardStock(key){
+ const c=CHEMS.find(x=>x.k===key);if(!c)return;
+ const cur=fmtMt(stockState[c.k]);
+ const raw=prompt('Betulkan stok semasa '+c.name+' (MT):',cur);
+ if(raw===null)return;
+ const val=Number(String(raw).trim());
+ if(!Number.isFinite(val)||val<0){alert('Nilai MT tidak sah.');return}
+ if(Math.abs(val-Number(stockState[c.k]||0))<0.000001)return;
+ if(!confirm(c.name+'\n'+cur+' MT → '+fmtMt(val)+' MT\n\nSimpan pembetulan ke database?'))return;
+ try{
+   const j=await chemApi('POST',{action:'commit',reportDate:v('stockDate')||localDate(),shift:stockShift(),operator:stockOperator(),changes:[{key:c.k,type:'set',mt:val}]});
+   applyStockItems(j.items);stockServerMeta=j.last_update||null;
+   renderStock();renderStockDashboard();await renderStockHistory(true);
+   if($('stockSyncMeta'))$('stockSyncMeta').innerHTML='<b>Database S2</b> · dikemas kini '+fmtSyncTime(stockServerMeta?.updated_at)+' · '+(stockServerMeta?.updated_shift||stockShift())+' · '+(stockServerMeta?.updated_by||stockOperator());
+   $('stockNotice').className='notice ok';$('stockNotice').textContent='Pembetulan '+c.name+' berjaya disimpan ke database.';
+ }catch(e){
+   $('stockNotice').className='notice warn';$('stockNotice').textContent=e.message;
+ }
+}
 function stockNew(c){
  const cur=Number(stockState[c.k]||0);
- const raw=String($('direct_'+c.k)?.value||'').trim();
- const entered=Number(raw);
- const directValid=raw!==''&&Number.isFinite(entered);
- const directChanged=directValid&&Math.abs(entered-cur)>0.000001;
- if(directChanged)return entered;
- if(c.direct)return directValid?entered:cur;
+ if(c.direct){
+   const el=$('direct_'+c.k);
+   if(!el||String(el.value).trim()==='')return cur;
+   const direct=Number(el.value);
+   return Number.isFinite(direct)?direct:cur;
+ }
  const use=Number($('use_'+c.k)?.value||0),add=Number($('add_'+c.k)?.value||0);
  return cur-(Number.isFinite(use)?use/1000:0)+(Number.isFinite(add)?add/1000:0);
 }
 function renderStock(){
  if(!$('stockList'))return;
+ renderStockDashboard();
  $('stockList').innerHTML=CHEMS.map(c=>{
-   const adjust=c.direct?'':`
-    <details class="stockAdjust">
-      <summary>Kiraan penggunaan / penerimaan (optional)</summary>
-      <div class="stockTx">
-        <div><label>Guna 24j (-kg)</label><input id="use_${c.k}" inputmode="decimal" placeholder="0"></div>
-        <div><label>Terima (+kg)</label><input id="add_${c.k}" inputmode="decimal" placeholder="0"></div>
-      </div>
-    </details>`;
+   const controls=c.direct
+    ? '<div><label>Masukkan stok terkini (MT)</label><input id="direct_'+c.k+'" inputmode="decimal" value="'+fmtMt(stockState[c.k])+'"></div>'
+    : '<div class="stockTx"><div><label>Guna 24j (-kg) · syif pagi</label><input id="use_'+c.k+'" inputmode="decimal" placeholder="0"></div><div><label>Terima (+kg) · bila stok sampai</label><input id="add_'+c.k+'" inputmode="decimal" placeholder="0"></div></div>';
    return `
    <div class="stockRow">
     <div class="stockTop">
       <div class="stockName">${c.name}</div>
-      <div class="stockBalance"><small>DB sekarang</small><b id="bal_${c.k}">${fmtMt(stockState[c.k])} MT</b></div>
+      <div class="stockBalance"><small>Stok rekod DB</small><b id="bal_${c.k}">${fmtMt(stockState[c.k])} MT</b></div>
     </div>
-    <div class="stockDirect">
-      <label>Stok semasa (MT) · boleh edit terus</label>
-      <input id="direct_${c.k}" inputmode="decimal" value="${fmtMt(stockState[c.k])}">
-    </div>
-    ${adjust}
-    <div class="stockProjected"><span>Nilai selepas simpan</span><b id="new_${c.k}">${fmtMt(stockState[c.k])} MT</b></div>
+    ${controls}
+    <div class="stockProjected"><span>${c.direct?'Nilai report':'Selepas transaksi'}</span><b id="new_${c.k}">${fmtMt(stockState[c.k])} MT</b></div>
    </div>`;
  }).join('');
  CHEMS.forEach(c=>{
-   const list=['direct_'+c.k];
-   if(!c.direct)list.push('use_'+c.k,'add_'+c.k);
+   const list=c.direct?['direct_'+c.k]:['use_'+c.k,'add_'+c.k];
    list.forEach(id=>$(id)?.addEventListener('input',previewStock));
  });
  previewStock();
 }
-function stockPendingFor(c){
- const cur=Number(stockState[c.k]||0);
- const raw=String($('direct_'+c.k)?.value||'').trim(),x=Number(raw);
- const directChanged=raw!==''&&Number.isFinite(x)&&Math.abs(x-cur)>0.000001;
- if(c.direct)return directChanged;
- const u=Number($('use_'+c.k)?.value||0),a=Number($('add_'+c.k)?.value||0);
- return directChanged||(Number.isFinite(u)&&u>0)||(Number.isFinite(a)&&a>0);
+function stockHasPending(){
+ return CHEMS.some(c=>{
+   if(c.direct){
+     const raw=String($('direct_'+c.k)?.value||'').trim(),x=Number(raw);
+     return raw!==''&&Number.isFinite(x)&&Math.abs(x-Number(stockState[c.k]||0))>0.000001;
+   }
+   const u=Number($('use_'+c.k)?.value||0),a=Number($('add_'+c.k)?.value||0);
+   return (Number.isFinite(u)&&u>0)||(Number.isFinite(a)&&a>0);
+ });
 }
-function stockHasPending(){return CHEMS.some(stockPendingFor)}
 function previewStock(){
- let bad=false,changed=false,mixed=false;
+ let bad=false,changed=false;
  CHEMS.forEach(c=>{
-   const cur=Number(stockState[c.k]||0);
-   const raw=String($('direct_'+c.k)?.value||'').trim(),direct=Number(raw);
-   const directChanged=raw!==''&&Number.isFinite(direct)&&Math.abs(direct-cur)>0.000001;
-   const use=!c.direct?Number($('use_'+c.k)?.value||0):0;
-   const add=!c.direct?Number($('add_'+c.k)?.value||0):0;
-   const hasTx=!c.direct&&((Number.isFinite(use)&&use>0)||(Number.isFinite(add)&&add>0));
-   if(raw===''||!Number.isFinite(direct)||direct<0)bad=true;
-   if(directChanged&&hasTx)mixed=true;
    const x=stockNew(c);
    if($('new_'+c.k))$('new_'+c.k).textContent=fmtMt(x)+' MT';
    if(x<0)bad=true;
-   if(directChanged||hasTx)changed=true;
+   if(c.direct){
+     const raw=String($('direct_'+c.k)?.value||'').trim(),direct=Number(raw);
+     if(raw!==''&&(!Number.isFinite(direct)||direct<0))bad=true;
+     if(Number.isFinite(direct)&&Math.abs(direct-Number(stockState[c.k]||0))>0.000001)changed=true;
+   }else{
+     const use=Number($('use_'+c.k)?.value||0),add=Number($('add_'+c.k)?.value||0);
+     if((Number.isFinite(use)&&use>0)||(Number.isFinite(add)&&add>0))changed=true;
+   }
  });
  const box=$('stockNotice');
  if(box){
-   box.className='notice '+((bad||mixed)?'warn':'ok');
-   box.textContent=bad?'Semak nilai stok. Semua nilai MT mesti sah dan tidak negatif.':mixed?'Jangan edit MT dan isi Guna/Terima untuk bahan yang sama. Pilih salah satu.':changed?'Semak nilai baru, kemudian tekan Simpan Perubahan.':'Semua stok ada dalam satu senarai. Nilai MT boleh dibetulkan terus jika perlu.';
+   box.className='notice '+(bad?'warn':'ok');
+   box.textContent=bad?'Semak nilai stok. Nilai tak boleh negatif.':changed?'Semak nilai baru, kemudian tekan Simpan Perubahan.':'Syif pagi: isi penggunaan 24 jam. Petang/malam: hanya rekod penerimaan jika stok sampai. Guna ✏️ di dashboard jika perlu betulkan nilai DB.';
  }
  if($('stockPreview'))$('stockPreview').textContent=stockText(true);
 }
@@ -551,20 +570,17 @@ function stockText(projected=false){
 async function commitStock(){
  const changes=[];
  for(const chem of CHEMS){
-   const cur=Number(stockState[chem.k]||0);
-   const raw=String($('direct_'+chem.k)?.value||'').trim(),direct=Number(raw);
-   if(raw===''||!Number.isFinite(direct)||direct<0){alert(chem.name+': semak nilai stok MT.');return}
-   const directChanged=Math.abs(direct-cur)>0.000001;
-   const use=!chem.direct?Number($('use_'+chem.k)?.value||0):0;
-   const add=!chem.direct?Number($('add_'+chem.k)?.value||0):0;
-   const hasTx=!chem.direct&&((Number.isFinite(use)&&use>0)||(Number.isFinite(add)&&add>0));
-   if(directChanged&&hasTx){alert(chem.name+': pilih sama ada edit stok MT terus ATAU guna/terima kg. Jangan buat kedua-dua sekali.');return}
-   if(directChanged){
-     changes.push({key:chem.k,type:'set',mt:direct});
-   }else if(hasTx){
-     const next=cur-(Number.isFinite(use)?use/1000:0)+(Number.isFinite(add)?add/1000:0);
-     if(next<0){alert(chem.name+': stok tak boleh kurang daripada 0 MT.');return}
-     changes.push({key:chem.k,type:'tx',useKg:Number.isFinite(use)?use:0,receiveKg:Number.isFinite(add)?add:0});
+   const next=stockNew(chem);
+   if(next<0){alert(chem.name+': stok tak boleh kurang daripada 0 MT.');return}
+   if(chem.direct){
+     const raw=String($('direct_'+chem.k)?.value||'').trim(),direct=Number(raw);
+     if(raw===''||!Number.isFinite(direct)){alert(chem.name+': masukkan nilai stok dalam MT.');return}
+     if(Math.abs(direct-Number(stockState[chem.k]||0))>0.000001)changes.push({key:chem.k,type:'set',mt:direct});
+   }else{
+     const use=Number($('use_'+chem.k)?.value||0),add=Number($('add_'+chem.k)?.value||0);
+     if((Number.isFinite(use)&&use>0)||(Number.isFinite(add)&&add>0)){
+       changes.push({key:chem.k,type:'tx',useKg:Number.isFinite(use)?use:0,receiveKg:Number.isFinite(add)?add:0});
+     }
    }
  }
  if(!changes.length){alert('Tiada perubahan stok dimasukkan.');return}
