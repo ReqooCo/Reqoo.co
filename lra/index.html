@@ -77,7 +77,7 @@ details.more[open]>summary:after{content:"−"}
 .statusStop{border-color:#e7c3c3!important;background:#fff6f6!important;color:#9b3e3e!important;font-weight:850}
 .reportMeta{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:9px}.reportMeta>*{min-width:0}
 .pumpPreview{white-space:pre-wrap;background:#f7faf9;border:1px solid var(--line);border-radius:10px;padding:9px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;line-height:1.45;color:#29423b;margin-top:8px;max-height:260px;overflow:auto}
-.stockList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.stockList>*{min-width:0}.stockRow{background:#f8fbfa;border:1px solid #dbe6e2;border-radius:11px;padding:9px}.stockTop{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:7px}.stockName{font-size:10.5px;font-weight:850;color:#355d52;line-height:1.25}.stockBalance{text-align:right;white-space:nowrap}.stockBalance small{display:block;font-size:8px;color:var(--muted)}.stockBalance b{display:block;font-size:14px;color:var(--accent)}.stockTx{display:grid;grid-template-columns:1fr;gap:5px}.stockTx label{font-size:8.5px}.stockTx input{min-height:37px;font-size:13px;padding:6px 8px}.stockProjected{margin-top:6px;font-size:9px;color:var(--muted);display:flex;justify-content:space-between;gap:8px}.stockProjected b{color:#31594e}.stockActions{display:grid;grid-template-columns:1.2fr .8fr;gap:7px;margin-top:9px}.stockHistory{margin-top:9px;border-top:1px solid #e4ece9;padding-top:8px}.stockHistItem{font-size:9px;color:#5c746d;padding:5px 0;border-top:1px dashed #e1e9e6}.stockHistItem:first-child{border-top:0}.stockSync{margin:-2px 0 9px;padding:7px 9px;border-radius:9px;background:#eef6f3;border:1px solid #d8e6e1;font-size:9px;color:#5a756d;line-height:1.45}.stockSync b{color:#2f7565}.stockAccess{display:none;margin-bottom:9px;padding:9px;border:1px solid #e4c895;background:#fff8eb;border-radius:10px}.stockAccess .stockActions{margin-top:6px;grid-template-columns:1fr auto}.stockAccess input{min-height:38px;font-size:13px}.stockAccess button{min-width:92px}
+.stockList{display:grid;grid-template-columns:1fr;gap:7px}.stockList>*{min-width:0}.stockRow{background:#f8fbfa;border:1px solid #dbe6e2;border-radius:11px;padding:10px}.stockTop{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:7px}.stockName{font-size:11px;font-weight:850;color:#355d52;line-height:1.25}.stockBalance{text-align:right;white-space:nowrap}.stockBalance small{display:block;font-size:8px;color:var(--muted)}.stockBalance b{display:block;font-size:14px;color:var(--accent)}.stockDirect label{font-size:9px}.stockDirect input{min-height:42px;font-size:15px;padding:7px 9px;font-weight:750}.stockAdjust{margin-top:7px;border-top:1px dashed #dbe6e2;padding-top:6px}.stockAdjust summary{font-size:9px;font-weight:800;color:#547168;cursor:pointer}.stockTx{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}.stockTx label{font-size:8.5px}.stockTx input{min-height:37px;font-size:13px;padding:6px 8px}.stockProjected{margin-top:6px;font-size:9px;color:var(--muted);display:flex;justify-content:space-between;gap:8px}.stockProjected b{color:#31594e}.stockActions{display:grid;grid-template-columns:1.2fr .8fr;gap:7px;margin-top:9px}.stockHistory{margin-top:9px;border-top:1px solid #e4ece9;padding-top:8px}.stockHistItem{font-size:9px;color:#5c746d;padding:5px 0;border-top:1px dashed #e1e9e6}.stockHistItem:first-child{border-top:0}.stockSync{margin:-2px 0 9px;padding:7px 9px;border-radius:9px;background:#eef6f3;border:1px solid #d8e6e1;font-size:9px;color:#5a756d;line-height:1.45}.stockSync b{color:#2f7565}.stockAccess{display:none;margin-bottom:9px;padding:9px;border:1px solid #e4c895;background:#fff8eb;border-radius:10px}.stockAccess .stockActions{margin-top:6px;grid-template-columns:1fr auto}.stockAccess input{min-height:38px;font-size:13px}.stockAccess button{min-width:92px}
 .subtle{font-size:9px;color:var(--muted);margin-top:5px}.maintReason{margin-top:7px}.maintReason.hidden{display:none}.maintReason label{font-size:9.5px}.maintReason input{min-height:38px;font-size:13px}
 @media(max-width:390px){.wrap{padding-left:8px;padding-right:8px}.head{padding:12px}.head h1{font-size:17px}.card{padding:10px}.autoRow{gap:5px}.stat{padding:7px 6px}.stat b{font-size:10.5px}}
 </style>
@@ -461,69 +461,80 @@ async function loadStock(silent=false){
 }
 function stockNew(c){
  const cur=Number(stockState[c.k]||0);
- if(c.direct){
-   const el=$('direct_'+c.k);
-   if(!el||String(el.value).trim()==='')return cur;
-   const direct=Number(el.value);
-   return Number.isFinite(direct)?direct:cur;
- }
+ const raw=String($('direct_'+c.k)?.value||'').trim();
+ const entered=Number(raw);
+ const directValid=raw!==''&&Number.isFinite(entered);
+ const directChanged=directValid&&Math.abs(entered-cur)>0.000001;
+ if(directChanged)return entered;
+ if(c.direct)return directValid?entered:cur;
  const use=Number($('use_'+c.k)?.value||0),add=Number($('add_'+c.k)?.value||0);
  return cur-(Number.isFinite(use)?use/1000:0)+(Number.isFinite(add)?add/1000:0);
 }
 function renderStock(){
  if(!$('stockList'))return;
  $('stockList').innerHTML=CHEMS.map(c=>{
-   const controls=c.direct
-    ? '<div><label>Bacaan stok hari ini (MT)</label><input id="direct_'+c.k+'" inputmode="decimal" value="'+fmtMt(stockState[c.k])+'"></div>'
-    : '<div class="stockTx"><div><label>Guna 24j (-kg) · syif pagi</label><input id="use_'+c.k+'" inputmode="decimal" placeholder="0"></div><div><label>Terima (+kg) · bila stok sampai</label><input id="add_'+c.k+'" inputmode="decimal" placeholder="0"></div></div>';
+   const adjust=c.direct?'':`
+    <details class="stockAdjust">
+      <summary>Kiraan penggunaan / penerimaan (optional)</summary>
+      <div class="stockTx">
+        <div><label>Guna 24j (-kg)</label><input id="use_${c.k}" inputmode="decimal" placeholder="0"></div>
+        <div><label>Terima (+kg)</label><input id="add_${c.k}" inputmode="decimal" placeholder="0"></div>
+      </div>
+    </details>`;
    return `
    <div class="stockRow">
     <div class="stockTop">
       <div class="stockName">${c.name}</div>
-      <div class="stockBalance"><small>Stok rekod DB</small><b id="bal_${c.k}">${fmtMt(stockState[c.k])} MT</b></div>
+      <div class="stockBalance"><small>DB sekarang</small><b id="bal_${c.k}">${fmtMt(stockState[c.k])} MT</b></div>
     </div>
-    ${controls}
-    <div class="stockProjected"><span>${c.direct?'Nilai report':'Selepas transaksi'}</span><b id="new_${c.k}">${fmtMt(stockState[c.k])} MT</b></div>
+    <div class="stockDirect">
+      <label>Stok semasa (MT) · boleh edit terus</label>
+      <input id="direct_${c.k}" inputmode="decimal" value="${fmtMt(stockState[c.k])}">
+    </div>
+    ${adjust}
+    <div class="stockProjected"><span>Nilai selepas simpan</span><b id="new_${c.k}">${fmtMt(stockState[c.k])} MT</b></div>
    </div>`;
  }).join('');
  CHEMS.forEach(c=>{
-   const list=c.direct?['direct_'+c.k]:['use_'+c.k,'add_'+c.k];
-   list.forEach(id=>$(id).addEventListener('input',previewStock));
+   const list=['direct_'+c.k];
+   if(!c.direct)list.push('use_'+c.k,'add_'+c.k);
+   list.forEach(id=>$(id)?.addEventListener('input',previewStock));
  });
  previewStock();
 }
-function stockHasPending(){
- return CHEMS.some(c=>{
-   if(c.direct){
-     const raw=String($('direct_'+c.k)?.value||'').trim(),x=Number(raw);
-     return raw!==''&&Number.isFinite(x)&&Math.abs(x-Number(stockState[c.k]||0))>0.000001;
-   }
-   const u=Number($('use_'+c.k)?.value||0),a=Number($('add_'+c.k)?.value||0);
-   return (Number.isFinite(u)&&u>0)||(Number.isFinite(a)&&a>0);
- });
+function stockPendingFor(c){
+ const cur=Number(stockState[c.k]||0);
+ const raw=String($('direct_'+c.k)?.value||'').trim(),x=Number(raw);
+ const directChanged=raw!==''&&Number.isFinite(x)&&Math.abs(x-cur)>0.000001;
+ if(c.direct)return directChanged;
+ const u=Number($('use_'+c.k)?.value||0),a=Number($('add_'+c.k)?.value||0);
+ return directChanged||(Number.isFinite(u)&&u>0)||(Number.isFinite(a)&&a>0);
 }
+function stockHasPending(){return CHEMS.some(stockPendingFor)}
 function previewStock(){
- let bad=false,changed=false;
+ let bad=false,changed=false,mixed=false;
  CHEMS.forEach(c=>{
+   const cur=Number(stockState[c.k]||0);
+   const raw=String($('direct_'+c.k)?.value||'').trim(),direct=Number(raw);
+   const directChanged=raw!==''&&Number.isFinite(direct)&&Math.abs(direct-cur)>0.000001;
+   const use=!c.direct?Number($('use_'+c.k)?.value||0):0;
+   const add=!c.direct?Number($('add_'+c.k)?.value||0):0;
+   const hasTx=!c.direct&&((Number.isFinite(use)&&use>0)||(Number.isFinite(add)&&add>0));
+   if(raw===''||!Number.isFinite(direct)||direct<0)bad=true;
+   if(directChanged&&hasTx)mixed=true;
    const x=stockNew(c);
    if($('new_'+c.k))$('new_'+c.k).textContent=fmtMt(x)+' MT';
    if(x<0)bad=true;
-   if(c.direct){
-     const raw=String($('direct_'+c.k)?.value||'').trim(),direct=Number(raw);
-     if(raw!==''&&(!Number.isFinite(direct)||direct<0))bad=true;
-     if(Number.isFinite(direct)&&Math.abs(direct-Number(stockState[c.k]||0))>0.000001)changed=true;
-   }else{
-     const use=Number($('use_'+c.k)?.value||0),add=Number($('add_'+c.k)?.value||0);
-     if((Number.isFinite(use)&&use>0)||(Number.isFinite(add)&&add>0))changed=true;
-   }
+   if(directChanged||hasTx)changed=true;
  });
  const box=$('stockNotice');
  if(box){
-   box.className='notice '+(bad?'warn':'ok');
-   box.textContent=bad?'Semak nilai stok. Nilai tak boleh negatif.':changed?'Semak nilai baru, kemudian tekan Simpan Perubahan.':'Syif pagi: isi penggunaan 24 jam. Petang/malam: hanya rekod penerimaan jika stok sampai.';
+   box.className='notice '+((bad||mixed)?'warn':'ok');
+   box.textContent=bad?'Semak nilai stok. Semua nilai MT mesti sah dan tidak negatif.':mixed?'Jangan edit MT dan isi Guna/Terima untuk bahan yang sama. Pilih salah satu.':changed?'Semak nilai baru, kemudian tekan Simpan Perubahan.':'Semua stok ada dalam satu senarai. Nilai MT boleh dibetulkan terus jika perlu.';
  }
  if($('stockPreview'))$('stockPreview').textContent=stockText(true);
 }
+
 function stockText(projected=false){
  const get=c=>projected?stockNew(c):Number(stockState[c.k]||0);
  const L=['*Stok Bahan Kimia LRA Semenyih 2*','', '_'+fdate(v('stockDate')||localDate())+'_',''];
@@ -539,16 +550,21 @@ function stockText(projected=false){
 }
 async function commitStock(){
  const changes=[];
- for(const c of CHEMS){
-   const next=stockNew(c);
-   if(next<0){alert(c.name+': stok tak boleh kurang daripada 0 MT.');return}
-   if(c.direct){
-     const raw=String($('direct_'+c.k)?.value||'').trim(),direct=Number(raw);
-     if(raw===''||!Number.isFinite(direct)){alert(c.name+': masukkan nilai stok dalam MT.');return}
-     if(Math.abs(direct-Number(stockState[c.k]||0))>0.000001)changes.push({key:c.k,type:'set',mt:direct});
-   }else{
-     const use=Number($('use_'+c.k)?.value||0),add=Number($('add_'+c.k)?.value||0);
-     if((Number.isFinite(use)&&use>0)||(Number.isFinite(add)&&add>0))changes.push({key:c.k,type:'tx',useKg:Number.isFinite(use)?use:0,receiveKg:Number.isFinite(add)?add:0});
+ for(const chem of CHEMS){
+   const cur=Number(stockState[chem.k]||0);
+   const raw=String($('direct_'+chem.k)?.value||'').trim(),direct=Number(raw);
+   if(raw===''||!Number.isFinite(direct)||direct<0){alert(chem.name+': semak nilai stok MT.');return}
+   const directChanged=Math.abs(direct-cur)>0.000001;
+   const use=!chem.direct?Number($('use_'+chem.k)?.value||0):0;
+   const add=!chem.direct?Number($('add_'+chem.k)?.value||0):0;
+   const hasTx=!chem.direct&&((Number.isFinite(use)&&use>0)||(Number.isFinite(add)&&add>0));
+   if(directChanged&&hasTx){alert(chem.name+': pilih sama ada edit stok MT terus ATAU guna/terima kg. Jangan buat kedua-dua sekali.');return}
+   if(directChanged){
+     changes.push({key:chem.k,type:'set',mt:direct});
+   }else if(hasTx){
+     const next=cur-(Number.isFinite(use)?use/1000:0)+(Number.isFinite(add)?add/1000:0);
+     if(next<0){alert(chem.name+': stok tak boleh kurang daripada 0 MT.');return}
+     changes.push({key:chem.k,type:'tx',useKg:Number.isFinite(use)?use:0,receiveKg:Number.isFinite(add)?add:0});
    }
  }
  if(!changes.length){alert('Tiada perubahan stok dimasukkan.');return}
@@ -558,7 +574,7 @@ async function commitStock(){
    applyStockItems(j.items);stockServerMeta=j.last_update||null;
    renderStock();await renderStockHistory(true);
    if($('stockSyncMeta'))$('stockSyncMeta').innerHTML='<b>Database S2</b> · dikemas kini '+fmtSyncTime(stockServerMeta?.updated_at)+' · '+(stockServerMeta?.updated_shift||stockShift())+' · '+(stockServerMeta?.updated_by||stockOperator());
-   $('stockNotice').className='notice ok';$('stockNotice').textContent='Stok berjaya disimpan ke database. Semua syif akan nampak nilai yang sama.';
+   $('stockNotice').className='notice ok';$('stockNotice').textContent='Stok berjaya disimpan ke database. Semua telefon akan nampak nilai yang sama.';
  }catch(e){
    $('stockNotice').className='notice warn';$('stockNotice').textContent=e.message;
  }finally{$('stockCommit').disabled=false}
@@ -586,7 +602,7 @@ async function renderStockHistory(silent=false){
      g.rows.push(r);
    }
    $('stockHistory').innerHTML=groups.length?groups.slice(0,12).map(g=>{
-     const parts=g.rows.map(r=>r.event_type==='SET'
+     const parts=g.rows.map(r=>['SET','CORRECTION'].includes(r.event_type)
        ? r.chemical_name+': '+fmtMt(r.before_mt)+' → '+fmtMt(r.after_mt)+' MT'
        : r.chemical_name+': '+(Number(r.use_kg)>0?'-'+Number(r.use_kg)+'kg ':'')+(Number(r.receive_kg)>0?'+'+Number(r.receive_kg)+'kg':'')+' → '+fmtMt(r.after_mt)+' MT').join('<br>');
      return '<div class="stockHistItem"><b>'+fdate(g.date||'')+' · '+(g.shift||'-')+'</b> · '+(g.operator||'-')+'<br>'+parts+'</div>';
