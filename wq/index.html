@@ -203,7 +203,7 @@ function render(){
  box.className='status'+(invalid?' warn':'');
  box.textContent=invalid||'Semua bacaan diisi. Sedia untuk simpan online dan pilih group WhatsApp.';
 }
-function valueOut(v,unit=''){return(v||'-')+unit}
+function valueOut(v,unit=''){const z=String(v||'').trim();return !z||z==='-'?'-':z+unit}
 function reportText(d){
  const v=d.values;
  const L=['*LRA Semenyih 2*','*Water Quality Monitoring (OLA)*','*'+dateText(d.reportDate)+'*','*'+timeText(d.reportTime)+'*',
