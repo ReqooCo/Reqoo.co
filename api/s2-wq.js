@@ -69,8 +69,8 @@ function renderReport(d){
  'Aluminium : '+vu('treatedAl','mg/L'),
  'Colour : '+vu('treatedColour','ACU')];
  if(d.fluorideNote)lines.push('','*Bacaan Fluoride diambil dari OLA Fluoride no 2*');
- if(d.otherNote)lines.push('','*'+d.otherNote.replace(/\\*/g,'')+'*');
- return lines.join('\\n');
+ if(d.otherNote)lines.push('','*'+d.otherNote.replace(/\*/g,'')+'*');
+ return lines.join('\n');
 }
 export async function onRequest({request,env}){
  const path=new URL(request.url).pathname,share=path==='/api/s2-wq-share';
