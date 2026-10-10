@@ -343,18 +343,18 @@ function clean(x,d=3){return x===null?'':x.toFixed(d).replace(/0+$/,'').replace(
 function fdate(x){let a=(x||'').split('-');return a.length===3?a[2]+'/'+a[1]+'/'+a[0]:x}
 function ftime(x){return String(x||'').replace(':','')+'hrs'}
 function marker(x){const m=String(x||'').trim().match(/^\(\*+\)$/);return m?m[0]:''}
-function levelVal(x){const z=String(x||'').trim();return z?z+'m':''}
+function levelVal(x){const z=String(x||'').trim();return z?z+'m':'-'}
 function assignedMarker(problemIds,target,offset=0){const on=problemIds.filter(id=>ck(id));const i=on.indexOf(target);return i<0?'':'('+'*'.repeat(i+1+offset)+')'}
-function problemValue(field,problemId,problemIds,offset=0,wrapped=false){const m=assignedMarker(problemIds,problemId,offset),z=v(field);if(wrapped){if(z)return '('+z+'m)'+m;return m}if(z)return z+'m'+m;return m}
+function problemValue(field,problemId,problemIds,offset=0,wrapped=false){const m=assignedMarker(problemIds,problemId,offset),z=v(field);if(wrapped){if(z)return '('+z+'m)'+m;return '-'+m}if(z)return z+'m'+m;return '-'+m}
 function problemNote(problemId,problemIds,noteId,fallback,offset=0){const m=assignedMarker(problemIds,problemId,offset);if(!m)return'';const body=v(noteId)||fallback;return '_'+m+' '+body+'_'}
-function problemReading(field,problemId,problemIds,unit=''){const m=assignedMarker(problemIds,problemId),z=v(field);return z?z+unit+m:m}
+function problemReading(field,problemId,problemIds,unit=''){const m=assignedMarker(problemIds,problemId),z=v(field);return z?z+unit+m:'-'+m}
 
 function opsText(){
  let r=rwP(),t=twP(),m=mld(),L=[];
  const probs=['rwProblem','twProblem','riverProblem','tank1Problem','tank2Problem','pond1Problem','pond2Problem'];
  L.push('*Status Operasi LRA Semenyih 2*','*'+fdate(v('date'))+'@'+ftime(v('time'))+'*','');
  L.push('Paras Sg Langat : '+problemReading('river','riverProblem',probs,'m')+' (paras maksima : '+levelVal(v('riverMax'))+')','');
- L.push('Kadar Pengepaman','RWP : '+v('rwp')+'Mld','TWP : '+v('twp')+'Mld','');
+ L.push('Kadar Pengepaman','RWP : '+(v('rwp')?v('rwp')+'Mld':'-'),'TWP : '+(v('twp')?v('twp')+'Mld':'-'),'');
  L.push('RW Inflow : '+problemReading('rw','rwProblem',probs,'m3/h'),'Normal : '+r.a+'m3/h~'+r.b+'m3/h','Tangki Air Bersih',
    'No.1 : '+problemValue('tank1','tank1Problem',probs),
    'No.2 : '+problemValue('tank2','tank2Problem',probs),'');
@@ -362,7 +362,7 @@ function opsText(){
  L.push('Kolam Desa Putra,',
    'No.1 : '+problemValue('pond1','pond1Problem',probs),
    'No.2 : '+problemValue('pond2','pond2Problem',probs),
-   'Outflow : '+clean(m)+'Mld','');
+   'Outflow : '+(m===null?'-':clean(m)+'Mld'),'');
  const notes=[
    problemNote('rwProblem',probs,'rwNote','RW Inflow under maintenance / bacaan tidak tepat'),
    problemNote('twProblem',probs,'twNote','TW Outflow under maintenance / bacaan tidak tepat'),
@@ -394,7 +394,7 @@ function intakeCText(){
  const probs=['icPondBProblem','icPondCProblem'];
  const L=['*RWPS*','*INTAKE C*',fdate(v('icDate')),ftime(v('icTime')),'','_Status Pump_'];
  [1,2,3,4].forEach(i=>L.push(pumpLine(i,v('icP'+i),ck('icC'+i))));
- L.push('','Total pumping : '+v('icTotal')+'Mld','Rw Inflow : '+v('icRw')+'m3/h','','_Paras_',
+ L.push('','Total pumping : '+(v('icTotal')?v('icTotal')+'Mld':'-'),'Rw Inflow : '+(v('icRw')?v('icRw')+'m3/h':'-'),'','_Paras_',
    'Pond B : '+problemValue('icPondB','icPondBProblem',probs,0,true),
    'Pond C : '+problemValue('icPondC','icPondCProblem',probs,0,true));
  const notes=[
@@ -408,7 +408,7 @@ function twpsText(){
  const probs=['twpsCwt1Problem','twpsCwt2Problem','twpsDp1Problem','twpsDp2Problem'];
  const L=['*TWPS*',fdate(v('twpsDate')),ftime(v('twpsTime')),'','_Status Pump_'];
  [1,2,3,4].forEach(i=>L.push(pumpLine(i,v('twpsP'+i),ck('twpsC'+i))));
- L.push('','Total Pumping : '+v('twpsTotal')+'Mld','Tw Outflow = '+v('twpsOut')+'m3/h','','_Paras_',
+ L.push('','Total Pumping : '+(v('twpsTotal')?v('twpsTotal')+'Mld':'-'),'Tw Outflow = '+(v('twpsOut')?v('twpsOut')+'m3/h':'-'),'','_Paras_',
    'CWT 1 : '+problemValue('twpsCwt1','twpsCwt1Problem',probs),
    'CWT 2 : '+problemValue('twpsCwt2','twpsCwt2Problem',probs),
    'DP 1 : '+problemValue('twpsDp1','twpsDp1Problem',probs),
