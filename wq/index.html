@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#245f50">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="S2 WQ">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Reqoo · WQ Monitoring S2</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icon.svg">
+<style>
+:root{--bg:#edf4f1;--ink:#18382e;--accent:#2c7361;--accent2:#215647;--line:#d6e5df;--mute:#71877e;--soft:#e9f3ef;--white:#fff;--amber:#946519}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{margin:0;font:14px/1.35 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(180deg,#eaf1ef 0%,#f6f8f7 50%,#eef4f2 100%);color:var(--ink)}
+button,input,select,textarea{font:inherit}
+.wrap{max-width:640px;padding:12px 11px 115px;margin:auto}
+.hero{border-radius:16px;background:linear-gradient(125deg,#347d69,#21594e);color:white;padding:15px 16px;margin-bottom:10px}
+.hero h1{font-size:20px;line-height:1.2;margin:0 0 3px}.hero p{font-size:11px;margin:0;opacity:.85}
+.card{border:1px solid var(--line);background:rgba(255,255,255,.98);border-radius:15px;padding:12px;margin-bottom:10px;box-shadow:0 3px 12px #19463909;min-width:0}
+.cardHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.cardHead h2{margin:0;color:var(--accent);font-size:15px}
+.chip{padding:5px 9px;border-radius:999px;background:var(--soft);border:1px solid #d0e4dc;color:var(--accent2);font-size:10px;font-weight:850;white-space:nowrap}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.grid>*{min-width:0}
+.field label{display:block;font-size:11px;font-weight:750;color:#536e64;margin-bottom:5px}
+.field label small{font-size:9px;color:#789087;font-weight:600}
+input,select,textarea{display:block;width:100%;min-width:0;max-width:100%;background:#f9fcfb;color:var(--ink);font-size:16px;padding:10px;border-radius:10px;border:1px solid #d5e4de;min-height:45px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:#7eb9a6;box-shadow:0 0 0 3px #66a99520;background:#fff}
+input[type=date]{appearance:none;-webkit-appearance:none}
+textarea{resize:vertical;min-height:64px}
+.labelFull{grid-column:1/-1}
+.info{font-size:10px;color:var(--mute);line-height:1.55;margin-top:9px}
+.status{font-size:10px;line-height:1.4;border-radius:9px;padding:8px 10px;background:#edf5f1;color:#366a59;margin-top:9px}
+.status.warn{background:#fff1dc;color:#885e17}
+.sectionHead{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.sectionNo{width:27px;height:27px;display:grid;place-items:center;flex:0 0 auto;border-radius:8px;color:var(--accent);background:#e5f1eb;font-size:11px;font-weight:900}
+.sectionHead b{font-size:13px;color:#2e6656}
+.sectionHead span{margin-left:auto;font-size:9px;color:#728b81}
+.fullNotice{padding:15px;border:1px solid #ead0a8;border-radius:13px;background:#fff9ed}
+.fullNotice h3{font-size:16px;margin:0 0 7px;color:#956516}
+.fullNotice p{font-size:12px;color:#6f633f;margin:0 0 6px;line-height:1.55}
+.miniLabel{font-weight:850;font-size:11px;color:#3d6658;margin-bottom:8px}
+.toggle{display:flex;align-items:center;gap:9px;padding:6px 0}
+.toggle input{width:19px;height:19px;min-height:19px;accent-color:var(--accent)}
+.toggle label{color:#426457;font-size:11px;font-weight:750}
+.details{border-radius:13px;border:1px solid var(--line);background:#fff;margin-bottom:10px;overflow:hidden}
+.details summary{list-style:none;padding:12px 13px;font-weight:850;color:var(--accent);font-size:12px;cursor:pointer;display:flex;justify-content:space-between;gap:7px}
+.details summary::-webkit-details-marker{display:none}
+.details summary:after{content:"+";font-size:17px}
+.details[open] summary:after{content:"−"}
+.detailsBody{padding:0 12px 12px;border-top:1px solid #eef3f0}
+.preview{margin-top:10px;padding:10px;border-radius:10px;border:1px solid var(--line);background:#f7faf9;white-space:pre-wrap;font:11px/1.55 ui-monospace,Menlo,monospace;max-height:390px;overflow:auto;color:#2a4d41}
+.btn{border:0;border-radius:11px;min-height:44px;padding:10px;font-size:12px;font-weight:850;cursor:pointer}
+.btnLight{background:#e7f1ed;color:#286451}
+.btnMain{background:#56c979;color:#143c23}
+.btn:disabled{opacity:.48;cursor:not-allowed}
+.bottom{position:fixed;bottom:0;left:0;right:0;z-index:30;border-top:1px solid #d3e1db;background:#edf4f1ee;backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);padding:8px 12px calc(8px + env(safe-area-inset-bottom))}
+.bottomInner{max-width:640px;display:grid;grid-template-columns:.76fr 1.24fr;gap:8px;margin:auto}
+.bottomInner>*{min-width:0}.bottom .btn{width:100%;min-height:50px;font-size:14px}
+.waForm{margin:0}.waForm input[type=hidden]{display:none!important}
+.linkBtn{border:0;background:transparent;color:#2e7461;text-decoration:underline;font-size:10px;font-weight:750;padding:7px 0}
+.draftLine{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.draftLine small{color:#7a9187;font-size:9px}
+.access{margin-top:9px;padding:10px;border:1px solid #edd3ac;background:#fff9ef;border-radius:11px}
+.access input{min-height:43px}
+.accessRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.accessRow button{padding:7px 12px;border-radius:10px;border:0;background:var(--accent);color:white;font-size:11px;font-weight:800}
+.hide{display:none!important}
+.history{display:grid;gap:6px;margin-top:9px}
+.history button{border:1px solid #d9e9e2;border-radius:9px;background:#f5f9f7;padding:9px 10px;text-align:left;display:flex;justify-content:space-between;gap:10px;font-size:11px;color:#45695c}
+.history small{color:#81938c}
+@media(max-width:350px){.wrap{padding:8px 7px 115px}.card{padding:9px}.grid{gap:7px}input,select{padding:8px}.hero{padding:13px}.hero h1{font-size:17px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header class="hero"><h1>Reqoo · WQ Monitoring</h1><p>LRA Semenyih 2 · Water Quality Monitoring (OLA)</p></header>
+<section class="card">
+<div class="cardHead"><h2>Maklumat Report</h2><span class="chip" id="modeChip">OLA · 2 JAM</span></div>
+<div class="grid">
+ <div class="field"><label for="date">Tarikh</label><input id="date" type="date"></div>
+ <div class="field"><label for="time">Masa report</label><select id="time"></select></div>
+</div>
+<div class="status" id="slotStatus">Setiap 2 jam: 0100, 0300 ... 2300hrs.</div>
+<div id="accessWrap" class="access hide">
+ <div class="miniLabel">Access Code S2 <span style="font-weight:500">(sama dengan Breakdown / LRA)</span></div>
+ <div class="accessRow"><input id="access" type="password" autocomplete="off" placeholder="Masukkan access code"><button id="connect" type="button">Sambung</button></div>
+</div>
+<div class="draftLine"><small id="draftStatus">Draf disimpan pada telefon</small><button class="linkBtn" type="button" id="fetchOnline">Semak rekod online</button></div>
+<div id="onlineInfo" class="info"></div>
+</section>
+
+<section id="fullPanel" class="card hide" aria-live="polite">
+<div class="fullNotice"><h3>Full Test · <span id="fullTime"></span></h3>
+<p>Slot <b>0700, 1500 dan 2300</b> menggunakan format Full Test yang berbeza daripada WQ OLA biasa.</p>
+<p>Format Full Test belum dimasukkan. Apabila format itu diberikan, borang khas akan ditambah pada slot ini.</p>
+</div>
+</section>
+
+<div id="olaFields">
+<section class="card">
+ <div class="sectionHead"><span class="sectionNo">01</span><b>Raw Water</b><span>Air Mentah</span></div>
+ <div class="grid">
+  <div class="field"><label for="rawTurb">Turb <small>(NTU)</small></label><input id="rawTurb" inputmode="decimal" autocomplete="off" placeholder="3.4"></div>
+  <div class="field"><label for="rawPh">pH</label><input id="rawPh" inputmode="decimal" autocomplete="off" placeholder="6.79"></div>
+ </div>
+</section>
+<section class="card">
+ <div class="sectionHead"><span class="sectionNo">02</span><b>Settled Water</b><span>Air Mendap</span></div>
+ <div class="grid">
+  <div class="field"><label for="settledTurb">Turb <small>(NTU)</small></label><input id="settledTurb" inputmode="decimal" autocomplete="off" placeholder="0.67"></div>
+  <div class="field"><label for="settledPh">pH</label><input id="settledPh" inputmode="decimal" autocomplete="off" placeholder="7.11"></div>
+  <div class="field labelFull"><label for="settledAl">Aluminium <small>(mg/L)</small></label><input id="settledAl" inputmode="decimal" autocomplete="off" placeholder="0.052"></div>
+ </div>
+</section>
+<section class="card">
+ <div class="sectionHead"><span class="sectionNo">03</span><b>Filtered Water</b><span>Air Ditapis</span></div>
+ <div class="grid">
+  <div class="field"><label for="filteredTurb">Turb <small>(NTU)</small></label><input id="filteredTurb" inputmode="decimal" autocomplete="off" placeholder="0.19"></div>
+  <div class="field"><label for="filteredPh">pH</label><input id="filteredPh" inputmode="decimal" autocomplete="off" placeholder="7.02"></div>
+ </div>
+</section>
+<section class="card">
+ <div class="sectionHead"><span class="sectionNo">04</span><b>Treated Water</b><span>Air Terawat</span></div>
+ <div class="grid">
+  <div class="field"><label for="treatedTurb">Turb <small>(NTU)</small></label><input id="treatedTurb" inputmode="decimal" autocomplete="off" placeholder="0.07"></div>
+  <div class="field"><label for="treatedPh">pH</label><input id="treatedPh" inputmode="decimal" autocomplete="off" placeholder="6.88"></div>
+  <div class="field"><label for="treatedCl">Free Cl₂ <small>(mg/L)</small></label><input id="treatedCl" inputmode="decimal" autocomplete="off" placeholder="2.04"></div>
+  <div class="field"><label for="treatedFl">Fluoride <small>(mg/L)</small></label><input id="treatedFl" inputmode="decimal" autocomplete="off" placeholder="0.42"></div>
+  <div class="field"><label for="treatedAl">Aluminium <small>(mg/L)</small></label><input id="treatedAl" inputmode="decimal" autocomplete="off" placeholder="0045 (semak nilai)"></div>
+  <div class="field"><label for="treatedColour">Colour <small>(ACU)</small></label><input id="treatedColour" inputmode="decimal" autocomplete="off" placeholder="2"></div>
+ </div>
+</section>
+
+<section class="card">
+ <div class="cardHead"><h2>Nota Report</h2><span class="chip">PILIHAN</span></div>
+ <div class="toggle"><input id="fluorideNote" type="checkbox" checked><label for="fluorideNote">Bacaan Fluoride diambil dari OLA Fluoride no 2</label></div>
+ <div class="field"><label for="otherNote">Nota tambahan <small>(jika ada)</small></label><textarea id="otherNote" placeholder="Contoh: OLA under maintenance"></textarea></div>
+ <div class="field" style="margin-top:10px"><label for="operator">Disediakan oleh <small>(untuk rekod database, pilihan)</small></label><input id="operator" placeholder="Nama staf"></div>
+ <div class="status" id="validationMsg">Isikan bacaan OLA untuk slot yang dipilih.</div>
+</section>
+
+<details class="details" id="previewDetails">
+ <summary>Preview WhatsApp</summary>
+ <div class="detailsBody"><div class="preview" id="preview"></div></div>
+</details>
+<details class="details"><summary>Rekod WQ Online</summary><div class="detailsBody"><div class="history" id="history">Perlu access code S2 untuk lihat rekod.</div></div></details>
+</div>
+</main>
+
+<footer class="bottom"><div class="bottomInner">
+<button class="btn btnLight" id="copy" type="button">Salin Report</button>
+<form id="waForm" class="waForm" action="/api/s2-wq-share" method="POST">
+<input type="hidden" name="accessKey" id="waKey"><input type="hidden" name="reportDate" id="waDate">
+<input type="hidden" name="reportTime" id="waTime"><input type="hidden" name="values" id="waValues">
+<input type="hidden" name="fluorideNote" id="waFluoride"><input type="hidden" name="otherNote" id="waNote">
+<input type="hidden" name="operator" id="waOperator">
+<button class="btn btnMain" id="wa" type="submit">WhatsApp</button>
+</form>
+</div></footer>
+<script>
+const $=id=>document.getElementById(id);
+const FIELDS=['rawTurb','rawPh','settledTurb','settledPh','settledAl','filteredTurb','filteredPh','treatedTurb','treatedPh','treatedCl','treatedFl','treatedAl','treatedColour'];
+const SLOTS=['01:00','03:00','05:00','07:00','09:00','11:00','13:00','15:00','17:00','19:00','21:00','23:00'];
+const FULL=new Set(['07:00','15:00','23:00']);
+const DRAFT_PREFIX='reqoo-wq-s2-draft-';
+let savedKey='',latestOnline=null,lastAutoDate='';
+function today(){const d=new Date(),off=d.getTimezoneOffset();return new Date(d-off*60000).toISOString().slice(0,10)}
+function slotNow(){const h=new Date().getHours();const nearest=h%2===1?h:h-1;return nearest>0?String(nearest).padStart(2,'0')+':00':'01:00'}
+function dateText(v){const p=v.split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:v}
+function timeText(v){const h=Number(v.slice(0,2));if(!h)return'';return String(h>12?h-12:h).padStart(2,'0')+'00'+(h>=12?'pm':'am')}
+function key(){return DRAFT_PREFIX+($('date').value||today())+'-'+$('time').value}
+function values(){const o={};FIELDS.forEach(k=>o[k]=$(k).value.trim());return o}
+function getData(){return{reportDate:$('date').value,reportTime:$('time').value,values:values(),fluorideNote:$('fluorideNote').checked,otherNote:$('otherNote').value.trim(),operator:$('operator').value.trim()}}
+function saveDraft(){
+ if(FULL.has($('time').value))return;
+ const o=getData();
+ localStorage.setItem(key(),JSON.stringify(o));
+ $('draftStatus').textContent='Draf tempatan disimpan';
+}
+function clearValues(){FIELDS.forEach(id=>$(id).value='');$('fluorideNote').checked=true;$('otherNote').value=''}
+function loadDraft(){
+ clearValues();const raw=localStorage.getItem(key());
+ if(raw){try{const d=JSON.parse(raw);FIELDS.forEach(id=>$(id).value=d.values?.[id]||'');$('fluorideNote').checked=d.fluorideNote!==false;$('otherNote').value=d.otherNote||'';$('draftStatus').textContent='Draf untuk slot ini dipulihkan'}catch{$('draftStatus').textContent='Draf baharu'}}
+ else $('draftStatus').textContent='Draf baharu · bacaan kosong';
+ render();
+}
+function render(){
+ const full=FULL.has($('time').value);
+ $('modeChip').textContent=full?'FULL TEST':'OLA · 2 JAM';
+ $('fullPanel').classList.toggle('hide',!full);
+ $('olaFields').classList.toggle('hide',full);
+ $('copy').disabled=full;$('wa').disabled=full;
+ if(full){$('fullTime').textContent=$('time').value.replace(':','')+'hrs';$('slotStatus').textContent='Full Test · format belum diterima. Borang biasa tidak digunakan untuk slot ini.';return}
+ $('slotStatus').textContent='WQ OLA · '+dateText($('date').value)+' @ '+timeText($('time').value);
+ $('preview').textContent=reportText(getData());
+ const invalid=validateClient(getData());
+ const box=$('validationMsg');
+ box.className='status'+(invalid?' warn':'');
+ box.textContent=invalid||'Semua bacaan diisi. Sedia untuk simpan online dan pilih group WhatsApp.';
+}
+function valueOut(v,unit=''){return(v||'-')+unit}
+function reportText(d){
+ const v=d.values;
+ const L=['*LRA Semenyih 2*','*Water Quality Monitoring (OLA)*','*'+dateText(d.reportDate)+'*','*'+timeText(d.reportTime)+'*',
+ '','*_Raw Water_*',
+ 'Turb     : '+valueOut(v.rawTurb,'NTU'),
+ 'pH        : '+valueOut(v.rawPh),
+ '','*_Settled Water_*',
+ 'Turb     : '+valueOut(v.settledTurb,'NTU'),
+ 'pH        : '+valueOut(v.settledPh),
+ 'Aluminium: '+valueOut(v.settledAl,'mg/L'),
+ '','*_Filtered Water_*',
+ 'Turb     : '+valueOut(v.filteredTurb,'NTU'),
+ 'pH        : '+valueOut(v.filteredPh),
+ '','*_Treated Water_*',
+ 'Turb       : '+valueOut(v.treatedTurb,'NTU'),
+ 'pH          : '+valueOut(v.treatedPh),
+ 'Free cl2 : '+valueOut(v.treatedCl,'mg/L'),
+ 'Fluoride : '+valueOut(v.treatedFl,'mg/L'),
+ 'Aluminium : '+valueOut(v.treatedAl,'mg/L'),
+ 'Colour : '+valueOut(v.treatedColour,'ACU')];
+ if(d.fluorideNote)L.push('','*Bacaan Fluoride diambil dari OLA Fluoride no 2*');
+ if(d.otherNote)L.push('','*'+d.otherNote.replace(/\*/g,'')+'*');
+ return L.join('\n');
+}
+function validateClient(d){
+ const missing=FIELDS.filter(k=>!String(d.values[k]||'').trim());
+ if(missing.length)return 'Masih ada '+missing.length+' bacaan kosong. Isi semua bacaan; gunakan tanda - jika memang tiada bacaan.';
+ const bad=FIELDS.filter(k=>!/^(?:\d+(?:\.\d+)?|\.\d+|-)$/.test(d.values[k]));
+ if(bad.length)return 'Semak format nombor: '+bad.join(', ');
+ return '';
+}
+function accessKey(){return localStorage.getItem('s2_access_key')||''}
+function showAccess(show=true){$('accessWrap').classList.toggle('hide',!show);if(show&&!$('access').value)$('access').value=accessKey()}
+function connected(){return Boolean(accessKey())}
+async function api(action,params={}){
+ const k=accessKey();if(!k){showAccess(true);throw Error('Masukkan access code S2 terlebih dahulu.')}
+ const path='/api/s2-wq?'+new URLSearchParams({action,...params});
+ const r=await fetch(path,{headers:{'X-S2-Key':k,'accept':'application/json'},cache:'no-store'});
+ const j=await r.json().catch(()=>({ok:false,error:'Respons server tidak sah'}));
+ if(r.status===401){showAccess(true);throw Error('Access code S2 tidak sah.')}
+ if(!r.ok||!j.ok)throw Error(j.error||'Tidak dapat akses database.');
+ showAccess(false);
+ return j;
+}
+async function checkOnline(silent=false){
+ const label=$('onlineInfo');
+ if(FULL.has($('time').value)){label.textContent='Slot Full Test belum disediakan.';return}
+ if(!connected()){label.textContent='Masukkan access code S2 untuk semak rekod online.';showAccess(true);return}
+ try{
+   const d=await api('one',{date:$('date').value,time:$('time').value});
+   latestOnline=d.report;
+   if(d.report){
+     const t=new Date(d.report.updatedAt);
+     const when=Number.isFinite(t.getTime())?t.toLocaleString('ms-MY'):'-';
+     label.innerHTML='<b>Rekod online tersedia:</b> '+when+' · '+escapeHtml(d.report.operator||'-')+' <button class="linkBtn" type="button" id="restoreOnline">Ambil bacaan</button>';
+     $('restoreOnline').onclick=()=>{
+       const existing=FIELDS.some(k=>$(k).value.trim());
+       if(existing&&!confirm('Gantikan bacaan yang sedang diisi dengan rekod online slot ini?'))return;
+       FIELDS.forEach(k=>$(k).value=d.report.values[k]||'');
+       $('fluorideNote').checked=d.report.fluorideNote!==false;
+       $('otherNote').value=d.report.otherNote||'';
+       saveDraft();render();
+     };
+   }else label.textContent='Belum ada report online untuk slot ini.';
+ }catch(e){label.textContent=silent?'Rekod online belum dapat disemak.':e.message}
+}
+function escapeHtml(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+async function loadRecent(){
+ if(!connected())return;
+ try{
+   const data=await api('recent');
+   $('history').innerHTML=(data.recent||[]).length?
+     data.recent.map(x=>'<button type="button" data-date="'+x.report_date+'" data-time="'+x.report_time+'"><b>'+dateText(x.report_date)+' · '+x.report_time.replace(':','')+'hrs</b><small>'+escapeHtml(x.updated_by||'-')+'</small></button>').join(''):'Tiada rekod online lagi.';
+   $('history').querySelectorAll('button').forEach(b=>b.onclick=()=>{
+      $('date').value=b.dataset.date;$('time').value=b.dataset.time;
+      loadDraft();checkOnline();window.scrollTo({top:0,behavior:'smooth'});
+   });
+ }catch(e){$('history').textContent=e.message}
+}
+function onSlotChange(){savedKey=key();loadDraft();checkOnline(true)}
+function syncDate(){
+ const next=today();
+ if(next!==lastAutoDate&&$('date').value===lastAutoDate){
+   $('date').value=next;onSlotChange();
+ }
+ lastAutoDate=next;
+}
+SLOTS.forEach(slot=>{
+ const opt=document.createElement('option');
+ opt.value=slot;opt.textContent=slot.replace(':','')+'hrs'+(FULL.has(slot)?' · FULL TEST':'');
+ $('time').append(opt);
+});
+lastAutoDate=today();
+$('date').value=lastAutoDate;$('time').value=slotNow();
+$('operator').value=localStorage.getItem('s2_wq_operator')||localStorage.getItem('s2_leader')||'';
+savedKey=key();loadDraft();
+FIELDS.forEach(id=>$(id).addEventListener('input',()=>{saveDraft();render()}));
+$('fluorideNote').onchange=()=>{saveDraft();render()};
+$('otherNote').oninput=()=>{saveDraft();render()};
+$('operator').oninput=()=>localStorage.setItem('s2_wq_operator',$('operator').value);
+$('date').onchange=onSlotChange;$('time').onchange=onSlotChange;
+$('fetchOnline').onclick=()=>{checkOnline();loadRecent()};
+$('connect').onclick=()=>{
+ const k=$('access').value.trim();if(!k)return alert('Masukkan access code.');
+ localStorage.setItem('s2_access_key',k);showAccess(false);checkOnline();loadRecent();
+};
+$('copy').onclick=async()=>{
+ const d=getData();
+ const err=validateClient(d);if(err){alert(err);return}
+ const text=reportText(d);
+ try{await navigator.clipboard.writeText(text);alert('Report telah disalin.')}catch{
+   $('previewDetails').open=true;$('preview').textContent=text;
+   alert('Salin teks pada bahagian Preview WhatsApp.');
+ }
+};
+$('waForm').addEventListener('submit',event=>{
+ if(FULL.has($('time').value)){event.preventDefault();alert('Slot ini Full Test. Format khas belum tersedia.');return}
+ const d=getData(),err=validateClient(d);
+ if(err){event.preventDefault();alert(err);return}
+ const k=accessKey();
+ if(!k){event.preventDefault();showAccess(true);window.scrollTo({top:0,behavior:'smooth'});alert('Masukkan access code S2 terlebih dahulu.');return}
+ $('waKey').value=k;$('waDate').value=d.reportDate;$('waTime').value=d.reportTime;
+ $('waValues').value=JSON.stringify(d.values);$('waFluoride').value=d.fluorideNote?'1':'0';
+ $('waNote').value=d.otherNote;$('waOperator').value=d.operator||'-';
+ saveDraft();
+ // The native form submit keeps iPhone's navigation and recipient picker intact.
+});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncDate()});
+window.addEventListener('focus',syncDate);
+render();if(connected()){checkOnline(true);loadRecent()}else showAccess(true);
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
+</script>
+</body>
+</html>
