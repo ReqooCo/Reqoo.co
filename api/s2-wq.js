@@ -2,7 +2,9 @@ const HDR={'content-type':'application/json; charset=UTF-8','cache-control':'no-
 const ACCESS_HASH='da55872021a7acbbd84f80edee8c565ec1e9e5d926a1f18a4a6d6e1ed1586331';
 const SLOTS=new Set(['01:00','03:00','05:00','07:00','09:00','11:00','13:00','15:00','17:00','19:00','21:00','23:00']);
 const FULL=new Set(['07:00','15:00','23:00']);
-const FIELDS=['rawTurb','rawPh','settledTurb','settledPh','settledAl','filteredTurb','filteredPh','treatedTurb','treatedPh','treatedCl','treatedFl','treatedAl','treatedColour'];
+const OLA_FIELDS=['rawTurb','rawPh','settledTurb','settledPh','settledAl','filteredTurb','filteredPh','treatedTurb','treatedPh','treatedCl','treatedFl','treatedAl','treatedColour'];
+const LAB_FIELDS=['labRawTurb','labRawPh','labRawMn','labRawAmmonia','labRawColour','labRawIron','labRawAl','labRawFl','labRawOdour','labSettledTurb','labSettledPh','labSettledColour','labSettledMn','labSettledIron','labSettledAmmonia','labSettledAl','labSettledOdour','labFilteredTurb','labFilteredPh','labFilteredAmmonia','labFilteredMn','labTreatedTurb','labTreatedPh','labTreatedColourTCU','labTreatedColourACU','labTreatedCl','labTreatedFl','labTreatedAl','labTreatedMn','labTreatedIron','labTreatedAmmonia','labTreatedOdour'];
+const ODOUR_FIELDS=new Set(['labRawOdour','labSettledOdour','labTreatedOdour']);
 const json=(x,code=200)=>new Response(JSON.stringify(x),{status:code,headers:HDR});
 const trim=(v,max=200)=>String(v??'').trim().slice(0,max);
 const now=()=>new Date().toISOString();
@@ -30,26 +32,68 @@ async function ensure(db){
 function validate(input){
  const date=trim(input.reportDate,10),time=trim(input.reportTime,5);
  if(!dateOK(date)||!SLOTS.has(time))return{error:'Tarikh atau slot masa tidak sah.'};
- if(FULL.has(time))return{error:'Slot Full Test belum tersedia. Format perlu diberikan dahulu.'};
+ const isLab=FULL.has(time),expected=isLab?LAB_FIELDS:OLA_FIELDS;
  const source=input.values;
  if(!source||typeof source!=='object'||Array.isArray(source))return{error:'Bacaan WQ tidak sah.'};
  const values={};
- for(const field of FIELDS){
+ for(const field of expected){
    const val=trim(source[field],30);
-   if(!val)return{error:'Lengkapkan semua bacaan WQ dahulu ('+field+').' };
-   // A small numeric string or a deliberate dash for an unavailable test reading.
-   if(val!=='-'&&!/^(?:\d+(?:\.\d+)?|\.\d+)$/.test(val))return{error:'Bacaan tidak sah: '+field};
+   if(!val)return{error:'Lengkapkan semua bacaan ('+field+'). Tulis - jika tiada bacaan.'};
+   if(ODOUR_FIELDS.has(field)){
+     if(!/^(?:[\p{L}\d][\p{L}\d _./()-]{0,28}|-)$/u.test(val))return{error:'Bacaan bau tidak sah: '+field};
+   }else if(val!=='-'&&!/^(?:\d+(?:\.\d+)?|\.\d+)$/.test(val))return{error:'Bacaan nombor tidak sah: '+field};
    values[field]=val;
  }
- const fluorideNote=input.fluorideNote===true||input.fluorideNote==='true'||input.fluorideNote==='1';
+ const fluorideNote=!isLab&&(input.fluorideNote===true||input.fluorideNote==='true'||input.fluorideNote==='1');
  const otherNote=trim(input.otherNote,320),operator=trim(input.operator,100)||'-';
- return{reportDate:date,reportTime:time,values,fluorideNote,otherNote,operator};
+ return{reportDate:date,reportTime:time,values,fluorideNote,otherNote,operator,isLab};
 }
 function renderReport(d){
  const v=d.values,vu=(key,unit='')=>v[key]==='-'?'-':v[key]+unit;
  const [year,month,day]=d.reportDate.split('-');
  const hh=Number(d.reportTime.slice(0,2));
  const at=String(hh>12?hh-12:hh).padStart(2,'0')+'00'+(hh>=12?'pm':'am');
+ if(FULL.has(d.reportTime)){
+   const lines=['*LRA Semenyih 2*','*Water Quality Lab Test*','*'+day+'/'+month+'/'+year+' '+at+'*','',
+   '*AIR MENTAH*',
+   'Turb              : '+vu('labRawTurb','NTU'),
+   'pH                 : '+vu('labRawPh'),
+   'Mn                : '+vu('labRawMn','mg/L'),
+   'Ammonia     : '+vu('labRawAmmonia','mg/L'),
+   'Warna           : '+vu('labRawColour','TCU'),
+   'Ferum           : '+vu('labRawIron','mg/L'),
+   'Aluminium   : '+vu('labRawAl','mg/L'),
+   'Florida          : '+vu('labRawFl','mg/L'),
+   'Bau                : '+vu('labRawOdour'),'',
+   '*AIR MENDAP*',
+   'Turb               : '+vu('labSettledTurb','NTU'),
+   'pH                  : '+vu('labSettledPh'),
+   'Warna            : '+vu('labSettledColour','TCU'),
+   'Mn                  : '+vu('labSettledMn','mg/L'),
+   'Ferum            : '+vu('labSettledIron','mg/L'),
+   'Ammonia       : '+vu('labSettledAmmonia','mg/L'),
+   'Aluminium    : '+vu('labSettledAl','mg/L'),
+   'Bau                : '+vu('labSettledOdour'),'',
+   '*AIR TAPISAN*',
+   'Turb                : '+vu('labFilteredTurb','NTU'),
+   'pH                   : '+vu('labFilteredPh'),
+   'Ammonia       : '+vu('labFilteredAmmonia','mg/L'),
+   'Mn                  : '+vu('labFilteredMn','mg/L'),'',
+   '*AIR TERAWAT*',
+   'Turb                  : '+vu('labTreatedTurb','NTU'),
+   'pH                     : '+vu('labTreatedPh'),
+   'Warna               : '+vu('labTreatedColourTCU','TCU'),
+   '                          : '+vu('labTreatedColourACU','ACU'),
+   'Cl2                    : '+vu('labTreatedCl','mg/L'),
+   'Florida              : '+vu('labTreatedFl','mg/L'),
+   'Aluminium       : '+vu('labTreatedAl','mg/L'),
+   'Mn                     : '+vu('labTreatedMn','mg/L'),
+   'Ferum               : '+vu('labTreatedIron','mg/L'),
+   'Ammonia         : '+vu('labTreatedAmmonia','mg/L'),
+   'Bau                    : '+vu('labTreatedOdour')];
+   if(d.otherNote)lines.push('','*'+d.otherNote.replace(/\*/g,'')+'*');
+   return lines.join('\n');
+ }
  const lines=['*LRA Semenyih 2*','*Water Quality Monitoring (OLA)*','*'+day+'/'+month+'/'+year+'*','*'+at+'*',
  '','*_Raw Water_*',
  'Turb     : '+vu('rawTurb','NTU'),
