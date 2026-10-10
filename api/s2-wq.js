@@ -46,17 +46,31 @@ function validate(input){
  return{reportDate:date,reportTime:time,values,fluorideNote,otherNote,operator};
 }
 function renderReport(d){
- const v=d.values,put=(label,key,unit)=>label+' : '+v[key]+unit;
- const time=d.reportTime.split(':')[0],hour=Number(time),time12=hour>12?String(hour-12).padStart(2,'0')+'00pm':String(hour).padStart(2,'0')+'00am';
- const date=d.reportDate.split('-').reverse().join('/');
- const lines=['*LRA Semenyih 2*','*Water Quality Monitoring (OLA)*','*'+date+'*','*'+time12+'*','','*_Raw Water_*',
- put('Turb','rawTurb','NTU'),put('pH','rawPh',''),
- '','*_Settled Water_*',put('Turb','settledTurb','NTU'),put('pH','settledPh',''),put('Aluminium','settledAl','mg/L'),
- '','*_Filtered Water_*',put('Turb','filteredTurb','NTU'),put('pH','filteredPh',''),
- '','*_Treated Water_*',put('Turb','treatedTurb','NTU'),put('pH','treatedPh',''),put('Free cl2','treatedCl','mg/L'),put('Fluoride','treatedFl','mg/L'),put('Aluminium','treatedAl','mg/L'),put('Colour','treatedColour','ACU')];
+ const v=d.values,vu=(key,unit='')=>v[key]==='-'?'-':v[key]+unit;
+ const [year,month,day]=d.reportDate.split('-');
+ const hh=Number(d.reportTime.slice(0,2));
+ const at=String(hh>12?hh-12:hh).padStart(2,'0')+'00'+(hh>=12?'pm':'am');
+ const lines=['*LRA Semenyih 2*','*Water Quality Monitoring (OLA)*','*'+day+'/'+month+'/'+year+'*','*'+at+'*',
+ '','*_Raw Water_*',
+ 'Turb     : '+vu('rawTurb','NTU'),
+ 'pH        : '+vu('rawPh'),
+ '','*_Settled Water_*',
+ 'Turb     : '+vu('settledTurb','NTU'),
+ 'pH        : '+vu('settledPh'),
+ 'Aluminium: '+vu('settledAl','mg/L'),
+ '','*_Filtered Water_*',
+ 'Turb     : '+vu('filteredTurb','NTU'),
+ 'pH        : '+vu('filteredPh'),
+ '','*_Treated Water_*',
+ 'Turb       : '+vu('treatedTurb','NTU'),
+ 'pH          : '+vu('treatedPh'),
+ 'Free cl2 : '+vu('treatedCl','mg/L'),
+ 'Fluoride : '+vu('treatedFl','mg/L'),
+ 'Aluminium : '+vu('treatedAl','mg/L'),
+ 'Colour : '+vu('treatedColour','ACU')];
  if(d.fluorideNote)lines.push('','*Bacaan Fluoride diambil dari OLA Fluoride no 2*');
- if(d.otherNote)lines.push('','*'+d.otherNote.replace(/\*/g,'')+'*');
- return lines.join('\n');
+ if(d.otherNote)lines.push('','*'+d.otherNote.replace(/\\*/g,'')+'*');
+ return lines.join('\\n');
 }
 export async function onRequest({request,env}){
  const path=new URL(request.url).pathname,share=path==='/api/s2-wq-share';
