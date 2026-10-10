@@ -78,7 +78,7 @@ textarea{resize:vertical;min-height:64px}
 </head>
 <body>
 <main class="wrap">
-<header class="hero"><h1>Reqoo · WQ Monitoring</h1><p>LRA Semenyih 2 · Water Quality Monitoring (OLA)</p></header>
+<header class="hero"><h1>Reqoo · WQ Monitoring</h1><p>LRA Semenyih 2 · OLA & Lab Test</p></header>
 <section class="card">
 <div class="cardHead"><h2>Maklumat Report</h2><span class="chip" id="modeChip">OLA · 2 JAM</span></div>
 <div class="grid">
@@ -94,13 +94,52 @@ textarea{resize:vertical;min-height:64px}
 <div id="onlineInfo" class="info"></div>
 </section>
 
-<section id="fullPanel" class="card hide" aria-live="polite">
-<div class="fullNotice"><h3>Full Test · <span id="fullTime"></span></h3>
-<p>Slot <b>0700, 1500 dan 2300</b> menggunakan format Full Test yang berbeza daripada WQ OLA biasa.</p>
-<p>Format Full Test belum dimasukkan. Apabila format itu diberikan, borang khas akan ditambah pada slot ini.</p>
-</div>
+<div id="fullPanel" class="hide">
+<section class="card">
+ <div class="cardHead"><h2>Water Quality Lab Test</h2><span class="chip">FULL TEST</span></div>
+ <div class="status">Borang Full Test untuk <b>0700 / 1500 / 2300hrs</b>. Isikan bacaan sebenar, bukan nilai contoh kelabu.</div>
 </section>
-
+<section class="card"><div class="sectionHead"><span class="sectionNo">01</span><b>AIR MENTAH</b><span>Air Mentah</span></div><div class="grid">
+<div class="field"><label for="labRawTurb">Turb <small>(NTU)</small></label><input id="labRawTurb" inputmode="decimal" autocomplete="off" placeholder="3.5"></div>
+<div class="field"><label for="labRawPh">pH</label><input id="labRawPh" inputmode="decimal" autocomplete="off" placeholder="6.69"></div>
+<div class="field"><label for="labRawMn">Mn <small>(mg/L)</small></label><input id="labRawMn" inputmode="decimal" autocomplete="off" placeholder="0.098"></div>
+<div class="field"><label for="labRawAmmonia">Ammonia <small>(mg/L)</small></label><input id="labRawAmmonia" inputmode="decimal" autocomplete="off" placeholder="0.33"></div>
+<div class="field"><label for="labRawColour">Warna <small>(TCU)</small></label><input id="labRawColour" inputmode="decimal" autocomplete="off" placeholder="3"></div>
+<div class="field"><label for="labRawIron">Ferum <small>(mg/L)</small></label><input id="labRawIron" inputmode="decimal" autocomplete="off" placeholder="0.08"></div>
+<div class="field"><label for="labRawAl">Aluminium <small>(mg/L)</small></label><input id="labRawAl" inputmode="decimal" autocomplete="off" placeholder="0.010"></div>
+<div class="field"><label for="labRawFl">Florida <small>(mg/L)</small></label><input id="labRawFl" inputmode="decimal" autocomplete="off" placeholder="0.35"></div>
+<div class="field"><label for="labRawOdour">Bau</label><input id="labRawOdour" type="text" autocomplete="off" placeholder="UO"></div>
+</div></section>
+<section class="card"><div class="sectionHead"><span class="sectionNo">02</span><b>AIR MENDAP</b><span>Air Mendap</span></div><div class="grid">
+<div class="field"><label for="labSettledTurb">Turb <small>(NTU)</small></label><input id="labSettledTurb" inputmode="decimal" autocomplete="off" placeholder="0.76"></div>
+<div class="field"><label for="labSettledPh">pH</label><input id="labSettledPh" inputmode="decimal" autocomplete="off" placeholder="7.12"></div>
+<div class="field"><label for="labSettledColour">Warna <small>(TCU)</small></label><input id="labSettledColour" inputmode="decimal" autocomplete="off" placeholder="0"></div>
+<div class="field"><label for="labSettledMn">Mn <small>(mg/L)</small></label><input id="labSettledMn" inputmode="decimal" autocomplete="off" placeholder="0.024"></div>
+<div class="field"><label for="labSettledIron">Ferum <small>(mg/L)</small></label><input id="labSettledIron" inputmode="decimal" autocomplete="off" placeholder="0.03"></div>
+<div class="field"><label for="labSettledAmmonia">Ammonia <small>(mg/L)</small></label><input id="labSettledAmmonia" inputmode="decimal" autocomplete="off" placeholder="0.44"></div>
+<div class="field"><label for="labSettledAl">Aluminium <small>(mg/L)</small></label><input id="labSettledAl" inputmode="decimal" autocomplete="off" placeholder="0.057"></div>
+<div class="field"><label for="labSettledOdour">Bau</label><input id="labSettledOdour" type="text" autocomplete="off" placeholder="UO"></div>
+</div></section>
+<section class="card"><div class="sectionHead"><span class="sectionNo">03</span><b>AIR TAPISAN</b><span>Air Tapisan</span></div><div class="grid">
+<div class="field"><label for="labFilteredTurb">Turb <small>(NTU)</small></label><input id="labFilteredTurb" inputmode="decimal" autocomplete="off" placeholder="0.28"></div>
+<div class="field"><label for="labFilteredPh">pH</label><input id="labFilteredPh" inputmode="decimal" autocomplete="off" placeholder="7.04"></div>
+<div class="field"><label for="labFilteredAmmonia">Ammonia <small>(mg/L)</small></label><input id="labFilteredAmmonia" inputmode="decimal" autocomplete="off" placeholder="0.35"></div>
+<div class="field"><label for="labFilteredMn">Mn <small>(mg/L)</small></label><input id="labFilteredMn" inputmode="decimal" autocomplete="off" placeholder="0.024"></div>
+</div></section>
+<section class="card"><div class="sectionHead"><span class="sectionNo">04</span><b>AIR TERAWAT</b><span>Air Terawat</span></div><div class="grid">
+<div class="field"><label for="labTreatedTurb">Turb <small>(NTU)</small></label><input id="labTreatedTurb" inputmode="decimal" autocomplete="off" placeholder="0.21"></div>
+<div class="field"><label for="labTreatedPh">pH</label><input id="labTreatedPh" inputmode="decimal" autocomplete="off" placeholder="6.70"></div>
+<div class="field"><label for="labTreatedColourTCU">Warna (TCU) <small>(TCU)</small></label><input id="labTreatedColourTCU" inputmode="decimal" autocomplete="off" placeholder="0"></div>
+<div class="field"><label for="labTreatedColourACU">Warna (ACU) <small>(ACU)</small></label><input id="labTreatedColourACU" inputmode="decimal" autocomplete="off" placeholder="3"></div>
+<div class="field"><label for="labTreatedCl">Cl₂ <small>(mg/L)</small></label><input id="labTreatedCl" inputmode="decimal" autocomplete="off" placeholder="2.29"></div>
+<div class="field"><label for="labTreatedFl">Florida <small>(mg/L)</small></label><input id="labTreatedFl" inputmode="decimal" autocomplete="off" placeholder="0.46"></div>
+<div class="field"><label for="labTreatedAl">Aluminium <small>(mg/L)</small></label><input id="labTreatedAl" inputmode="decimal" autocomplete="off" placeholder="0.029"></div>
+<div class="field"><label for="labTreatedMn">Mn <small>(mg/L)</small></label><input id="labTreatedMn" inputmode="decimal" autocomplete="off" placeholder="0.027"></div>
+<div class="field"><label for="labTreatedIron">Ferum <small>(mg/L)</small></label><input id="labTreatedIron" inputmode="decimal" autocomplete="off" placeholder="0.00"></div>
+<div class="field"><label for="labTreatedAmmonia">Ammonia <small>(mg/L)</small></label><input id="labTreatedAmmonia" inputmode="decimal" autocomplete="off" placeholder="0.00"></div>
+<div class="field"><label for="labTreatedOdour">Bau</label><input id="labTreatedOdour" type="text" autocomplete="off" placeholder="UO"></div>
+</div></section>
+</div>
 <div id="olaFields">
 <section class="card">
  <div class="sectionHead"><span class="sectionNo">01</span><b>Raw Water</b><span>Air Mentah</span></div>
@@ -135,10 +174,11 @@ textarea{resize:vertical;min-height:64px}
   <div class="field"><label for="treatedColour">Colour <small>(ACU)</small></label><input id="treatedColour" inputmode="decimal" autocomplete="off" placeholder="2"></div>
  </div>
 </section>
+</div>
 
 <section class="card">
  <div class="cardHead"><h2>Nota Report</h2><span class="chip">PILIHAN</span></div>
- <div class="toggle"><input id="fluorideNote" type="checkbox" checked><label for="fluorideNote">Bacaan Fluoride diambil dari OLA Fluoride no 2</label></div>
+ <div class="toggle" id="fluorideWrap"><input id="fluorideNote" type="checkbox" checked><label for="fluorideNote">Bacaan Fluoride diambil dari OLA Fluoride no 2</label></div>
  <div class="field"><label for="otherNote">Nota tambahan <small>(jika ada)</small></label><textarea id="otherNote" placeholder="Contoh: OLA under maintenance"></textarea></div>
  <div class="field" style="margin-top:10px"><label for="operator">Disediakan oleh <small>(untuk rekod database, pilihan)</small></label><input id="operator" placeholder="Nama staf"></div>
  <div class="status" id="validationMsg">Isikan bacaan OLA untuk slot yang dipilih.</div>
@@ -149,7 +189,6 @@ textarea{resize:vertical;min-height:64px}
  <div class="detailsBody"><div class="preview" id="preview"></div></div>
 </details>
 <details class="details"><summary>Rekod WQ Online</summary><div class="detailsBody"><div class="history" id="history">Perlu access code S2 untuk lihat rekod.</div></div></details>
-</div>
 </main>
 
 <footer class="bottom"><div class="bottomInner">
