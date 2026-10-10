@@ -168,7 +168,7 @@ details.more[open]>summary:after{content:"−"}
       <div class="sectionLine"></div>
 
       <div class="field full" id="riverField">
-        <div class="pumpHead"><label>Paras Sg Langat <span>(m)</span></label><label class="problemTag"><input id="riverProblem" type="checkbox">Problem</label></div>
+        <div class="pumpHead"><label>Paras Sg Langat <span>(m)</span></label><label class="problemTag"><input id="riverProblem" type="checkbox" checked>Problem</label></div>
         <input id="river" inputmode="decimal" value="6.13">
         <div id="riverNoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="riverNote" value="Paras Sg Langat tidak tepat under maintenance (SCADA Lost Comm)"></div>
       </div>
@@ -345,9 +345,9 @@ function ftime(x){return String(x||'').replace(':','')+'hrs'}
 function marker(x){const m=String(x||'').trim().match(/^\(\*+\)$/);return m?m[0]:''}
 function levelVal(x){const z=String(x||'').trim();return z?z+'m':''}
 function assignedMarker(problemIds,target,offset=0){const on=problemIds.filter(id=>ck(id));const i=on.indexOf(target);return i<0?'':'('+'*'.repeat(i+1+offset)+')'}
-function problemValue(field,problemId,problemIds,offset=0,wrapped=false){const m=assignedMarker(problemIds,problemId,offset);if(m)return m;const z=v(field);return wrapped?(z?'('+z+'m)':''):(z?z+'m':'')}
+function problemValue(field,problemId,problemIds,offset=0,wrapped=false){const m=assignedMarker(problemIds,problemId,offset),z=v(field);if(wrapped){if(z)return '('+z+'m)'+m;return m}if(z)return z+'m'+m;return m}
 function problemNote(problemId,problemIds,noteId,fallback,offset=0){const m=assignedMarker(problemIds,problemId,offset);if(!m)return'';const body=v(noteId)||fallback;return '_'+m+' '+body+'_'}
-function problemReading(field,problemId,problemIds,unit=''){const m=assignedMarker(problemIds,problemId);return m||((v(field)||'')+unit)}
+function problemReading(field,problemId,problemIds,unit=''){const m=assignedMarker(problemIds,problemId),z=v(field);return z?z+unit+m:m}
 
 function opsText(){
  let r=rwP(),t=twP(),m=mld(),L=[];
