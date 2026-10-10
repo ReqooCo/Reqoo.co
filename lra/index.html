@@ -315,7 +315,7 @@ details.more[open]>summary:after{content:"−"}
 <input type="hidden" name="shift" id="waShift">
 <input type="hidden" name="data" id="waData">
 <input type="hidden" name="reportText" id="waReportText">
-<button id="wa" type="submit" class="btn wa">Buka WhatsApp</button>
+<button id="wa" type="submit" class="btn wa">WhatsApp</button>
 </form></div></div>
 <script>
 const $=x=>document.getElementById(x);
@@ -874,7 +874,6 @@ $('waForm').addEventListener('submit',event=>{
  $('waReportText').value=liveReportText(activeTab);
  // Form navigation is initiated by the tap; server saves first then redirects
  // directly to wa.me/?text so WhatsApp can show the group/contact picker.
- $('wa').textContent='Menyimpan…';
 });
 $('share').onclick=async()=>{if(navigator.share)try{await navigator.share({title:'LRA Semenyih 2',text:currentText()});return}catch(e){};try{await navigator.clipboard.writeText(currentText());alert('Report dah copy.')}catch(e){location.href='https://wa.me/?text='+encodeURIComponent(currentText())}};
 
