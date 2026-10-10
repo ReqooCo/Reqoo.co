@@ -105,12 +105,12 @@ async function commit(env,d){
     const before=num(cur.stock_mt),type=text(raw.type,20).toLowerCase();
     let after=before,useKg=0,receiveKg=0,inputMt=null,eventType='';
 
-    if(meta.direct){
-      if(type!=='set')return json({ok:false,error:meta.name+' perlu masukkan nilai MT terus'},400);
+    if(type==='set'){
       inputMt=Number(raw.mt);
       if(!Number.isFinite(inputMt)||inputMt<0)return json({ok:false,error:'Nilai '+meta.name+' tidak sah'},400);
-      after=inputMt;eventType='SET';
+      after=inputMt;eventType=meta.direct?'SET':'CORRECTION';
     }else{
+      if(meta.direct)return json({ok:false,error:meta.name+' perlu masukkan nilai MT terus'},400);
       if(type!=='tx')return json({ok:false,error:meta.name+' guna transaksi kg'},400);
       useKg=Math.max(0,num(raw.useKg));
       receiveKg=Math.max(0,num(raw.receiveKg));
