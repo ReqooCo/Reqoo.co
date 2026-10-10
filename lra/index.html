@@ -127,8 +127,16 @@ details.more[open]>summary:after{content:"−"}
       <div class="field"><label>RWP</label><select id="rwp"><option value="126">126 MLD</option><option value="63">63 MLD</option></select></div>
       <div class="field"><label>TWP</label><select id="twp"><option value="100">100 MLD</option><option value="50">50 MLD</option></select></div>
 
-      <div class="field"><label>RW Inflow <span>(m3/h)</span></label><input id="rw" inputmode="decimal" value="4213"></div>
-      <div class="field"><label>TW Outflow <span>(m3/h)</span></label><input id="tw" inputmode="decimal" value="4156"></div>
+      <div class="field" id="rwField">
+        <div class="pumpHead"><label>RW Inflow <span>(m3/h)</span></label><label class="problemTag"><input id="rwProblem" type="checkbox">Problem</label></div>
+        <input id="rw" inputmode="decimal" value="4213">
+        <div id="rwNoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="rwNote" value="RW Inflow under maintenance / bacaan tidak tepat"></div>
+      </div>
+      <div class="field" id="twField">
+        <div class="pumpHead"><label>TW Outflow <span>(m3/h)</span></label><label class="problemTag"><input id="twProblem" type="checkbox">Problem</label></div>
+        <input id="tw" inputmode="decimal" value="4156">
+        <div id="twNoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="twNote" value="TW Outflow under maintenance / bacaan tidak tepat"></div>
+      </div>
 
       <div class="sectionLine"></div>
 
@@ -159,7 +167,11 @@ details.more[open]>summary:after{content:"−"}
 
       <div class="sectionLine"></div>
 
-      <div class="field full"><label>Paras Sg Langat <span>(m)</span></label><input id="river" inputmode="decimal" value="6.13"></div>
+      <div class="field full" id="riverField">
+        <div class="pumpHead"><label>Paras Sg Langat <span>(m)</span></label><label class="problemTag"><input id="riverProblem" type="checkbox">Problem</label></div>
+        <input id="river" inputmode="decimal" value="6.13">
+        <div id="riverNoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="riverNote" value="Paras Sg Langat tidak tepat under maintenance (SCADA Lost Comm)"></div>
+      </div>
     </div>
 
     <div class="autoRow">
@@ -176,9 +188,6 @@ details.more[open]>summary:after{content:"−"}
       <div class="grid" style="padding-top:9px">
         <div class="field full"><label>Paras maksima Sg Langat (m)</label><input id="riverMax" inputmode="decimal" value="10.11"></div>
       </div>
-      <div class="toggle"><div><strong>Sg Langat *</strong><small>Nota hanya keluar bila Maintenance ON</small></div><label class="switch"><input id="riverMaint" type="checkbox" checked><span class="slider"></span></label></div>
-      <div id="riverReasonWrap" class="maintReason"><label>Sebab / catatan Sg Langat</label><input id="riverReason" value="SCADA Lost Comm" placeholder="Contoh: SCADA Lost Comm"></div>
-      
       <label style="margin-top:8px">Nota tambahan</label><textarea id="note" rows="2" placeholder="Optional"></textarea>
     </div>
   </details>
@@ -300,7 +309,7 @@ details.more[open]>summary:after{content:"−"}
 <div class="bottom"><div class="bottomIn"><button id="share" class="btn light">Share</button><button id="wa" class="btn wa">Buka WhatsApp</button></div></div>
 <script>
 const $=x=>document.getElementById(x);
-const ids=['date','time','river','riverMax','rwp','twp','rw','tank1','tank1Problem','tank1Note','tank2','tank2Problem','tank2Note','tw','pond1','pond1Problem','pond1Note','pond2','pond2Problem','pond2Note','pondOut','riverMaint','riverReason','note'];
+const ids=['date','time','river','riverMax','riverProblem','riverNote','rwp','twp','rw','rwProblem','rwNote','tank1','tank1Problem','tank1Note','tank2','tank2Problem','tank2Note','tw','twProblem','twNote','pond1','pond1Problem','pond1Note','pond2','pond2Problem','pond2Note','pondOut','note'];
 const pumpIds=['ibDate','ibTime','ibP1','ibP2','ibC1','ibC2','ibPondB','ibPondBProblem','ibPondBNote','ibPondC','ibPondCProblem','ibPondCNote','icDate','icTime','icP1','icP2','icP3','icP4','icC1','icC2','icC3','icC4','icTotal','icRw','icPondB','icPondBProblem','icPondBNote','icPondC','icPondCProblem','icPondCNote','twpsDate','twpsTime','twpsP1','twpsP2','twpsP3','twpsP4','twpsC1','twpsC2','twpsC3','twpsC4','twpsTotal','twpsOut','twpsCwt1','twpsCwt1Problem','twpsCwt1Note','twpsCwt2','twpsCwt2Problem','twpsCwt2Note','twpsDp1','twpsDp1Problem','twpsDp1Note','twpsDp2','twpsDp2Problem','twpsDp2Note'];
 let activeTab='ops';
 
@@ -338,27 +347,30 @@ function levelVal(x){const z=String(x||'').trim();return z?z+'m':''}
 function assignedMarker(problemIds,target,offset=0){const on=problemIds.filter(id=>ck(id));const i=on.indexOf(target);return i<0?'':'('+'*'.repeat(i+1+offset)+')'}
 function problemValue(field,problemId,problemIds,offset=0,wrapped=false){const m=assignedMarker(problemIds,problemId,offset);if(m)return m;const z=v(field);return wrapped?(z?'('+z+'m)':''):(z?z+'m':'')}
 function problemNote(problemId,problemIds,noteId,fallback,offset=0){const m=assignedMarker(problemIds,problemId,offset);if(!m)return'';const body=v(noteId)||fallback;return '_'+m+' '+body+'_'}
+function problemReading(field,problemId,problemIds,unit=''){const m=assignedMarker(problemIds,problemId);return m||((v(field)||'')+unit)}
 
 function opsText(){
  let r=rwP(),t=twP(),m=mld(),L=[];
- const probs=['tank1Problem','tank2Problem','pond1Problem','pond2Problem'],offset=ck('riverMaint')?1:0;
+ const probs=['rwProblem','twProblem','riverProblem','tank1Problem','tank2Problem','pond1Problem','pond2Problem'];
  L.push('*Status Operasi LRA Semenyih 2*','*'+fdate(v('date'))+'@'+ftime(v('time'))+'*','');
- L.push('Paras Sg Langat : '+v('river')+'m'+(ck('riverMaint')?'*':'')+' (paras maksima : '+levelVal(v('riverMax'))+')','');
+ L.push('Paras Sg Langat : '+problemReading('river','riverProblem',probs,'m')+' (paras maksima : '+levelVal(v('riverMax'))+')','');
  L.push('Kadar Pengepaman','RWP : '+v('rwp')+'Mld','TWP : '+v('twp')+'Mld','');
- L.push('RW Inflow : '+v('rw')+'m3/h','Normal : '+r.a+'m3/h~'+r.b+'m3/h','Tangki Air Bersih',
-   'No.1 : '+problemValue('tank1','tank1Problem',probs,offset),
-   'No.2 : '+problemValue('tank2','tank2Problem',probs,offset),'');
- L.push('TW Outflow : '+v('tw')+'m3/h','Normal : '+t.n+'m3/h','Delivery Pressure: '+t.p.toFixed(1)+'bar','');
+ L.push('RW Inflow : '+problemReading('rw','rwProblem',probs,'m3/h'),'Normal : '+r.a+'m3/h~'+r.b+'m3/h','Tangki Air Bersih',
+   'No.1 : '+problemValue('tank1','tank1Problem',probs),
+   'No.2 : '+problemValue('tank2','tank2Problem',probs),'');
+ L.push('TW Outflow : '+problemReading('tw','twProblem',probs,'m3/h'),'Normal : '+t.n+'m3/h','Delivery Pressure: '+t.p.toFixed(1)+'bar','');
  L.push('Kolam Desa Putra,',
-   'No.1 : '+problemValue('pond1','pond1Problem',probs,offset),
-   'No.2 : '+problemValue('pond2','pond2Problem',probs,offset),
+   'No.1 : '+problemValue('pond1','pond1Problem',probs),
+   'No.2 : '+problemValue('pond2','pond2Problem',probs),
    'Outflow : '+clean(m)+'Mld','');
- if(ck('riverMaint'))L.push('_(*) Paras Sg Langat tidak tepat under maintenance'+(v('riverReason')?' ('+v('riverReason')+')':'')+'_');
  const notes=[
-   problemNote('tank1Problem',probs,'tank1Note','Paras Tangki Air Bersih No.1 under maintenance (level problem)',offset),
-   problemNote('tank2Problem',probs,'tank2Note','Paras tangki no.2 under maintenance (sensor ULS rosak)',offset),
-   problemNote('pond1Problem',probs,'pond1Note','Paras Desa Putra No.1 under maintenance (level problem)',offset),
-   problemNote('pond2Problem',probs,'pond2Note','Paras Desa Putra No.2 under maintenance (level problem)',offset)
+   problemNote('rwProblem',probs,'rwNote','RW Inflow under maintenance / bacaan tidak tepat'),
+   problemNote('twProblem',probs,'twNote','TW Outflow under maintenance / bacaan tidak tepat'),
+   problemNote('riverProblem',probs,'riverNote','Paras Sg Langat tidak tepat under maintenance (SCADA Lost Comm)'),
+   problemNote('tank1Problem',probs,'tank1Note','Paras Tangki Air Bersih No.1 under maintenance (level problem)'),
+   problemNote('tank2Problem',probs,'tank2Note','Paras tangki no.2 under maintenance (sensor ULS rosak)'),
+   problemNote('pond1Problem',probs,'pond1Note','Paras Desa Putra No.1 under maintenance (level problem)'),
+   problemNote('pond2Problem',probs,'pond2Note','Paras Desa Putra No.2 under maintenance (level problem)')
  ].filter(Boolean);
  L.push(...notes);
  if(v('note'))L.push('_'+v('note')+'_');
@@ -763,8 +775,8 @@ function saveDraft(){localStorage.setItem('rqLraPwa',JSON.stringify(draft()))}
 function savePumpDraft(){let o={};pumpIds.forEach(x=>{if(!$(x))return;o[x]=$(x).type==='checkbox'?$(x).checked:$(x).value});localStorage.setItem('rqLraPumpDraft',JSON.stringify(o))}
 function styleStatus(sel){if(!sel)return;sel.classList.toggle('statusRun',sel.value==='Run');sel.classList.toggle('statusStop',sel.value==='Stop')}
 function syncMaintenance(){
- if($('riverReasonWrap'))$('riverReasonWrap').classList.toggle('hidden',!ck('riverMaint'));
  const map=[
+  ['rwProblem','rwField','rwNoteWrap'],['twProblem','twField','twNoteWrap'],['riverProblem','riverField','riverNoteWrap'],
   ['tank1Problem','tank1Field','tank1NoteWrap'],['tank2Problem','tank2Field','tank2NoteWrap'],['pond1Problem','pond1Field','pond1NoteWrap'],['pond2Problem','pond2Field','pond2NoteWrap'],
   ['ibPondBProblem','ibPondBField','ibPondBNoteWrap'],['ibPondCProblem','ibPondCField','ibPondCNoteWrap'],
   ['icPondBProblem','icPondBField','icPondBNoteWrap'],['icPondCProblem','icPondCField','icPondCNoteWrap'],
@@ -782,7 +794,7 @@ function refresh(){
  syncMaintenance();
  let r=rwP(),t=twP(),m=mld();
  $('rwNormal').textContent=r.a+'m3/h ~ '+r.b+'m3/h';$('twNormal').textContent=t.n+' m3/h';$('pressure').textContent=t.p.toFixed(1)+' bar';$('pondMld').textContent=(m===null?'-':clean(m))+' MLD';$('preview').textContent=opsText();
- let a=n('rw'),b=n('tw'),msg=[];if(a!==null&&(a<r.a||a>r.b))msg.push('RW '+a+' di luar '+r.a+'-'+r.b);if(b!==null&&b<t.n)msg.push('TW '+b+' di bawah '+t.n);
+ let a=n('rw'),b=n('tw'),msg=[];if(!ck('rwProblem')&&a!==null&&(a<r.a||a>r.b))msg.push('RW '+a+' di luar '+r.a+'-'+r.b);if(!ck('twProblem')&&b!==null&&b<t.n)msg.push('TW '+b+' di bawah '+t.n);
  $('notice').className='notice '+(msg.length?'warn':'ok');$('notice').textContent=msg.length?'Semak: '+msg.join('. '):'OK - bacaan utama dalam julat.';
  saveDraft();
 }
@@ -796,6 +808,10 @@ function load(){
  $('date').value=localDate();$('time').value=(o&&o.time)||defaultSlot();
  if(o)ids.forEach(x=>{if(x==='date'||o[x]===undefined||!$(x))return;if($(x).type==='checkbox')$(x).checked=!!o[x];else $(x).value=o[x]});
  if(o){
+   if(o.riverMaint===true&&o.riverProblem===undefined){
+     $('riverProblem').checked=true;
+     if(o.riverReason)$('riverNote').value='Paras Sg Langat tidak tepat under maintenance ('+o.riverReason+')';
+   }
    if(o.tankMaint===true)$('tank2Problem').checked=true;
    if(marker(o.tank2)){$('tank2Problem').checked=true;$('tank2').value=''}
    if(o.tankReason&&!o.tank2Note)$('tank2Note').value='Paras tangki no.2 under maintenance ('+o.tankReason+')';
@@ -845,7 +861,7 @@ $('wa').onclick=()=>{
 };
 $('share').onclick=async()=>{if(navigator.share)try{await navigator.share({title:'LRA Semenyih 2',text:currentText()});return}catch(e){};try{await navigator.clipboard.writeText(currentText());alert('Report dah copy.')}catch(e){location.href='https://wa.me/?text='+encodeURIComponent(currentText())}};
 
-ids.forEach(x=>$(x).addEventListener('input',refresh));['rwp','twp','time','riverMaint'].forEach(x=>$(x).addEventListener('change',refresh));
+ids.forEach(x=>$(x).addEventListener('input',refresh));['rwp','twp','time'].forEach(x=>$(x).addEventListener('change',refresh));
 pumpIds.forEach(x=>{if(!$(x))return;$(x).addEventListener('input',refreshPump);$(x).addEventListener('change',refreshPump)});
 
 
