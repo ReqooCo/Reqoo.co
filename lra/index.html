@@ -168,7 +168,7 @@ details.more[open]>summary:after{content:"−"}
       <div class="stat"><small>Pressure</small><b id="pressure">7.6 bar</b></div>
     </div>
     <div id="notice" class="notice ok">OK - bacaan utama dalam julat.</div>
-    <div class="onlineRow"><button id="opsOnlineSave" class="btn onlineSave" type="button">☁️ Simpan Status Online</button><span id="opsOnlineMsg" class="onlineMsg"></span></div>
+    <div class="onlineRow"><button id="opsOnlineSave" class="btn onlineSave" type="button">☁️ Simpan & WhatsApp</button><span id="opsOnlineMsg" class="onlineMsg"></span></div>
   </section>
 
   <details class="more">
@@ -212,7 +212,7 @@ details.more[open]>summary:after{content:"−"}
         <div class="field" id="ibPondBField"><div class="pumpHead"><label>Paras Pond B (m)</label><label class="problemTag"><input id="ibPondBProblem" type="checkbox">Problem</label></div><input id="ibPondB" inputmode="decimal" value="5.98"><div id="ibPondBNoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="ibPondBNote" value="Paras Pond B under maintenance (level problem)"></div></div>
         <div class="field" id="ibPondCField"><div class="pumpHead"><label>Paras Pond C (m)</label><label class="problemTag"><input id="ibPondCProblem" type="checkbox">Problem</label></div><input id="ibPondC" inputmode="decimal" value="11.96"><div id="ibPondCNoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="ibPondCNote" value="Paras Pond C under maintenance (level problem)"></div></div>
       </div>
-      <div class="onlineRow"><button id="ibOnlineSave" class="btn onlineSave" type="button">☁️ Simpan Status Online</button><span id="ibOnlineMsg" class="onlineMsg"></span></div>
+      <div class="onlineRow"><button id="ibOnlineSave" class="btn onlineSave" type="button">☁️ Simpan & WhatsApp</button><span id="ibOnlineMsg" class="onlineMsg"></span></div>
       <details class="more" style="margin:7px 0 0"><summary>Preview WhatsApp</summary><div class="moreBody"><div id="ibPreview" class="pumpPreview"></div></div></details>
     </section>
   </div>
@@ -235,7 +235,7 @@ details.more[open]>summary:after{content:"−"}
         <div class="field" id="icPondBField"><div class="pumpHead"><label>Pond B (m)</label><label class="problemTag"><input id="icPondBProblem" type="checkbox">Problem</label></div><input id="icPondB" inputmode="decimal" value="5.93"><div id="icPondBNoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="icPondBNote" value="Paras Pond B under maintenance (level problem)"></div></div>
         <div class="field" id="icPondCField"><div class="pumpHead"><label>Pond C (m)</label><label class="problemTag"><input id="icPondCProblem" type="checkbox">Problem</label></div><input id="icPondC" inputmode="decimal" value="11.96"><div id="icPondCNoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="icPondCNote" value="Paras Pond C under maintenance (level problem)"></div></div>
       </div>
-      <div class="onlineRow"><button id="icOnlineSave" class="btn onlineSave" type="button">☁️ Simpan Status Online</button><span id="icOnlineMsg" class="onlineMsg"></span></div>
+      <div class="onlineRow"><button id="icOnlineSave" class="btn onlineSave" type="button">☁️ Simpan & WhatsApp</button><span id="icOnlineMsg" class="onlineMsg"></span></div>
       <details class="more" style="margin:7px 0 0"><summary>Preview WhatsApp</summary><div class="moreBody"><div id="icPreview" class="pumpPreview"></div></div></details>
     </section>
   </div>
@@ -261,7 +261,7 @@ details.more[open]>summary:after{content:"−"}
         <div class="field" id="twpsDp1Field"><div class="pumpHead"><label>DP 1 (m)</label><label class="problemTag"><input id="twpsDp1Problem" type="checkbox">Problem</label></div><input id="twpsDp1" inputmode="decimal" value="7.76"><div id="twpsDp1NoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="twpsDp1Note" value="Paras Desa Putra No.1 under maintenance (level problem)"></div></div>
         <div class="field" id="twpsDp2Field"><div class="pumpHead"><label>DP 2 (m)</label><label class="problemTag"><input id="twpsDp2Problem" type="checkbox">Problem</label></div><input id="twpsDp2" inputmode="decimal" value="8.05"><div id="twpsDp2NoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="twpsDp2Note" value="Paras Desa Putra No.2 under maintenance (level problem)"></div></div>
       </div>
-      <div class="onlineRow"><button id="twpsOnlineSave" class="btn onlineSave" type="button">☁️ Simpan Status Online</button><span id="twpsOnlineMsg" class="onlineMsg"></span></div>
+      <div class="onlineRow"><button id="twpsOnlineSave" class="btn onlineSave" type="button">☁️ Simpan & WhatsApp</button><span id="twpsOnlineMsg" class="onlineMsg"></span></div>
       
       <details class="more" style="margin:7px 0 0"><summary>Preview WhatsApp</summary><div class="moreBody"><div id="twpsPreview" class="pumpPreview"></div></div></details>
     </section>
@@ -503,7 +503,13 @@ function livePayload(section){
    data:{p1:v('twpsP1'),p2:v('twpsP2'),p3:v('twpsP3'),p4:v('twpsP4'),total:v('twpsTotal'),out:v('twpsOut'),cwt1:v('twpsCwt1'),cwt2:v('twpsCwt2'),dp1:v('twpsDp1'),dp2:v('twpsDp2')}
  };
 }
-async function saveLive(section){
+function liveReportText(section){
+ if(section==='ops')return opsText();
+ if(section==='intakeB')return intakeBText();
+ if(section==='intakeC')return intakeCText();
+ return twpsText();
+}
+async function saveLive(section,shareWhatsApp=false){
  const ids={ops:'opsOnlineSave',intakeB:'ibOnlineSave',intakeC:'icOnlineSave',twps:'twpsOnlineSave'};
  const msgs={ops:'opsOnlineMsg',intakeB:'ibOnlineMsg',intakeC:'icOnlineMsg',twps:'twpsOnlineMsg'};
  const btn=$(ids[section]),msg=$(msgs[section]);
@@ -512,7 +518,11 @@ async function saveLive(section){
    const p=livePayload(section);
    const j=await liveApi('POST',{action:'save',section,reportDate:p.reportDate,reportTime:p.reportTime,operator:stockOperator(),shift:stockShift(),data:p.data});
    liveState=j.state||{};renderLive();
-   if(msg)msg.textContent='✓ Online';
+   if(msg)msg.textContent='✓ Disimpan';
+   if(shareWhatsApp){
+     const text=liveReportText(section);
+     setTimeout(()=>{location.href='https://wa.me/?text='+encodeURIComponent(text)},120);
+   }
  }catch(e){
    if(msg)msg.textContent=e.message;
  }finally{if(btn)btn.disabled=false}
@@ -828,10 +838,10 @@ $('stockUndo').onclick=undoStock;
 $('stockDate').addEventListener('change',previewStock);
 $('stockAccessSave').onclick=()=>{const k=v('stockAccessKey');if(!k)return;localStorage.setItem('s2_access_key',k);loadStock(false);loadLive(true)};
 $('liveAccessSave').onclick=()=>{const k=v('liveAccessKey');if(!k)return;localStorage.setItem('s2_access_key',k);showLiveAccess(false);loadLive(false);if(activeTab==='stock')loadStock(true)};
-$('opsOnlineSave').onclick=()=>saveLive('ops');
-$('ibOnlineSave').onclick=()=>saveLive('intakeB');
-$('icOnlineSave').onclick=()=>saveLive('intakeC');
-$('twpsOnlineSave').onclick=()=>saveLive('twps');
+$('opsOnlineSave').onclick=()=>saveLive('ops',true);
+$('ibOnlineSave').onclick=()=>saveLive('intakeB',true);
+$('icOnlineSave').onclick=()=>saveLive('intakeC',true);
+$('twpsOnlineSave').onclick=()=>saveLive('twps',true);
 
 let timer=null;
 $('remind').onclick=async()=>{let d=new Date(v('date')+'T'+v('time')+':00');if(d<=new Date()){alert('Pilih masa report selepas masa sekarang.');return}if('Notification'in window&&Notification.permission==='default')try{await Notification.requestPermission()}catch(e){};localStorage.setItem('rqLraReminder',JSON.stringify({at:d.getTime(),time:v('time')}));arm();alert('Reminder '+v('time').replace(':','')+'hrs disimpan.')}
