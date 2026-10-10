@@ -40,21 +40,44 @@ function validate(input){
  const isLab=FULL.has(time),expected=requiredFields(time);
  const source=input.values;
  if(!source||typeof source!=='object'||Array.isArray(source))return{error:'Bacaan WQ tidak sah.'};
- const values={};
+ const suppliedProblems=source._problems&&typeof source._problems==='object'&&!Array.isArray(source._problems)?source._problems:{};
+ const problems={},values={};
  for(const field of expected){
+   const problem=Object.prototype.hasOwnProperty.call(suppliedProblems,field)&&typeof suppliedProblems[field]==='string';
    const val=trim(source[field],30);
-   if(!val)return{error:'Lengkapkan semua bacaan ('+field+'). Tulis - jika tiada bacaan.'};
-   if(ODOUR_FIELDS.has(field)){
+   if(!val&&!problem)return{error:'Lengkapkan bacaan ('+field+'), atau tanda Problem jika bacaan tidak dapat diperoleh.'};
+   if(val&&ODOUR_FIELDS.has(field)){
      if(!/^(?:[\p{L}\d][\p{L}\d _./()-]{0,28}|-)$/u.test(val))return{error:'Bacaan bau tidak sah: '+field};
-   }else if(val!=='-'&&!/^(?:\d+(?:\.\d+)?|\.\d+)$/.test(val))return{error:'Bacaan nombor tidak sah: '+field};
-   values[field]=val;
+   }else if(val&&val!=='-'&&!/^(?:\d+(?:\.\d+)?|\.\d+)$/.test(val)){
+     return{error:'Bacaan nombor tidak sah: '+field};
+   }
+   values[field]=val||'-';
+   if(problem){
+     const note=trim(suppliedProblems[field],200).replace(/\s+/g,' ');
+     problems[field]=note||'Bacaan '+field+' bermasalah / under maintenance';
+   }
  }
+ values._problems=problems;
  const fluorideNote=!isLab&&(input.fluorideNote===true||input.fluorideNote==='true'||input.fluorideNote==='1');
  const otherNote=trim(input.otherNote,320),operator=trim(input.operator,100)||'-';
  return{reportDate:date,reportTime:time,values,fluorideNote,otherNote,operator,isLab};
 }
+
 function renderReport(d){
- const v=d.values,vu=(key,unit='')=>v[key]==='-'?'-':v[key]+unit;
+ const v=d.values;
+ const problems=v._problems&&typeof v._problems==='object'?v._problems:{};
+ const order=FULL.has(d.reportTime)?LAB_FIELDS:[
+   'rawTurb','rawPh','settledTurb','settledPh',
+   ...(OLA_ALUMINIUM_SLOTS.has(d.reportTime)?['settledAl']:[]),
+   'filteredTurb','filteredPh','treatedTurb','treatedPh','treatedCl','treatedFl',
+   ...(OLA_ALUMINIUM_SLOTS.has(d.reportTime)?['treatedAl']:[]),'treatedColour'
+ ];
+ const activeProblems=order.filter(key=>Object.prototype.hasOwnProperty.call(problems,key));
+ const marker=key=>{const pos=activeProblems.indexOf(key);return pos<0?'':'('+ '*'.repeat(pos+1)+')'};
+ const vu=(key,unit='')=>{const val=String(v[key]||'').trim();return(val&&val!=='-'?val+unit:'-')+marker(key)};
+ const appendProblems=lines=>{
+   if(activeProblems.length)lines.push('',...activeProblems.map(key=>'_'+marker(key)+' '+problems[key]+'_'));
+ };
  const [year,month,day]=d.reportDate.split('-');
  const hh=Number(d.reportTime.slice(0,2));
  const at=String(hh>12?hh-12:hh).padStart(2,'0')+'00'+(hh>=12?'pm':'am');
@@ -96,6 +119,7 @@ function renderReport(d){
    'Ferum               : '+vu('labTreatedIron','mg/L'),
    'Ammonia         : '+vu('labTreatedAmmonia','mg/L'),
    'Bau                    : '+vu('labTreatedOdour')];
+   appendProblems(lines);
    if(d.otherNote)lines.push('','*'+d.otherNote.replace(/\*/g,'')+'*');
    return lines.join('\n');
  }
@@ -117,6 +141,7 @@ function renderReport(d){
  'Fluoride : '+vu('treatedFl','mg/L'),
  ...(OLA_ALUMINIUM_SLOTS.has(d.reportTime)?['Aluminium : '+vu('treatedAl','mg/L'),]:[]),
  'Colour : '+vu('treatedColour','ACU')];
+ appendProblems(lines);
  if(d.fluorideNote)lines.push('','*Bacaan Fluoride diambil dari OLA Fluoride no 2*');
  if(d.otherNote)lines.push('','*'+d.otherNote.replace(/\*/g,'')+'*');
  return lines.join('\n');
