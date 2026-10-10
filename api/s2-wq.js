@@ -2,7 +2,12 @@ const HDR={'content-type':'application/json; charset=UTF-8','cache-control':'no-
 const ACCESS_HASH='da55872021a7acbbd84f80edee8c565ec1e9e5d926a1f18a4a6d6e1ed1586331';
 const SLOTS=new Set(['01:00','03:00','05:00','07:00','09:00','11:00','13:00','15:00','17:00','19:00','21:00','23:00']);
 const FULL=new Set(['07:00','15:00','23:00']);
-const OLA_FIELDS=['rawTurb','rawPh','settledTurb','settledPh','settledAl','filteredTurb','filteredPh','treatedTurb','treatedPh','treatedCl','treatedFl','treatedAl','treatedColour'];
+const OLA_FIELDS=['rawTurb','rawPh','settledTurb','settledPh','filteredTurb','filteredPh','treatedTurb','treatedPh','treatedCl','treatedFl','treatedColour'];
+const OLA_ALUMINIUM_FIELDS=['settledAl','treatedAl'];
+// Lab full tests at 0700, 1500, 2300 already measure SW/TW aluminium.
+// Intermediate 4-hour checks therefore fall at 0300, 1100 and 1900.
+const OLA_ALUMINIUM_SLOTS=new Set(['03:00','11:00','19:00']);
+function requiredFields(time){return FULL.has(time)?LAB_FIELDS:(OLA_ALUMINIUM_SLOTS.has(time)?[...OLA_FIELDS,...OLA_ALUMINIUM_FIELDS]:OLA_FIELDS)}
 const LAB_FIELDS=['labRawTurb','labRawPh','labRawMn','labRawAmmonia','labRawColour','labRawIron','labRawAl','labRawFl','labRawOdour','labSettledTurb','labSettledPh','labSettledColour','labSettledMn','labSettledIron','labSettledAmmonia','labSettledAl','labSettledOdour','labFilteredTurb','labFilteredPh','labFilteredAmmonia','labFilteredMn','labTreatedTurb','labTreatedPh','labTreatedColourTCU','labTreatedColourACU','labTreatedCl','labTreatedFl','labTreatedAl','labTreatedMn','labTreatedIron','labTreatedAmmonia','labTreatedOdour'];
 const ODOUR_FIELDS=new Set(['labRawOdour','labSettledOdour','labTreatedOdour']);
 const json=(x,code=200)=>new Response(JSON.stringify(x),{status:code,headers:HDR});
@@ -32,7 +37,7 @@ async function ensure(db){
 function validate(input){
  const date=trim(input.reportDate,10),time=trim(input.reportTime,5);
  if(!dateOK(date)||!SLOTS.has(time))return{error:'Tarikh atau slot masa tidak sah.'};
- const isLab=FULL.has(time),expected=isLab?LAB_FIELDS:OLA_FIELDS;
+ const isLab=FULL.has(time),expected=requiredFields(time);
  const source=input.values;
  if(!source||typeof source!=='object'||Array.isArray(source))return{error:'Bacaan WQ tidak sah.'};
  const values={};
@@ -101,7 +106,7 @@ function renderReport(d){
  '','*_Settled Water_*',
  'Turb     : '+vu('settledTurb','NTU'),
  'pH        : '+vu('settledPh'),
- 'Aluminium: '+vu('settledAl','mg/L'),
+ ...(OLA_ALUMINIUM_SLOTS.has(d.reportTime)?['Aluminium: '+vu('settledAl','mg/L'),]:[]),
  '','*_Filtered Water_*',
  'Turb     : '+vu('filteredTurb','NTU'),
  'pH        : '+vu('filteredPh'),
@@ -110,7 +115,7 @@ function renderReport(d){
  'pH          : '+vu('treatedPh'),
  'Free cl2 : '+vu('treatedCl','mg/L'),
  'Fluoride : '+vu('treatedFl','mg/L'),
- 'Aluminium : '+vu('treatedAl','mg/L'),
+ ...(OLA_ALUMINIUM_SLOTS.has(d.reportTime)?['Aluminium : '+vu('treatedAl','mg/L'),]:[]),
  'Colour : '+vu('treatedColour','ACU')];
  if(d.fluorideNote)lines.push('','*Bacaan Fluoride diambil dari OLA Fluoride no 2*');
  if(d.otherNote)lines.push('','*'+d.otherNote.replace(/\*/g,'')+'*');
