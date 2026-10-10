@@ -203,7 +203,11 @@ textarea{resize:vertical;min-height:64px}
 </div></footer>
 <script>
 const $=id=>document.getElementById(id);
-const FIELDS=['rawTurb','rawPh','settledTurb','settledPh','settledAl','filteredTurb','filteredPh','treatedTurb','treatedPh','treatedCl','treatedFl','treatedAl','treatedColour'];
+const OLA_FIELDS=['rawTurb','rawPh','settledTurb','settledPh','settledAl','filteredTurb','filteredPh','treatedTurb','treatedPh','treatedCl','treatedFl','treatedAl','treatedColour'];
+const LAB_FIELDS=["labRawTurb","labRawPh","labRawMn","labRawAmmonia","labRawColour","labRawIron","labRawAl","labRawFl","labRawOdour","labSettledTurb","labSettledPh","labSettledColour","labSettledMn","labSettledIron","labSettledAmmonia","labSettledAl","labSettledOdour","labFilteredTurb","labFilteredPh","labFilteredAmmonia","labFilteredMn","labTreatedTurb","labTreatedPh","labTreatedColourTCU","labTreatedColourACU","labTreatedCl","labTreatedFl","labTreatedAl","labTreatedMn","labTreatedIron","labTreatedAmmonia","labTreatedOdour"];
+const ODOUR_FIELDS=new Set(['labRawOdour','labSettledOdour','labTreatedOdour']);
+const allFields=[...OLA_FIELDS,...LAB_FIELDS];
+function activeFields(){return FULL.has($('time').value)?LAB_FIELDS:OLA_FIELDS}
 const SLOTS=['01:00','03:00','05:00','07:00','09:00','11:00','13:00','15:00','17:00','19:00','21:00','23:00'];
 const FULL=new Set(['07:00','15:00','23:00']);
 const DRAFT_PREFIX='reqoo-wq-s2-draft-';
@@ -213,65 +217,111 @@ function slotNow(){const h=new Date().getHours();const nearest=h%2===1?h:h-1;ret
 function dateText(v){const p=v.split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:v}
 function timeText(v){const h=Number(v.slice(0,2));if(!h)return'';return String(h>12?h-12:h).padStart(2,'0')+'00'+(h>=12?'pm':'am')}
 function key(){return DRAFT_PREFIX+($('date').value||today())+'-'+$('time').value}
-function values(){const o={};FIELDS.forEach(k=>o[k]=$(k).value.trim());return o}
+function values(){const o={};activeFields().forEach(k=>o[k]=$(k).value.trim());return o}
 function getData(){return{reportDate:$('date').value,reportTime:$('time').value,values:values(),fluorideNote:$('fluorideNote').checked,otherNote:$('otherNote').value.trim(),operator:$('operator').value.trim()}}
 function saveDraft(){
- if(FULL.has($('time').value))return;
  const o=getData();
  localStorage.setItem(key(),JSON.stringify(o));
  $('draftStatus').textContent='Draf tempatan disimpan';
 }
-function clearValues(){FIELDS.forEach(id=>$(id).value='');$('fluorideNote').checked=true;$('otherNote').value=''}
+function clearValues(){allFields.forEach(id=>$(id).value='');$('fluorideNote').checked=true;$('otherNote').value=''}
 function loadDraft(){
  clearValues();const raw=localStorage.getItem(key());
- if(raw){try{const d=JSON.parse(raw);FIELDS.forEach(id=>$(id).value=d.values?.[id]||'');$('fluorideNote').checked=d.fluorideNote!==false;$('otherNote').value=d.otherNote||'';$('draftStatus').textContent='Draf untuk slot ini dipulihkan'}catch{$('draftStatus').textContent='Draf baharu'}}
+ if(raw){try{const d=JSON.parse(raw);activeFields().forEach(id=>$(id).value=d.values?.[id]||'');$('fluorideNote').checked=d.fluorideNote!==false;$('otherNote').value=d.otherNote||'';$('draftStatus').textContent='Draf untuk slot ini dipulihkan'}catch{$('draftStatus').textContent='Draf baharu'}}
  else $('draftStatus').textContent='Draf baharu · bacaan kosong';
  render();
 }
 function render(){
  const full=FULL.has($('time').value);
- $('modeChip').textContent=full?'FULL TEST':'OLA · 2 JAM';
+ $('modeChip').textContent=full?'LAB · FULL TEST':'OLA · 2 JAM';
  $('fullPanel').classList.toggle('hide',!full);
  $('olaFields').classList.toggle('hide',full);
- $('copy').disabled=full;$('wa').disabled=full;
- if(full){$('fullTime').textContent=$('time').value.replace(':','')+'hrs';$('slotStatus').textContent='Full Test · format belum diterima. Borang biasa tidak digunakan untuk slot ini.';return}
- $('slotStatus').textContent='WQ OLA · '+dateText($('date').value)+' @ '+timeText($('time').value);
+ $('fluorideWrap').classList.toggle('hide',full);
+ $('copy').disabled=false;$('wa').disabled=false;
+ $('slotStatus').textContent=(full?'Lab Test':'WQ OLA')+' · '+dateText($('date').value)+' @ '+timeText($('time').value);
  $('preview').textContent=reportText(getData());
- const invalid=validateClient(getData());
- const box=$('validationMsg');
+ const invalid=validateClient(getData()),box=$('validationMsg');
  box.className='status'+(invalid?' warn':'');
- box.textContent=invalid||'Semua bacaan diisi. Sedia untuk simpan online dan pilih group WhatsApp.';
+ box.textContent=invalid||'Semua bacaan diisi. Sedia simpan online & pilih group WhatsApp.';
 }
-function valueOut(v,unit=''){const z=String(v||'').trim();return !z||z==='-'?'-':z+unit}
-function reportText(d){
- const v=d.values;
- const L=['*LRA Semenyih 2*','*Water Quality Monitoring (OLA)*','*'+dateText(d.reportDate)+'*','*'+timeText(d.reportTime)+'*',
+function renderReport(d){
+ const v=d.values,vu=(key,unit='')=>v[key]==='-'?'-':v[key]+unit;
+ const [year,month,day]=d.reportDate.split('-');
+ const hh=Number(d.reportTime.slice(0,2));
+ const at=String(hh>12?hh-12:hh).padStart(2,'0')+'00'+(hh>=12?'pm':'am');
+ if(FULL.has(d.reportTime)){
+   const lines=['*LRA Semenyih 2*','*Water Quality Lab Test*','*'+day+'/'+month+'/'+year+' '+at+'*','',
+   '*AIR MENTAH*',
+   'Turb              : '+vu('labRawTurb','NTU'),
+   'pH                 : '+vu('labRawPh'),
+   'Mn                : '+vu('labRawMn','mg/L'),
+   'Ammonia     : '+vu('labRawAmmonia','mg/L'),
+   'Warna           : '+vu('labRawColour','TCU'),
+   'Ferum           : '+vu('labRawIron','mg/L'),
+   'Aluminium   : '+vu('labRawAl','mg/L'),
+   'Florida          : '+vu('labRawFl','mg/L'),
+   'Bau                : '+vu('labRawOdour'),'',
+   '*AIR MENDAP*',
+   'Turb               : '+vu('labSettledTurb','NTU'),
+   'pH                  : '+vu('labSettledPh'),
+   'Warna            : '+vu('labSettledColour','TCU'),
+   'Mn                  : '+vu('labSettledMn','mg/L'),
+   'Ferum            : '+vu('labSettledIron','mg/L'),
+   'Ammonia       : '+vu('labSettledAmmonia','mg/L'),
+   'Aluminium    : '+vu('labSettledAl','mg/L'),
+   'Bau                : '+vu('labSettledOdour'),'',
+   '*AIR TAPISAN*',
+   'Turb                : '+vu('labFilteredTurb','NTU'),
+   'pH                   : '+vu('labFilteredPh'),
+   'Ammonia       : '+vu('labFilteredAmmonia','mg/L'),
+   'Mn                  : '+vu('labFilteredMn','mg/L'),'',
+   '*AIR TERAWAT*',
+   'Turb                  : '+vu('labTreatedTurb','NTU'),
+   'pH                     : '+vu('labTreatedPh'),
+   'Warna               : '+vu('labTreatedColourTCU','TCU'),
+   '                          : '+vu('labTreatedColourACU','ACU'),
+   'Cl2                    : '+vu('labTreatedCl','mg/L'),
+   'Florida              : '+vu('labTreatedFl','mg/L'),
+   'Aluminium       : '+vu('labTreatedAl','mg/L'),
+   'Mn                     : '+vu('labTreatedMn','mg/L'),
+   'Ferum               : '+vu('labTreatedIron','mg/L'),
+   'Ammonia         : '+vu('labTreatedAmmonia','mg/L'),
+   'Bau                    : '+vu('labTreatedOdour')];
+   if(d.otherNote)lines.push('','*'+d.otherNote.replace(/\*/g,'')+'*');
+   return lines.join('\n');
+ }
+ const lines=['*LRA Semenyih 2*','*Water Quality Monitoring (OLA)*','*'+day+'/'+month+'/'+year+'*','*'+at+'*',
  '','*_Raw Water_*',
- 'Turb     : '+valueOut(v.rawTurb,'NTU'),
- 'pH        : '+valueOut(v.rawPh),
+ 'Turb     : '+vu('rawTurb','NTU'),
+ 'pH        : '+vu('rawPh'),
  '','*_Settled Water_*',
- 'Turb     : '+valueOut(v.settledTurb,'NTU'),
- 'pH        : '+valueOut(v.settledPh),
- 'Aluminium: '+valueOut(v.settledAl,'mg/L'),
+ 'Turb     : '+vu('settledTurb','NTU'),
+ 'pH        : '+vu('settledPh'),
+ 'Aluminium: '+vu('settledAl','mg/L'),
  '','*_Filtered Water_*',
- 'Turb     : '+valueOut(v.filteredTurb,'NTU'),
- 'pH        : '+valueOut(v.filteredPh),
+ 'Turb     : '+vu('filteredTurb','NTU'),
+ 'pH        : '+vu('filteredPh'),
  '','*_Treated Water_*',
- 'Turb       : '+valueOut(v.treatedTurb,'NTU'),
- 'pH          : '+valueOut(v.treatedPh),
- 'Free cl2 : '+valueOut(v.treatedCl,'mg/L'),
- 'Fluoride : '+valueOut(v.treatedFl,'mg/L'),
- 'Aluminium : '+valueOut(v.treatedAl,'mg/L'),
- 'Colour : '+valueOut(v.treatedColour,'ACU')];
- if(d.fluorideNote)L.push('','*Bacaan Fluoride diambil dari OLA Fluoride no 2*');
- if(d.otherNote)L.push('','*'+d.otherNote.replace(/\*/g,'')+'*');
- return L.join('\n');
+ 'Turb       : '+vu('treatedTurb','NTU'),
+ 'pH          : '+vu('treatedPh'),
+ 'Free cl2 : '+vu('treatedCl','mg/L'),
+ 'Fluoride : '+vu('treatedFl','mg/L'),
+ 'Aluminium : '+vu('treatedAl','mg/L'),
+ 'Colour : '+vu('treatedColour','ACU')];
+ if(d.fluorideNote)lines.push('','*Bacaan Fluoride diambil dari OLA Fluoride no 2*');
+ if(d.otherNote)lines.push('','*'+d.otherNote.replace(/\*/g,'')+'*');
+ return lines.join('\n');
 }
+function reportText(d){return renderReport(d)}
 function validateClient(d){
- const missing=FIELDS.filter(k=>!String(d.values[k]||'').trim());
- if(missing.length)return 'Masih ada '+missing.length+' bacaan kosong. Isi semua bacaan; gunakan tanda - jika memang tiada bacaan.';
- const bad=FIELDS.filter(k=>!/^(?:\d+(?:\.\d+)?|\.\d+|-)$/.test(d.values[k]));
- if(bad.length)return 'Semak format nombor: '+bad.join(', ');
+ const fields=FULL.has(d.reportTime)?LAB_FIELDS:OLA_FIELDS;
+ const missing=fields.filter(k=>!String(d.values[k]||'').trim());
+ if(missing.length)return 'Masih ada '+missing.length+' bacaan kosong. Isi bacaan atau tanda - jika tiada.';
+ const bad=fields.filter(k=>{
+   const x=String(d.values[k]||'').trim();
+   return ODOUR_FIELDS.has(k)?!/^(?:[\p{L}\d][\p{L}\d _./()-]{0,28}|-)$/u.test(x):!/^(?:\d+(?:\.\d+)?|\.\d+|-)$/.test(x);
+ });
+ if(bad.length)return 'Semak format bacaan: '+bad.join(', ');
  return '';
 }
 function accessKey(){return localStorage.getItem('s2_access_key')||''}
@@ -289,7 +339,6 @@ async function api(action,params={}){
 }
 async function checkOnline(silent=false){
  const label=$('onlineInfo');
- if(FULL.has($('time').value)){label.textContent='Slot Full Test belum disediakan.';return}
  if(!connected()){label.textContent='Masukkan access code S2 untuk semak rekod online.';showAccess(true);return}
  try{
    const d=await api('one',{date:$('date').value,time:$('time').value});
@@ -299,9 +348,9 @@ async function checkOnline(silent=false){
      const when=Number.isFinite(t.getTime())?t.toLocaleString('ms-MY'):'-';
      label.innerHTML='<b>Rekod online tersedia:</b> '+when+' · '+escapeHtml(d.report.operator||'-')+' <button class="linkBtn" type="button" id="restoreOnline">Ambil bacaan</button>';
      $('restoreOnline').onclick=()=>{
-       const existing=FIELDS.some(k=>$(k).value.trim());
+       const existing=activeFields().some(k=>$(k).value.trim());
        if(existing&&!confirm('Gantikan bacaan yang sedang diisi dengan rekod online slot ini?'))return;
-       FIELDS.forEach(k=>$(k).value=d.report.values[k]||'');
+       activeFields().forEach(k=>$(k).value=d.report.values[k]||'');
        $('fluorideNote').checked=d.report.fluorideNote!==false;
        $('otherNote').value=d.report.otherNote||'';
        saveDraft();render();
@@ -339,7 +388,7 @@ lastAutoDate=today();
 $('date').value=lastAutoDate;$('time').value=slotNow();
 $('operator').value=localStorage.getItem('s2_wq_operator')||localStorage.getItem('s2_leader')||'';
 savedKey=key();loadDraft();
-FIELDS.forEach(id=>$(id).addEventListener('input',()=>{saveDraft();render()}));
+allFields.forEach(id=>$(id).addEventListener('input',()=>{saveDraft();render()}));
 $('fluorideNote').onchange=()=>{saveDraft();render()};
 $('otherNote').oninput=()=>{saveDraft();render()};
 $('operator').oninput=()=>localStorage.setItem('s2_wq_operator',$('operator').value);
@@ -359,7 +408,6 @@ $('copy').onclick=async()=>{
  }
 };
 $('waForm').addEventListener('submit',event=>{
- if(FULL.has($('time').value)){event.preventDefault();alert('Slot ini Full Test. Format khas belum tersedia.');return}
  const d=getData(),err=validateClient(d);
  if(err){event.preventDefault();alert(err);return}
  const k=accessKey();
