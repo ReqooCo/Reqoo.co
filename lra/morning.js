@@ -71,20 +71,27 @@ async function loadPreviousLevel(force=false){
  }catch(e){el('pondChangeStatus').textContent='Rekod semalam belum dapat diambil: '+e.message}
  finally{previousLoading=false}
 }
-async function findOpsSource(){
- if(opsReady())return{name:'borang Operasi 0700',data:livePayload('ops').data,local:true};
- const code=localStorage.getItem('s2_access_key');if(!code)return null;
- const res=await fetch('/api/s2-live',{headers:{'X-S2-Key':code},cache:'no-store'});
- const result=await res.json();if(!res.ok||!result.ok)throw Error(result.error||'Ralat operasi');
- const ops=result.state?.ops;
- return ops?.report_date===get('date')&&ops.report_time==='07:00'?{name:'rekod online Operasi 0700',data:ops.data,local:false}:null;
+async function findOpsSource(allowLocal=false){
+ const code=localStorage.getItem('s2_access_key');
+ if(code){
+  const res=await fetch('/api/s2-live',{headers:{'X-S2-Key':code},cache:'no-store'});
+  const result=await res.json().catch(()=>({}));
+  if(!res.ok||!result.ok)throw Error(result.error||'Ralat operasi');
+  const ops=result.state?.ops;
+  if(ops?.report_date===get('date')&&ops.report_time==='07:00')
+   return {name:'rekod online Operasi 0700',data:ops.data,local:false};
+ }
+ // Unsaved local draft can only be imported after an explicit button tap.
+ // Do not silently copy a 0600/previous-day reading relabelled 0700.
+ if(allowLocal&&opsReady())return{name:'borang tempatan Operasi 0700 (belum disahkan online)',data:livePayload('ops').data,local:true};
+ return null;
 }
 async function importOps(manual=false){
  const date=get('date');
  try{
-  const src=await findOpsSource();if(get('date')!==date)return;
+  const src=await findOpsSource(manual);if(get('date')!==date)return;
   if(!src){
-   el('opsImportStatus').textContent='Belum ada laporan Operasi 0700 pada tarikh ini; bacaan tidak diisi secara automatik.';
+   el('opsImportStatus').textContent='Belum ada laporan Operasi 0700 yang disimpan online pada tarikh ini. Tekan Ambil bacaan secara manual jika sudah semak borang tempatan.';
    if(manual)alert('Tiada rekod Operasi 0700 untuk tarikh yang sama.');return;
   }
   const map=[['pond1','dp1'],['pond2','dp2'],['pondOut','dpOutHourly']];
