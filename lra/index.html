@@ -248,7 +248,10 @@ details.more[open]>summary:after{content:"−"}
 <button type="button" class="mSignBtn" id="m_changeMinus" data-sign="-" aria-pressed="false" aria-label="Letak tanda negatif">−</button>
 <button type="button" class="mSignBtn" id="m_changePlus" data-sign="+" aria-pressed="false" aria-label="Letak tanda positif">+</button>
 </div></div>
-<div class="field"><label for="m_pondStorage">Pond C Storage <span class="small">(ML)</span></label><input id="m_pondStorage" inputmode="decimal" autocomplete="off" placeholder="3953.85" value=""></div></div></section>
+<div class="field"><label for="m_pondStorage">Pond C Storage <span class="small">(ML)</span></label>
+<input id="m_pondStorage" inputmode="decimal" autocomplete="off" placeholder="Auto dari Pond C Level" value="">
+<label class="mAutoLabel"><input id="m_storageAuto" type="checkbox" checked> Auto dari paras Pond C (jadual rujukan)</label>
+</div></div></section>
 <section class="card"><div class="quickTitle"><h2>03 · Inflow Pond C</h2><span class="modeChip">0700</span></div><div class="grid"><div class="field"><label for="m_intakeB">Intake B <span class="small">(MLD)</span></label><input id="m_intakeB" inputmode="decimal" autocomplete="off" placeholder="84.875" value=""></div>
 <div class="field"><label for="m_wt1">WT1 <span class="small">(MLD)</span></label><input id="m_wt1" inputmode="decimal" autocomplete="off" placeholder="0" value=""></div>
 <div class="field"><label for="m_sjamB">SJAM B <span class="small">(MLD)</span></label><input id="m_sjamB" inputmode="decimal" autocomplete="off" placeholder="0" value=""></div></div></section>
@@ -261,12 +264,15 @@ details.more[open]>summary:after{content:"−"}
 <div class="field"><label for="m_dp2">DP No.2 <span class="small">(m)</span></label><input id="m_dp2" inputmode="decimal" autocomplete="off" placeholder="5.44" value=""></div>
 <div class="field"><label for="m_dpOutHourly">DP Outflow <span class="small">(m³/hr)</span></label><input id="m_dpOutHourly" inputmode="decimal" autocomplete="off" placeholder="3543" value=""></div>
 <div class="field"><label for="m_dpPressure">Delivery Pressure <span class="small">(bar)</span></label><input id="m_dpPressure" inputmode="decimal" autocomplete="off" placeholder="2.85" value=""></div></div></section>
-<details class="more"><summary>Tetapan Pond C · Capacity & Critical</summary><div class="moreBody"><p class="small">Nilai rujukan boleh disemak dan diubah jika perlu.</p><div class="grid"><div class="field"><label for="m_pondTwlCapacity">Capacity @ TWL 12m <span class="small">(ML)</span></label><input id="m_pondTwlCapacity" inputmode="decimal" autocomplete="off" placeholder="3984.50" value="3984.50"></div>
+<details class="more"><summary>Tetapan Pond C · Capacity & Critical</summary><div class="moreBody">
+<p class="small">Padanan rujukan lama: 7.50m = 1,226.00 ML, 11.07m = 3,414.41 ML, 12.00m = 3,984.50 ML. Kadar padanan: 613 ML/m dalam julat 7.50–12.00m. Ini pengiraan anggaran daripada data rujukan, bukan bacaan meter storage.</p>
+<p id="m_storageStatus" class="small" style="color:#33725b"></p><div class="grid"><div class="field"><label for="m_pondTwlCapacity">Capacity @ TWL 12m <span class="small">(ML)</span></label><input id="m_pondTwlCapacity" inputmode="decimal" autocomplete="off" placeholder="3984.50" value="3984.50"></div>
 <div class="field"><label for="m_pondTwlLevel">Full Supply TWL <span class="small">(m)</span></label><input id="m_pondTwlLevel" inputmode="decimal" autocomplete="off" placeholder="12.0" value="12.0"></div>
 <div class="field"><label for="m_criticalLevel">Critical WL <span class="small">(m)</span></label><input id="m_criticalLevel" inputmode="decimal" autocomplete="off" placeholder="7.50" value="7.50"></div>
 <div class="field"><label for="m_criticalPercent">Critical % <span class="small">(%)</span></label><input id="m_criticalPercent" inputmode="decimal" autocomplete="off" placeholder="30.00" value="30.00"></div>
-<div class="field"><label for="m_criticalStorage">Critical Storage <span class="small">(ML)</span></label><input id="m_criticalStorage" inputmode="decimal" autocomplete="off" placeholder="1226" value="1226"></div></div></div></details>
-<section class="card"><div class="quickTitle"><h2>Kiraan Automatik</h2><span class="modeChip">LIVE</span></div><div class="morningStats"><div><small>Margin Pengeluaran</small><b id="m_margin">-</b></div><div><small>Storage %</small><b id="m_percent">-</b></div><div><small>Inflow Pond C</small><b id="m_inflow">-</b></div><div><small>Outflow Pond C</small><b id="m_outflow">-</b></div><div><small>Net Volume / Day</small><b id="m_net">-</b></div><div><small>Days to Critical</small><b id="m_days">-</b></div></div></section>
+<div class="field"><label for="m_criticalStorage">Storage @ Critical Level <span class="small">(ML)</span></label><input id="m_criticalStorage" inputmode="decimal" autocomplete="off" placeholder="Auto ikut Critical WL" value="1226">
+<label class="mAutoLabel"><input id="m_criticalStorageAuto" type="checkbox" checked> Auto daripada Critical WL (7.50m = 1226 ML)</label></div></div></div></details>
+<section class="card"><div class="quickTitle"><h2>Kiraan Automatik</h2><span class="modeChip">LIVE</span></div><div class="morningStats"><div><small>Margin Pengeluaran</small><b id="m_margin">-</b></div><div><small>Storage %</small><b id="m_percent">-</b></div><div><small>Storage Pond C (ML)</small><b id="m_storageShown">-</b></div><div><small>Baki Volume Hingga Critical</small><b id="m_usableStorage">-</b></div><div><small>Inflow Pond C</small><b id="m_inflow">-</b></div><div><small>Outflow Pond C</small><b id="m_outflow">-</b></div><div><small>Net Volume / Day</small><b id="m_net">-</b></div><div><small>Days to Critical</small><b id="m_days">-</b></div></div></section>
 <section class="card"><h2>WhatsApp Report 0700</h2><p class="small">Operasi + 5 format. Semak preview dahulu, kemudian buka WhatsApp dan pilih group. Penghantaran sebenar perlu tekan Send dalam WhatsApp.</p></section>
 <details class="more mFormat" id="m_card_ops" open><summary>Operasi 0700 · Laporan ke-1</summary><div class="moreBody">
 <p class="small" id="m_opsReady">Sediakan bacaan Operasi pada slot 0700 untuk laporan ini.</p>
@@ -990,6 +996,6 @@ window.addEventListener('focus',()=>{syncAutoDates();loadLive(true);if(activeTab
 load();syncMaintenance();refresh();refreshPump();hist();arm();loadLive(true);loadStock(true);setInterval(()=>{loadLive(true);if(activeTab==='stock'&&!stockHasPending())loadStock(true)},30000);switchTab(localStorage.getItem('rqLraActiveTab')||'ops');
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
 </script>
-<script src="./morning.js?v=7"></script>
+<script src="./morning.js?v=8"></script>
 </body>
 </html>
