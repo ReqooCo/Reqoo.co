@@ -20,7 +20,7 @@ function validateValues(x){
    if(key==='sivStatus'){const v=t(x[key],20)||'auto';if(!['auto','not','achieved'].includes(v))throw Error('Status SIV tidak sah.');o[key]=v;continue}
    if(key==='sivChallengeA'||key==='sivChallengeB'){o[key]=t(x[key],1200);continue}
    const value=t(x[key],50);
-   if(value&&value!=='-'&&!/^-?(?:\d+(?:\.\d+)?|\.\d+)$/.test(value))throw Error('Nombor tidak sah: '+key);
+   if(value&&value!=='-'&&!(key==='pondChange'?/^[+-]?(?:\d+(?:\.\d+)?|\.\d+)$/:/^-?(?:\d+(?:\.\d+)?|\.\d+)$/).test(value))throw Error('Nombor tidak sah: '+key);
    o[key]=value;
  }
  return o;
