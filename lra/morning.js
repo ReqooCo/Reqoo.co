@@ -329,8 +329,15 @@ let lastDate=localDate();
 el('date').value=lastDate;
 el('operator').value=localStorage.getItem('rqS2MorningOperator')||localStorage.getItem('s2_leader')||'';
 restore();
-el('date').addEventListener('change',()=>{restore();retrieve(true)});
-keys.forEach(k=>el(k).addEventListener('input',()=>{render();save()}));
+el('date').addEventListener('change',()=>{restore();retrieve(true);renderChecklist();loadPreviousLevel(true);importOps(false)});
+keys.forEach(k=>el(k).addEventListener('input',()=>{
+ if(k==='intakeCHourly'&&el('forecastAuto').checked)el('forecastAuto').checked=false;
+ if(k==='sjamCHourly'&&el('sjamForecastAuto').checked)el('sjamForecastAuto').checked=false;
+ if(k==='pondChange'&&get('pondChange')!==pondChangeAutoValue)pondChangeAutoValue=null;
+ if(k==='pondC')applyPreviousChange();
+ render();save();
+}));
+for(const id of ['forecastAuto','sjamForecastAuto'])el(id).addEventListener('change',()=>{render();save()});
 function updateChangeSignButtons(){
  const current=get('pondChange');
  for(const sign of ['-','+']){
@@ -356,6 +363,41 @@ el('operator').addEventListener('input',save);
 el('pondAProblem').addEventListener('change',()=>{render();save()});
 el('pondANote').addEventListener('input',()=>{render();save()});
 el('load').addEventListener('click',()=>retrieve(false));
+
+el('calcPondChange').addEventListener('click',async()=>{
+ if(previousDate!==get('date')||!valid(previousPondC))await loadPreviousLevel(true);
+ if(!valid(previousPondC))return alert('Tiada bacaan Pond C 0700 semalam dalam database.');
+ const level=n('pondC');if(!valid(level))return alert('Isi paras Pond C hari ini dahulu.');
+ if(get('pondChange')&&get('pondChange')!==pondChangeAutoValue&&!confirm('Ganti perubahan yang telah diisi dengan beza level semalam?'))return;
+ el('pondChange').value=signedChange(level,previousPondC);pondChangeAutoValue=get('pondChange');render();save();
+});
+el('prepareOps').addEventListener('click',()=>{
+ if(!confirm('Sediakan Operasi '+dmy()+' pada 0700? Pastikan bacaan lama disemak dan dikemas kini sebelum hantar.'))return;
+ document.getElementById('date').value=get('date');
+ document.getElementById('time').value='07:00';
+ if(typeof refresh==='function')refresh();
+ if(typeof switchTab==='function')switchTab('ops');
+ document.getElementById('panel-ops').scrollIntoView({behavior:'smooth',block:'start'});
+});
+el('importOps').addEventListener('click',()=>importOps(true));
+el('copyOps').addEventListener('click',async()=>{
+ if(!opsReady())return alert('Sediakan bacaan Operasi 0700 yang sepadan dahulu.');
+ try{await navigator.clipboard.writeText(opsText());alert('Report Operasi 0700 disalin.')}
+ catch{el('card_ops').open=true;alert('Sila salin teks dari Preview Operasi.')}
+});
+document.getElementById('m_opsShare').addEventListener('submit',event=>{
+ if(!opsReady()){event.preventDefault();alert('Borang Operasi mesti pada tarikh yang sama dan jam 0700.');return}
+ const code=localStorage.getItem('s2_access_key');
+ if(!code){event.preventDefault();alert('Masukkan access code S2 di Status Semasa Loji dahulu.');return}
+ const data=livePayload('ops');
+ el('opsAccess').value=code;
+ el('opsDate').value=get('date');
+ el('opsOperator').value=get('operator')||'-';
+ el('opsShift').value=stockShift();
+ el('opsData').value=JSON.stringify(data.data);
+ el('opsText').value=opsText();
+});
+
 document.querySelectorAll('.m_copy').forEach(b=>b.addEventListener('click',async()=>{
  const n=Number(b.dataset.number),txt=reportText(n);
  if(n===5&&sivValid())return alert(sivValid());
@@ -381,7 +423,7 @@ document.getElementById('m_share').addEventListener('submit',event=>{
 });
 window.morningTabChanged=tab=>{
  document.querySelector('.bottom')?.classList.toggle('morningHide',tab==='morning');
- if(tab==='morning')render();
+ if(tab==='morning'){render();renderChecklist();loadPreviousLevel(false);importOps(false)}
 };
 window.morningTabChanged(localStorage.getItem('rqLraActiveTab')||'ops');
 const params=new URLSearchParams(location.search);
@@ -396,5 +438,8 @@ const checkDate=()=>{
 };
 window.addEventListener('focus',checkDate);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkDate()});
+renderChecklist();
+loadPreviousLevel(false);
+for(const id of ['date','time','river','riverMax','rwp','twp','rw','tw','tank1','tank2','pond1','pond2','pondOut','riverNote','rwNote','twNote','tank1Note','tank2Note','pond1Note','pond2Note','note'])document.getElementById(id)?.addEventListener('input',syncOpsPreview);
 retrieve(true);
 })();
