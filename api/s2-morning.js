@@ -1,6 +1,6 @@
 const HEADERS={'content-type':'application/json;charset=UTF-8','cache-control':'no-store','access-control-allow-origin':'https://reqoo.co','access-control-allow-headers':'content-type,x-s2-key','access-control-allow-methods':'GET,POST,OPTIONS','x-content-type-options':'nosniff'};
 const ACCESS_HASH='da55872021a7acbbd84f80edee8c565ec1e9e5d926a1f18a4a6d6e1ed1586331';
-const KEYS=['production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','pondTwlLevel','criticalLevel','criticalPercent','criticalStorage','intakeB','wt1','sjamB','sjamCActual','intakeCHourly','sjamCHourly','dp1','dp2','dpOutHourly','dpPressure','sivTarget','sivStatus','sivChallengeA','sivChallengeB','pondAProblem','pondANote'];
+const KEYS=['production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','pondTwlLevel','criticalLevel','criticalPercent','criticalStorage','intakeB','wt1','sjamB','sjamCActual','intakeCHourly','sjamCHourly','dp1','dp2','dpOutHourly','dpPressure','sivTarget','sivStatus','sivChallengeA','sivChallengeB','forecastAuto','sjamForecastAuto','pondAProblem','pondANote'];
 const json=(x,status=200)=>new Response(JSON.stringify(x),{status,headers:HEADERS});
 const t=(x,n=120)=>String(x??'').trim().slice(0,n);
 const dateOK=x=>/^\d{4}-\d{2}-\d{2}$/.test(x)&&new Date(x+'T00:00:00Z').toISOString().slice(0,10)===x;
@@ -15,6 +15,7 @@ function validateValues(x){
  if(!x||typeof x!=='object'||Array.isArray(x))throw Error('Data bacaan tidak sah.');
  const o={};
  for(const key of KEYS){
+   if(key==='forecastAuto'||key==='sjamForecastAuto'){o[key]=x[key]===true;continue}
    if(key==='pondAProblem'){o[key]=x[key]===true;continue}
    if(key==='pondANote'){o[key]=t(x[key],220);continue}
    if(key==='sivStatus'){const v=t(x[key],20)||'auto';if(!['auto','not','achieved'].includes(v))throw Error('Status SIV tidak sah.');o[key]=v;continue}
