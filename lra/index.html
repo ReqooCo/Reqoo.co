@@ -602,7 +602,7 @@ function jumpLive(section){
 function livePayload(section){
  if(section==='ops')return{
    reportDate:v('date'),reportTime:v('time'),
-   data:{rwp:v('rwp'),twp:v('twp'),rw:v('rw'),tw:v('tw'),river:v('river'),tank1:v('tank1'),tank2:v('tank2'),pond1:v('pond1'),pond2:v('pond2'),pondOut:v('pondOut')}
+   data:{rwp:v('rwp'),twp:v('twp'),rw:v('rw'),tw:v('tw'),river:v('river'),tank1:v('tank1'),tank2:v('tank2'),pond1:v('pond1'),pond2:v('pond2'),pondOut:v('pondOut'),pond1Problem:ck('pond1Problem'),pond2Problem:ck('pond2Problem')}
  };
  if(section==='intakeB')return{
    reportDate:v('ibDate'),reportTime:v('ibTime'),
