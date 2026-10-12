@@ -104,7 +104,10 @@ function reportText(format){
    'Outflow : '+unit('dpOutHourly',0,'m3/h')+' @ '+valueOr(r.dpMld,3,'Mld'),
    'Delivery Pressure : '+unit('dpPressure',2,'bar')
   ]);
-  if(problemA()&&get('pondANote'))l.push('','*_'+get('pondANote').replace(/\*/g,'')+'_');
+  if(problemA()){
+   const note=(get('pondANote')||noteDefault).replace(/\*/g,'').trim();
+   l.push('','*_'+note+'_*');
+  }
  }else if(format===2){
   l=h.concat([
    'Total Prod : '+mld('production'),
@@ -163,6 +166,7 @@ function render(){
  el('sivPercent').textContent=valid(diff)&&target>0?(Math.abs(diff)/target*100).toFixed(3)+'%':'-';
  el('sivTargetNote').textContent='Sasaran '+(sivMonths[Number(get('date').slice(5,7))-1]||'-')+' '+get('date').slice(0,4)+' — '+(get('sivTarget')||'belum diisi')+' MLD. Total Prod diambil terus daripada Bahagian 01.';
  el('pondANoteWrap').hidden=!problemA();
+ el('pondAField').classList.toggle('problemOn',problemA());
 }
 function storedKey(){return 'rqS2Morning0700-'+get('date')}
 function formData(){
