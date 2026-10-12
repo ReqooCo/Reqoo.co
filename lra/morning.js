@@ -1,10 +1,17 @@
-// Daily 0700 LRA Semenyih 2 reports: four formats, one set of readings.
+// Daily 0700 LRA Semenyih 2 reports: five formats, one set of readings.
 (function(){
 'use strict';
 const el=id=>document.getElementById('m_'+id);
 const keys=['production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','pondTwlLevel','criticalLevel','criticalPercent','criticalStorage','intakeB','wt1','sjamB','sjamCActual','intakeCHourly','sjamCHourly','dp1','dp2','dpOutHourly','dpPressure'];
 const defaults={designCapacity:'100',pondTwlCapacity:'3984.50',pondTwlLevel:'12.0',criticalLevel:'7.50',criticalPercent:'30.00',criticalStorage:'1226'};
 const noteDefault='Bacaan level tidak tepat disebabkan SCADA intake A lost communication';
+const sivKeys=['sivTarget','sivStatus','sivChallengeA','sivChallengeB'];
+const sivDefaultA='Kaedah pengiraan pengeluaran LRA Semenyih 2 :\nPengeluaran LRA Semenyih 2 = Bacaan Totalizer Tw (Semasa) - Bacaan Totalizer Tw (Sebelum)';
+const sivDefaultB='Pihak LRA Semenyih 2 Perlu mengawal Paras Kolam Desa Putra pada 3.00m - 7.83m seperti diminta SO bagi memenuhi Demand.';
+const sivMonths=['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogos','Sep','Okt','Nov','Dis'];
+const sivTargetKey=()=> 'rqS2MorningSivTarget-'+get('date').slice(0,7);
+const sivTargetInitial=()=>localStorage.getItem(sivTargetKey())||(get('date').slice(0,7)==='2026-10'?'84.300':'');
+
 const get=id=>String(el(id)?.value??'').trim();
 const n=id=>{const x=get(id);if(!x||x==='-')return null;const z=Number(x);return Number.isFinite(z)?z:null};
 const valid=x=>x!==null&&Number.isFinite(x);
@@ -41,7 +48,40 @@ function metrics(){
  forecastWtp,forecastSjam,dpMld:mldFromHour('dpOutHourly')
  };
 }
+function sivReport(){
+ const prod=n('production'),target=n('sivTarget'),diff=all(prod,target)?prod-target:null;
+ const percent=valid(diff)&&target>0?Math.abs(diff)/target*100:null;
+ const status=get('sivStatus')==='not'?'Not achieved':get('sivStatus')==='achieved'?'Achieved':valid(diff)&&diff>0?'Not achieved':'Achieved';
+ const monthNum=Number(get('date').slice(5,7))-1;
+ const monthly=(sivMonths[monthNum]||'')+' '+get('date').slice(0,4);
+ const formattedProd=valid(prod)?prod.toFixed(3):'-';
+ const formattedTarget=valid(target)?target.toFixed(3):'-';
+ const differenceText=valid(diff)?Math.abs(diff).toFixed(3):'-';
+ const percentText=valid(percent)?percent.toFixed(3):'-';
+ const increase=valid(diff)&&diff<0?'Penurunan':'Peningkatan';
+ return [
+  '*SIV '+status+' today*',
+  '*LRA SEMENYIH 2*',
+  '*Date : '+dmy()+'*','',
+  '*1.Current Performance :*',
+  'Pengeluaran - '+formattedProd+'MLD',
+  'Sasaran '+monthly+' - '+formattedTarget+'MLD',
+  increase+' - '+differenceText+'MLD ('+percentText+'%)','',
+  '*2. Challenges :*',
+  'a) '+(get('sivChallengeA')||sivDefaultA),'',
+  'b. '+(get('sivChallengeB')||sivDefaultB),'',
+  'Note:',
+  'Jumlah Demand LRA Semenyih 2 : *'+formattedProd+'Mld* (Sasaran '+monthly+': '+formattedTarget+'Mld)'
+ ].join('\n');
+}
+function sivValid(){
+ const prod=n('production'),target=n('sivTarget');
+ if(!valid(prod))return 'Format 5 memerlukan Total Prod di bahagian 01.';
+ if(!valid(target)||target<=0)return 'Format 5 memerlukan Sasaran SIV yang sah.';
+ return '';
+}
 function reportText(format){
+ if(format===5)return sivReport();
  const r=metrics(),h=head(format===1||format===2);
  const percentage='*'+valueOr(r.percent,2,'%')+'*';
  const days=valid(r.days)?'*'+number(r.days,1)+'*':'-';
@@ -116,12 +156,18 @@ function render(){
   net:valueOr(r.net,3,' ML/day'),days:valueOr(r.days,1,' hari')
  };
  Object.entries(list).forEach(([id,text])=>{if(el(id))el(id).textContent=text});
- for(let i=1;i<=4;i++)el('preview_'+i).textContent=reportText(i);
+ for(let i=1;i<=5;i++)el('preview_'+i).textContent=reportText(i);
+ const prod=n('production'),target=n('sivTarget'),diff=all(prod,target)?prod-target:null;
+ el('sivDiffLabel').textContent=valid(diff)&&diff<0?'Penurunan':'Peningkatan';
+ el('sivDiff').textContent=valid(diff)?Math.abs(diff).toFixed(3)+' MLD':'-';
+ el('sivPercent').textContent=valid(diff)&&target>0?(Math.abs(diff)/target*100).toFixed(3)+'%':'-';
+ el('sivTargetNote').textContent='Sasaran '+(sivMonths[Number(get('date').slice(5,7))-1]||'-')+' '+get('date').slice(0,4)+' — '+(get('sivTarget')||'belum diisi')+' MLD. Total Prod diambil terus daripada Bahagian 01.';
  el('pondANoteWrap').hidden=!problemA();
 }
 function storedKey(){return 'rqS2Morning0700-'+get('date')}
 function formData(){
  const values={};keys.forEach(k=>values[k]=get(k));
+ sivKeys.forEach(k=>values[k]=get(k));
  values.pondAProblem=problemA();values.pondANote=get('pondANote');
  return{values,operator:get('operator')};
 }
@@ -129,16 +175,25 @@ function save(){
  if(!get('date'))return;
  localStorage.setItem(storedKey(),JSON.stringify(formData()));
  localStorage.setItem('rqS2MorningOperator',get('operator'));
+ if(get('sivTarget')&&Number(get('sivTarget'))>0)localStorage.setItem(sivTargetKey(),get('sivTarget'));
  el('draft').textContent='Draf '+dmy()+' disimpan di telefon';
 }
 function reset(){
  keys.forEach(k=>el(k).value=defaults[k]||'');
+ el('sivTarget').value=sivTargetInitial();
+ el('sivStatus').value='auto';
+ el('sivChallengeA').value=sivDefaultA;
+ el('sivChallengeB').value=sivDefaultB;
  el('pondAProblem').checked=false;
  el('pondANote').value=noteDefault;
 }
 function apply(data){
  const values=data?.values||data||{};
  keys.forEach(k=>el(k).value=String(values[k]??defaults[k]??''));
+ el('sivTarget').value=String(values.sivTarget??sivTargetInitial());
+ el('sivStatus').value=['auto','not','achieved'].includes(values.sivStatus)?values.sivStatus:'auto';
+ el('sivChallengeA').value=String(values.sivChallengeA??sivDefaultA);
+ el('sivChallengeB').value=String(values.sivChallengeB??sivDefaultB);
  el('pondAProblem').checked=!!values.pondAProblem;
  el('pondANote').value=values.pondANote||noteDefault;
  if(data?.operator)el('operator').value=data.operator;
@@ -175,18 +230,21 @@ el('operator').value=localStorage.getItem('rqS2MorningOperator')||localStorage.g
 restore();
 el('date').addEventListener('change',()=>{restore();retrieve(true)});
 keys.forEach(k=>el(k).addEventListener('input',()=>{render();save()}));
+sivKeys.forEach(k=>el(k).addEventListener(k==='sivStatus'?'change':'input',()=>{render();save()}));
 el('operator').addEventListener('input',save);
 el('pondAProblem').addEventListener('change',()=>{render();save()});
 el('pondANote').addEventListener('input',()=>{render();save()});
 el('load').addEventListener('click',()=>retrieve(false));
 document.querySelectorAll('.m_copy').forEach(b=>b.addEventListener('click',async()=>{
  const n=Number(b.dataset.number),txt=reportText(n);
+ if(n===5&&sivValid())return alert(sivValid());
  try{await navigator.clipboard.writeText(txt);alert('Format '+n+' sudah disalin.')}
  catch{el('card_'+n).open=true;alert('Sila salin teks melalui Preview WhatsApp.')}
 }));
 document.getElementById('m_share').addEventListener('submit',event=>{
  const no=Number(event.submitter?.value||0);
- if(![1,2,3,4].includes(no)){event.preventDefault();return}
+ if(![1,2,3,4,5].includes(no)){event.preventDefault();return}
+ if(no===5&&sivValid()){event.preventDefault();alert(sivValid());return}
  const code=localStorage.getItem('s2_access_key');
  if(!code){
   event.preventDefault();
@@ -195,7 +253,7 @@ document.getElementById('m_share').addEventListener('submit',event=>{
   alert('Masukkan access code S2 pada Status Semasa Loji dahulu.');return
  }
  const missing=keys.filter(k=>!defaults[k]&&!get(k));
- if(missing.length&&!confirm('Masih ada '+missing.length+' bacaan kosong. Teruskan report dengan tanda - ?')){event.preventDefault();return}
+ if(no!==5&&missing.length&&!confirm('Masih ada '+missing.length+' bacaan kosong. Teruskan report dengan tanda - ?')){event.preventDefault();return}
  el('waKey').value=code;el('waDate').value=get('date');el('waOperator').value=get('operator')||'-';
  el('waValues').value=JSON.stringify(formData().values);el('waText').value=reportText(no);
  save();
@@ -205,6 +263,11 @@ window.morningTabChanged=tab=>{
  if(tab==='morning')render();
 };
 window.morningTabChanged(localStorage.getItem('rqLraActiveTab')||'ops');
+const params=new URLSearchParams(location.search);
+if(params.get('tab')==='morning'){
+ if(typeof switchTab==='function')switchTab('morning');
+ if(params.get('format')==='5')el('card_5').open=true;
+}
 const checkDate=()=>{
  const next=localDate();
  if(next!==lastDate&&el('date').value===lastDate){el('date').value=next;restore();retrieve(true)}
