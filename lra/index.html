@@ -236,6 +236,7 @@ details.more[open]>summary:after{content:"−"}
 <div class="field"><label for="m_dpOutHourly">DP Outflow <span class="small">(m³/hr)</span></label><input id="m_dpOutHourly" inputmode="decimal" autocomplete="off" placeholder="3543" value=""></div>
 <div class="field"><label for="m_dpPressure">Delivery Pressure <span class="small">(bar)</span></label><input id="m_dpPressure" inputmode="decimal" autocomplete="off" placeholder="2.85" value=""></div></div></section>
 <details class="more"><summary>Tetapan Pond C · Capacity & Critical</summary><div class="moreBody"><p class="small">Nilai rujukan boleh disemak dan diubah jika perlu.</p><div class="grid"><div class="field"><label for="m_pondTwlCapacity">Capacity @ TWL 12m <span class="small">(ML)</span></label><input id="m_pondTwlCapacity" inputmode="decimal" autocomplete="off" placeholder="3984.50" value="3984.50"></div>
+<div class="field"><label for="m_pondTwlLevel">Full Supply TWL <span class="small">(m)</span></label><input id="m_pondTwlLevel" inputmode="decimal" autocomplete="off" placeholder="12.0" value="12.0"></div>
 <div class="field"><label for="m_criticalLevel">Critical WL <span class="small">(m)</span></label><input id="m_criticalLevel" inputmode="decimal" autocomplete="off" placeholder="7.50" value="7.50"></div>
 <div class="field"><label for="m_criticalPercent">Critical % <span class="small">(%)</span></label><input id="m_criticalPercent" inputmode="decimal" autocomplete="off" placeholder="30.00" value="30.00"></div>
 <div class="field"><label for="m_criticalStorage">Critical Storage <span class="small">(ML)</span></label><input id="m_criticalStorage" inputmode="decimal" autocomplete="off" placeholder="1226" value="1226"></div></div></div></details>
@@ -937,6 +938,6 @@ window.addEventListener('focus',()=>{syncAutoDates();loadLive(true);if(activeTab
 load();syncMaintenance();refresh();refreshPump();hist();arm();loadLive(true);loadStock(true);setInterval(()=>{loadLive(true);if(activeTab==='stock'&&!stockHasPending())loadStock(true)},30000);switchTab(localStorage.getItem('rqLraActiveTab')||'ops');
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
 </script>
-<script src="./morning.js?v=1"></script>
+<script src="./morning.js?v=2"></script>
 </body>
 </html>
