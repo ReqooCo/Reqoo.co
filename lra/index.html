@@ -210,9 +210,9 @@ details.more[open]>summary:after{content:"−"}
   </div>
 
 <div id="panel-morning" class="panel">
-<section class="card"><div class="quickTitle"><h2>Laporan Pagi · 0700</h2><span class="modeChip">4 FORMAT</span></div>
+<section class="card"><div class="quickTitle"><h2>Laporan Pagi · 0700</h2><span class="modeChip">5 FORMAT</span></div>
 <div class="grid"><div class="field"><label for="m_date">Tarikh</label><input id="m_date" type="date"></div><div class="field"><label for="m_operator">Disediakan oleh (DB)</label><input id="m_operator" placeholder="Nama staf"></div></div>
-<div class="notice ok">Isi data sekali sahaja. Keempat-empat report menggunakan bacaan sama. Pilih WhatsApp untuk setiap format.</div>
+<div class="notice ok">Isi data sekali sahaja. Kelima-lima format berkongsi bacaan 0700. Isi sasaran SIV di bahagian Format 5, kemudian pilih WhatsApp untuk setiap format.</div>
 <div class="morningMeta"><small id="m_draft">Draf tempatan</small><button type="button" id="m_load" class="mSmallBtn">Ambil data online</button></div><p class="small" id="m_onlineStatus"></p>
 </section>
 <section class="card"><div class="quickTitle"><h2>01 · Pengeluaran</h2><span class="modeChip">0700</span></div><div class="grid"><div class="field"><label for="m_production">Total Prod <span class="small">(MLD)</span></label><input id="m_production" inputmode="decimal" autocomplete="off" placeholder="82.524" value=""></div>
@@ -246,7 +246,21 @@ details.more[open]>summary:after{content:"−"}
 <details class="more mFormat" id="m_card_2" ><summary>Format 2 · Pengeluaran & ORS Pond C</summary><div class="moreBody"><p class="small">Paras, margin & critical storage</p><div id="m_preview_2" class="preview"></div><div class="btns"><button type="button" class="btn light m_copy" data-number="2">Copy 2</button><button type="submit" form="m_share" name="formatNumber" value="2" class="btn wa">WhatsApp 2</button></div></div></details>
 <details class="more mFormat" id="m_card_3" ><summary>Format 3 · Kiraan Aliran Pond C</summary><div class="moreBody"><p class="small">Inflow, outflow dan hari kritikal</p><div id="m_preview_3" class="preview"></div><div class="btns"><button type="button" class="btn light m_copy" data-number="3">Copy 3</button><button type="submit" form="m_share" name="formatNumber" value="3" class="btn wa">WhatsApp 3</button></div></div></details>
 <details class="more mFormat" id="m_card_4" ><summary>Format 4 · Ringkasan ORS Pond C</summary><div class="moreBody"><p class="small">Ringkasan keadaan simpanan Pond C</p><div id="m_preview_4" class="preview"></div><div class="btns"><button type="button" class="btn light m_copy" data-number="4">Copy 4</button><button type="submit" form="m_share" name="formatNumber" value="4" class="btn wa">WhatsApp 4</button></div></div></details>
-<section class="card"><div class="quickTitle"><h2>Format 5</h2><span class="modeChip">AKAN DATANG</span></div><p class="small">Tunggu format tambahan daripada staf.</p></section>
+<section class="card">
+ <div class="quickTitle"><h2>05 · SIV Performance</h2><span class="modeChip">FORMAT 5</span></div>
+ <p class="small">Jumlah Pengeluaran ambil terus daripada <b>Total Prod</b> di bahagian 01. Isi sasaran mengikut bulan; peningkatan dan peratus dikira automatik.</p>
+ <div class="grid">
+  <div class="field"><label for="m_sivTarget">Sasaran SIV <span class="small">(MLD)</span></label><input id="m_sivTarget" inputmode="decimal" autocomplete="off" placeholder="84.300"></div>
+  <div class="field"><label for="m_sivStatus">Status</label><select id="m_sivStatus"><option value="auto">Auto ikut sasaran</option><option value="not">Not achieved</option><option value="achieved">Achieved</option></select></div>
+ </div>
+ <div class="morningStats" style="margin-top:10px"><div><small id="m_sivDiffLabel">Peningkatan</small><b id="m_sivDiff">-</b></div><div><small>Peratus</small><b id="m_sivPercent">-</b></div></div>
+ <p id="m_sivTargetNote" class="small">Sasaran SIV untuk bulan dipilih.</p>
+ <details class="more" style="margin-top:10px"><summary>Challenges · Boleh edit</summary><div class="moreBody">
+  <div class="field"><label for="m_sivChallengeA">a) Kaedah pengiraan pengeluaran</label><textarea id="m_sivChallengeA" rows="3" style="width:100%;min-height:86px"></textarea></div>
+  <div class="field" style="margin-top:9px"><label for="m_sivChallengeB">b) Kawalan Paras Kolam Desa Putra</label><textarea id="m_sivChallengeB" rows="3" style="width:100%;min-height:86px"></textarea></div>
+ </div></details>
+</section>
+<details class="more mFormat" id="m_card_5"><summary>Format 5 · SIV Not achieved / Achieved</summary><div class="moreBody"><p class="small">Pengeluaran, sasaran, peningkatan (%) dan Challenges</p><div id="m_preview_5" class="preview"></div><div class="btns"><button type="button" class="btn light m_copy" data-number="5">Copy 5</button><button type="submit" form="m_share" name="formatNumber" value="5" class="btn wa">WhatsApp 5</button></div></div></details>
 <form id="m_share" method="POST" action="/api/s2-morning-share">
 <input type="hidden" name="accessKey" id="m_waKey"><input type="hidden" name="reportDate" id="m_waDate">
 <input type="hidden" name="operator" id="m_waOperator"><input type="hidden" name="values" id="m_waValues"><input type="hidden" name="reportText" id="m_waText">
@@ -938,6 +952,6 @@ window.addEventListener('focus',()=>{syncAutoDates();loadLive(true);if(activeTab
 load();syncMaintenance();refresh();refreshPump();hist();arm();loadLive(true);loadStock(true);setInterval(()=>{loadLive(true);if(activeTab==='stock'&&!stockHasPending())loadStock(true)},30000);switchTab(localStorage.getItem('rqLraActiveTab')||'ops');
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
 </script>
-<script src="./morning.js?v=2"></script>
+<script src="./morning.js?v=3"></script>
 </body>
 </html>
