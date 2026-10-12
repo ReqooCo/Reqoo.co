@@ -95,8 +95,14 @@ async function importOps(manual=false){
    if(manual)alert('Tiada rekod Operasi 0700 untuk tarikh yang sama.');return;
   }
   const map=[['pond1','dp1'],['pond2','dp2'],['pondOut','dpOutHourly']];
-  const possible=map.filter(([from,to])=>String(src.data?.[from]??'').trim()!==''&&
-   !(src.local&&((from==='pond1'&&ck('pond1Problem'))||(from==='pond2'&&ck('pond2Problem')))));
+  const possible=map.filter(([from,to])=>{
+   if(String(src.data?.[from]??'').trim()==='')return false;
+   if(from==='pond1'&&(src.data?.pond1Problem===true||(src.local&&ck('pond1Problem'))))return false;
+   if(from==='pond2'&&(src.data?.pond2Problem===true||(src.local&&ck('pond2Problem'))))return false;
+   // Legacy online records without problem flags require explicit staff review.
+   if(!manual&&!src.local&&(from==='pond1'||from==='pond2')&&src.data?.[from+'Problem']===undefined)return false;
+   return true;
+  });
   const selected=manual?possible:possible.filter(([,to])=>!get(to));
   if(manual&&selected.some(([,to])=>get(to))&&!confirm('Ganti bacaan Desa Putra sedia ada dengan '+src.name+'?'))return;
   for(const [from,to] of selected)el(to).value=String(src.data[from]).trim();
