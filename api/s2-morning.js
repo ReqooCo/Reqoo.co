@@ -1,0 +1,65 @@
+const HEADERS={'content-type':'application/json;charset=UTF-8','cache-control':'no-store','access-control-allow-origin':'https://reqoo.co','access-control-allow-headers':'content-type,x-s2-key','access-control-allow-methods':'GET,POST,OPTIONS','x-content-type-options':'nosniff'};
+const ACCESS_HASH='da55872021a7acbbd84f80edee8c565ec1e9e5d926a1f18a4a6d6e1ed1586331';
+const KEYS=['production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','criticalLevel','criticalPercent','criticalStorage','intakeB','wt1','sjamB','sjamCActual','intakeCHourly','sjamCHourly','dp1','dp2','dpOutHourly','dpPressure','pondAProblem','pondANote'];
+const json=(x,status=200)=>new Response(JSON.stringify(x),{status,headers:HEADERS});
+const t=(x,n=120)=>String(x??'').trim().slice(0,n);
+const dateOK=x=>/^\d{4}-\d{2}-\d{2}$/.test(x)&&new Date(x+'T00:00:00Z').toISOString().slice(0,10)===x;
+async function digest(x){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(String(x||'')));return Array.from(new Uint8Array(b)).map(v=>v.toString(16).padStart(2,'0')).join('')}
+function errPage(msg,status=400){const safe=t(msg,600).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');return new Response('<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>Report 0700</title><main style="font:16px system-ui;max-width:550px;margin:35px auto;padding:15px;color:#214d40"><h2>Report belum dihantar</h2><p>'+safe+'</p><a href="https://reqoo.co/lra/">Kembali ke LRA Report</a></main>',{status,headers:{'content-type':'text/html;charset=UTF-8','cache-control':'no-store','x-content-type-options':'nosniff','referrer-policy':'no-referrer'}})}
+async function ensure(db){await db.batch([
+  db.prepare('CREATE TABLE IF NOT EXISTS s2_morning_reports (report_date TEXT PRIMARY KEY, data_json TEXT NOT NULL, updated_at TEXT NOT NULL, updated_by TEXT NOT NULL DEFAULT \'-\', last_format INTEGER NOT NULL DEFAULT 1)'),
+  db.prepare('CREATE TABLE IF NOT EXISTS s2_morning_history (id TEXT PRIMARY KEY, report_date TEXT NOT NULL, data_json TEXT NOT NULL, updated_at TEXT NOT NULL, updated_by TEXT NOT NULL DEFAULT \'-\', format_number INTEGER NOT NULL, report_text TEXT NOT NULL)'),
+  db.prepare('CREATE INDEX IF NOT EXISTS idx_s2_morning_history_date ON s2_morning_history(report_date,updated_at DESC)')
+])}
+function validateValues(x){
+ if(!x||typeof x!=='object'||Array.isArray(x))throw Error('Data bacaan tidak sah.');
+ const o={};
+ for(const key of KEYS){
+   if(key==='pondAProblem'){o[key]=x[key]===true;continue}
+   if(key==='pondANote'){o[key]=t(x[key],220);continue}
+   const value=t(x[key],50);
+   if(value&&value!=='-'&&!/^-?(?:\d+(?:\.\d+)?|\.\d+)$/.test(value))throw Error('Nombor tidak sah: '+key);
+   o[key]=value;
+ }
+ return o;
+}
+export async function onRequest({request,env}){
+ if(request.method==='OPTIONS')return new Response(null,{status:204,headers:HEADERS});
+ const u=new URL(request.url),share=u.pathname==='/api/s2-morning-share';
+ let form=null;
+ if(share){
+   if(request.method!=='POST')return errPage('Gunakan butang WhatsApp dalam app.',405);
+   if(!(request.headers.get('content-type')||'').includes('application/x-www-form-urlencoded'))return errPage('Format tidak sah.');
+   try{form=Object.fromEntries(new URLSearchParams(await request.text()))}catch{return errPage('Data tidak sah.')}
+ }
+ const key=share?t(form.accessKey,200):request.headers.get('X-S2-Key')||'';
+ if(!key||await digest(key)!==ACCESS_HASH)return share?errPage('Access code S2 tidak sah.',401):json({ok:false,error:'Access code S2 tidak sah.'},401);
+ try{
+   if(!env.DB)throw Error('Database S2 tidak dapat diakses.');
+   await ensure(env.DB);
+   if(!share&&request.method==='GET'){
+     const date=t(u.searchParams.get('date'),10);
+     if(!dateOK(date))return json({ok:false,error:'Tarikh tidak sah.'},400);
+     const row=await env.DB.prepare('SELECT report_date,data_json,updated_at,updated_by,last_format FROM s2_morning_reports WHERE report_date=?').bind(date).first();
+     if(!row)return json({ok:true,report:null});
+     let values={};try{values=JSON.parse(row.data_json||'{}')}catch{}
+     return json({ok:true,report:{reportDate:row.report_date,values,updatedAt:row.updated_at,operator:row.updated_by,formatNumber:row.last_format}});
+   }
+   if(request.method!=='POST')return json({ok:false,error:'Method tidak disokong.'},405);
+   const x=share?form:await request.json();
+   const date=t(x.reportDate,10),number=Number(x.formatNumber),operator=t(x.operator,120)||'-';
+   if(!dateOK(date))throw Error('Tarikh report tidak sah.');
+   if(![1,2,3,4].includes(number))throw Error('Format report tidak sah.');
+   const input=typeof x.values==='string'?JSON.parse(x.values):x.values;
+   const values=validateValues(input);
+   const reportText=t(x.reportText,14000);
+   if(share&&(!reportText||!reportText.includes('LRA Semenyih 2')))throw Error('Preview WhatsApp tidak sah.');
+   const now=new Date().toISOString(),body=JSON.stringify(values);
+   await env.DB.batch([
+     env.DB.prepare('INSERT INTO s2_morning_reports(report_date,data_json,updated_at,updated_by,last_format) VALUES(?,?,?,?,?) ON CONFLICT(report_date) DO UPDATE SET data_json=excluded.data_json, updated_at=excluded.updated_at,updated_by=excluded.updated_by,last_format=excluded.last_format').bind(date,body,now,operator,number),
+     env.DB.prepare('INSERT INTO s2_morning_history(id,report_date,data_json,updated_at,updated_by,format_number,report_text) VALUES(?,?,?,?,?,?,?)').bind(crypto.randomUUID(),date,body,now,operator,number,reportText)
+   ]);
+   if(share)return new Response(null,{status:303,headers:{location:'https://wa.me/?text='+encodeURIComponent(reportText),'cache-control':'no-store','referrer-policy':'no-referrer'}});
+   return json({ok:true,updatedAt:now});
+ }catch(e){const msg=t(e?.message||e,500);return share?errPage(msg,400):json({ok:false,error:msg},400)}
+}
