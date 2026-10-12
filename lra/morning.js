@@ -2,8 +2,8 @@
 (function(){
 'use strict';
 const el=id=>document.getElementById('m_'+id);
-const keys=['production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','criticalLevel','criticalPercent','criticalStorage','intakeB','wt1','sjamB','sjamCActual','intakeCHourly','sjamCHourly','dp1','dp2','dpOutHourly','dpPressure'];
-const defaults={designCapacity:'100',pondTwlCapacity:'3984.50',criticalLevel:'7.50',criticalPercent:'30.00',criticalStorage:'1226'};
+const keys=['production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','pondTwlLevel','criticalLevel','criticalPercent','criticalStorage','intakeB','wt1','sjamB','sjamCActual','intakeCHourly','sjamCHourly','dp1','dp2','dpOutHourly','dpPressure'];
+const defaults={designCapacity:'100',pondTwlCapacity:'3984.50',pondTwlLevel:'12.0',criticalLevel:'7.50',criticalPercent:'30.00',criticalStorage:'1226'};
 const noteDefault='Bacaan level tidak tepat disebabkan SCADA intake A lost communication';
 const get=id=>String(el(id)?.value??'').trim();
 const n=id=>{const x=get(id);if(!x||x==='-')return null;const z=Number(x);return Number.isFinite(z)?z:null};
@@ -11,7 +11,7 @@ const valid=x=>x!==null&&Number.isFinite(x);
 const all=(...x)=>x.every(valid);
 const number=(x,dp=3)=>valid(x)?x.toLocaleString('en-US',{minimumFractionDigits:dp,maximumFractionDigits:dp}):'-';
 const unit=(id,dp,suffix)=>valid(n(id))?number(n(id),dp)+suffix:'-';
-const mld=id=>unit(id,3,'Mld');
+const mld=id=>valid(n(id))&&n(id)===0?'0 Mld':unit(id,3,'Mld');
 const metres=id=>unit(id,2,'m');
 const hours=id=>unit(id,0,'m³/hr');
 const valueOr=(x,dp,suffix)=>valid(x)?number(x,dp)+suffix:'-';
@@ -20,7 +20,7 @@ const sub=(x,y)=>all(x,y)?x-y:null;
 const mldFromHour=id=>valid(n(id))?n(id)*24/1000:null;
 const dmy=()=>{const p=get('date').split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:'-'};
 const month=()=>{const dt=new Date(get('date')+'T12:00:00Z');return Number.isFinite(dt.valueOf())?new Intl.DateTimeFormat('en-GB',{month:'short',timeZone:'UTC'}).format(dt):'Monthly'};
-const head=(plant=true)=>[].concat(plant?['*LRA Semenyih 2*']:[],['*_'+dmy()+'_*','*_0700a.m_*','']);
+const head=(plant=true)=>[].concat(plant?['*LRA Semenyih 2*']:[],[plant?'*_'+dmy()+'_*':'*'+dmy()+'*',plant?'*_0700a.m_*':'*0700a.m*','']);
 const problemA=()=>el('pondAProblem').checked;
 const pondA=()=>metres('pondA')+(problemA()?'*':'');
 const change=(includeUnit=true)=>metres('pondC')+' ('+(valid(n('pondChange'))?number(n('pondChange'),2)+(includeUnit?'m':''):'-')+')';
@@ -102,7 +102,7 @@ function reportText(format){
  }else if(format===4){
   l=h.concat([
    '*ORS Semenyih 2 (Pond C):*',
-   'Level: '+metres('pondC')+' (TWL 12.0m),',
+   'Level: '+metres('pondC')+' (TWL '+unit('pondTwlLevel',1,'m')+'),',
    'Storage: '+storage()+',','Percentage: '+percentage,
    critLine,'Days to critical storage (without Pond B abstraction) : '+days+' days.'
   ]);
