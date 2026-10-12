@@ -990,6 +990,6 @@ window.addEventListener('focus',()=>{syncAutoDates();loadLive(true);if(activeTab
 load();syncMaintenance();refresh();refreshPump();hist();arm();loadLive(true);loadStock(true);setInterval(()=>{loadLive(true);if(activeTab==='stock'&&!stockHasPending())loadStock(true)},30000);switchTab(localStorage.getItem('rqLraActiveTab')||'ops');
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
 </script>
-<script src="./morning.js?v=6"></script>
+<script src="./morning.js?v=7"></script>
 </body>
 </html>
