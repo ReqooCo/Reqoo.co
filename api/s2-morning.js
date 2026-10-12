@@ -1,6 +1,6 @@
 const HEADERS={'content-type':'application/json;charset=UTF-8','cache-control':'no-store','access-control-allow-origin':'https://reqoo.co','access-control-allow-headers':'content-type,x-s2-key','access-control-allow-methods':'GET,POST,OPTIONS','x-content-type-options':'nosniff'};
 const ACCESS_HASH='da55872021a7acbbd84f80edee8c565ec1e9e5d926a1f18a4a6d6e1ed1586331';
-const KEYS=['production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','pondTwlLevel','criticalLevel','criticalPercent','criticalStorage','intakeB','wt1','sjamB','sjamCActual','intakeCHourly','sjamCHourly','dp1','dp2','dpOutHourly','dpPressure','pondAProblem','pondANote'];
+const KEYS=['production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','pondTwlLevel','criticalLevel','criticalPercent','criticalStorage','intakeB','wt1','sjamB','sjamCActual','intakeCHourly','sjamCHourly','dp1','dp2','dpOutHourly','dpPressure','sivTarget','sivStatus','sivChallengeA','sivChallengeB','pondAProblem','pondANote'];
 const json=(x,status=200)=>new Response(JSON.stringify(x),{status,headers:HEADERS});
 const t=(x,n=120)=>String(x??'').trim().slice(0,n);
 const dateOK=x=>/^\d{4}-\d{2}-\d{2}$/.test(x)&&new Date(x+'T00:00:00Z').toISOString().slice(0,10)===x;
@@ -17,6 +17,8 @@ function validateValues(x){
  for(const key of KEYS){
    if(key==='pondAProblem'){o[key]=x[key]===true;continue}
    if(key==='pondANote'){o[key]=t(x[key],220);continue}
+   if(key==='sivStatus'){const v=t(x[key],20)||'auto';if(!['auto','not','achieved'].includes(v))throw Error('Status SIV tidak sah.');o[key]=v;continue}
+   if(key==='sivChallengeA'||key==='sivChallengeB'){o[key]=t(x[key],1200);continue}
    const value=t(x[key],50);
    if(value&&value!=='-'&&!/^-?(?:\d+(?:\.\d+)?|\.\d+)$/.test(value))throw Error('Nombor tidak sah: '+key);
    o[key]=value;
@@ -49,9 +51,15 @@ export async function onRequest({request,env}){
    const x=share?form:await request.json();
    const date=t(x.reportDate,10),number=Number(x.formatNumber),operator=t(x.operator,120)||'-';
    if(!dateOK(date))throw Error('Tarikh report tidak sah.');
-   if(![1,2,3,4].includes(number))throw Error('Format report tidak sah.');
+   if(![1,2,3,4,5].includes(number))throw Error('Format report tidak sah.');
    const input=typeof x.values==='string'?JSON.parse(x.values):x.values;
    const values=validateValues(input);
+   if(number===5){
+     const p=Number(values.production),goal=Number(values.sivTarget);
+     if(!values.production||!values.sivTarget||!Number.isFinite(p)||!Number.isFinite(goal)||goal<=0){
+       throw Error('Format 5 memerlukan Total Prod dan Sasaran SIV yang sah.');
+     }
+   }
    const reportText=t(x.reportText,14000);
    if(share&&(!reportText||!reportText.includes('LRA Semenyih 2')))throw Error('Preview WhatsApp tidak sah.');
    const now=new Date().toISOString(),body=JSON.stringify(values);
