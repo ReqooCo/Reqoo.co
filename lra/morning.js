@@ -8,6 +8,96 @@ const noteDefault='Bacaan level tidak tepat disebabkan SCADA intake A lost commu
 const sivKeys=['sivTarget','sivStatus','sivChallengeA','sivChallengeB'];
 const sivDefaultA='Kaedah pengiraan pengeluaran LRA Semenyih 2 :\nPengeluaran LRA Semenyih 2 = Bacaan Totalizer Tw (Semasa) - Bacaan Totalizer Tw (Sebelum)';
 const sivDefaultB='Pihak LRA Semenyih 2 Perlu mengawal Paras Kolam Desa Putra pada 3.00m - 7.83m seperti diminta SO bagi memenuhi Demand.';
+
+const listSix=[['ops','Operasi'],['1','Format 1'],['2','Format 2'],['3','Format 3'],['4','Format 4'],['5','Format 5']];
+let previousPondC=null,previousDate='',previousLoading=false,pondChangeAutoValue=null;
+function sixKey(){return 'rqS2MorningSix-'+get('date')}
+function renderChecklist(){
+ let done={};try{done=JSON.parse(localStorage.getItem(sixKey())||'{}')}catch{}
+ const root=el('sixChecklist');root.textContent='';
+ for(const [id,label] of listSix){
+  const item=document.createElement('label'),ck=document.createElement('input');
+  ck.type='checkbox';ck.checked=done[id]===true;
+  ck.addEventListener('change',()=>{
+   let flags={};try{flags=JSON.parse(localStorage.getItem(sixKey())||'{}')}catch{}
+   flags[id]=ck.checked;localStorage.setItem(sixKey(),JSON.stringify(flags));renderChecklist();
+  });
+  item.append(ck,document.createTextNode(label));root.appendChild(item);
+ }
+ el('sixCount').textContent=listSix.filter(([id])=>done[id]).length+'/6 ditanda selesai oleh staf';
+}
+function opsReady(){
+ return typeof v==='function'&&v('date')===get('date')&&v('time')==='07:00';
+}
+function syncOpsPreview(){
+ const ok=opsReady();
+ el('opsReady').textContent=ok?'Operasi 0700, tarikh yang sama. Semak bacaan sebelum hantar.':'Sediakan Operasi 0700 pada tarikh yang sama dahulu supaya tidak menghantar bacaan syif lain.';
+ el('preview_ops').textContent=ok&&typeof opsText==='function'?opsText():'Tiada bacaan Operasi 0700 yang sepadan dalam borang.';
+}
+function updateForecastFields(){
+ for(const [toggle,src,dst] of [['forecastAuto','rwAbst','intakeCHourly'],['sjamForecastAuto','sjamCActual','sjamCHourly']]){
+  if(!el(toggle).checked)continue;
+  const x=n(src);el(dst).value=valid(x)?(x*1000/24).toFixed(2):'';
+ }
+}
+const signedChange=(a,b)=>(a-b>0?'+':'')+(a-b).toFixed(2);
+function applyPreviousChange(){
+ const current=n('pondC');
+ if(!valid(previousPondC)||!valid(current)||previousDate!==get('date'))return false;
+ const old=get('pondChange');
+ if(old&&old!==pondChangeAutoValue)return false;
+ el('pondChange').value=signedChange(current,previousPondC);
+ pondChangeAutoValue=get('pondChange');updateChangeSignButtons();return true;
+}
+async function loadPreviousLevel(force=false){
+ const date=get('date');if(previousLoading||(!force&&previousDate===date))return;
+ previousDate=date;previousPondC=null;pondChangeAutoValue=null;
+ const code=localStorage.getItem('s2_access_key');
+ if(!code){el('pondChangeStatus').textContent='Access code diperlukan untuk semak rekod semalam.';return}
+ previousLoading=true;
+ try{
+  const day=new Date(date+'T12:00:00Z');day.setUTCDate(day.getUTCDate()-1);
+  const prev=day.toISOString().slice(0,10);
+  const res=await fetch('/api/s2-morning?date='+prev,{headers:{'X-S2-Key':code},cache:'no-store'});
+  const data=await res.json();if(!res.ok||!data.ok)throw Error(data.error||'Ralat database');
+  if(get('date')!==date)return;
+  const raw=String(data.report?.values?.pondC??'').trim();
+  previousPondC=raw&&Number.isFinite(Number(raw))?Number(raw):null;
+  if(valid(previousPondC)){
+   const changed=applyPreviousChange();
+   el('pondChangeStatus').textContent='Pond C semalam: '+previousPondC.toFixed(2)+'m'+(changed?' · auto dikira':' · boleh kira semula');
+   if(changed){render();save()}
+  }else el('pondChangeStatus').textContent='Tiada rekod 0700 semalam. Isi manual.';
+ }catch(e){el('pondChangeStatus').textContent='Rekod semalam belum dapat diambil: '+e.message}
+ finally{previousLoading=false}
+}
+async function findOpsSource(){
+ if(opsReady())return{name:'borang Operasi 0700',data:livePayload('ops').data,local:true};
+ const code=localStorage.getItem('s2_access_key');if(!code)return null;
+ const res=await fetch('/api/s2-live',{headers:{'X-S2-Key':code},cache:'no-store'});
+ const result=await res.json();if(!res.ok||!result.ok)throw Error(result.error||'Ralat operasi');
+ const ops=result.state?.ops;
+ return ops?.report_date===get('date')&&ops.report_time==='07:00'?{name:'rekod online Operasi 0700',data:ops.data,local:false}:null;
+}
+async function importOps(manual=false){
+ const date=get('date');
+ try{
+  const src=await findOpsSource();if(get('date')!==date)return;
+  if(!src){
+   el('opsImportStatus').textContent='Belum ada laporan Operasi 0700 pada tarikh ini; bacaan tidak diisi secara automatik.';
+   if(manual)alert('Tiada rekod Operasi 0700 untuk tarikh yang sama.');return;
+  }
+  const map=[['pond1','dp1'],['pond2','dp2'],['pondOut','dpOutHourly']];
+  const possible=map.filter(([from,to])=>String(src.data?.[from]??'').trim()!==''&&
+   !(src.local&&((from==='pond1'&&ck('pond1Problem'))||(from==='pond2'&&ck('pond2Problem')))));
+  const selected=manual?possible:possible.filter(([,to])=>!get(to));
+  if(manual&&selected.some(([,to])=>get(to))&&!confirm('Ganti bacaan Desa Putra sedia ada dengan '+src.name+'?'))return;
+  for(const [from,to] of selected)el(to).value=String(src.data[from]).trim();
+  el('opsImportStatus').textContent=selected.length+' bacaan Desa Putra daripada '+src.name+'. Semak semula; Delivery Pressure kekal manual.';
+  if(selected.length){render();save()}
+ }catch(e){el('opsImportStatus').textContent='Tidak dapat tarik data: '+e.message;if(manual)alert(e.message)}
+}
+
 const sivMonths=['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogos','Sep','Okt','Nov','Dis'];
 const sivTargetKey=()=> 'rqS2MorningSivTarget-'+get('date').slice(0,7);
 const sivTargetInitial=()=>localStorage.getItem(sivTargetKey())||(get('date').slice(0,7)==='2026-10'?'84.300':'');
@@ -153,6 +243,7 @@ function reportText(format){
  return l.join('\n').replace(/\n{3,}/g,'\n\n');
 }
 function render(){
+ updateForecastFields();
  const r=metrics(),list={
   margin:valueOr(r.margin,3,' MLD'),percent:valueOr(r.percent,2,'%'),
   inflow:valueOr(r.inflow,3,' MLD'),outflow:valueOr(r.outflow,3,' MLD'),
@@ -168,11 +259,13 @@ function render(){
  el('pondANoteWrap').hidden=!problemA();
  el('pondAField').classList.toggle('problemOn',problemA());
  updateChangeSignButtons();
+ syncOpsPreview();
 }
 function storedKey(){return 'rqS2Morning0700-'+get('date')}
 function formData(){
  const values={};keys.forEach(k=>values[k]=get(k));
  sivKeys.forEach(k=>values[k]=get(k));
+ values.forecastAuto=el('forecastAuto').checked;values.sjamForecastAuto=el('sjamForecastAuto').checked;
  values.pondAProblem=problemA();values.pondANote=get('pondANote');
  return{values,operator:get('operator')};
 }
@@ -185,6 +278,7 @@ function save(){
 }
 function reset(){
  keys.forEach(k=>el(k).value=defaults[k]||'');
+ el('forecastAuto').checked=true;el('sjamForecastAuto').checked=true;
  el('sivTarget').value=sivTargetInitial();
  el('sivStatus').value='auto';
  el('sivChallengeA').value=sivDefaultA;
@@ -195,6 +289,8 @@ function reset(){
 function apply(data){
  const values=data?.values||data||{};
  keys.forEach(k=>el(k).value=String(values[k]??defaults[k]??''));
+ el('forecastAuto').checked=values.forecastAuto===undefined?!String(values.intakeCHourly||'').trim():values.forecastAuto===true;
+ el('sjamForecastAuto').checked=values.sjamForecastAuto===undefined?!String(values.sjamCHourly||'').trim():values.sjamForecastAuto===true;
  el('sivTarget').value=String(values.sivTarget??sivTargetInitial());
  el('sivStatus').value=['auto','not','achieved'].includes(values.sivStatus)?values.sivStatus:'auto';
  el('sivChallengeA').value=String(values.sivChallengeA??sivDefaultA);
