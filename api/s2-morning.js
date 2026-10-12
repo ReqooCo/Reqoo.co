@@ -27,7 +27,7 @@ function validateValues(x){
  const matches=Number(o.pondTwlLevel)===12&&Number(o.pondTwlCapacity)===3984.50;
  const volume=level=>{
    const val=String(level||'').trim();
-   if(!val||!/^\\d+(?:\\.\\d+)?$/.test(val))return null;
+   if(!val||!/^\d+(?:\.\d+)?$/.test(val))return null;
    const n=Number(val);
    return n>=7.5&&n<=12?Math.round((1226+(n-7.5)*613)*100)/100:null;
  };
