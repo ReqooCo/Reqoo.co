@@ -74,10 +74,11 @@ async function loadPreviousLevel(force=false){
 async function findOpsSource(allowLocal=false){
  const code=localStorage.getItem('s2_access_key');
  if(code){
-  const res=await fetch('/api/s2-live',{headers:{'X-S2-Key':code},cache:'no-store'});
+  const url='/api/s2-live?'+new URLSearchParams({action:'historical',section:'ops',date:get('date'),time:'07:00'});
+  const res=await fetch(url,{headers:{'X-S2-Key':code},cache:'no-store'});
   const result=await res.json().catch(()=>({}));
   if(!res.ok||!result.ok)throw Error(result.error||'Ralat operasi');
-  const ops=result.state?.ops;
+  const ops=result.report;
   if(ops?.report_date===get('date')&&ops.report_time==='07:00')
    return {name:'rekod online Operasi 0700',data:ops.data,local:false};
  }
