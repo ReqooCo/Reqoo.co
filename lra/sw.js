@@ -1,5 +1,5 @@
 // Each app owns only its own cache namespace and URL scope.
-const PREFIX='reqoo-lra-v', CACHE=PREFIX+'34';
+const PREFIX='reqoo-lra-v', CACHE=PREFIX+'35';
 const ASSETS=['./','./index.html','./morning.js?v=2','./manifest.webmanifest','./icon.svg'];
 const APP_PATH='/lra/';
 self.addEventListener('install',event=>{
