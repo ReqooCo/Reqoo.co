@@ -219,8 +219,11 @@ details.more[open]>summary:after{content:"−"}
 <div class="field"><label for="m_designCapacity">Design Capacity <span class="small">(MLD)</span></label><input id="m_designCapacity" inputmode="decimal" autocomplete="off" placeholder="100.000" value="100"></div>
 <div class="field"><label for="m_monthlyAverage">Ave Monthly Prod <span class="small">(MLD)</span></label><input id="m_monthlyAverage" inputmode="decimal" autocomplete="off" placeholder="84.930" value=""></div>
 <div class="field"><label for="m_rwAbst">RW Abstraction / Pumped to WTP <span class="small">(MLD)</span></label><input id="m_rwAbst" inputmode="decimal" autocomplete="off" placeholder="83.522" value=""></div></div></section>
-<section class="card"><div class="toggle"><div><strong>Pond A Problem</strong><small>Level tidak tepat / SCADA lost communication</small></div><label class="switch"><input id="m_pondAProblem" type="checkbox"><span class="slider"></span></label></div><div class="field" id="m_pondANoteWrap" hidden><label>Nota WhatsApp</label><input id="m_pondANote" value="Bacaan level tidak tepat disebabkan SCADA intake A lost communication"></div></section>
-<section class="card"><div class="quickTitle"><h2>02 · Paras Kolam</h2><span class="modeChip">0700</span></div><div class="grid"><div class="field"><label for="m_pondA">Pond A Level <span class="small">(m)</span></label><input id="m_pondA" inputmode="decimal" autocomplete="off" placeholder="5.43" value=""></div>
+<section class="card"><div class="quickTitle"><h2>02 · Paras Kolam</h2><span class="modeChip">0700</span></div><div class="grid"><div class="field" id="m_pondAField">
+<div class="pumpHead"><label for="m_pondA">Pond A Level <span class="small">(m)</span></label><label class="problemTag"><input id="m_pondAProblem" type="checkbox">Problem</label></div>
+<input id="m_pondA" inputmode="decimal" autocomplete="off" placeholder="5.43" value="">
+<div class="problemNoteWrap" id="m_pondANoteWrap" hidden><label for="m_pondANote">Nota WhatsApp</label><input id="m_pondANote" value="Bacaan level tidak tepat disebabkan SCADA intake A lost communication"></div>
+</div>
 <div class="field"><label for="m_pondB">Pond B Level <span class="small">(m)</span></label><input id="m_pondB" inputmode="decimal" autocomplete="off" placeholder="5.96" value=""></div>
 <div class="field"><label for="m_pondC">Pond C Level <span class="small">(m)</span></label><input id="m_pondC" inputmode="decimal" autocomplete="off" placeholder="11.95" value=""></div>
 <div class="field"><label for="m_pondChange">Perubahan Level Pond C <span class="small">(m)</span></label><input id="m_pondChange" inputmode="decimal" autocomplete="off" placeholder="-0.01" value=""></div>
@@ -952,6 +955,6 @@ window.addEventListener('focus',()=>{syncAutoDates();loadLive(true);if(activeTab
 load();syncMaintenance();refresh();refreshPump();hist();arm();loadLive(true);loadStock(true);setInterval(()=>{loadLive(true);if(activeTab==='stock'&&!stockHasPending())loadStock(true)},30000);switchTab(localStorage.getItem('rqLraActiveTab')||'ops');
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
 </script>
-<script src="./morning.js?v=3"></script>
+<script src="./morning.js?v=4"></script>
 </body>
 </html>
