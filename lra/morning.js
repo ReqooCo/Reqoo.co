@@ -30,7 +30,7 @@ const month=()=>{const dt=new Date(get('date')+'T12:00:00Z');return Number.isFin
 const head=(plant=true)=>[].concat(plant?['*LRA Semenyih 2*']:[],[plant?'*_'+dmy()+'_*':'*'+dmy()+'*',plant?'*_0700a.m_*':'*0700a.m*','']);
 const problemA=()=>el('pondAProblem').checked;
 const pondA=()=>metres('pondA')+(problemA()?'*':'');
-const change=(includeUnit=true)=>metres('pondC')+' ('+(valid(n('pondChange'))?number(n('pondChange'),2)+(includeUnit?'m':''):'-')+')';
+const change=(includeUnit=true)=>{const raw=get('pondChange'),x=n('pondChange');return metres('pondC')+' ('+(valid(x)?(raw.startsWith('+')?'+':'')+number(x,2)+(includeUnit?'m':''):'-')+')'};
 const storage=()=>unit('pondStorage',2,'ML');
 function metrics(){
  const prod=n('production'),design=n('designCapacity'),st=n('pondStorage'),
@@ -167,6 +167,7 @@ function render(){
  el('sivTargetNote').textContent='Sasaran '+(sivMonths[Number(get('date').slice(5,7))-1]||'-')+' '+get('date').slice(0,4)+' — '+(get('sivTarget')||'belum diisi')+' MLD. Total Prod diambil terus daripada Bahagian 01.';
  el('pondANoteWrap').hidden=!problemA();
  el('pondAField').classList.toggle('problemOn',problemA());
+ updateChangeSignButtons();
 }
 function storedKey(){return 'rqS2Morning0700-'+get('date')}
 function formData(){
@@ -234,6 +235,26 @@ el('operator').value=localStorage.getItem('rqS2MorningOperator')||localStorage.g
 restore();
 el('date').addEventListener('change',()=>{restore();retrieve(true)});
 keys.forEach(k=>el(k).addEventListener('input',()=>{render();save()}));
+function updateChangeSignButtons(){
+ const current=get('pondChange');
+ for(const sign of ['-','+']){
+  const id=sign==='-'?'changeMinus':'changePlus';
+  el(id).setAttribute('aria-pressed',String(current.startsWith(sign)));
+ }
+}
+for(const id of ['changeMinus','changePlus']){
+ el(id).addEventListener('click',()=>{
+  const sign=el(id).dataset.sign;
+  const input=el('pondChange');
+  const numericPart=input.value.replace(/^[+-]/,'');
+  input.value=sign+numericPart;
+  input.dispatchEvent(new Event('input',{bubbles:true}));
+  input.focus({preventScroll:true});
+  input.setSelectionRange(input.value.length,input.value.length);
+ });
+}
+el('pondChange').addEventListener('input',updateChangeSignButtons);
+
 sivKeys.forEach(k=>el(k).addEventListener(k==='sivStatus'?'change':'input',()=>{render();save()}));
 el('operator').addEventListener('input',save);
 el('pondAProblem').addEventListener('change',()=>{render();save()});
