@@ -4,6 +4,40 @@
 const el=id=>document.getElementById('m_'+id);
 const keys=['production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','pondTwlLevel','criticalLevel','criticalPercent','criticalStorage','intakeB','wt1','sjamB','sjamCActual','intakeCHourly','sjamCHourly','dp1','dp2','dpOutHourly','dpPressure'];
 const defaults={designCapacity:'100',pondTwlCapacity:'3984.50',pondTwlLevel:'12.0',criticalLevel:'7.50',criticalPercent:'30.00',criticalStorage:'1226'};
+
+const POND_C_CAL={min:7.50,max:12.00,minML:1226,fullML:3984.50,mlPerM:613};
+function storageFromLevel(level){
+ if(!Number.isFinite(level)||level<POND_C_CAL.min||level>POND_C_CAL.max)return null;
+ return Math.round((POND_C_CAL.minML+(level-POND_C_CAL.min)*POND_C_CAL.mlPerM)*100)/100;
+}
+function storageReferenceOK(){
+ return valid(n('pondTwlLevel'))&&Math.abs(n('pondTwlLevel')-12)<0.0001&&
+        valid(n('pondTwlCapacity'))&&Math.abs(n('pondTwlCapacity')-3984.50)<0.011;
+}
+function calculatePondStorage(){
+ const ok=storageReferenceOK();
+ const actual=ok?storageFromLevel(n('pondC')):null;
+ const critical=ok?storageFromLevel(n('criticalLevel')):null;
+ if(el('storageAuto').checked)el('pondStorage').value=valid(actual)?actual.toFixed(2):'';
+ if(el('criticalStorageAuto').checked)el('criticalStorage').value=valid(critical)?critical.toFixed(2):'';
+ if(!ok){
+  el('storageStatus').textContent='Rujukan TWL bukan 12.00m / 3984.50 ML. Pengiraan auto dihentikan; semak tetapan atau guna manual.';
+ }else if(!valid(actual)||!valid(critical)){
+  el('storageStatus').textContent='Kiraan auto hanya sah untuk level 7.50m hingga 12.00m. Bacaan luar julat perlu disemak secara manual.';
+ }else{
+  const balance=Math.max(0,actual-critical);
+  el('storageStatus').textContent='Model rujukan 613 ML/m: @ '+n('pondC').toFixed(2)+'m = '+actual.toFixed(2)+' ML; @ critical '+n('criticalLevel').toFixed(2)+'m = '+critical.toFixed(2)+' ML; baki = '+balance.toFixed(2)+' ML.';
+ }
+}
+function legacyStorageAuto(values,field,flag,level){
+ if(typeof values[flag]==='boolean')return values[flag];
+ const existing=String(values[field]??'').trim();
+ if(!existing)return true;
+ const rawLevel=String(values[level]??'').trim();
+ const expected=rawLevel?storageFromLevel(Number(rawLevel)):null;
+ return valid(expected)&&Math.abs(Number(existing)-expected)<=0.02;
+}
+
 const noteDefault='Bacaan level tidak tepat disebabkan SCADA intake A lost communication';
 const sivKeys=['sivTarget','sivStatus','sivChallengeA','sivChallengeB'];
 const sivDefaultA='Kaedah pengiraan pengeluaran LRA Semenyih 2 :\nPengeluaran LRA Semenyih 2 = Bacaan Totalizer Tw (Semasa) - Bacaan Totalizer Tw (Sebelum)';
@@ -148,6 +182,7 @@ function metrics(){
  margin,marginPct:all(margin,design)&&design>0?margin/design*100:null,
  percent:all(st,cap)&&cap>0?st/cap*100:null,
  inflow,outflow,net:sub(inflow,outflow),
+ usable:all(st,critical)?Math.max(0,st-critical):null,
  days:all(st,critical,forecastTotal)&&forecastTotal>0?Math.max(0,(st-critical)/forecastTotal):null,
  forecastWtp,forecastSjam,dpMld:mldFromHour('dpOutHourly')
  };
@@ -258,8 +293,10 @@ function reportText(format){
 }
 function render(){
  updateForecastFields();
+ calculatePondStorage();
  const r=metrics(),list={
   margin:valueOr(r.margin,3,' MLD'),percent:valueOr(r.percent,2,'%'),
+  storageShown:valueOr(n('pondStorage'),2,' ML'),usableStorage:valueOr(r.usable,2,' ML'),
   inflow:valueOr(r.inflow,3,' MLD'),outflow:valueOr(r.outflow,3,' MLD'),
   net:valueOr(r.net,3,' ML/day'),days:valueOr(r.days,1,' hari')
  };
@@ -280,6 +317,7 @@ function formData(){
  const values={};keys.forEach(k=>values[k]=get(k));
  sivKeys.forEach(k=>values[k]=get(k));
  values.forecastAuto=el('forecastAuto').checked;values.sjamForecastAuto=el('sjamForecastAuto').checked;
+ values.pondStorageAuto=el('storageAuto').checked;values.criticalStorageAuto=el('criticalStorageAuto').checked;
  values.pondAProblem=problemA();values.pondANote=get('pondANote');
  return{values,operator:get('operator')};
 }
@@ -293,6 +331,7 @@ function save(){
 function reset(){
  keys.forEach(k=>el(k).value=defaults[k]||'');
  el('forecastAuto').checked=true;el('sjamForecastAuto').checked=true;
+ el('storageAuto').checked=true;el('criticalStorageAuto').checked=true;
  el('sivTarget').value=sivTargetInitial();
  el('sivStatus').value='auto';
  el('sivChallengeA').value=sivDefaultA;
@@ -303,6 +342,8 @@ function reset(){
 function apply(data){
  const values=data?.values||data||{};
  keys.forEach(k=>el(k).value=String(values[k]??defaults[k]??''));
+ el('storageAuto').checked=legacyStorageAuto(values,'pondStorage','pondStorageAuto','pondC');
+ el('criticalStorageAuto').checked=legacyStorageAuto(values,'criticalStorage','criticalStorageAuto','criticalLevel');
  el('forecastAuto').checked=values.forecastAuto===undefined?!String(values.intakeCHourly||'').trim():values.forecastAuto===true;
  el('sjamForecastAuto').checked=values.sjamForecastAuto===undefined?!String(values.sjamCHourly||'').trim():values.sjamForecastAuto===true;
  el('sivTarget').value=String(values.sivTarget??sivTargetInitial());
@@ -346,12 +387,14 @@ restore();
 el('date').addEventListener('change',()=>{restore();retrieve(true);renderChecklist();loadPreviousLevel(true);importOps(false)});
 keys.forEach(k=>el(k).addEventListener('input',()=>{
  if(k==='intakeCHourly'&&el('forecastAuto').checked)el('forecastAuto').checked=false;
+ if(k==='pondStorage'&&el('storageAuto').checked)el('storageAuto').checked=false;
+ if(k==='criticalStorage'&&el('criticalStorageAuto').checked)el('criticalStorageAuto').checked=false;
  if(k==='sjamCHourly'&&el('sjamForecastAuto').checked)el('sjamForecastAuto').checked=false;
  if(k==='pondChange'&&get('pondChange')!==pondChangeAutoValue)pondChangeAutoValue=null;
  if(k==='pondC')applyPreviousChange();
  render();save();
 }));
-for(const id of ['forecastAuto','sjamForecastAuto'])el(id).addEventListener('change',()=>{render();save()});
+for(const id of ['forecastAuto','sjamForecastAuto','storageAuto','criticalStorageAuto'])el(id).addEventListener('change',()=>{render();save()});
 function updateChangeSignButtons(){
  const current=get('pondChange');
  for(const sign of ['-','+']){
