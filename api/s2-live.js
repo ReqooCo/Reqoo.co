@@ -81,7 +81,18 @@ export async function onRequest({request,env}){
   if(!key||await sha256(key)!==ACCESS_HASH)return isShare?shareError('Access code S2 tidak sah.',401):json({ok:false,error:'Access code S2 tidak sah'},401);
   try{
     await ensure(env);
-    if(!isShare&&request.method==='GET')return json({ok:true,state:await state(env),server_time:now()});
+    if(!isShare&&request.method==='GET'){
+      const params=new URL(request.url).searchParams;
+      if(params.get('action')==='historical'){
+        const section=txt(params.get('section'),30);
+        const date=txt(params.get('date'),10),time=txt(params.get('time'),10);
+        if(!SECTIONS.has(section)||!/^\d{4}-\d{2}-\d{2}$/.test(date)||!/^\d{2}:\d{2}$/.test(time))
+          return json({ok:false,error:'Tarikh, masa atau section tidak sah.'},400);
+        const row=await env.DB.prepare('SELECT * FROM s2_live_status_history WHERE section=? AND report_date=? AND report_time=? ORDER BY updated_at DESC LIMIT 1').bind(section,date,time).first();
+        return json({ok:true,report:hydrate(row)});
+      }
+      return json({ok:true,state:await state(env),server_time:now()});
+    }
     if(request.method!=='POST')return json({ok:false,error:'Method tidak disokong'},405);
     let d={};
     if(isShare){
