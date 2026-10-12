@@ -57,7 +57,7 @@ details.more[open]>summary:after{content:"−"}
 .small{font-size:9px;color:var(--muted);line-height:1.45}.historyItem{padding:8px 0;border-top:1px solid var(--line);font-size:10px}.historyItem:first-child{border-top:0}.historyItem button{margin-top:5px;margin-right:4px;border:0;border-radius:7px;padding:5px 7px;font-weight:800;font-size:9px;background:var(--soft);color:var(--accent)}
 .bottom{position:fixed;z-index:20;left:0;right:0;bottom:0;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:rgba(238,244,242,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid rgba(194,211,205,.72)}
 .bottomIn{max-width:620px;margin:auto;display:grid;grid-template-columns:.78fr 1.22fr;gap:8px}.bottom .btn{min-height:48px;font-size:14px}.waForm{margin:0;min-width:0}.waForm .btn{width:100%}.waForm input[type=hidden]{display:none!important}
-.tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:8px;padding:4px;background:#dfeae7;border:1px solid #d2dfdb;border-radius:12px;position:sticky;top:6px;z-index:15;box-shadow:0 4px 14px #17352b12}
+.tabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;margin-bottom:8px;padding:4px;background:#dfeae7;border:1px solid #d2dfdb;border-radius:12px;position:sticky;top:6px;z-index:15;box-shadow:0 4px 14px #17352b12}
 .tabBtn{border:0;border-radius:9px;min-height:38px;padding:6px 4px;background:transparent;color:#58716a;font-size:10px;font-weight:850;line-height:1.15}
 .tabBtn.active{background:#fff;color:var(--accent-dark);box-shadow:0 2px 8px #17352b14}
 .panel{display:none}.panel.active{display:block}
@@ -82,6 +82,7 @@ details.more[open]>summary:after{content:"−"}
 .subtle{font-size:9px;color:var(--muted);margin-top:5px}.maintReason{margin-top:7px}.maintReason.hidden{display:none}.maintReason label{font-size:9.5px}.maintReason input{min-height:38px;font-size:13px}
 .liveBoard{background:#fff;border:1px solid var(--line);border-radius:15px;margin-bottom:8px;overflow:hidden;box-shadow:0 3px 12px rgba(28,69,59,.04)}.liveHead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;background:#edf6f3;border-bottom:1px solid #dbe7e3}.liveHead b{display:block;font-size:12px;color:var(--accent)}.liveHead small{display:block;margin-top:1px;font-size:8px;color:var(--muted)}.liveGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:#dfe9e5}.liveCard{background:#fbfdfc;padding:8px 9px;min-width:0}.liveCardHead{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-bottom:6px}.liveCardHead b{font-size:9.5px;color:#3d6258}.liveEditBtn{border:0;background:#e9f3f0;color:#2f7565;border-radius:7px;min-height:25px;padding:4px 7px;font-size:8px;font-weight:850}.liveFlow{display:grid;grid-template-columns:1fr 1fr;gap:5px}.liveMetric{background:#f1f6f4;border-radius:7px;padding:5px 6px;min-width:0}.liveMetric small{display:block;font-size:7.5px;color:var(--muted)}.liveMetric b{display:block;margin-top:1px;font-size:11px;color:#235e50;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.livePumps{display:flex;flex-wrap:wrap;gap:4px}.livePump{display:inline-flex;align-items:center;gap:3px;border-radius:999px;padding:4px 6px;font-size:8px;font-weight:900;border:1px solid #dce6e2;background:#f2f5f4;color:#71827d}.livePump.run{background:#e9f7ee;border-color:#bcdcc7;color:#246944}.livePump.stop{background:#fff1f1;border-color:#e8caca;color:#9a4444}.liveStamp{margin-top:5px;font-size:7.5px;color:#7c8d88;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.liveEmpty{font-size:8.5px;color:#8a9894;padding:4px 0}.liveAccess{display:none;padding:8px 10px;border-bottom:1px solid #eadfca;background:#fff9ee}.liveAccess .row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px}.liveAccess input{min-height:36px;font-size:12px}.liveAccess button{min-height:36px;border:0;border-radius:9px;padding:7px 10px;background:var(--accent);color:#fff;font-size:9px;font-weight:850}
 @media(max-width:390px){.wrap{padding-left:8px;padding-right:8px}.head{padding:12px}.head h1{font-size:17px}.card{padding:10px}.autoRow{gap:5px}.stat{padding:7px 6px}.stat b{font-size:10.5px}.liveCard{padding:7px}.livePump{font-size:7.5px;padding:4px 5px}}
+.bottom.morningHide{display:none}.morningMeta{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}.mSmallBtn{border:0;border-radius:8px;background:#e9f3f0;color:#266553;padding:8px 10px;font-size:10px;font-weight:800}.morningStats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.morningStats>div{border:1px solid #d8e6e1;border-radius:9px;padding:8px;background:#f2f7f5}.morningStats small{display:block;color:#758e83;font-size:9px}.morningStats b{display:block;font-size:13px;color:#276b57;margin-top:3px}.mFormat summary{line-height:1.4}.mFormat .preview{max-height:320px}#m_share{display:none}#m_pondANoteWrap[hidden]{display:none}#panel-morning{padding-bottom:5px}
 </style>
 </head>
 <body>
@@ -106,6 +107,7 @@ details.more[open]>summary:after{content:"−"}
 
   <nav class="tabs" aria-label="Jenis report">
     <button class="tabBtn active" data-tab="ops">Operasi</button>
+    <button class="tabBtn" data-tab="morning">0700</button>
     <button class="tabBtn" data-tab="intakeB">Intake B</button>
     <button class="tabBtn" data-tab="intakeC">Intake C</button>
     <button class="tabBtn" data-tab="twps">TWPS</button>
@@ -206,6 +208,48 @@ details.more[open]>summary:after{content:"−"}
     <div class="moreBody"><div id="history" class="small" style="padding-top:8px">Belum ada report.</div></div>
   </details>
   </div>
+
+<div id="panel-morning" class="panel">
+<section class="card"><div class="quickTitle"><h2>Laporan Pagi · 0700</h2><span class="modeChip">4 FORMAT</span></div>
+<div class="grid"><div class="field"><label for="m_date">Tarikh</label><input id="m_date" type="date"></div><div class="field"><label for="m_operator">Disediakan oleh (DB)</label><input id="m_operator" placeholder="Nama staf"></div></div>
+<div class="notice ok">Isi data sekali sahaja. Keempat-empat report menggunakan bacaan sama. Pilih WhatsApp untuk setiap format.</div>
+<div class="morningMeta"><small id="m_draft">Draf tempatan</small><button type="button" id="m_load" class="mSmallBtn">Ambil data online</button></div><p class="small" id="m_onlineStatus"></p>
+</section>
+<section class="card"><div class="quickTitle"><h2>01 · Pengeluaran</h2><span class="modeChip">0700</span></div><div class="grid"><div class="field"><label for="m_production">Total Prod <span class="small">(MLD)</span></label><input id="m_production" inputmode="decimal" autocomplete="off" placeholder="82.524" value=""></div>
+<div class="field"><label for="m_designCapacity">Design Capacity <span class="small">(MLD)</span></label><input id="m_designCapacity" inputmode="decimal" autocomplete="off" placeholder="100.000" value="100"></div>
+<div class="field"><label for="m_monthlyAverage">Ave Monthly Prod <span class="small">(MLD)</span></label><input id="m_monthlyAverage" inputmode="decimal" autocomplete="off" placeholder="84.930" value=""></div>
+<div class="field"><label for="m_rwAbst">RW Abstraction / Pumped to WTP <span class="small">(MLD)</span></label><input id="m_rwAbst" inputmode="decimal" autocomplete="off" placeholder="83.522" value=""></div></div></section>
+<section class="card"><div class="toggle"><div><strong>Pond A Problem</strong><small>Level tidak tepat / SCADA lost communication</small></div><label class="switch"><input id="m_pondAProblem" type="checkbox"><span class="slider"></span></label></div><div class="field" id="m_pondANoteWrap" hidden><label>Nota WhatsApp</label><input id="m_pondANote" value="Bacaan level tidak tepat disebabkan SCADA intake A lost communication"></div></section>
+<section class="card"><div class="quickTitle"><h2>02 · Paras Kolam</h2><span class="modeChip">0700</span></div><div class="grid"><div class="field"><label for="m_pondA">Pond A Level <span class="small">(m)</span></label><input id="m_pondA" inputmode="decimal" autocomplete="off" placeholder="5.43" value=""></div>
+<div class="field"><label for="m_pondB">Pond B Level <span class="small">(m)</span></label><input id="m_pondB" inputmode="decimal" autocomplete="off" placeholder="5.96" value=""></div>
+<div class="field"><label for="m_pondC">Pond C Level <span class="small">(m)</span></label><input id="m_pondC" inputmode="decimal" autocomplete="off" placeholder="11.95" value=""></div>
+<div class="field"><label for="m_pondChange">Perubahan Level Pond C <span class="small">(m)</span></label><input id="m_pondChange" inputmode="decimal" autocomplete="off" placeholder="-0.01" value=""></div>
+<div class="field"><label for="m_pondStorage">Pond C Storage <span class="small">(ML)</span></label><input id="m_pondStorage" inputmode="decimal" autocomplete="off" placeholder="3953.85" value=""></div></div></section>
+<section class="card"><div class="quickTitle"><h2>03 · Inflow Pond C</h2><span class="modeChip">0700</span></div><div class="grid"><div class="field"><label for="m_intakeB">Intake B <span class="small">(MLD)</span></label><input id="m_intakeB" inputmode="decimal" autocomplete="off" placeholder="84.875" value=""></div>
+<div class="field"><label for="m_wt1">WT1 <span class="small">(MLD)</span></label><input id="m_wt1" inputmode="decimal" autocomplete="off" placeholder="0" value=""></div>
+<div class="field"><label for="m_sjamB">SJAM B <span class="small">(MLD)</span></label><input id="m_sjamB" inputmode="decimal" autocomplete="off" placeholder="0" value=""></div></div></section>
+<section class="card"><div class="quickTitle"><h2>04 · Outflow Pond C</h2><span class="modeChip">0700</span></div><div class="grid"><div class="field"><label for="m_sjamCActual">SJAM C → SS Intake (actual) <span class="small">(MLD)</span></label><input id="m_sjamCActual" inputmode="decimal" autocomplete="off" placeholder="0" value=""></div>
+<div class="field"><label for="m_intakeCHourly">WTP Critical Forecast Flow <span class="small">(m³/hr)</span></label><input id="m_intakeCHourly" inputmode="decimal" autocomplete="off" placeholder="4194" value=""></div>
+<div class="field"><label for="m_sjamCHourly">SJAM C Critical Forecast Flow <span class="small">(m³/hr)</span></label><input id="m_sjamCHourly" inputmode="decimal" autocomplete="off" placeholder="0" value=""></div></div></section>
+<section class="card"><div class="quickTitle"><h2>05 · Kolam Desa Putra</h2><span class="modeChip">0700</span></div><div class="grid"><div class="field"><label for="m_dp1">DP No.1 <span class="small">(m)</span></label><input id="m_dp1" inputmode="decimal" autocomplete="off" placeholder="5.18" value=""></div>
+<div class="field"><label for="m_dp2">DP No.2 <span class="small">(m)</span></label><input id="m_dp2" inputmode="decimal" autocomplete="off" placeholder="5.44" value=""></div>
+<div class="field"><label for="m_dpOutHourly">DP Outflow <span class="small">(m³/hr)</span></label><input id="m_dpOutHourly" inputmode="decimal" autocomplete="off" placeholder="3543" value=""></div>
+<div class="field"><label for="m_dpPressure">Delivery Pressure <span class="small">(bar)</span></label><input id="m_dpPressure" inputmode="decimal" autocomplete="off" placeholder="2.85" value=""></div></div></section>
+<details class="more"><summary>Tetapan Pond C · Capacity & Critical</summary><div class="moreBody"><p class="small">Nilai rujukan boleh disemak dan diubah jika perlu.</p><div class="grid"><div class="field"><label for="m_pondTwlCapacity">Capacity @ TWL 12m <span class="small">(ML)</span></label><input id="m_pondTwlCapacity" inputmode="decimal" autocomplete="off" placeholder="3984.50" value="3984.50"></div>
+<div class="field"><label for="m_criticalLevel">Critical WL <span class="small">(m)</span></label><input id="m_criticalLevel" inputmode="decimal" autocomplete="off" placeholder="7.50" value="7.50"></div>
+<div class="field"><label for="m_criticalPercent">Critical % <span class="small">(%)</span></label><input id="m_criticalPercent" inputmode="decimal" autocomplete="off" placeholder="30.00" value="30.00"></div>
+<div class="field"><label for="m_criticalStorage">Critical Storage <span class="small">(ML)</span></label><input id="m_criticalStorage" inputmode="decimal" autocomplete="off" placeholder="1226" value="1226"></div></div></div></details>
+<section class="card"><div class="quickTitle"><h2>Kiraan Automatik</h2><span class="modeChip">LIVE</span></div><div class="morningStats"><div><small>Margin Pengeluaran</small><b id="m_margin">-</b></div><div><small>Storage %</small><b id="m_percent">-</b></div><div><small>Inflow Pond C</small><b id="m_inflow">-</b></div><div><small>Outflow Pond C</small><b id="m_outflow">-</b></div><div><small>Net Volume / Day</small><b id="m_net">-</b></div><div><small>Days to Critical</small><b id="m_days">-</b></div></div></section>
+<section class="card"><h2>WhatsApp Report 0700</h2><p class="small">Pilih format, semak preview, kemudian tekan WhatsApp dan pilih group. Penghantaran sebenar masih memerlukan tekan Send dalam WhatsApp.</p></section>
+<details class="more mFormat" id="m_card_1" open><summary>Format 1 · Pengeluaran & Status Kolam</summary><div class="moreBody"><p class="small">Total Prod, Pond A/B/C, Desa Putra</p><div id="m_preview_1" class="preview"></div><div class="btns"><button type="button" class="btn light m_copy" data-number="1">Copy 1</button><button type="submit" form="m_share" name="formatNumber" value="1" class="btn wa">WhatsApp 1</button></div></div></details>
+<details class="more mFormat" id="m_card_2" ><summary>Format 2 · Pengeluaran & ORS Pond C</summary><div class="moreBody"><p class="small">Paras, margin & critical storage</p><div id="m_preview_2" class="preview"></div><div class="btns"><button type="button" class="btn light m_copy" data-number="2">Copy 2</button><button type="submit" form="m_share" name="formatNumber" value="2" class="btn wa">WhatsApp 2</button></div></div></details>
+<details class="more mFormat" id="m_card_3" ><summary>Format 3 · Kiraan Aliran Pond C</summary><div class="moreBody"><p class="small">Inflow, outflow dan hari kritikal</p><div id="m_preview_3" class="preview"></div><div class="btns"><button type="button" class="btn light m_copy" data-number="3">Copy 3</button><button type="submit" form="m_share" name="formatNumber" value="3" class="btn wa">WhatsApp 3</button></div></div></details>
+<details class="more mFormat" id="m_card_4" ><summary>Format 4 · Ringkasan ORS Pond C</summary><div class="moreBody"><p class="small">Ringkasan keadaan simpanan Pond C</p><div id="m_preview_4" class="preview"></div><div class="btns"><button type="button" class="btn light m_copy" data-number="4">Copy 4</button><button type="submit" form="m_share" name="formatNumber" value="4" class="btn wa">WhatsApp 4</button></div></div></details>
+<section class="card"><div class="quickTitle"><h2>Format 5</h2><span class="modeChip">AKAN DATANG</span></div><p class="small">Tunggu format tambahan daripada staf.</p></section>
+<form id="m_share" method="POST" action="/api/s2-morning-share">
+<input type="hidden" name="accessKey" id="m_waKey"><input type="hidden" name="reportDate" id="m_waDate">
+<input type="hidden" name="operator" id="m_waOperator"><input type="hidden" name="values" id="m_waValues"><input type="hidden" name="reportText" id="m_waText">
+</form></div>
 
   <div id="panel-intakeB" class="panel">
     <section class="card">
@@ -833,6 +877,7 @@ function switchTab(tab){
  document.querySelectorAll('.tabBtn').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));
  $('panel-'+tab).classList.add('active');
  if(tab==='stock'){loadStock(true);}
+ if(typeof window.morningTabChanged==='function')window.morningTabChanged(tab);
 }
 document.querySelectorAll('.tabBtn').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
 $('stockCommit').onclick=commitStock;
@@ -892,5 +937,6 @@ window.addEventListener('focus',()=>{syncAutoDates();loadLive(true);if(activeTab
 load();syncMaintenance();refresh();refreshPump();hist();arm();loadLive(true);loadStock(true);setInterval(()=>{loadLive(true);if(activeTab==='stock'&&!stockHasPending())loadStock(true)},30000);switchTab(localStorage.getItem('rqLraActiveTab')||'ops');
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
 </script>
+<script src="./morning.js?v=1"></script>
 </body>
 </html>
