@@ -24,13 +24,13 @@ try{
 }finally{globalThis.fetch=originalFetch}
 
 const shop=fs.readFileSync('shop/shop-core-v1.js','utf8'),pksk=fs.readFileSync('sim/pksk/payment-v2/index.html','utf8');
-for(const [source,label] of [[shop,'Shop'],[pksk,'PKSK']]){assert.match(source,/Online Banking/);assert.match(source,/ToyyibPay/);assert.match(source,/QR AB Art|AB Art/);}
-assert.match(shop,/payment:'toyyibpay'/);assert.match(shop,/payment:'manual_qr'/);
+for(const [source,label] of [[shop,'Shop'],[pksk,'PKSK']]){assert.match(source,/Online Banking/);assert.match(source,/Billplz/);assert.match(source,/QR AB Art|AB Art/);}
+assert.match(shop,/payment:'billplz'/);assert.match(shop,/payment:'manual_qr'/);
 assert.match(pksk,/createQR/);assert.match(pksk,/call\('create'/);
 for(const file of ['shop/assets/maybank-qr.jpeg','sim/pksk/payment/assets/maybank-qr.jpeg'])assert.equal(fs.readFileSync(file).subarray(0,3).toString('hex'),'ffd8ff');
 for(const script of pksk.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))new Function(script[1]);
 const tumbler=fs.readFileSync('tumbler/index.html','utf8');
 const tumblerRuntime=fs.readFileSync('tumbler/tumbler-order.js','utf8');
-assert.match(tumblerRuntime,/action:'createOrder'/);assert.match(tumblerRuntime,/payment:'toyyibpay'/);assert.match(tumblerRuntime,/expectedTotalMinor/);assert.match(tumblerRuntime,/d\.billUrl\|\|d\.payment\?\.billUrl/);assert.doesNotThrow(()=>new Function(tumblerRuntime),'Tumbler payment runtime must parse');
+assert.match(tumblerRuntime,/action:'createOrder'/);assert.match(tumblerRuntime,/payment:'billplz'/);assert.match(tumblerRuntime,/expectedTotalMinor/);assert.match(tumblerRuntime,/d\.billUrl\|\|d\.payment\?\.billUrl/);assert.doesNotThrow(()=>new Function(tumblerRuntime),'Tumbler payment runtime must parse');
 for(const script of tumbler.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))new Function(script[1]);
-console.log('PASS: ToyyibPay FPX, callback verification, AB Art QR and both payment choices are wired.');
+console.log('PASS: legacy ToyyibPay callbacks remain, new Billplz payment UI and QR remain wired.');
