@@ -84,3 +84,20 @@ export function matchesBillplzPayment(verified, payment, env) {
     Number.isSafeInteger(expected) && expected>=100 &&
     verified.amountMinor===expected && verified.paidAmountMinor>=expected);
 }
+
+
+export async function verifyBillplzRedirect(params, env) {
+  config(env);
+  const signature = text(params?.['billplz[x_signature]']).toLowerCase();
+  if (!/^[a-f0-9]{64}$/.test(signature)) return {valid:false};
+  const entries = Object.entries(params).filter(([key])=>/^billplz\[[a-z_]+\]$/.test(key) && key!=='billplz[x_signature]');
+  if (!entries.length) return {valid:false};
+  entries.sort(([a],[b])=>a.toLowerCase().localeCompare(b.toLowerCase()));
+  const payload = entries.map(([key,value])=>key.replace(/[\[\]]/g,'')+String(value)).join('|');
+  const key = await crypto.subtle.importKey('raw',new TextEncoder().encode(text(env.BILLPLZ_X_SIGNATURE_KEY)),{name:'HMAC',hash:'SHA-256'},false,['sign']);
+  const hash = new Uint8Array(await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(payload)));
+  const expected = Array.from(hash,v=>v.toString(16).padStart(2,'0')).join('');
+  let mismatch=0;
+  for (let i=0;i<64;i++) mismatch |= signature.charCodeAt(i)^expected.charCodeAt(i);
+  return {valid:mismatch===0,billId:text(params['billplz[id]'])};
+}
