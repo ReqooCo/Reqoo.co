@@ -1,0 +1,39 @@
+name: Billplz Migration Safety Checks
+
+on:
+  pull_request:
+    paths:
+      - "functions/api/billplz-core.js"
+      - "functions/api/pksk-payment-v2.js"
+      - "api/shop-flow-v3.js"
+      - "api/shop-flow-v5.js"
+      - "api/shop-v2.js"
+      - "api/worker.js"
+      - "shop/**"
+      - "tumbler/**"
+      - "sim/pksk/payment-v2/**"
+      - "tests/payment-*.mjs"
+      - ".github/workflows/billplz-migration-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: JavaScript syntax
+        run: |
+          set -euo pipefail
+          for p in api/worker.js api/shop-flow-v3.js api/shop-flow-v5.js api/shop-v2.js functions/api/billplz-core.js functions/api/pksk-payment-v2.js shop/shop-core-v1.js tumbler/tumbler-order.js; do
+            node --check "$p"
+          done
+      - name: Billplz security and legacy ToyyibPay tests
+        run: |
+          node tests/payment-billplz-flow.mjs
+          node tests/payment-toyyibpay-flow.mjs
