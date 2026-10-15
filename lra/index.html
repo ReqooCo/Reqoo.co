@@ -241,9 +241,9 @@ details.more[open]>summary:after{content:"−"}
 <div class="moreBody">
 <p class="small"><b>1. Operasi:</b> isi RW Flow, TW Flow, paras Sungai Langat, CWT, Desa Putra dan RWPS/TWPS jika diperlukan. Tekan <b>Sediakan Operasi 0700</b>.</p>
 <p class="small"><b>2. Pengeluaran harian:</b> isi Total Prod (beza TW Totalizer), RW Abst (beza RW Totalizer), purata bulan dan sasaran SIV. Jangan gunakan flow m³/jam sebagai totalizer harian.</p>
-<p class="small"><b>3. Kolam & aliran:</b> isi Pond A/B/C, pumping Intake B dan SJAM. Storage Pond C dan jumlah aliran dikira automatik. Isi <b>Actual RW Abstraction Pond C → WTP @0700</b> (seperti kolum oren Excel), bukan RW Abst harian.</p>
+<p class="small"><b>3. Kolam & aliran:</b> isi Pond A/B/C, pumping Intake B dan SJAM. Storage Pond C dan jumlah aliran dikira automatik. Isi <b>Outflow WTP harian</b> daripada bacaan RW flowmeter, dan <b>kadar RW @0700</b> secara berasingan untuk Days to Critical.</p>
 <p class="small"><b>4. Semak & hantar:</b> semak Operasi dan Format 1–5 satu per satu; tandakan selesai selepas tekan Send di WhatsApp.</p>
-<div class="mQuickNav"><button type="button" data-jump="m_production">Pengeluaran</button><button type="button" data-jump="m_pondC">Pond C</button><button type="button" data-jump="m_intakeB">Intake B</button><button type="button" data-jump="m_pondCFlowValue">Critical Flow</button><button type="button" data-jump="m_dp1">Desa Putra</button><button type="button" data-jump="m_card_ops">Hantar 6 report</button></div>
+<div class="mQuickNav"><button type="button" data-jump="m_production">Pengeluaran</button><button type="button" data-jump="m_pondC">Pond C</button><button type="button" data-jump="m_intakeB">Intake B</button><button type="button" data-jump="m_pondCFlowValue">RW Flow 0700</button><button type="button" data-jump="m_dp1">Desa Putra</button><button type="button" data-jump="m_card_ops">Hantar 6 report</button></div>
 </div></details>
 <div class="mSixBar"><b>Senarai 6 laporan</b><span id="m_sixCount">0/6 selesai (tanda sendiri selepas hantar)</span></div>
 <div class="mSixChecks" id="m_sixChecklist"></div>
@@ -251,14 +251,14 @@ details.more[open]>summary:after{content:"−"}
 <p class="small" id="m_opsImportStatus">Bacaan dari Operasi hanya diambil jika tarikh dan masa sama (0700).</p>
 <div class="morningMeta"><small id="m_draft">Draf tempatan</small><button type="button" id="m_load" class="mSmallBtn">Ambil data online</button></div><p class="small" id="m_onlineStatus"></p>
 </section>
-<section class="card"><div class="quickTitle"><h2>01 · Pengeluaran</h2><span class="modeChip">0700</span></div><div class="grid"><div class="field"><label for="m_production">Total Prod Harian <span class="small">(MLD)</span></label><input id="m_production" inputmode="decimal" autocomplete="off" placeholder="Contoh 84.749" value=""><small class="mSource">Beza TW Totalizer 24 jam</small></div>
+<section class="card"><div class="quickTitle"><h2>01 · Pengeluaran</h2><span class="modeChip">0700</span></div><div class="grid"><div class="field"><label for="m_production">TW Total Prod sebenar <span class="small">(MLD)</span></label><input id="m_production" inputmode="decimal" autocomplete="off" placeholder="Contoh 84.749" value=""><small class="mSource">Bacaan pengeluaran sebenar daripada flowmeter TW (air terawat). Isi manual; kalkulator totalizer hanya pilihan.</small></div>
 <div class="field"><label for="m_designCapacity">Design Capacity <span class="small">(MLD)</span></label><input id="m_designCapacity" inputmode="decimal" autocomplete="off" placeholder="100.000" value="100"></div>
 <div class="field"><label for="m_monthlyAverage">Purata Pengeluaran Bulan <span class="small">(MLD)</span></label><input id="m_monthlyAverage" inputmode="decimal" autocomplete="off" placeholder="Contoh 84.350" value=""><small class="mSource">Ambil purata kumulatif bulan, bukan jumlah satu hari</small></div>
-<div class="field"><label for="m_rwAbst">RW Abstraction Harian <span class="small">(MLD)</span></label><input id="m_rwAbst" inputmode="decimal" autocomplete="off" placeholder="Contoh 89.684" value=""><small class="mSource">Beza RW Totalizer 24 jam / pumped to WTP</small></div></div>
+<div class="field"><label for="m_rwAbst">RW masuk WTP sebenar <span class="small">(MLD)</span></label><input id="m_rwAbst" inputmode="decimal" autocomplete="off" placeholder="Contoh 89.684" value=""><small class="mSource">Bacaan harian flowmeter RW (air mentah masuk WTP). Berasingan daripada TW. Dipakai terus untuk Outflow to WTP dalam Format 1–3.</small></div></div>
 <details class="more mMeterBox">
 <summary>Pengiraan Totalizer RW / TW (pilihan)</summary>
 <div class="moreBody">
-<p class="small">Bacaan totalizer <b>Semalam → Hari ini</b> pada sela 24 jam. Pilih unit sebenar meter. Jika hanya ada jumlah harian MLD, isi terus di atas — bahagian ini boleh dilangkau.</p>
+<p class="small">RW dan TW ialah <b>dua flowmeter berbeza</b>. Masukkan bacaan sebenar setiap hari pada ruangan di atas. Kalkulator beza totalizer di sini cuma pilihan; keputusan <b>tidak akan mengisi sendiri</b> sehingga tekan Guna hasil.</p>
 <div class="grid">
 <div class="field"><label for="m_twTotalizerPrevious">TW Totalizer Sebelum</label><input id="m_twTotalizerPrevious" inputmode="decimal" autocomplete="off" placeholder="Semalam"></div>
 <div class="field"><label for="m_twTotalizerCurrent">TW Totalizer Semasa</label><input id="m_twTotalizerCurrent" inputmode="decimal" autocomplete="off" placeholder="Hari ini"></div>
@@ -292,14 +292,14 @@ details.more[open]>summary:after{content:"−"}
 <div class="field"><label for="m_wt1">WT1 <span class="small">(MLD)</span></label><input id="m_wt1" inputmode="decimal" autocomplete="off" placeholder="0" value=""></div>
 <div class="field"><label for="m_sjamB">SJAM B <span class="small">(MLD)</span></label><input id="m_sjamB" inputmode="decimal" autocomplete="off" placeholder="0" value=""></div></div></section>
 <section class="card"><div class="quickTitle"><h2>04 · Outflow & Critical Pond C</h2><span class="modeChip">0700</span></div><div class="grid"><div class="field"><label for="m_sjamCActual">SJAM C → SS Intake (actual) <span class="small">(MLD)</span></label><input id="m_sjamCActual" inputmode="decimal" autocomplete="off" placeholder="0" value=""></div>
-<div class="field"><label for="m_pondCFlowValue">Actual RW Abstraction Pond C → WTP <span class="small">(0700)</span></label>
-<div class="mFlowPair"><input id="m_pondCFlowValue" inputmode="decimal" autocomplete="off" placeholder="Contoh 59.640" value=""><select id="m_pondCFlowUnit" aria-label="Unit RW Abstraction Pond C"><option value="MLD">MLD</option><option value="m3h">m³/jam</option></select></div>
+<div class="field"><label for="m_pondCFlowValue">Kadar RW masuk WTP @0700 <span class="small">(flowmeter untuk ramalan kritikal)</span></label>
+<div class="mFlowPair"><input id="m_pondCFlowValue" inputmode="decimal" autocomplete="off" placeholder="Contoh 59.640" value=""><select id="m_pondCFlowUnit" aria-label="Unit RW Abstraction Pond C"><option value="m3h">m³/jam</option><option value="MLD">MLD</option></select></div>
 <input id="m_intakeCHourly" type="hidden" value="" style="display:none!important"><input id="m_forecastAuto" type="checkbox" hidden disabled style="display:none!important">
-<button id="m_importIntakeCFlow" type="button" class="mTinyBtn">Ambil RW Inflow Intake C · 0700</button>
-<small id="m_pondCFlowStatus" class="mSource">Masukkan flow sebenar Pond C @ 0700. Excel contoh 11.99m: 59.640 MLD (2,485 m³/jam) → 46.1 hari.</small>
+
+<small id="m_pondCFlowStatus" class="mSource">Isi kadar flowmeter sebenar jam 0700 secara manual (m³/jam atau MLD). Ini kadar untuk ramalan Days to Critical, bukan totalizer harian RW/TW.</small>
 </div>
 <div class="field"><label for="m_sjamCHourly">SJAM C Critical Forecast Flow <span class="small">(m³/hr)</span></label><input id="m_sjamCHourly" inputmode="decimal" autocomplete="off" placeholder="Isi 0 jika tiada SJAM C forecast" value="">
-<label class="mAutoLabel"><input id="m_sjamForecastAuto" type="checkbox"> Gunakan SJAM C Actual sebagai andaian forecast (pilihan)</label></div></div><p class="small"><b>Rujukan Excel:</b> Days to Critical menggunakan <b>Actual RW Abstraction Pond C → WTP pada 0700</b>, bukannya RW Abstraction harian/totalizer. Contoh jadual Pond C @ 11.99m: 59.640 MLD → 46.1 hari. Semak juga SJAM C (isi 0 jika tiada).</p></section>
+<label class="mAutoLabel"><input id="m_sjamForecastAuto" type="checkbox"> Gunakan SJAM C Actual sebagai andaian forecast (pilihan)</label></div></div><p class="small"><b>Pisahkan dua bacaan:</b> Outflow WTP harian Format 3 diambil terus daripada <b>RW flowmeter harian</b> yang diisi di Bahagian 01. Days to Critical menggunakan <b>kadar RW @0700</b> di ruangan ini. Jangan auto ganti dengan totalizer RW/TW harian. Contoh: 2,485 m³/jam = 59.640 MLD → 46.1 hari pada paras 11.99m, SJAM C 0.</p></section>
 <section class="card"><div class="quickTitle"><h2>05 · Kolam Desa Putra</h2><span class="modeChip">0700</span></div><p class="small">DP No.1, No.2 dan Outflow boleh diambil daripada laporan Operasi 0700 yang sepadan. Delivery Pressure kekal bacaan sebenar yang perlu diisi.</p><div class="grid"><div class="field"><label for="m_dp1">DP No.1 <span class="small">(m)</span></label><input id="m_dp1" inputmode="decimal" autocomplete="off" placeholder="5.18" value=""></div>
 <div class="field"><label for="m_dp2">DP No.2 <span class="small">(m)</span></label><input id="m_dp2" inputmode="decimal" autocomplete="off" placeholder="5.44" value=""></div>
 <div class="field"><label for="m_dpOutHourly">DP Outflow <span class="small">(m³/hr)</span></label><input id="m_dpOutHourly" inputmode="decimal" autocomplete="off" placeholder="3543" value=""></div>
@@ -1036,6 +1036,6 @@ window.addEventListener('focus',()=>{syncAutoDates();loadLive(true);if(activeTab
 load();syncMaintenance();refresh();refreshPump();hist();arm();loadLive(true);loadStock(true);setInterval(()=>{loadLive(true);if(activeTab==='stock'&&!stockHasPending())loadStock(true)},30000);switchTab(localStorage.getItem('rqLraActiveTab')||'ops');
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
 </script>
-<script src="./morning.js?v=10"></script>
+<script src="./morning.js?v=11"></script>
 </body>
 </html>
