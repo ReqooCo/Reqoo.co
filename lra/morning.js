@@ -530,6 +530,41 @@ el('prepareOps').addEventListener('click',()=>{
  document.getElementById('panel-ops').scrollIntoView({behavior:'smooth',block:'start'});
 });
 el('importOps').addEventListener('click',()=>importOps(true));
+
+el('importIntakeCFlow').addEventListener('click',async()=>{
+ const date=get('date'),code=localStorage.getItem('s2_access_key');
+ let flow='',source='';
+ if(code){
+  try{
+   const url='/api/s2-live?'+new URLSearchParams({action:'historical',section:'intakeC',date,time:'07:00'});
+   const res=await fetch(url,{headers:{'X-S2-Key':code},cache:'no-store'});
+   const json=await res.json();
+   if(!res.ok||!json.ok)throw Error(json.error||'Database tidak dapat diakses');
+   const rec=json.report;
+   if(rec?.report_date===date&&rec.report_time==='07:00'){
+    flow=String(rec.data?.rw??'').trim();source='rekod online Intake C 0700';
+   }
+  }catch(e){el('pondCFlowStatus').textContent='Import online gagal: '+e.message}
+ }
+ if(!flow&&typeof v==='function'&&v('icDate')===date&&v('icTime')==='07:00'){
+  if(confirm('Tiada rekod online. Gunakan RW Inflow dalam borang Intake C pada 0700? Sahkan bacaan itu dari meter hari ini.')){
+   flow=v('icRw');source='borang Intake C 0700 (belum disimpan)';
+  }
+ }
+ if(get('date')!==date)return;
+ if(!/^(?:\d+(?:\.\d+)?|\.\d+)$/.test(flow)||Number(flow)<=0){
+  alert('Tiada RW Inflow Intake C 0700 yang sah. Masukkan kadar daripada meter/Excel dalam MLD atau m³/jam.');
+  return;
+ }
+ if(get('pondCFlowValue')&&criticalFlowMld()!==null&&Math.abs(criticalFlowMld()-Number(flow)*24/1000)>.01&&
+  !confirm('Gantikan kadar Pond C yang telah diisi dengan '+flow+' m³/jam daripada '+source+'?'))return;
+ el('pondCFlowValue').value=flow;
+ el('pondCFlowUnit').value='m3h';
+ render();save();
+ el('pondCFlowStatus').dataset.imported='true';
+ el('pondCFlowStatus').textContent='Bacaan '+source+' diambil: '+flow+' m³/jam = '+(Number(flow)*24/1000).toFixed(3)+' MLD. Semak sebelum hantar.';
+});
+
 el('copyOps').addEventListener('click',async()=>{
  if(!opsReady())return alert('Sediakan bacaan Operasi 0700 yang sepadan dahulu.');
  try{await navigator.clipboard.writeText(opsText());alert('Report Operasi 0700 disalin.')}
