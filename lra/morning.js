@@ -366,7 +366,7 @@ function save(){
 }
 function reset(){
  keys.forEach(k=>el(k).value=defaults[k]||'');
- el('forecastAuto').checked=false;el('sjamForecastAuto').checked=true;
+ el('forecastAuto').checked=false;el('sjamForecastAuto').checked=false;
  el('storageAuto').checked=true;el('criticalStorageAuto').checked=true;
  for(const id of totalizerKeys)el(id).value=id.endsWith('Unit')?'m3':'';
  el('sivTarget').value=sivTargetInitial();
@@ -383,7 +383,7 @@ function apply(data){
  el('storageAuto').checked=legacyStorageAuto(values,'pondStorage','pondStorageAuto','pondC');
  el('criticalStorageAuto').checked=legacyStorageAuto(values,'criticalStorage','criticalStorageAuto','criticalLevel');
  el('forecastAuto').checked=values.forecastAuto===true;
- el('sjamForecastAuto').checked=values.sjamForecastAuto===undefined?!String(values.sjamCHourly||'').trim():values.sjamForecastAuto===true;
+ el('sjamForecastAuto').checked=values.sjamForecastAuto===true;
  el('sivTarget').value=String(values.sivTarget??sivTargetInitial());
  el('sivStatus').value=['auto','not','achieved'].includes(values.sivStatus)?values.sivStatus:'auto';
  el('sivChallengeA').value=String(values.sivChallengeA??sivDefaultA);
