@@ -230,47 +230,6 @@ async function loadPreviousLevel(force=false){
  }catch(e){el('pondChangeStatus').textContent='Rekod semalam belum dapat diambil: '+e.message}
  finally{previousLoading=false}
 }
-async function findOpsSource(allowLocal=false){
- const code=localStorage.getItem('s2_access_key');
- if(code){
-  const url='/api/s2-live?'+new URLSearchParams({action:'historical',section:'ops',date:get('date'),time:'07:00'});
-  const res=await fetch(url,{headers:{'X-S2-Key':code},cache:'no-store'});
-  const result=await res.json().catch(()=>({}));
-  if(!res.ok||!result.ok)throw Error(result.error||'Ralat operasi');
-  const ops=result.report;
-  if(ops?.report_date===get('date')&&ops.report_time==='07:00')
-   return {name:'rekod online Operasi 0700',data:ops.data,local:false};
- }
- // Unsaved local draft can only be imported after an explicit button tap.
- // Do not silently copy a 0600/previous-day reading relabelled 0700.
- if(allowLocal&&opsReady())return{name:'borang tempatan Operasi 0700 (belum disahkan online)',data:livePayload('ops').data,local:true};
- return null;
-}
-async function importOps(manual=false){
- const date=get('date');
- try{
-  const src=await findOpsSource(manual);if(get('date')!==date)return;
-  if(!src){
-   el('opsImportStatus').textContent='Belum ada laporan Operasi 0700 yang disimpan online pada tarikh ini. Tekan Ambil bacaan secara manual jika sudah semak borang tempatan.';
-   if(manual)alert('Tiada rekod Operasi 0700 untuk tarikh yang sama.');return;
-  }
-  const map=[['pond1','dp1'],['pond2','dp2'],['pondOut','dpOutHourly']];
-  const possible=map.filter(([from,to])=>{
-   if(String(src.data?.[from]??'').trim()==='')return false;
-   if(from==='pond1'&&(src.data?.pond1Problem===true||(src.local&&ck('pond1Problem'))))return false;
-   if(from==='pond2'&&(src.data?.pond2Problem===true||(src.local&&ck('pond2Problem'))))return false;
-   // Legacy online records without problem flags require explicit staff review.
-   if(!manual&&!src.local&&(from==='pond1'||from==='pond2')&&src.data?.[from+'Problem']===undefined)return false;
-   return true;
-  });
-  const selected=manual?possible:possible.filter(([,to])=>!get(to));
-  if(manual&&selected.some(([,to])=>get(to))&&!confirm('Ganti bacaan Desa Putra sedia ada dengan '+src.name+'?'))return;
-  for(const [from,to] of selected)el(to).value=String(src.data[from]).trim();
-  el('opsImportStatus').textContent=selected.length+' bacaan Desa Putra daripada '+src.name+'. Semak semula; Delivery Pressure kekal manual.';
-  if(selected.length){render();save()}
- }catch(e){el('opsImportStatus').textContent='Tidak dapat tarik data: '+e.message;if(manual)alert(e.message)}
-}
-
 const sivMonths=['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogos','Sep','Okt','Nov','Dis'];
 const sivTargetKey=()=> 'rqS2MorningSivTarget-'+get('date').slice(0,7);
 const sivTargetInitial=()=>localStorage.getItem(sivTargetKey())||(get('date').slice(0,7)==='2026-10'?'84.300':'');
