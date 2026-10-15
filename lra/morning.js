@@ -40,6 +40,40 @@ function legacyStorageAuto(values,field,flag,level){
 
 const noteDefault='Bacaan level tidak tepat disebabkan SCADA intake A lost communication';
 const sivKeys=['sivTarget','sivStatus','sivChallengeA','sivChallengeB'];
+
+const totalizerKeys=['twTotalizerPrevious','twTotalizerCurrent','twTotalizerUnit','rwTotalizerPrevious','rwTotalizerCurrent','rwTotalizerUnit'];
+function totalizerDelta(prefix){
+ const before=get(prefix+'TotalizerPrevious'),after=get(prefix+'TotalizerCurrent');
+ if(!before||!after)return null;
+ const numeric=/^(?:\d+(?:\.\d+)?|\.\d+)$/;
+ if(!numeric.test(before)||!numeric.test(after))return {error:'Bacaan totalizer '+prefix.toUpperCase()+' perlu nombor sah.'};
+ const prior=Number(before),current=Number(after);
+ if(current<prior)return {error:'Totalizer '+prefix.toUpperCase()+' semasa lebih rendah daripada sebelumnya. Semak rollover / meter.'};
+ const unit=get(prefix+'TotalizerUnit');
+ const delta=(current-prior)/(unit==='ML'?1:1000);
+ if(!Number.isFinite(delta)||delta>1000)return {error:'Perbezaan totalizer '+prefix.toUpperCase()+' terlalu tinggi. Semak unit dan sela 24 jam.'};
+ return {delta};
+}
+function showTotalizerCalculations(){
+ const warnings=[];
+ for(const [prefix,out,field] of [['tw','twTotalizerResult','production'],['rw','rwTotalizerResult','rwAbst']]){
+  const result=totalizerDelta(prefix);
+  el(out).textContent=result?.error?'Semak bacaan':result?' '+result.delta.toFixed(3)+' MLD':'—';
+  if(result?.error)warnings.push(result.error);
+  if(result&&!result.error&&get(field)&&/^(?:\d+(?:\.\d+)?|\.\d+)$/.test(get(field))&&Math.abs(Number(get(field))-result.delta)>0.011)
+   warnings.push((prefix==='tw'?'Total Prod':'RW Abst')+' tidak sama dengan beza totalizer ('+result.delta.toFixed(3)+' MLD). Semak sebelum hantar.');
+ }
+ el('meterWarning').textContent=warnings.join(' ');
+}
+function applyTotalizer(prefix,dest){
+ const data=totalizerDelta(prefix);
+ if(!data)return alert('Isi kedua-dua bacaan '+prefix.toUpperCase()+' Totalizer dahulu.');
+ if(data.error)return alert(data.error);
+ const next=data.delta.toFixed(3);
+ if(get(dest)&&Math.abs(Number(get(dest))-data.delta)>0.011&&!confirm('Ganti '+get(dest)+' MLD kepada '+next+' MLD daripada Totalizer '+prefix.toUpperCase()+'?'))return;
+ el(dest).value=next;render();save();
+}
+
 const sivDefaultA='Kaedah pengiraan pengeluaran LRA Semenyih 2 :\nPengeluaran LRA Semenyih 2 = Bacaan Totalizer Tw (Semasa) - Bacaan Totalizer Tw (Sebelum)';
 const sivDefaultB='Pihak LRA Semenyih 2 Perlu mengawal Paras Kolam Desa Putra pada 3.00m - 7.83m seperti diminta SO bagi memenuhi Demand.';
 
@@ -296,11 +330,12 @@ function render(){
  calculatePondStorage();
  const r=metrics(),list={
   margin:valueOr(r.margin,3,' MLD'),percent:valueOr(r.percent,2,'%'),
-  storageShown:valueOr(n('pondStorage'),2,' ML'),usableStorage:valueOr(r.usable,2,' ML'),
+  storageShown:valueOr(n('pondStorage'),2,' ML'),usableStorage:valueOr(r.usable,2,' ML'),forecastMldView:valueOr(r.forecastWtp,3,' MLD'),
   inflow:valueOr(r.inflow,3,' MLD'),outflow:valueOr(r.outflow,3,' MLD'),
   net:valueOr(r.net,3,' ML/day'),days:valueOr(r.days,1,' hari')
  };
  Object.entries(list).forEach(([id,text])=>{if(el(id))el(id).textContent=text});
+ showTotalizerCalculations();
  for(let i=1;i<=5;i++)el('preview_'+i).textContent=reportText(i);
  const prod=n('production'),target=n('sivTarget'),diff=all(prod,target)?prod-target:null;
  el('sivDiffLabel').textContent=valid(diff)&&diff<0?'Penurunan':'Peningkatan';
@@ -316,6 +351,7 @@ function storedKey(){return 'rqS2Morning0700-'+get('date')}
 function formData(){
  const values={};keys.forEach(k=>values[k]=get(k));
  sivKeys.forEach(k=>values[k]=get(k));
+ totalizerKeys.forEach(k=>values[k]=get(k));
  values.forecastAuto=el('forecastAuto').checked;values.sjamForecastAuto=el('sjamForecastAuto').checked;
  values.pondStorageAuto=el('storageAuto').checked;values.criticalStorageAuto=el('criticalStorageAuto').checked;
  values.pondAProblem=problemA();values.pondANote=get('pondANote');
@@ -330,8 +366,9 @@ function save(){
 }
 function reset(){
  keys.forEach(k=>el(k).value=defaults[k]||'');
- el('forecastAuto').checked=true;el('sjamForecastAuto').checked=true;
+ el('forecastAuto').checked=false;el('sjamForecastAuto').checked=true;
  el('storageAuto').checked=true;el('criticalStorageAuto').checked=true;
+ for(const id of totalizerKeys)el(id).value=id.endsWith('Unit')?'m3':'';
  el('sivTarget').value=sivTargetInitial();
  el('sivStatus').value='auto';
  el('sivChallengeA').value=sivDefaultA;
@@ -342,9 +379,10 @@ function reset(){
 function apply(data){
  const values=data?.values||data||{};
  keys.forEach(k=>el(k).value=String(values[k]??defaults[k]??''));
+ for(const id of totalizerKeys)el(id).value=id.endsWith('Unit')?(values[id]==='ML'?'ML':'m3'):String(values[id]??'');
  el('storageAuto').checked=legacyStorageAuto(values,'pondStorage','pondStorageAuto','pondC');
  el('criticalStorageAuto').checked=legacyStorageAuto(values,'criticalStorage','criticalStorageAuto','criticalLevel');
- el('forecastAuto').checked=values.forecastAuto===undefined?!String(values.intakeCHourly||'').trim():values.forecastAuto===true;
+ el('forecastAuto').checked=values.forecastAuto===true;
  el('sjamForecastAuto').checked=values.sjamForecastAuto===undefined?!String(values.sjamCHourly||'').trim():values.sjamForecastAuto===true;
  el('sivTarget').value=String(values.sivTarget??sivTargetInitial());
  el('sivStatus').value=['auto','not','achieved'].includes(values.sivStatus)?values.sivStatus:'auto';
@@ -395,6 +433,12 @@ keys.forEach(k=>el(k).addEventListener('input',()=>{
  render();save();
 }));
 for(const id of ['forecastAuto','sjamForecastAuto','storageAuto','criticalStorageAuto'])el(id).addEventListener('change',()=>{render();save()});
+for(const id of totalizerKeys)el(id).addEventListener(id.endsWith('Unit')?'change':'input',()=>{render();save()});
+el('applyTwTotalizer').addEventListener('click',()=>applyTotalizer('tw','production'));
+el('applyRwTotalizer').addEventListener('click',()=>applyTotalizer('rw','rwAbst'));
+document.querySelectorAll('#m_startGuide [data-jump]').forEach(button=>button.addEventListener('click',()=>{
+ const target=document.getElementById(button.dataset.jump);target?.scrollIntoView({behavior:'smooth',block:'center'});
+}));
 function updateChangeSignButtons(){
  const current=get('pondChange');
  for(const sign of ['-','+']){
