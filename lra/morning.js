@@ -43,6 +43,80 @@ const sivKeys=['sivTarget','sivStatus','sivChallengeA','sivChallengeB'];
 
 const totalizerKeys=['twTotalizerPrevious','twTotalizerCurrent','twTotalizerUnit','rwTotalizerPrevious','rwTotalizerCurrent','rwTotalizerUnit'];
 const criticalFlowKeys=['pondCFlowValue','pondCFlowUnit'];
+
+const opsExtraKeys=['oRwp','oTwp','oRiver','oRiverMax','oExtraNote'];
+const opsProblemKeys=["Rw","Tw","River","Cwt1","Cwt2","Dp1","Dp2"];
+const opsNoteDefaults={"Rw":"RW Inflow under maintenance / bacaan tidak tepat","Tw":"TW Outflow under maintenance / bacaan tidak tepat","River":"Paras Sg Langat tidak tepat / SCADA Lost Comm","Cwt1":"Paras CWT No.1 under maintenance / level problem","Cwt2":"Paras CWT No.2 under maintenance / sensor level problem","Dp1":"Paras Desa Putra No.1 tidak tepat / level problem","Dp2":"Paras Desa Putra No.2 tidak tepat / level problem"};
+function opsProblemOn(key){return el('o'+key+'Problem').checked}
+function opsProblemsActive(){return opsProblemKeys.filter(opsProblemOn)}
+function opsMarker(key){const n=opsProblemsActive().indexOf(key);return n<0?'':'('+('*'.repeat(n+1))+')'}
+function opsReading(value,key,unit=''){
+ const val=String(value??'').trim();
+ return (val&&val!=='-'?val+unit:'-')+opsMarker(key);
+}
+function morningOpsData(){
+ const rwFlow=criticalFlowMld();
+ const obj={
+  rwp:get('oRwp'),twp:get('oTwp'),river:get('oRiver'),riverMax:get('oRiverMax'),
+  rw:valid(rwFlow)?(rwFlow*1000/24).toFixed(2):'',
+  tw:get('twFlowHourly'),tank1:get('cwt1'),tank2:get('cwt2'),
+  pond1:get('dp1'),pond2:get('dp2'),pondOut:get('dpOutHourly'),
+  dpPressure:get('dpPressure'),note:get('oExtraNote')
+ };
+ for(const key of opsProblemKeys){
+  obj[key==='Cwt1'?'tank1Problem':key==='Cwt2'?'tank2Problem':key==='Dp1'?'pond1Problem':key==='Dp2'?'pond2Problem':key.toLowerCase()+'Problem']=opsProblemOn(key);
+  obj[key==='Cwt1'?'tank1Note':key==='Cwt2'?'tank2Note':key==='Dp1'?'pond1Note':key==='Dp2'?'pond2Note':key.toLowerCase()+'Note']=get('o'+key+'Note');
+ }
+ return obj;
+}
+function morningOpsIssue(){
+ const d=morningOpsData();
+ const numberOK=v=>/^(?:\d+(?:\.\d+)?|\.\d+)$/.test(String(v??'').trim());
+ if(!valid(criticalFlowMld()))return 'Isi RW Flowmeter @0700 di bahagian 01.';
+ if(!numberOK(d.tw)||Number(d.tw)<=0)return 'Isi TW Flowmeter @0700 di bahagian 01.';
+ if(!numberOK(d.pondOut)||Number(d.pondOut)<0)return 'Isi Outflow Desa Putra sebenar di bahagian 05.';
+ for(const [field,key,name] of [['river','River','Sungai Langat'],['tank1','Cwt1','CWT No.1'],['tank2','Cwt2','CWT No.2'],['pond1','Dp1','Desa Putra No.1'],['pond2','Dp2','Desa Putra No.2']]){
+  if(!numberOK(d[field])&&!opsProblemOn(key))return 'Isi bacaan '+name+' atau tandakan Problem dalam Operasi 0700.';
+  if(d[field]&&!numberOK(d[field]))return 'Semak format nombor '+name+' (kosongkan jika Problem).';
+ }
+ if(d.riverMax&&!numberOK(d.riverMax))return 'Semak paras maksimum Sungai Langat.';
+ return '';
+}
+function morningOpsText(){
+ const d=morningOpsData(),rw63=d.rwp==='63',tw50=d.twp==='50';
+ const normalRW=rw63?['2200','2300']:['4200','4500'];
+ const normalTW=tw50?'2200':'4200',normalPressure=tw50?'7.0':'7.6';
+ const mldDP=/^(?:\d+(?:\.\d+)?|\.\d+)$/.test(d.pondOut)?(Number(d.pondOut)*24/1000).toFixed(3):'-';
+ const noteParts=opsProblemsActive().map(key=>{
+  const note=get('o'+key+'Note').replace(/\*/g,'').trim()||opsNoteDefaults[key];
+  return '_'+opsMarker(key)+' '+note+'_';
+ });
+ const extra=get('oExtraNote').replace(/\*/g,'').trim();
+ return [
+ '*Status Operasi LRA Semenyih 2*','*'+dmy()+'@0700hrs*','',
+ 'Paras Sg Langat : '+opsReading(d.river,'River','m')+' (paras maksima : '+(d.riverMax?d.riverMax+'m':'-')+')','',
+ 'Kadar Pengepaman','RWP : '+d.rwp+'Mld','TWP : '+d.twp+'Mld','',
+ 'RW Inflow : '+opsReading(d.rw,'Rw','m3/h'),
+ 'Normal : '+normalRW[0]+'m3/h~'+normalRW[1]+'m3/h',
+ 'Tangki Air Bersih',
+ 'No.1 : '+opsReading(d.tank1,'Cwt1','m'),
+ 'No.2 : '+opsReading(d.tank2,'Cwt2','m'),'',
+ 'TW Outflow : '+opsReading(d.tw,'Tw','m3/h'),
+ 'Normal : '+normalTW+'m3/h',
+ 'Delivery Pressure (rujukan): '+normalPressure+'bar','',
+ 'Kolam Desa Putra,',
+ 'No.1 : '+opsReading(d.pond1,'Dp1','m'),
+ 'No.2 : '+opsReading(d.pond2,'Dp2','m'),
+ 'Outflow : '+(mldDP==='-'?'-':mldDP+'Mld'),
+ ...(d.dpPressure?['Delivery Pressure DP (actual): '+d.dpPressure+'bar']:[]),
+ ...(noteParts.length?['',...noteParts]:[]),
+ ...(extra?['','*Nota:* '+extra]:[])
+ ].join('\n');
+}
+function updateOpsProblemViews(){
+ for(const key of opsProblemKeys)el('o'+key+'NoteWrap').hidden=!opsProblemOn(key);
+}
+
 function totalizerDelta(prefix){
  const before=get(prefix+'TotalizerPrevious'),after=get(prefix+'TotalizerCurrent');
  if(!before||!after)return null;
