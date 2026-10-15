@@ -2,7 +2,7 @@
 (function(){
 'use strict';
 const el=id=>document.getElementById('m_'+id);
-const keys=['production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','pondTwlLevel','criticalLevel','criticalPercent','criticalStorage','intakeB','wt1','sjamB','sjamCActual','intakeCHourly','sjamCHourly','dp1','dp2','dpOutHourly','dpPressure'];
+const keys=['twFlowHourly','cwt1','cwt2','production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','pondTwlLevel','criticalLevel','criticalPercent','criticalStorage','intakeB','wt1','sjamB','sjamCActual','intakeCHourly','sjamCHourly','dp1','dp2','dpOutHourly','dpPressure'];
 const defaults={designCapacity:'100',pondTwlCapacity:'3984.50',pondTwlLevel:'12.0',criticalLevel:'7.50',criticalPercent:'30.00',criticalStorage:'1226'};
 
 const POND_C_CAL={min:7.50,max:12.00,minML:1226,fullML:3984.50,mlPerM:613};
@@ -522,12 +522,31 @@ el('calcPondChange').addEventListener('click',async()=>{
  el('pondChange').value=signedChange(level,previousPondC);pondChangeAutoValue=get('pondChange');render();save();
 });
 el('prepareOps').addEventListener('click',()=>{
- if(!confirm('Sediakan Operasi '+dmy()+' pada 0700? Pastikan bacaan lama disemak dan dikemas kini sebelum hantar.'))return;
+ const rwMld=criticalFlowMld();
+ const rwHour=valid(rwMld)?(rwMld*1000/24).toFixed(2):'';
+ const rows=[
+  ['RW flowmeter @0700',rwHour,'rw'],
+  ['TW flowmeter @0700',get('twFlowHourly'),'tw'],
+  ['CWT No.1',get('cwt1'),'tank1'],
+  ['CWT No.2',get('cwt2'),'tank2'],
+  ['Desa Putra No.1',get('dp1'),'pond1'],
+  ['Desa Putra No.2',get('dp2'),'pond2'],
+  ['Desa Putra Outflow',get('dpOutHourly'),'pondOut']
+ ];
+ const missing=rows.filter(([label,value])=>!String(value).trim()).map(([label])=>label);
+ const msg='Sediakan Operasi '+dmy()+' @0700 menggunakan bacaan flowmeter RW/TW, CWT dan Desa Putra dalam borang ini?'
+ +(missing.length?'\\n\\nBelum diisi: '+missing.join(', ')+'. Ruangan ini akan dikosongkan dalam Operasi supaya bacaan lama tidak terbawa.':'')
+ +'\\n\\nSila semak RWP/TWP, Sungai Langat dan semua marker Problem sebelum hantar.';
+ if(!confirm(msg.replace(/\\n/g,'\n')))return;
  document.getElementById('date').value=get('date');
  document.getElementById('time').value='07:00';
+ for(const [label,value,id] of rows){
+  const field=document.getElementById(id);
+  if(field)field.value=String(value??'').trim();
+ }
  if(typeof refresh==='function')refresh();
  if(typeof switchTab==='function')switchTab('ops');
- document.getElementById('panel-ops').scrollIntoView({behavior:'smooth',block:'start'});
+ document.getElementById('panel-ops')?.scrollIntoView({behavior:'smooth',block:'start'});
 });
 el('importOps').addEventListener('click',()=>importOps(true));
 
