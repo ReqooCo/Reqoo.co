@@ -83,6 +83,11 @@ details.more[open]>summary:after{content:"−"}
 .liveBoard{background:#fff;border:1px solid var(--line);border-radius:15px;margin-bottom:8px;overflow:hidden;box-shadow:0 3px 12px rgba(28,69,59,.04)}.liveHead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;background:#edf6f3;border-bottom:1px solid #dbe7e3}.liveHead b{display:block;font-size:12px;color:var(--accent)}.liveHead small{display:block;margin-top:1px;font-size:8px;color:var(--muted)}.liveGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:#dfe9e5}.liveCard{background:#fbfdfc;padding:8px 9px;min-width:0}.liveCardHead{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-bottom:6px}.liveCardHead b{font-size:9.5px;color:#3d6258}.liveEditBtn{border:0;background:#e9f3f0;color:#2f7565;border-radius:7px;min-height:25px;padding:4px 7px;font-size:8px;font-weight:850}.liveFlow{display:grid;grid-template-columns:1fr 1fr;gap:5px}.liveMetric{background:#f1f6f4;border-radius:7px;padding:5px 6px;min-width:0}.liveMetric small{display:block;font-size:7.5px;color:var(--muted)}.liveMetric b{display:block;margin-top:1px;font-size:11px;color:#235e50;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.livePumps{display:flex;flex-wrap:wrap;gap:4px}.livePump{display:inline-flex;align-items:center;gap:3px;border-radius:999px;padding:4px 6px;font-size:8px;font-weight:900;border:1px solid #dce6e2;background:#f2f5f4;color:#71827d}.livePump.run{background:#e9f7ee;border-color:#bcdcc7;color:#246944}.livePump.stop{background:#fff1f1;border-color:#e8caca;color:#9a4444}.liveStamp{margin-top:5px;font-size:7.5px;color:#7c8d88;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.liveEmpty{font-size:8.5px;color:#8a9894;padding:4px 0}.liveAccess{display:none;padding:8px 10px;border-bottom:1px solid #eadfca;background:#fff9ee}.liveAccess .row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px}.liveAccess input{min-height:36px;font-size:12px}.liveAccess button{min-height:36px;border:0;border-radius:9px;padding:7px 10px;background:var(--accent);color:#fff;font-size:9px;font-weight:850}
 @media(max-width:390px){.wrap{padding-left:8px;padding-right:8px}.head{padding:12px}.head h1{font-size:17px}.card{padding:10px}.autoRow{gap:5px}.stat{padding:7px 6px}.stat b{font-size:10.5px}.liveCard{padding:7px}.livePump{font-size:7.5px;padding:4px 5px}}
 .bottom.morningHide{display:none}.morningMeta{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}.mSmallBtn{border:0;border-radius:8px;background:#e9f3f0;color:#266553;padding:8px 10px;font-size:10px;font-weight:800}.morningStats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.morningStats>div{border:1px solid #d8e6e1;border-radius:9px;padding:8px;background:#f2f7f5}.morningStats small{display:block;color:#758e83;font-size:9px}.morningStats b{display:block;font-size:13px;color:#276b57;margin-top:3px}.mFormat summary{line-height:1.4}.mFormat .preview{max-height:320px}#m_share{display:none}#m_pondANoteWrap[hidden]{display:none}#panel-morning{padding-bottom:5px}
+.mQuickNav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:9px}
+.mQuickNav button{border:1px solid #d1e1da;background:#f1f8f4;border-radius:8px;padding:8px 4px;font-size:10px;color:#2a6855;font-weight:800;min-width:0}
+.mMeterBox{margin:12px 0 0}.mMeterResult{border-radius:8px;background:#eff6f1;padding:7px 8px;margin-bottom:6px}.mMeterResult small{display:block;font-size:9px;color:#708a7c}.mMeterResult b{font-size:14px;color:#235942}.mMeterBox button{width:100%;min-height:34px}
+.mSource{display:block!important;margin-top:4px;font-size:9px!important;line-height:1.35;color:#728679!important}
+
 .mAutoLabel{display:flex!important;align-items:flex-start;gap:6px;margin:7px 0 0!important;font-size:10px!important;color:#386a59!important;line-height:1.35}
 .mAutoLabel input{width:16px!important;height:16px!important;min-height:0!important;flex:0 0 16px;accent-color:#33856d}
 .mAutoLabel input+span{flex:1}.mTinyBtn{display:block;margin:-2px 0 5px;border:0;border-radius:7px;background:#eaf4ef;color:#2d6d56;font-size:9px;padding:6px 9px;font-weight:850}
@@ -225,17 +230,43 @@ details.more[open]>summary:after{content:"−"}
 <div id="panel-morning" class="panel">
 <section class="card"><div class="quickTitle"><h2>Laporan Pagi · 0700</h2><span class="modeChip">5 FORMAT</span></div>
 <div class="grid"><div class="field"><label for="m_date">Tarikh</label><input id="m_date" type="date"></div><div class="field"><label for="m_operator">Disediakan oleh (DB)</label><input id="m_operator" placeholder="Nama staf"></div></div>
-<div class="notice ok">Pagi 0700 perlu <b>6 laporan</b>: 1 Operasi + 5 format 0700. Isi bacaan sekali, semak preview setiap format, kemudian hantar satu per satu ke WhatsApp.</div>
+<div class="notice ok"><b>1 borang bacaan, 6 laporan WhatsApp.</b> Ikut langkah di bawah. Nombor harian (MLD) bukan sama dengan bacaan flow seketika (m³/jam).</div>
+<details class="more" open id="m_startGuide">
+<summary>Cara isi pagi 0700 · Ikut 4 langkah</summary>
+<div class="moreBody">
+<p class="small"><b>1. Operasi:</b> isi RW Flow, TW Flow, paras Sungai Langat, CWT, Desa Putra dan RWPS/TWPS jika diperlukan. Tekan <b>Sediakan Operasi 0700</b>.</p>
+<p class="small"><b>2. Pengeluaran harian:</b> isi Total Prod (beza TW Totalizer), RW Abst (beza RW Totalizer), purata bulan dan sasaran SIV. Jangan gunakan flow m³/jam sebagai totalizer harian.</p>
+<p class="small"><b>3. Kolam & aliran:</b> isi Pond A/B/C, pumping Intake B dan SJAM. Storage Pond C dan jumlah aliran dikira automatik. Isi <b>Critical Forecast WTP</b> daripada kadar forecast sebenar, bukan RW Abst harian.</p>
+<p class="small"><b>4. Semak & hantar:</b> semak Operasi dan Format 1–5 satu per satu; tandakan selesai selepas tekan Send di WhatsApp.</p>
+<div class="mQuickNav"><button type="button" data-jump="m_production">Pengeluaran</button><button type="button" data-jump="m_pondC">Pond C</button><button type="button" data-jump="m_intakeB">Intake B</button><button type="button" data-jump="m_intakeCHourly">Forecast</button><button type="button" data-jump="m_dp1">Desa Putra</button><button type="button" data-jump="m_card_ops">Hantar 6 report</button></div>
+</div></details>
 <div class="mSixBar"><b>Senarai 6 laporan</b><span id="m_sixCount">0/6 selesai (tanda sendiri selepas hantar)</span></div>
 <div class="mSixChecks" id="m_sixChecklist"></div>
 <div class="mSixActions"><button type="button" class="mSmallBtn" id="m_prepareOps">Sediakan Operasi 0700</button><button type="button" class="mSmallBtn" id="m_importOps">Ambil bacaan Operasi 0700</button></div>
 <p class="small" id="m_opsImportStatus">Bacaan dari Operasi hanya diambil jika tarikh dan masa sama (0700).</p>
 <div class="morningMeta"><small id="m_draft">Draf tempatan</small><button type="button" id="m_load" class="mSmallBtn">Ambil data online</button></div><p class="small" id="m_onlineStatus"></p>
 </section>
-<section class="card"><div class="quickTitle"><h2>01 · Pengeluaran</h2><span class="modeChip">0700</span></div><div class="grid"><div class="field"><label for="m_production">Total Prod <span class="small">(MLD)</span></label><input id="m_production" inputmode="decimal" autocomplete="off" placeholder="82.524" value=""></div>
+<section class="card"><div class="quickTitle"><h2>01 · Pengeluaran</h2><span class="modeChip">0700</span></div><div class="grid"><div class="field"><label for="m_production">Total Prod Harian <span class="small">(MLD)</span></label><input id="m_production" inputmode="decimal" autocomplete="off" placeholder="Contoh 84.749" value=""><small class="mSource">Beza TW Totalizer 24 jam</small></div>
 <div class="field"><label for="m_designCapacity">Design Capacity <span class="small">(MLD)</span></label><input id="m_designCapacity" inputmode="decimal" autocomplete="off" placeholder="100.000" value="100"></div>
-<div class="field"><label for="m_monthlyAverage">Ave Monthly Prod <span class="small">(MLD)</span></label><input id="m_monthlyAverage" inputmode="decimal" autocomplete="off" placeholder="84.930" value=""></div>
-<div class="field"><label for="m_rwAbst">RW Abstraction / Pumped to WTP <span class="small">(MLD)</span></label><input id="m_rwAbst" inputmode="decimal" autocomplete="off" placeholder="83.522" value=""></div></div></section>
+<div class="field"><label for="m_monthlyAverage">Purata Pengeluaran Bulan <span class="small">(MLD)</span></label><input id="m_monthlyAverage" inputmode="decimal" autocomplete="off" placeholder="Contoh 84.350" value=""><small class="mSource">Ambil purata kumulatif bulan, bukan jumlah satu hari</small></div>
+<div class="field"><label for="m_rwAbst">RW Abstraction Harian <span class="small">(MLD)</span></label><input id="m_rwAbst" inputmode="decimal" autocomplete="off" placeholder="Contoh 89.684" value=""><small class="mSource">Beza RW Totalizer 24 jam / pumped to WTP</small></div></div>
+<details class="more mMeterBox">
+<summary>Pengiraan Totalizer RW / TW (pilihan)</summary>
+<div class="moreBody">
+<p class="small">Bacaan totalizer <b>Semalam → Hari ini</b> pada sela 24 jam. Pilih unit sebenar meter. Jika hanya ada jumlah harian MLD, isi terus di atas — bahagian ini boleh dilangkau.</p>
+<div class="grid">
+<div class="field"><label for="m_twTotalizerPrevious">TW Totalizer Sebelum</label><input id="m_twTotalizerPrevious" inputmode="decimal" autocomplete="off" placeholder="Semalam"></div>
+<div class="field"><label for="m_twTotalizerCurrent">TW Totalizer Semasa</label><input id="m_twTotalizerCurrent" inputmode="decimal" autocomplete="off" placeholder="Hari ini"></div>
+<div class="field"><label for="m_twTotalizerUnit">Unit TW Totalizer</label><select id="m_twTotalizerUnit"><option value="m3">m³ (bahagi 1,000)</option><option value="ML">ML (terus)</option></select></div>
+<div class="field"><div class="mMeterResult"><small>Pengeluaran dikira</small><b id="m_twTotalizerResult">—</b></div><button type="button" class="mSmallBtn" id="m_applyTwTotalizer">Guna untuk Total Prod</button></div>
+<div class="field"><label for="m_rwTotalizerPrevious">RW Totalizer Sebelum</label><input id="m_rwTotalizerPrevious" inputmode="decimal" autocomplete="off" placeholder="Semalam"></div>
+<div class="field"><label for="m_rwTotalizerCurrent">RW Totalizer Semasa</label><input id="m_rwTotalizerCurrent" inputmode="decimal" autocomplete="off" placeholder="Hari ini"></div>
+<div class="field"><label for="m_rwTotalizerUnit">Unit RW Totalizer</label><select id="m_rwTotalizerUnit"><option value="m3">m³ (bahagi 1,000)</option><option value="ML">ML (terus)</option></select></div>
+<div class="field"><div class="mMeterResult"><small>RW Abst dikira</small><b id="m_rwTotalizerResult">—</b></div><button type="button" class="mSmallBtn" id="m_applyRwTotalizer">Guna untuk RW Abst</button></div>
+</div>
+<p id="m_meterWarning" class="small"></p>
+</div></details>
+</section>
 <section class="card"><div class="quickTitle"><h2>02 · Paras Kolam</h2><span class="modeChip">0700</span></div><div class="grid"><div class="field" id="m_pondAField">
 <div class="pumpHead"><label for="m_pondA">Pond A Level <span class="small">(m)</span></label><label class="problemTag"><input id="m_pondAProblem" type="checkbox">Problem</label></div>
 <input id="m_pondA" inputmode="decimal" autocomplete="off" placeholder="5.43" value="">
@@ -252,14 +283,14 @@ details.more[open]>summary:after{content:"−"}
 <input id="m_pondStorage" inputmode="decimal" autocomplete="off" placeholder="Auto dari Pond C Level" value="">
 <label class="mAutoLabel"><input id="m_storageAuto" type="checkbox" checked> Auto dari paras Pond C (jadual rujukan)</label>
 </div></div></section>
-<section class="card"><div class="quickTitle"><h2>03 · Inflow Pond C</h2><span class="modeChip">0700</span></div><div class="grid"><div class="field"><label for="m_intakeB">Intake B <span class="small">(MLD)</span></label><input id="m_intakeB" inputmode="decimal" autocomplete="off" placeholder="84.875" value=""></div>
+<section class="card"><div class="quickTitle"><h2>03 · Inflow Pond C</h2><span class="modeChip">0700</span></div><p class="small">Masukkan <b>total pumping harian Intake B dalam MLD</b> daripada laporan stesen. Bacaan ini berbeza daripada flow sesaat m³/jam.</p><div class="grid"><div class="field"><label for="m_intakeB">Intake B <span class="small">(MLD)</span></label><input id="m_intakeB" inputmode="decimal" autocomplete="off" placeholder="84.875" value=""></div>
 <div class="field"><label for="m_wt1">WT1 <span class="small">(MLD)</span></label><input id="m_wt1" inputmode="decimal" autocomplete="off" placeholder="0" value=""></div>
 <div class="field"><label for="m_sjamB">SJAM B <span class="small">(MLD)</span></label><input id="m_sjamB" inputmode="decimal" autocomplete="off" placeholder="0" value=""></div></div></section>
 <section class="card"><div class="quickTitle"><h2>04 · Outflow Pond C</h2><span class="modeChip">0700</span></div><div class="grid"><div class="field"><label for="m_sjamCActual">SJAM C → SS Intake (actual) <span class="small">(MLD)</span></label><input id="m_sjamCActual" inputmode="decimal" autocomplete="off" placeholder="0" value=""></div>
-<div class="field"><label for="m_intakeCHourly">WTP Critical Forecast Flow <span class="small">(m³/hr)</span></label><input id="m_intakeCHourly" inputmode="decimal" autocomplete="off" placeholder="Auto dari RW Abst" value="">
-<label class="mAutoLabel"><input id="m_forecastAuto" type="checkbox" checked> Auto anggaran daripada RW Abst (MLD × 1000 ÷ 24)</label></div>
+<div class="field"><label for="m_intakeCHourly">WTP Critical Forecast Flow <span class="small">(m³/jam)</span></label><input id="m_intakeCHourly" inputmode="decimal" autocomplete="off" placeholder="Contoh 2265 (54.360 MLD)" value="">
+<label class="mAutoLabel"><input id="m_forecastAuto" type="checkbox"> Gunakan RW Abst sebagai <b>andaian kadar forecast</b> (pilihan)</label></div>
 <div class="field"><label for="m_sjamCHourly">SJAM C Critical Forecast Flow <span class="small">(m³/hr)</span></label><input id="m_sjamCHourly" inputmode="decimal" autocomplete="off" placeholder="0" value="">
-<label class="mAutoLabel"><input id="m_sjamForecastAuto" type="checkbox" checked> Auto anggaran daripada SJAM C Actual</label></div></div><p class="small">*Forecast ialah anggaran jika kadar aliran kekal 24 jam; bukan bacaan meter sebenar. Padam tanda Auto untuk ubah kadar simulasi secara manual.</p></section>
+<label class="mAutoLabel"><input id="m_sjamForecastAuto" type="checkbox" checked> Auto anggaran daripada SJAM C Actual</label></div></div><p class="small"><b>Penting:</b> WTP Critical Forecast berasingan daripada RW Abstraction harian. Contoh 15/10: forecast 2,265 m³/jam (54.360 MLD) tetapi RW Abst 89.684 MLD. Jika gunakan Auto RW Abst, ramalan hari kritikal akan berubah; semak forecast sebenar sebelum hantar.</p></section>
 <section class="card"><div class="quickTitle"><h2>05 · Kolam Desa Putra</h2><span class="modeChip">0700</span></div><p class="small">DP No.1, No.2 dan Outflow boleh diambil daripada laporan Operasi 0700 yang sepadan. Delivery Pressure kekal bacaan sebenar yang perlu diisi.</p><div class="grid"><div class="field"><label for="m_dp1">DP No.1 <span class="small">(m)</span></label><input id="m_dp1" inputmode="decimal" autocomplete="off" placeholder="5.18" value=""></div>
 <div class="field"><label for="m_dp2">DP No.2 <span class="small">(m)</span></label><input id="m_dp2" inputmode="decimal" autocomplete="off" placeholder="5.44" value=""></div>
 <div class="field"><label for="m_dpOutHourly">DP Outflow <span class="small">(m³/hr)</span></label><input id="m_dpOutHourly" inputmode="decimal" autocomplete="off" placeholder="3543" value=""></div>
@@ -272,7 +303,7 @@ details.more[open]>summary:after{content:"−"}
 <div class="field"><label for="m_criticalPercent">Critical % <span class="small">(%)</span></label><input id="m_criticalPercent" inputmode="decimal" autocomplete="off" placeholder="30.00" value="30.00"></div>
 <div class="field"><label for="m_criticalStorage">Storage @ Critical Level <span class="small">(ML)</span></label><input id="m_criticalStorage" inputmode="decimal" autocomplete="off" placeholder="Auto ikut Critical WL" value="1226">
 <label class="mAutoLabel"><input id="m_criticalStorageAuto" type="checkbox" checked> Auto daripada Critical WL (7.50m = 1226 ML)</label></div></div></div></details>
-<section class="card"><div class="quickTitle"><h2>Kiraan Automatik</h2><span class="modeChip">LIVE</span></div><div class="morningStats"><div><small>Margin Pengeluaran</small><b id="m_margin">-</b></div><div><small>Storage %</small><b id="m_percent">-</b></div><div><small>Storage Pond C (ML)</small><b id="m_storageShown">-</b></div><div><small>Baki Volume Hingga Critical</small><b id="m_usableStorage">-</b></div><div><small>Inflow Pond C</small><b id="m_inflow">-</b></div><div><small>Outflow Pond C</small><b id="m_outflow">-</b></div><div><small>Net Volume / Day</small><b id="m_net">-</b></div><div><small>Days to Critical</small><b id="m_days">-</b></div></div></section>
+<section class="card"><div class="quickTitle"><h2>Kiraan Automatik</h2><span class="modeChip">LIVE</span></div><div class="morningStats"><div><small>Margin Pengeluaran</small><b id="m_margin">-</b></div><div><small>Storage %</small><b id="m_percent">-</b></div><div><small>Storage Pond C (ML)</small><b id="m_storageShown">-</b></div><div><small>Baki Volume Hingga Critical</small><b id="m_usableStorage">-</b></div><div><small>Inflow Pond C</small><b id="m_inflow">-</b></div><div><small>Outflow Pond C</small><b id="m_outflow">-</b></div><div><small>Net Volume / Day</small><b id="m_net">-</b></div><div><small>Days to Critical (tanpa Pond B)</small><b id="m_days">-</b></div><div><small>Forecast WTP (MLD)</small><b id="m_forecastMldView">-</b></div></div></section>
 <section class="card"><h2>WhatsApp Report 0700</h2><p class="small">Operasi + 5 format. Semak preview dahulu, kemudian buka WhatsApp dan pilih group. Penghantaran sebenar perlu tekan Send dalam WhatsApp.</p></section>
 <details class="more mFormat" id="m_card_ops" open><summary>Operasi 0700 · Laporan ke-1</summary><div class="moreBody">
 <p class="small" id="m_opsReady">Sediakan bacaan Operasi pada slot 0700 untuk laporan ini.</p>
@@ -996,6 +1027,6 @@ window.addEventListener('focus',()=>{syncAutoDates();loadLive(true);if(activeTab
 load();syncMaintenance();refresh();refreshPump();hist();arm();loadLive(true);loadStock(true);setInterval(()=>{loadLive(true);if(activeTab==='stock'&&!stockHasPending())loadStock(true)},30000);switchTab(localStorage.getItem('rqLraActiveTab')||'ops');
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
 </script>
-<script src="./morning.js?v=8"></script>
+<script src="./morning.js?v=9"></script>
 </body>
 </html>
