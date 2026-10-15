@@ -102,7 +102,7 @@ export async function onRequest({request,env}){
      }
    }
    const reportText=t(x.reportText,14000);
-   if(share&&(!reportText||!reportText.includes('LRA Semenyih 2')))throw Error('Preview WhatsApp tidak sah.');
+   if(share&&(!reportText||(number<=2?!reportText.includes('LRA Semenyih 2'):number===5?!reportText.includes('SIV'):!reportText.includes('Pond C'))))throw Error('Preview WhatsApp tidak sah.');
    if(share&&expectedCriticalDays!==null&&!reportText.includes('*'+expectedCriticalDays+'* days'))
      throw Error('Preview Days to Critical tidak selaras dengan RW flow Pond C @0700. Buka semula app dan semak bacaan.');
 
