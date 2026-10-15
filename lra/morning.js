@@ -42,6 +42,7 @@ const noteDefault='Bacaan level tidak tepat disebabkan SCADA intake A lost commu
 const sivKeys=['sivTarget','sivStatus','sivChallengeA','sivChallengeB'];
 
 const totalizerKeys=['twTotalizerPrevious','twTotalizerCurrent','twTotalizerUnit','rwTotalizerPrevious','rwTotalizerCurrent','rwTotalizerUnit'];
+const criticalFlowKeys=['pondCFlowValue','pondCFlowUnit'];
 function totalizerDelta(prefix){
  const before=get(prefix+'TotalizerPrevious'),after=get(prefix+'TotalizerCurrent');
  if(!before||!after)return null;
@@ -102,10 +103,28 @@ function syncOpsPreview(){
  el('opsReady').textContent=ok?'Operasi 0700, tarikh yang sama. Semak bacaan sebelum hantar.':'Sediakan Operasi 0700 pada tarikh yang sama dahulu supaya tidak menghantar bacaan syif lain.';
  el('preview_ops').textContent=ok&&typeof opsText==='function'?opsText():'Tiada bacaan Operasi 0700 yang sepadan dalam borang.';
 }
+function criticalFlowMld(){
+ const input=get('pondCFlowValue');
+ if(!/^(?:\d+(?:\.\d+)?|\.\d+)$/.test(input))return null;
+ const value=Number(input);
+ if(!Number.isFinite(value)||value<=0)return null;
+ const mld=get('pondCFlowUnit')==='m3h'?value*24/1000:value;
+ return mld>0&&mld<=1000?mld:null;
+}
+function criticalFlowIssue(){
+ if(!get('pondCFlowValue'))return 'Isi RW Abstraction Pond C → WTP @0700 seperti kolum oren Excel, bukan RW Abst harian.';
+ if(!valid(criticalFlowMld()))return 'Semak kadar RW Pond C @0700 dan unit MLD/m³-jam.';
+ if(!valid(n('sjamCHourly')))return 'Isi kadar SJAM C @0700. Gunakan 0 jika tiada aliran SJAM C.';
+ return '';
+}
 function updateForecastFields(){
- for(const [toggle,src,dst] of [['forecastAuto','rwAbst','intakeCHourly'],['sjamForecastAuto','sjamCActual','sjamCHourly']]){
-  if(!el(toggle).checked)continue;
-  const x=n(src);el(dst).value=valid(x)?(x*1000/24).toFixed(2):'';
+ // Never substitute daily RW abstraction for the instantaneous Pond C critical flow.
+ el('forecastAuto').checked=false;
+ const flow=criticalFlowMld();
+ el('intakeCHourly').value=valid(flow)?(flow*1000/24).toFixed(5):'';
+ if(el('sjamForecastAuto').checked){
+  const x=n('sjamCActual');
+  el('sjamCHourly').value=valid(x)?(x*1000/24).toFixed(2):'';
  }
 }
 const signedChange=(a,b)=>(a-b>0?'+':'')+(a-b).toFixed(2);
@@ -335,6 +354,16 @@ function render(){
   net:valueOr(r.net,3,' ML/day'),days:valueOr(r.days,1,' hari')
  };
  Object.entries(list).forEach(([id,text])=>{if(el(id))el(id).textContent=text});
+ const issue=criticalFlowIssue();
+ const hint=el('pondCFlowStatus');
+ if(issue&&get('pondCFlowValue')){
+  hint.textContent=issue;
+ }else if(valid(criticalFlowMld())){
+  hint.textContent='Flow Pond C @0700: '+criticalFlowMld().toFixed(3)+' MLD = '+(criticalFlowMld()*1000/24).toFixed(2)+' m³/jam. '+(valid(r.days)?'Days to Critical: '+r.days.toFixed(1)+' hari.':'Isi SJAM C @0700 untuk kira hari kritikal.');
+ }else if(!hint.dataset.imported){
+  hint.textContent='Rujukan Excel: 11.99m, 59.640 MLD (2,485 m³/jam) → 46.1 hari. Masukkan bacaan sebenar hari ini.';
+ }
+
  showTotalizerCalculations();
  for(let i=1;i<=5;i++)el('preview_'+i).textContent=reportText(i);
  const prod=n('production'),target=n('sivTarget'),diff=all(prod,target)?prod-target:null;
@@ -352,6 +381,7 @@ function formData(){
  const values={};keys.forEach(k=>values[k]=get(k));
  sivKeys.forEach(k=>values[k]=get(k));
  totalizerKeys.forEach(k=>values[k]=get(k));
+ criticalFlowKeys.forEach(k=>values[k]=get(k));
  values.forecastAuto=el('forecastAuto').checked;values.sjamForecastAuto=el('sjamForecastAuto').checked;
  values.pondStorageAuto=el('storageAuto').checked;values.criticalStorageAuto=el('criticalStorageAuto').checked;
  values.pondAProblem=problemA();values.pondANote=get('pondANote');
@@ -369,6 +399,7 @@ function reset(){
  el('forecastAuto').checked=false;el('sjamForecastAuto').checked=false;
  el('storageAuto').checked=true;el('criticalStorageAuto').checked=true;
  for(const id of totalizerKeys)el(id).value=id.endsWith('Unit')?'m3':'';
+ el('pondCFlowValue').value='';el('pondCFlowUnit').value='MLD';el('pondCFlowStatus').dataset.imported='';
  el('sivTarget').value=sivTargetInitial();
  el('sivStatus').value='auto';
  el('sivChallengeA').value=sivDefaultA;
@@ -379,10 +410,24 @@ function reset(){
 function apply(data){
  const values=data?.values||data||{};
  keys.forEach(k=>el(k).value=String(values[k]??defaults[k]??''));
+ // Preserve a verified legacy manual flow, but do not reuse the obsolete
+ // forecastAuto daily-RW calculation (source of 29.3-day errors).
+ if(String(values.pondCFlowValue??'').trim()){
+  el('pondCFlowValue').value=String(values.pondCFlowValue);
+  el('pondCFlowUnit').value=values.pondCFlowUnit==='m3h'?'m3h':'MLD';
+ }else if(values.forecastAuto!==true&&String(values.intakeCHourly??'').trim()){
+  const old=Number(values.intakeCHourly);
+  el('pondCFlowValue').value=Number.isFinite(old)&&old>0?(old*24/1000).toFixed(3):'';
+  el('pondCFlowUnit').value='MLD';
+ }else{
+  el('pondCFlowValue').value='';el('pondCFlowUnit').value='MLD';
+ }
+ el('pondCFlowStatus').dataset.imported='';
+
  for(const id of totalizerKeys)el(id).value=id.endsWith('Unit')?(values[id]==='ML'?'ML':'m3'):String(values[id]??'');
  el('storageAuto').checked=legacyStorageAuto(values,'pondStorage','pondStorageAuto','pondC');
  el('criticalStorageAuto').checked=legacyStorageAuto(values,'criticalStorage','criticalStorageAuto','criticalLevel');
- el('forecastAuto').checked=values.forecastAuto===true;
+ el('forecastAuto').checked=false;
  el('sjamForecastAuto').checked=values.sjamForecastAuto===true;
  el('sivTarget').value=String(values.sivTarget??sivTargetInitial());
  el('sivStatus').value=['auto','not','achieved'].includes(values.sivStatus)?values.sivStatus:'auto';
@@ -432,7 +477,11 @@ keys.forEach(k=>el(k).addEventListener('input',()=>{
  if(k==='pondC')applyPreviousChange();
  render();save();
 }));
-for(const id of ['forecastAuto','sjamForecastAuto','storageAuto','criticalStorageAuto'])el(id).addEventListener('change',()=>{render();save()});
+for(const id of ['sjamForecastAuto','storageAuto','criticalStorageAuto'])el(id).addEventListener('change',()=>{render();save()});
+for(const field of criticalFlowKeys)el(field).addEventListener(field==='pondCFlowUnit'?'change':'input',()=>{
+ el('pondCFlowStatus').dataset.imported='';
+ render();save();
+});
 for(const id of totalizerKeys)el(id).addEventListener(id.endsWith('Unit')?'change':'input',()=>{render();save()});
 el('applyTwTotalizer').addEventListener('click',()=>applyTotalizer('tw','production'));
 el('applyRwTotalizer').addEventListener('click',()=>applyTotalizer('rw','rwAbst'));
@@ -509,6 +558,9 @@ document.getElementById('m_share').addEventListener('submit',event=>{
  const no=Number(event.submitter?.value||0);
  if(![1,2,3,4,5].includes(no)){event.preventDefault();return}
  if(no===5&&sivValid()){event.preventDefault();alert(sivValid());return}
+ if([2,3,4].includes(no)&&criticalFlowIssue()){
+  event.preventDefault();alert(criticalFlowIssue());el('pondCFlowValue').scrollIntoView({behavior:'smooth',block:'center'});return;
+ }
  const code=localStorage.getItem('s2_access_key');
  if(!code){
   event.preventDefault();
