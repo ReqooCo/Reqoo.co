@@ -169,13 +169,11 @@ function renderChecklist(){
  }
  el('sixCount').textContent=listSix.filter(([id])=>done[id]).length+'/6 ditanda selesai oleh staf';
 }
-function opsReady(){
- return typeof v==='function'&&v('date')===get('date')&&v('time')==='07:00';
-}
 function syncOpsPreview(){
- const ok=opsReady();
- el('opsReady').textContent=ok?'Operasi 0700, tarikh yang sama. Semak bacaan sebelum hantar.':'Sediakan Operasi 0700 pada tarikh yang sama dahulu supaya tidak menghantar bacaan syif lain.';
- el('preview_ops').textContent=ok&&typeof opsText==='function'?opsText():'Tiada bacaan Operasi 0700 yang sepadan dalam borang.';
+ const issue=morningOpsIssue();
+ el('opsReady').textContent=issue?'Semak Operasi 0700: '+issue:'Operasi 0700 sedia. Bacaan dikongsi terus daripada borang pagi. Semak preview dan pilih WhatsApp.';
+ el('preview_ops').textContent=morningOpsText();
+ updateOpsProblemViews();
 }
 function criticalFlowMld(){
  const input=get('pondCFlowValue');
@@ -456,6 +454,8 @@ function formData(){
  sivKeys.forEach(k=>values[k]=get(k));
  totalizerKeys.forEach(k=>values[k]=get(k));
  criticalFlowKeys.forEach(k=>values[k]=get(k));
+ opsExtraKeys.forEach(k=>values[k]=get(k));
+ for(const key of opsProblemKeys){values['o'+key+'Problem']=opsProblemOn(key);values['o'+key+'Note']=get('o'+key+'Note');}
  values.forecastAuto=el('forecastAuto').checked;values.sjamForecastAuto=el('sjamForecastAuto').checked;
  values.pondStorageAuto=el('storageAuto').checked;values.criticalStorageAuto=el('criticalStorageAuto').checked;
  values.pondAProblem=problemA();values.pondANote=get('pondANote');
@@ -480,6 +480,8 @@ function reset(){
  el('sivChallengeB').value=sivDefaultB;
  el('pondAProblem').checked=false;
  el('pondANote').value=noteDefault;
+ for(const key of opsExtraKeys)el(key).value=key==='oRwp'?'126':key==='oTwp'?'100':key==='oRiverMax'?'10.11':'';
+ for(const key of opsProblemKeys){el('o'+key+'Problem').checked=false;el('o'+key+'Note').value=opsNoteDefaults[key]}
 }
 function apply(data){
  const values=data?.values||data||{};
@@ -509,6 +511,11 @@ function apply(data){
  el('sivChallengeB').value=String(values.sivChallengeB??sivDefaultB);
  el('pondAProblem').checked=!!values.pondAProblem;
  el('pondANote').value=values.pondANote||noteDefault;
+ for(const key of opsExtraKeys)el(key).value=String(values[key]??(key==='oRwp'?'126':key==='oTwp'?'100':key==='oRiverMax'?'10.11':''));
+ for(const key of opsProblemKeys){
+  el('o'+key+'Problem').checked=values['o'+key+'Problem']===true;
+  el('o'+key+'Note').value=String(values['o'+key+'Note']??opsNoteDefaults[key]);
+ }
  if(data?.operator)el('operator').value=data.operator;
  render();
 }
@@ -541,7 +548,7 @@ let lastDate=localDate();
 el('date').value=lastDate;
 el('operator').value=localStorage.getItem('rqS2MorningOperator')||localStorage.getItem('s2_leader')||'';
 restore();
-el('date').addEventListener('change',()=>{restore();retrieve(true);renderChecklist();loadPreviousLevel(true);importOps(false)});
+el('date').addEventListener('change',()=>{restore();retrieve(true);renderChecklist();loadPreviousLevel(true)});
 keys.forEach(k=>el(k).addEventListener('input',()=>{
  if(k==='intakeCHourly'&&el('forecastAuto').checked)el('forecastAuto').checked=false;
  if(k==='pondStorage'&&el('storageAuto').checked)el('storageAuto').checked=false;
@@ -556,6 +563,12 @@ for(const field of criticalFlowKeys)el(field).addEventListener(field==='pondCFlo
  el('pondCFlowStatus').dataset.imported='';
  render();save();
 });
+for(const key of opsExtraKeys)el(key).addEventListener(key==='oRwp'||key==='oTwp'?'change':'input',()=>{render();save()});
+for(const key of opsProblemKeys){
+ el('o'+key+'Problem').addEventListener('change',()=>{render();save()});
+ el('o'+key+'Note').addEventListener('input',()=>{render();save()});
+}
+
 for(const id of totalizerKeys)el(id).addEventListener(id.endsWith('Unit')?'change':'input',()=>{render();save()});
 el('applyTwTotalizer').addEventListener('click',()=>applyTotalizer('tw','production'));
 el('applyRwTotalizer').addEventListener('click',()=>applyTotalizer('rw','rwAbst'));
@@ -595,52 +608,25 @@ el('calcPondChange').addEventListener('click',async()=>{
  if(get('pondChange')&&get('pondChange')!==pondChangeAutoValue&&!confirm('Ganti perubahan yang telah diisi dengan beza level semalam?'))return;
  el('pondChange').value=signedChange(level,previousPondC);pondChangeAutoValue=get('pondChange');render();save();
 });
-el('prepareOps').addEventListener('click',()=>{
- const rwMld=criticalFlowMld();
- const rwHour=valid(rwMld)?(rwMld*1000/24).toFixed(2):'';
- const rows=[
-  ['RW flowmeter @0700',rwHour,'rw'],
-  ['TW flowmeter @0700',get('twFlowHourly'),'tw'],
-  ['CWT No.1',get('cwt1'),'tank1'],
-  ['CWT No.2',get('cwt2'),'tank2'],
-  ['Desa Putra No.1',get('dp1'),'pond1'],
-  ['Desa Putra No.2',get('dp2'),'pond2'],
-  ['Desa Putra Outflow',get('dpOutHourly'),'pondOut']
- ];
- const missing=rows.filter(([label,value])=>!String(value).trim()).map(([label])=>label);
- const msg='Sediakan Operasi '+dmy()+' @0700 menggunakan bacaan flowmeter RW/TW, CWT dan Desa Putra dalam borang ini?'
- +(missing.length?'\\n\\nBelum diisi: '+missing.join(', ')+'. Ruangan ini akan dikosongkan dalam Operasi supaya bacaan lama tidak terbawa.':'')
- +'\\n\\nSila semak RWP/TWP, Sungai Langat dan semua marker Problem sebelum hantar.';
- if(!confirm(msg.replace(/\\n/g,'\n')))return;
- document.getElementById('date').value=get('date');
- document.getElementById('time').value='07:00';
- for(const [label,value,id] of rows){
-  const field=document.getElementById(id);
-  if(field)field.value=String(value??'').trim();
- }
- if(typeof refresh==='function')refresh();
- if(typeof switchTab==='function')switchTab('ops');
- document.getElementById('panel-ops')?.scrollIntoView({behavior:'smooth',block:'start'});
-});
-el('importOps').addEventListener('click',()=>importOps(true));
-
 
 el('copyOps').addEventListener('click',async()=>{
- if(!opsReady())return alert('Sediakan bacaan Operasi 0700 yang sepadan dahulu.');
- try{await navigator.clipboard.writeText(opsText());alert('Report Operasi 0700 disalin.')}
+ const issue=morningOpsIssue();
+ if(issue)return alert(issue);
+ try{await navigator.clipboard.writeText(morningOpsText());alert('Report Operasi 0700 disalin.')}
  catch{el('card_ops').open=true;alert('Sila salin teks dari Preview Operasi.')}
 });
 document.getElementById('m_opsShare').addEventListener('submit',event=>{
- if(!opsReady()){event.preventDefault();alert('Borang Operasi mesti pada tarikh yang sama dan jam 0700.');return}
+ const issue=morningOpsIssue();
+ if(issue){event.preventDefault();el('card_ops').open=true;alert(issue);return}
  const code=localStorage.getItem('s2_access_key');
- if(!code){event.preventDefault();alert('Masukkan access code S2 di Status Semasa Loji dahulu.');return}
- const data=livePayload('ops');
+ if(!code){event.preventDefault();if(typeof showLiveAccess==='function')showLiveAccess(true);alert('Masukkan access code S2 dahulu.');return}
  el('opsAccess').value=code;
  el('opsDate').value=get('date');
  el('opsOperator').value=get('operator')||'-';
- el('opsShift').value=stockShift();
- el('opsData').value=JSON.stringify(data.data);
- el('opsText').value=opsText();
+ el('opsShift').value='MALAM (0700)';
+ el('opsData').value=JSON.stringify(morningOpsData());
+ el('opsText').value=morningOpsText();
+ save();
 });
 
 document.querySelectorAll('.m_copy').forEach(b=>b.addEventListener('click',async()=>{
@@ -671,7 +657,7 @@ document.getElementById('m_share').addEventListener('submit',event=>{
 });
 window.morningTabChanged=tab=>{
  document.querySelector('.bottom')?.classList.toggle('morningHide',tab==='morning');
- if(tab==='morning'){render();renderChecklist();loadPreviousLevel(false);importOps(false)}
+ if(tab==='morning'){render();renderChecklist();loadPreviousLevel(false)}
 };
 window.morningTabChanged(localStorage.getItem('rqLraActiveTab')||'ops');
 const params=new URLSearchParams(location.search);
@@ -688,6 +674,6 @@ window.addEventListener('focus',checkDate);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkDate()});
 renderChecklist();
 loadPreviousLevel(false);
-for(const id of ['date','time','river','riverMax','rwp','twp','rw','tw','tank1','tank2','pond1','pond2','pondOut','riverNote','rwNote','twNote','tank1Note','tank2Note','pond1Note','pond2Note','note'])document.getElementById(id)?.addEventListener('input',syncOpsPreview);
+// Operasi 0700 preview kini hanya mengikuti bacaan tab 0700, bukan tab Operasi syif.
 retrieve(true);
 })();
