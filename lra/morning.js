@@ -112,8 +112,8 @@ function criticalFlowMld(){
  return mld>0&&mld<=1000?mld:null;
 }
 function criticalFlowIssue(){
- if(!get('pondCFlowValue'))return 'Isi RW Abstraction Pond C → WTP @0700 seperti kolum oren Excel, bukan RW Abst harian.';
- if(!valid(criticalFlowMld()))return 'Semak kadar RW Pond C @0700 dan unit MLD/m³-jam.';
+ if(!get('pondCFlowValue'))return 'Masukkan bacaan kadar flowmeter RW @0700 secara manual untuk kira Days to Critical. RW totalizer harian ialah nilai berasingan.';
+ if(!valid(criticalFlowMld()))return 'Semak bacaan kadar RW @0700 dan unit m³/jam atau MLD.';
  if(!valid(n('sjamCHourly')))return 'Isi kadar SJAM C @0700. Gunakan 0 jika tiada aliran SJAM C.';
  return '';
 }
@@ -359,9 +359,9 @@ function render(){
  if(issue&&get('pondCFlowValue')){
   hint.textContent=issue;
  }else if(valid(criticalFlowMld())){
-  hint.textContent='Flow Pond C @0700: '+criticalFlowMld().toFixed(3)+' MLD = '+(criticalFlowMld()*1000/24).toFixed(2)+' m³/jam. '+(valid(r.days)?'Days to Critical: '+r.days.toFixed(1)+' hari.':'Isi SJAM C @0700 untuk kira hari kritikal.');
+  hint.textContent='Kadar meter RW @0700 (diisi manual): '+criticalFlowMld().toFixed(3)+' MLD = '+(criticalFlowMld()*1000/24).toFixed(2)+' m³/jam. '+(valid(r.days)?'Days to Critical: '+r.days.toFixed(1)+' hari.':'Isi SJAM C @0700 untuk kira hari kritikal.');
  }else if(!hint.dataset.imported){
-  hint.textContent='Rujukan Excel: 11.99m, 59.640 MLD (2,485 m³/jam) → 46.1 hari. Masukkan bacaan sebenar hari ini.';
+  hint.textContent='Masukkan kadar flowmeter RW @0700 secara manual (contoh Excel 2,485 m³/jam bersamaan 59.640 MLD, 46.1 hari).';
  }
 
  showTotalizerCalculations();
@@ -399,7 +399,7 @@ function reset(){
  el('forecastAuto').checked=false;el('sjamForecastAuto').checked=false;
  el('storageAuto').checked=true;el('criticalStorageAuto').checked=true;
  for(const id of totalizerKeys)el(id).value=id.endsWith('Unit')?'m3':'';
- el('pondCFlowValue').value='';el('pondCFlowUnit').value='MLD';el('pondCFlowStatus').dataset.imported='';
+ el('pondCFlowValue').value='';el('pondCFlowUnit').value='m3h';el('pondCFlowStatus').dataset.imported='';
  el('sivTarget').value=sivTargetInitial();
  el('sivStatus').value='auto';
  el('sivChallengeA').value=sivDefaultA;
@@ -420,7 +420,7 @@ function apply(data){
   el('pondCFlowValue').value=Number.isFinite(old)&&old>0?(old*24/1000).toFixed(3):'';
   el('pondCFlowUnit').value='MLD';
  }else{
-  el('pondCFlowValue').value='';el('pondCFlowUnit').value='MLD';
+  el('pondCFlowValue').value='';el('pondCFlowUnit').value='m3h';
  }
  el('pondCFlowStatus').dataset.imported='';
 
@@ -531,39 +531,6 @@ el('prepareOps').addEventListener('click',()=>{
 });
 el('importOps').addEventListener('click',()=>importOps(true));
 
-el('importIntakeCFlow').addEventListener('click',async()=>{
- const date=get('date'),code=localStorage.getItem('s2_access_key');
- let flow='',source='';
- if(code){
-  try{
-   const url='/api/s2-live?'+new URLSearchParams({action:'historical',section:'intakeC',date,time:'07:00'});
-   const res=await fetch(url,{headers:{'X-S2-Key':code},cache:'no-store'});
-   const json=await res.json();
-   if(!res.ok||!json.ok)throw Error(json.error||'Database tidak dapat diakses');
-   const rec=json.report;
-   if(rec?.report_date===date&&rec.report_time==='07:00'){
-    flow=String(rec.data?.rw??'').trim();source='rekod online Intake C 0700';
-   }
-  }catch(e){el('pondCFlowStatus').textContent='Import online gagal: '+e.message}
- }
- if(!flow&&typeof v==='function'&&v('icDate')===date&&v('icTime')==='07:00'){
-  if(confirm('Tiada rekod online. Gunakan RW Inflow dalam borang Intake C pada 0700? Sahkan bacaan itu dari meter hari ini.')){
-   flow=v('icRw');source='borang Intake C 0700 (belum disimpan)';
-  }
- }
- if(get('date')!==date)return;
- if(!/^(?:\d+(?:\.\d+)?|\.\d+)$/.test(flow)||Number(flow)<=0){
-  alert('Tiada RW Inflow Intake C 0700 yang sah. Masukkan kadar daripada meter/Excel dalam MLD atau m³/jam.');
-  return;
- }
- if(get('pondCFlowValue')&&criticalFlowMld()!==null&&Math.abs(criticalFlowMld()-Number(flow)*24/1000)>.01&&
-  !confirm('Gantikan kadar Pond C yang telah diisi dengan '+flow+' m³/jam daripada '+source+'?'))return;
- el('pondCFlowValue').value=flow;
- el('pondCFlowUnit').value='m3h';
- render();save();
- el('pondCFlowStatus').dataset.imported='true';
- el('pondCFlowStatus').textContent='Bacaan '+source+' diambil: '+flow+' m³/jam = '+(Number(flow)*24/1000).toFixed(3)+' MLD. Semak sebelum hantar.';
-});
 
 el('copyOps').addEventListener('click',async()=>{
  if(!opsReady())return alert('Sediakan bacaan Operasi 0700 yang sepadan dahulu.');
