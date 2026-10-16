@@ -1105,8 +1105,10 @@ window.waHist=id=>{let h=JSON.parse(localStorage.getItem('rqLraHist')||'[]'),x=h
 $('save').onclick=()=>{let h=JSON.parse(localStorage.getItem('rqLraHist')||'[]');h.unshift({id:Date.now(),date:fdate(v('date')),time:v('time'),flow:'RWP '+v('rwp')+' / TWP '+v('twp'),text:opsText(),data:draft()});localStorage.setItem('rqLraHist',JSON.stringify(h.slice(0,60)));hist();$('notice').textContent='Report disimpan.'}
 
 function switchTab(tab){
+ const panel=$('panel-'+tab);
+ if(!panel){tab='ops'}
  activeTab=tab;localStorage.setItem('rqLraActiveTab',tab);
- document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+ document.querySelectorAll('.panel').forEach(x=>{const selected=x.id==='panel-'+tab;x.classList.toggle('active',selected);x.setAttribute('role','tabpanel');x.setAttribute('aria-hidden',String(!selected))});
  document.querySelectorAll('.tabBtn').forEach(x=>{const selected=x.dataset.tab===tab;x.classList.toggle('active',selected);x.setAttribute('aria-selected',String(selected));x.tabIndex=selected?0:-1});
  $('panel-'+tab).classList.add('active');
  if(tab==='stock'){loadStock(true);}
