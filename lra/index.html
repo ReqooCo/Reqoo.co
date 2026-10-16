@@ -134,6 +134,20 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 @media(max-width:390px){.wrap{padding-left:9px;padding-right:9px}.card{padding:11px}.head{padding:13px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
 
+
+/* Phase 2: task-first navigation and clearer reading rhythm */
+.tabs{display:flex;gap:6px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scrollbar-width:thin;padding:4px 1px 9px;margin-bottom:8px}
+.tabs .tabBtn{flex:0 0 auto;scroll-snap-align:start;min-width:88px;min-height:48px;padding:8px 12px;border-radius:11px;font-size:12px;line-height:1.25;white-space:nowrap}
+.tabs .tabBtn.active{box-shadow:none}
+.tabSub{display:block;font-size:10px;font-weight:500;opacity:.72;margin-top:2px}
+.liveBoard{border-radius:12px;box-shadow:none;margin-bottom:12px}
+.liveHead{gap:10px}.liveHead small{line-height:1.4}
+.field{min-width:0}.field input,.field select{max-width:100%}
+.btns{gap:8px}.btns button{flex:1 1 auto}
+.panel .quickTitle{align-items:center;gap:8px}
+.panel .quickTitle h2{margin-bottom:0}
+@media(max-width:390px){.tabs .tabBtn{min-width:82px}.tabSub{font-size:10px}}
+
 </style>
 </head>
 <body>
@@ -156,9 +170,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
     </div>
   </section>
 
-  <nav class="tabs" aria-label="Jenis report">
-    <button class="tabBtn active" data-tab="ops">Operasi</button>
-    <button class="tabBtn" data-tab="morning">0700</button>
+  <nav class="tabs" aria-label="Jenis report" role="tablist">
+    <button class="tabBtn active" data-tab="ops">Operasi <span class="tabSub">2 jam</span></button>
+    <button class="tabBtn" data-tab="morning">0700 <span class="tabSub">Harian</span></button>
     <button class="tabBtn" data-tab="intakeB">Intake B</button>
     <button class="tabBtn" data-tab="intakeC">Intake C</button>
     <button class="tabBtn" data-tab="twps">TWPS</button>
@@ -1060,12 +1074,12 @@ $('save').onclick=()=>{let h=JSON.parse(localStorage.getItem('rqLraHist')||'[]')
 function switchTab(tab){
  activeTab=tab;localStorage.setItem('rqLraActiveTab',tab);
  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
- document.querySelectorAll('.tabBtn').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));
+ document.querySelectorAll('.tabBtn').forEach(x=>{const selected=x.dataset.tab===tab;x.classList.toggle('active',selected);x.setAttribute('aria-selected',String(selected));x.tabIndex=selected?0:-1});
  $('panel-'+tab).classList.add('active');
  if(tab==='stock'){loadStock(true);}
  if(typeof window.morningTabChanged==='function')window.morningTabChanged(tab);
 }
-document.querySelectorAll('.tabBtn').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+document.querySelectorAll('.tabBtn').forEach(b=>{b.setAttribute('role','tab');b.setAttribute('aria-controls','panel-'+b.dataset.tab);b.onclick=()=>switchTab(b.dataset.tab)});
 $('stockCommit').onclick=commitStock;
 $('stockUndo').onclick=undoStock;
 $('stockDate').addEventListener('change',previewStock);
