@@ -10,7 +10,7 @@ const root=path.resolve(__dirname,'..'),out=process.env.REQOO_TEST_OUTPUT||path.
  const order={id:'fixture-order',orderNo:'RQ-TEST-0001',name:'Pelanggan Ujian',phone:'0120000000',total_minor:85000,payment_status:'partial',fulfillment_status:'processing',created_at:'2026-10-15T08:00:00Z'};
  await context.route('**/*',async route=>{
   const u=new URL(route.request().url());if(u.hostname!=='reqoo.test')return route.abort();
-  if(u.pathname.startsWith('/api/'))return route.fulfill({json:{ok:true,orders:empty?[]:[order],products:empty?[]:[{id:'fixture-product',name:'Tumbler Ujian',active:1,price:85,price_minor:8500,sku:'TEST-001',stock:12}],customers:empty?[]:[{id:'fixture-customer',name:'Pelanggan Ujian',phone:'0120000000',order_count:2,collected_minor:42500,outstanding_minor:42500}],transactions:[],items:[],total:empty?0:1,stats:{total:1,paid:1,processing:1,active:1,customers:1},counts:{processing:1},summary:{collectedMinor:42500,outstandingMinor:42500,paidOrders:1},kpis:{},commandCenter:{},trend:empty?[]:[{month:'2026-09',collected_minor:25000,revenue_minor:25000},{month:'2026-10',collected_minor:42500,revenue_minor:42500}],latest:[],breakdown:{partial:1},months:[],settings:{}}});
+  if(u.pathname.startsWith('/api/'))return route.fulfill({json:{ok:true,orders:empty?[]:[order],products:empty?[]:[{id:'fixture-product',name:'Tumbler Ujian',active:1,price:85,price_minor:8500,sku:'TEST-001',stock:12}],customers:empty?[]:[{id:'fixture-customer',name:'Pelanggan Ujian',phone:'0120000000',order_count:2,collected_minor:42500,outstanding_minor:42500}],transactions:[],items:[],total:empty?0:1,stats:{total:1,paid:1,processing:1,active:1,customers:1},counts:{processing:1},summary:{collectedMinor:42500,outstandingMinor:42500,paidOrders:1},kpis:{},commandCenter:{},trend:empty?[]:[{month:'2026-09',collected_minor:25000,revenue_minor:25000},{month:'2026-10',collected_minor:42500,revenue_minor:42500}],latest:[],breakdown:{partial:1},months:[],settings:{},content:{section:{},items:[]},licenses:[],devices:[],users:[]}});
   const file=path.join(root,u.pathname==='/admin/'?'admin/index.html':u.pathname);
   if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
   if(file.endsWith('.html')){
@@ -20,7 +20,7 @@ const root=path.resolve(__dirname,'..'),out=process.env.REQOO_TEST_OUTPUT||path.
   return route.fulfill({path:file,contentType:file.endsWith('.css')?'text/css':file.endsWith('.js')?'application/javascript':'text/plain'});
  });
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
- for(const name of ['index','orders','production','products','customers','finance','settings']){
+ for(const name of ['index','orders','production','products','customers','finance','settings','shop-content','sim-v2']){
   await page.setViewportSize({width:1440,height:1000});
   await page.goto('https://reqoo.test/admin/'+(name==='index'?'':name+'.html'));
   await page.waitForSelector('body.rq-admin-shell');await page.waitForLoadState('networkidle');

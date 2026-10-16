@@ -23,7 +23,7 @@ body.rq-admin-shell .rqAdminMobile :is(a,button).active{background:linear-gradie
 body.rq-admin-shell :is(.rqAdminMoreSheet,.rqAdminMoreList a){background:#fffdf8;color:#405249;border-color:#d8dfd1}
 body.rq-admin-shell .rqAdminMoreList a.active{background:#e8efdf;border-color:#b9cba9;color:#345437}
 body.rq-admin-shell .rqAdminMoreBackdrop{background:#253c3140}
-body.rq-admin-shell:not(.rqDocsPage){font-size:14px!important;line-height:1.55;--bg:#f5f3ef;--panel:#fffefb;--ink:#2c3936;--muted:#62716a;--line:#dedfd5;--gold:#496452;--gold2:#58746a}
+body.rq-admin-shell:not(.rqDocsPage){font-size:14px!important;line-height:1.55;--bg:#f5f3ef;--panel:#fffefb;--ink:#2c3936;--text:#2c3936;--card:#fffefb;--muted:#62716a;--line:#dedfd5;--gold:#496452;--gold2:#58746a}
 body.rq-admin-shell:not(.rqDocsPage) :is(.wrap,.app){min-width:0}
 body.rq-admin-shell:not(.rqDocsPage) :is(.rqOrdersHead,.rqProductionHead,.rqProductsHead,.rqCustomersHead,.rqFinanceHead,.hero){align-items:center!important;margin-bottom:24px!important;padding-bottom:20px!important}
 body.rq-admin-shell:not(.rqDocsPage) :is(h1,.hero h1){font-size:30px!important;line-height:1.25!important;letter-spacing:-.8px!important;color:var(--rq-text)!important}
@@ -66,3 +66,8 @@ body.rq-admin-shell:not(.rqDocsPage) :is(.rqBar,.rqTrendBar,.rqPayFill){backgrou
 body.rq-admin-shell:not(.rqDocsPage) :is(.rqBarValue,.rqBarLabel,.rqTrendCol>span,.rqTrendCol>small){font-size:11px!important;color:#52674f!important}
 @media(max-width:900px){body.rq-admin-shell:not(.rqDocsPage) :is(.rqOrdersHead,.rqProductionHead,.rqProductsHead,.rqCustomersHead,.rqFinanceHead,.hero){align-items:flex-start!important}body.rq-admin-shell:not(.rqDocsPage) :is(.btn,.rqProductsTabs button,.rqCrmTabs button){min-height:44px!important}}
 @media(max-width:600px){body.rq-admin-shell:not(.rqDocsPage) :is(h1,.hero h1){font-size:25px!important}body.rq-admin-shell:not(.rqDocsPage) :is(.rqOrdersStats,.rqProductionStats,.rqProductsStats,.rqCustomerStats,.rqFinanceStats){gap:10px!important}body.rq-admin-shell:not(.rqDocsPage) :is(.rqOrdersStats,.rqProductionStats,.rqProductsStats,.rqCustomerStats,.rqFinanceStats)>article,body.rq-admin-shell:not(.rqDocsPage) .rqKpi{padding:14px!important;min-height:100px!important}body.rq-admin-shell:not(.rqDocsPage) :is(.rqOrdersStats,.rqProductionStats,.rqProductsStats,.rqCustomerStats,.rqFinanceStats)>article strong{font-size:23px!important}}
+
+/* Settings content editor and PKSK share the same workspace surfaces. */
+body.rq-admin-shell:not(.rqDocsPage) :is(.item,.detailbox){background:#fffefb!important;border-color:var(--rq-line)!important;color:var(--rq-text)!important}
+body.rq-admin-shell:not(.rqDocsPage) .toggle{color:var(--rq-muted)!important}
+body.rq-admin-shell:not(.rqDocsPage) .metric{border-top-color:#a9bf96!important}
