@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-store">
 <title>REQOO.CO — Documents</title>
-<link rel="stylesheet" href="/admin/documents-workspace.css?v=4">
+<link rel="stylesheet" href="/admin/documents-workspace.css?v=5">
 </head>
 <body class="rqDocsPage">
 <main class="wrap rqDocsApp">
@@ -47,12 +47,18 @@
     <div id="rqMonthlyContent" hidden></div>
   </section>
 
-  <section class="rqDocsPanel rqDocsUnifiedPanel">
+  <section class="rqDocsPanel rqOrderWorkspaces" id="rqOrderWorkspaces" aria-labelledby="rqWorkspaceTitle">
+    <div class="rqDocsPanelHead"><div><h2 id="rqWorkspaceTitle">Order dan dokumen</h2><p>Satu order, satu ruang. Semua quotation, invoice, resit dan delivery order di dalamnya.</p></div><div class="rqDocsUnifiedActions"><button class="btn primary" id="toggleQuoteBuilder" type="button" aria-expanded="false">+ Quotation Baru</button>
+        <button class="btn" id="toggleOrderDrawer" type="button" aria-expanded="false">Daripada order</button></div></div>
+    <div class="rqWorkspaceToolbar"><input id="rqWorkspaceSearch" type="search" aria-label="Cari order dan dokumen" placeholder="Cari order, pelanggan atau nombor dokumen"><select id="rqWorkspaceFilter" aria-label="Status order"><option value="all">Semua order</option><option value="quotation">Quotation</option><option value="outstanding">Belum selesai dibayar</option><option value="paid">Selesai dibayar</option></select><button class="btn" id="showDocumentArchive" type="button">Semua dokumen</button></div>
+    <div id="rqWorkspaceState" class="rqDocsState" role="status" aria-live="polite">Memuatkan order…</div><div id="rqWorkspaceList"></div><div class="rqDocsOrderMore"><button class="btn" id="rqWorkspaceMore" type="button" hidden>Muat lagi order</button></div>
+  </section>
+
+  <section class="rqDocsPanel rqDocsUnifiedPanel" id="rqDocumentArchive" hidden>
     <div class="rqDocsPanelHead">
       <div><h2>Senarai dokumen</h2><p>Quotation → Kelulusan pelanggan → Order → Invoice → Bayaran → Resit → Penghantaran.</p></div>
       <div class="rqDocsUnifiedActions">
-        <button class="btn primary" id="toggleQuoteBuilder" type="button" aria-expanded="false">+ Quotation Baru</button>
-        <button class="btn" id="toggleOrderDrawer" type="button" aria-expanded="false">Daripada order</button>
+        <button class="btn" id="returnToOrderWorkspaces" type="button">Kembali ke order</button>
       </div>
     </div>
     <div class="rqDocsUnifiedToolbar">
@@ -125,12 +131,13 @@
   </div>
 </div>
 <div role="status" aria-live="polite" id="docsToast" class="rqDocsToast"></div>
-<script src="/admin/documents.js?v=17"></script>
+<script src="/admin/documents.js?v=18"></script>
 <script src="/admin/document-deposit-note-v1.js?v=1"></script>
 <script src="/admin/documents-unified-v1.js?v=3"></script>
 <script src="/admin/documents-payment-v1.js?v=8"></script>
-<script src="/admin/documents-drawer-v1.js?v=5"></script>
-<script src="/admin/documents-overdue-v1.js?v=5"></script>
+<script src="/admin/documents-drawer-v1.js?v=6"></script>
+<script src="/admin/documents-overdue-v1.js?v=6"></script>
 <script src="/admin/documents-monthly.js?v=1"></script>
+<script src="/admin/documents-orders.js?v=1"></script>
 </body>
 </html>

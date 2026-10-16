@@ -106,7 +106,7 @@ let documentSearchTimer;
 $('docUnifiedSearch').addEventListener('input',()=>{clearTimeout(documentSearchTimer);if(document.documentElement.dataset.rqFinanceMode!=='1')documentSearchTimer=setTimeout(()=>load(true),260)});
 document.addEventListener('rq:documents-type-filter',e=>{clearTimeout(documentSearchTimer);documentFilter=e.detail.type;load(true)});
 $('loadMoreDocuments').addEventListener('click',()=>load(false,true));
-async function applyDeepLink(){let term=initialDocQuery;if(initialDocOrder){try{const exact=await api('listDocuments',{orderId:initialDocOrder,limit:50}),seen=new Set(documents.map(d=>String(d.id)));for(const d of exact.documents||[]){if(!seen.has(String(d.id))){documents.push(d);seen.add(String(d.id))}}renderHistory()}catch{}let match=null;try{const detail=await api('getOrder',{orderId:initialDocOrder});match=detail.order||null}catch{}term=match?orderRef(match):initialDocOrder;$('docSearch').value=term;await loadOrders(true);if(match&&!orders.some(o=>String(o.id)===String(match.id))){orders.unshift(match);renderOrders()}const panel=$('rqOrderSourcePanel'),btn=$('toggleOrderDrawer');panel?.classList.add('open');btn?.classList.add('active');btn?.setAttribute('aria-expanded','true');setTimeout(()=>panel?.scrollIntoView({behavior:'smooth',block:'start'}),40)}if(term){const unified=$('docUnifiedSearch');if(unified){unified.value=term;setTimeout(()=>unified.dispatchEvent(new Event('input',{bubbles:true})),0)}}}
+async function applyDeepLink(){if($('rqOrderWorkspaces'))return;let term=initialDocQuery;if(initialDocOrder){try{const exact=await api('listDocuments',{orderId:initialDocOrder,limit:50}),seen=new Set(documents.map(d=>String(d.id)));for(const d of exact.documents||[]){if(!seen.has(String(d.id))){documents.push(d);seen.add(String(d.id))}}renderHistory()}catch{}let match=null;try{const detail=await api('getOrder',{orderId:initialDocOrder});match=detail.order||null}catch{}term=match?orderRef(match):initialDocOrder;$('docSearch').value=term;await loadOrders(true);if(match&&!orders.some(o=>String(o.id)===String(match.id))){orders.unshift(match);renderOrders()}const panel=$('rqOrderSourcePanel'),btn=$('toggleOrderDrawer');panel?.classList.add('open');btn?.classList.add('active');btn?.setAttribute('aria-expanded','true');setTimeout(()=>panel?.scrollIntoView({behavior:'smooth',block:'start'}),40)}if(term){const unified=$('docUnifiedSearch');if(unified){unified.value=term;setTimeout(()=>unified.dispatchEvent(new Event('input',{bubbles:true})),0)}}}
 async function createAndOpen(type,id){
   try{toast('Menjana '+typeLabel(type)+'…');const d=await api('createDocument',{type,orderId:id},'POST');activeDoc=d.document;if(d.created){documents.unshift(activeDoc);toast(activeDoc.number+' disimpan');}else toast(activeDoc.number+' sudah wujud');renderOrders();renderHistory();showDocument();}catch(e){toast(e.message,true)}
 }
@@ -193,11 +193,11 @@ async function convertActiveQuote(){
       const invoiceData=await api('createDocument',{type:'invoice',orderId},'POST');
       activeDoc=invoiceData.document;replaceDocument(activeDoc);renderHistory();
       toast(`Order ${ref} + Invoice Deposit ${pct}% siap`);
-      await load(true);if(ordersLoaded)await loadOrders(true);showDocument();return;
+      await load(true);if(ordersLoaded)await loadOrders(true);showDocument();if(orderId)document.dispatchEvent(new CustomEvent('rq:documents-open-flow',{detail:{key:orderId}}));return;
     }
     activeDoc=convertedQuote;toast(`Order ${ref} berjaya dibuat`);
     await load(true);if(ordersLoaded)await loadOrders(true);
-    const fresh=await openSaved(activeDoc.id,false);activeDoc=fresh;showDocument();
+    const fresh=await openSaved(activeDoc.id,false);activeDoc=fresh;showDocument();if(orderId)document.dispatchEvent(new CustomEvent('rq:documents-open-flow',{detail:{key:orderId}}));
   }catch(e){toast(e.message,true)}finally{btn.disabled=false;btn.textContent=old}
 }
 function fillSettings(){const s=docSettings;$('sCompany').value=s.companyName||'REQOO.CO';$('sReg').value=s.registrationNo||SSM_NO;$('sAddress').value=s.address||'';$('sPhone').value=s.phone||'';$('sEmail').value=s.email||'';$('sBank').value=normalizeBankDetails(s.bank)||DEFAULT_BANK_DETAILS;$('sQuoteDays').value=s.quoteValidDays??7;$('sInvoiceDays').value=s.invoiceDueDays??14}

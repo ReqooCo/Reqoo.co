@@ -615,6 +615,31 @@ body.rq-admin-shell.rqDocsPage .rqHistRow:focus-visible{outline:2px solid #aa925
 
 /* Source: documents-workspace-tokens.css */
 /* Workspace rules. The paper template is shared by preview, public links and print. */
+.rqOrderWorkspaces{margin-bottom:24px}
+.rqWorkspaceToolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:18px 22px;border-bottom:1px solid #e2e5da}
+.rqWorkspaceToolbar input{flex:1;min-width:220px!important}
+.rqWorkspaceRow{display:grid;grid-template-columns:minmax(180px,1.2fr) minmax(180px,1fr) 150px 175px;gap:18px;align-items:center;padding:22px;border-top:1px solid #e3e6dc;background:linear-gradient(120deg,#fffefb80,#f3f6ef60)}
+.rqWorkspaceIdentity h3{font-size:17px!important;letter-spacing:-.3px!important;margin:6px 0;color:#344c40!important;overflow-wrap:anywhere}
+.rqWorkspaceIdentity>b{font-size:13px;display:block}
+.rqWorkspaceIdentity small,.rqWorkspaceAmounts small{display:block;font-size:11px;color:#657463;line-height:1.8}
+.rqWorkspaceDocs{display:flex;gap:7px;flex-wrap:wrap}
+.rqWorkspaceDocs span{border:1px dashed #d9dfd2;border-radius:7px;padding:7px 9px;color:#687466;font-size:11px;background:#f7f8f2}
+.rqWorkspaceDocs span.available{border-style:solid;background:linear-gradient(120deg,#e8efdf,#f5f2e7);color:#425d42;border-color:#cfdcc3}
+.rqWorkspaceDocs b{margin-left:5px}
+.rqWorkspaceAmounts>b{font-size:17px;color:#344c40}
+.rqWorkspaceAction{display:flex;flex-direction:column;align-items:flex-start;gap:12px}
+.rqWorkspaceTabs{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 18px}
+.rqWorkspaceTabs button{border:1px solid #d6dfcd;background:#fafbf6;color:#5d7159;border-radius:8px;padding:10px 12px;font-size:12px;cursor:pointer;min-height:40px}
+.rqWorkspaceTabs button[aria-selected=true]{background:linear-gradient(120deg,#e4edda,#eee7d4);color:#345437;border-color:#b9cba9;font-weight:700}
+body.rq-admin-shell.rqDocsPage .rqWorkspaceTabs button{background:#fafbf6!important;color:#5d7159!important;border:1px solid #d6dfcd!important}
+body.rq-admin-shell.rqDocsPage .rqWorkspaceTabs button[aria-selected=true]{background:linear-gradient(120deg,#dce8ce,#eee5cc)!important;color:#2f4f35!important;border-color:#aec59c!important;box-shadow:inset 0 1px 0 #ffffffb0}
+.rqDocDrawerFooter #rqDrawerOpenSelected{display:none!important}
+.rqWorkspaceReceipt{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:10px 0;padding:16px;border:1px solid #d6e2cf;border-radius:10px;background:linear-gradient(120deg,#edf5e8,#f7f7ee)}
+.rqWorkspaceReceipt b,.rqWorkspaceReceipt strong{font-size:13px;color:#405d47}
+.rqWorkspaceReceipt p{font-size:11px;color:#657463}
+body.rq-admin-shell.rqDocsPage .rqDocDrawer{width:min(780px,100vw)!important}
+@media(max-width:1100px){.rqWorkspaceRow{grid-template-columns:1fr 1fr}.rqWorkspaceAmounts{grid-row:2}.rqWorkspaceAction{align-items:flex-end}}
+@media(max-width:600px){.rqWorkspaceToolbar{padding:14px}.rqWorkspaceToolbar input{flex-basis:100%}.rqWorkspaceRow{padding:18px 14px;gap:14px}.rqWorkspaceIdentity,.rqWorkspaceDocs{grid-column:1/-1}.rqWorkspaceAmounts{grid-row:auto}.rqWorkspaceAction{justify-content:flex-end}.rqWorkspaceAction .btn{font-size:11px!important}.rqWorkspaceTabs{gap:5px}.rqWorkspaceTabs button{padding:9px;font-size:11px}.rqWorkspaceReceipt{align-items:flex-start}}
 .rqMonthly{margin-bottom:24px;overflow:hidden!important}
 .rqMonthlyControls{display:flex;align-items:center;gap:10px;flex-shrink:0}
 .rqMonthlyControls label{font-size:12px;color:#62716a}
