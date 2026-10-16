@@ -1066,7 +1066,19 @@ function load(){
  const today=localDate();
  ['date','ibDate','icDate','twpsDate'].forEach(id=>{if($(id))$(id).value=today});
 }
-function hist(){let h=JSON.parse(localStorage.getItem('rqLraHist')||'[]');$('history').innerHTML=h.length?h.map(x=>'<div class="historyItem"><b>'+x.date+' @ '+x.time.replace(':','')+'</b><br>'+x.flow+'<br><button onclick="openHist('+x.id+')">Buka</button><button onclick="waHist('+x.id+')">WhatsApp</button></div>').join(''):'Belum ada report.'}
+function hist(){
+ let h=[];try{const saved=JSON.parse(localStorage.getItem('rqLraHist')||'[]');h=Array.isArray(saved)?saved:[]}catch{}
+ const host=$('history');host.replaceChildren();
+ if(!h.length){host.textContent='Belum ada report.';return}
+ h.forEach(x=>{
+  const item=document.createElement('div');item.className='historyItem';
+  const heading=document.createElement('b');heading.textContent=String(x.date||'-')+' @ '+String(x.time||'-').replace(':','');
+  const flow=document.createElement('div');flow.textContent=String(x.flow||'-');
+  const open=document.createElement('button');open.type='button';open.textContent='Buka';open.addEventListener('click',()=>openHist(x.id));
+  const wa=document.createElement('button');wa.type='button';wa.textContent='WhatsApp';wa.addEventListener('click',()=>waHist(x.id));
+  item.append(heading,flow,open,wa);host.append(item);
+ });
+}
 window.openHist=id=>{let h=JSON.parse(localStorage.getItem('rqLraHist')||'[]'),x=h.find(y=>y.id===id);if(!x)return;Object.entries(x.data).forEach(([k,z])=>{if(!$(k))return;if($(k).type==='checkbox')$(k).checked=!!z;else $(k).value=z});refresh();switchTab('ops');scrollTo({top:0,behavior:'smooth'})}
 window.waHist=id=>{let h=JSON.parse(localStorage.getItem('rqLraHist')||'[]'),x=h.find(y=>y.id===id);if(x)location.href='https://wa.me/?text='+encodeURIComponent(x.text)}
 $('save').onclick=()=>{let h=JSON.parse(localStorage.getItem('rqLraHist')||'[]');h.unshift({id:Date.now(),date:fdate(v('date')),time:v('time'),flow:'RWP '+v('rwp')+' / TWP '+v('twp'),text:opsText(),data:draft()});localStorage.setItem('rqLraHist',JSON.stringify(h.slice(0,60)));hist();$('notice').textContent='Report disimpan.'}
