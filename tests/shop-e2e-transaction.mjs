@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import {DatabaseSync} from 'node:sqlite';
 import {onRequest as shop} from '../api/shop-flow-v5.js';
 import {onRequest as admin} from '../api/shop-admin-flow-v18.js';
-import {md5Hex} from '../functions/api/toyyibpay-core.js';
+import {createHmac} from 'node:crypto';
 
 const sqlite=new DatabaseSync(':memory:');
 sqlite.exec(fs.readFileSync(new URL('../migrations/0001_reqoo_core.sql',import.meta.url),'utf8'));
@@ -37,8 +37,10 @@ const DB={
 const env={
   DB,
   REQOO_ADMIN_TOKEN:'e2e-admin',
-  TOYYIBPAY_USER_SECRET_KEY:'e2e-secret',
-  TOYYIBPAY_CATEGORY_CODE:'E2ECAT'
+  BILLPLZ_ENV:'sandbox',
+  BILLPLZ_API_KEY:'e2e-api',
+  BILLPLZ_X_SIGNATURE_KEY:'e2e-secret',
+  BILLPLZ_COLLECTION_ID:'E2ECAT'
 };
 
 const now=new Date().toISOString();
@@ -51,9 +53,9 @@ const originalFetch=globalThis.fetch;
 let providerRequest=null;
 globalThis.fetch=async(url,init={})=>{
   const href=String(url);
-  if(href.includes('toyyibpay.com/index.php/api/createBill')){
+  if(href.includes('billplz-sandbox.com/api/v4/bills')){
     providerRequest={url:href,params:new URLSearchParams(init.body)};
-    return new Response(JSON.stringify([{BillCode:'E2EBILL001'}]),{status:200,headers:{'content-type':'application/json'}});
+    return new Response(JSON.stringify({id:'E2EBILL001',url:'https://www.billplz-sandbox.com/bills/E2EBILL001'}),{status:200,headers:{'content-type':'application/json'}});
   }
   throw new Error('Unexpected external fetch in E2E test: '+href);
 };
@@ -78,17 +80,17 @@ try{
     name:'E2E Buyer',
     phone:'0123456789',
     email:'e2e@example.test',
-    payment:'toyyibpay',
+    payment:'billplz',
     expectedTotalMinor:100,
     items:[{productId:'prod_e2e',variantId:'var_e2e',qty:1}]
   });
   assert.equal(created.httpStatus,200);
   assert.equal(created.ok,true);
-  assert.equal(created.payment.provider,'TOYYIBPAY');
+  assert.equal(created.payment.provider,'BILLPLZ');
   assert.equal(created.payment.billCode,'E2EBILL001');
   assert.equal(created.amount,1);
-  assert.equal(providerRequest?.params.get('billAmount'),'100');
-  assert.equal(providerRequest?.params.get('billExternalReferenceNo'),created.orderRef);
+  assert.equal(providerRequest?.params.get('amount'),'100');
+  assert.equal(providerRequest?.params.get('reference_1'),created.orderRef);
 
   let order=sqlite.prepare('SELECT * FROM orders WHERE id=?').get(created.orderId);
   let legacy=sqlite.prepare('SELECT * FROM payments WHERE order_id=?').get(created.orderId);
@@ -98,18 +100,15 @@ try{
   assert.equal(legacy.provider_reference,'E2EBILL001');
   assert.equal(sqlite.prepare("SELECT stock_qty FROM product_variations WHERE id='var_e2e'").get().stock_qty,2);
 
-  const refno='FPX-E2E-001',status='1';
-  const paid=await shopCall('toyyibpayCallback',{
-    status,
-    order_id:created.orderRef,
-    refno,
-    billcode:'E2EBILL001',
-    amount:'1.00',
-    transaction_id:'TX-E2E-001',
-    hash:md5Hex(`e2e-secret${status}${created.orderRef}${refno}ok`)
+  const callback={id:'E2EBILL001',collection_id:'E2ECAT',paid:'true',state:'paid',amount:'100',paid_amount:'100'};
+  const signatureSource=Object.entries(callback).sort(([a],[b])=>a.toLowerCase().localeCompare(b.toLowerCase())).map(([k,v])=>k+v).join('|');
+  callback.x_signature=createHmac('sha256','e2e-secret').update(signatureSource).digest('hex');
+  const signedRequest=new Request('https://api.reqoo.co/api/shop?action=billplzCallback',{
+    method:'POST',headers:{'content-type':'application/x-www-form-urlencoded'},body:new URLSearchParams(callback).toString()
   });
-  assert.equal(paid.httpStatus,200);
-  assert.equal(paid.text,'OK');
+  const paid=await shop({request:signedRequest,env});
+  assert.equal(paid.status,200);
+  assert.equal((await paid.json()).ok,true);
 
   order=sqlite.prepare('SELECT * FROM orders WHERE id=?').get(created.orderId);
   legacy=sqlite.prepare('SELECT * FROM payments WHERE order_id=?').get(created.orderId);
@@ -127,7 +126,7 @@ try{
   assert.equal(summary.summary.payments.length,1);
   assert.match(summary.summary.payments[0].receipt_number,/^RC-\d{4}-\d{5}$/);
   assert.equal(summary.summary.payments[0].reference,'E2EBILL001');
-  assert.match(summary.summary.payments[0].note,/ToyyibPay|toyyibpay/i);
+  assert.match(summary.summary.payments[0].note,/Billplz|billplz/i);
 
   const duplicate=await adminCall('recordPayment',{orderId:created.orderId,amountMinor:100,method:'bank_transfer'});
   assert.equal(duplicate.httpStatus,409);
@@ -175,7 +174,7 @@ try{
   assert.equal(integrity.audit.overpaidInvoices,0);
   assert.equal(integrity.audit.receiptNumberCollisions,0);
 
-  console.log('PASS: ToyyibPay order -> callback -> canonical payment ledger -> Production -> invoice -> receipt -> Overview/Finance data stays consistent and duplicate payment is blocked.');
+  console.log('PASS: Billplz order -> verified callback -> canonical payment ledger -> Production -> invoice -> receipt -> Overview/Finance data stays consistent and duplicate payment is blocked.');
 }finally{
   globalThis.fetch=originalFetch;
   sqlite.close();

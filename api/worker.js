@@ -34,15 +34,14 @@ async function authorizeAdminRequest(request,env){const adminEnv=await withShopA
 function signaturePayload(d){return Object.entries(d).filter(([k,v])=>k!=='x_signature'&&v!==undefined&&v!==null).map(([k,v])=>[k,String(v)]).sort((a,b)=>a[0].toLowerCase().localeCompare(b[0].toLowerCase())).map(([k,v])=>k+v).join('|')}
 async function validBillplzCallback(request,env){const secret=String(env.BILLPLZ_X_SIGNATURE_KEY||'').trim();if(!secret)return false;let d={};try{const ct=(request.headers.get('content-type')||'').toLowerCase();d=ct.includes('application/json')?await request.clone().json():Object.fromEntries(new URLSearchParams(await request.clone().text()))}catch{return false}const supplied=String(d.x_signature||'').trim();if(!supplied)return false;const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);const digest=await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(signaturePayload(d)));const computed=[...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,'0')).join('');return computed.toLowerCase()===supplied.toLowerCase()}
 async function secureShop(request,env){
-  if(request.method==='POST'){
-    try{
-      const u=new URL(request.url);
-      if(u.pathname==='/api/billplz'||u.searchParams.get('action')==='billplz-callback'){
-        if(!(await validBillplzCallback(request,env)))return new Response('invalid signature',{status:400});
-      }
-    }catch{
-      return new Response('invalid signature',{status:400});
-    }
+  const action=new URL(request.url).searchParams.get('action')||'';
+  // Legacy Billplz route must not expose unrelated shop endpoints.
+  if(action!=='billplz-callback'&&action!=='billplz-redirect')return new Response('Not found',{status:404});
+  if(action==='billplz-callback'){
+    if(request.method!=='POST')return new Response('Method not allowed',{status:405});
+    if(!(await validBillplzCallback(request,env)))return new Response('invalid signature',{status:400});
+  }else if(request.method!=='GET'){
+    return new Response('Method not allowed',{status:405});
   }
   return handleShop({request,env});
 }

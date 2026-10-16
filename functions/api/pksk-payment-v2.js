@@ -1,12 +1,14 @@
-/* REQOO PKSK PAYMENT V2 - ToyyibPay online banking + AB Art QR */
-import {callbackAmountMatches,createToyyibBill,verifyToyyibCallback} from './toyyibpay-core.js';
+/* REQOO PKSK PAYMENT V2 - Billplz for new FPX payments; keep legacy ToyyibPay callbacks */
+import {callbackAmountMatches,verifyToyyibCallback} from './toyyibpay-core.js';
+import {createBillplzBill,parseBillplzCallback,verifyBillplzCallback,verifyBillplzRedirect,matchesBillplzPayment} from './billplz-core.js';
 const PRICE=35,MAX_DEVICES=3,SITE='https://pksk.sim.reqoo.co',PAYMENT_URL=`${SITE}/pksk/payment-v2/`;
 export async function onRequest({request,env}){
  if(request.method==='OPTIONS')return new Response(null,{status:204,headers:cors()});
  try{const u=new URL(request.url),q=Object.fromEntries(u.searchParams.entries()),a=String(q.action||'');
-  if(request.method==='GET'){if(a==='redirect')return redirect(q,env);return json({ok:false,error:'Method POST diperlukan.'},405)}
+  if(request.method==='GET'){if(a==='billplzRedirect')return billplzRedirect(q,env);if(a==='redirect')return redirect(q,env);return json({ok:false,error:'Method POST diperlukan.'},405)}
   if(request.method!=='POST')return json({ok:false,error:'Method POST diperlukan.'},405);
   if(a==='uploadReceipt')return uploadReceipt(request,env);
+  if(a==='billplzCallback')return billplzCallback(request,env);
   const ct=(request.headers.get('content-type')||'').toLowerCase();
   if(a==='callback'||a==='redirect'){let body={};if(ct.includes('application/x-www-form-urlencoded')||ct.includes('multipart/form-data'))body=Object.fromEntries(new URLSearchParams(await request.text()).entries());else if(ct.includes('application/json'))body=await request.json();const d={...q,...body};return a==='callback'?callback(d,env):redirect(d,env)}
   if(!ct.includes('application/json'))return json({ok:false,error:'Content-Type application/json diperlukan.'},415);
@@ -24,10 +26,74 @@ async function ensureCustomer(d,env){const p=phone(d.phone),e=str(d.email).toLow
 async function ensureProduct(env){let p=await env.DB.prepare("SELECT * FROM products WHERE slug IN ('pksk-50','pksk50') OR lower(name) LIKE '%pksk 50%' LIMIT 1").first();if(p)return p;const id=`prod_${crypto.randomUUID()}`,t=now();await env.DB.prepare(`INSERT INTO products (id,sku,name,slug,product_type,fulfillment_type,description,base_price_minor,currency,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`).bind(id,'PKSK-50','PKSK 50','pksk-50','licensed','licensed_access','Akses latihan PKSK 50 set',3500,'MYR','active',t,t).run();return await env.DB.prepare('SELECT * FROM products WHERE id=?').bind(id).first()}
 export async function issueLicense(o,env){const old=await env.DB.prepare('SELECT * FROM licenses WHERE order_id=? LIMIT 1').bind(o.id).first();if(old?.access_code)return old.access_code;const p=await ensureProduct(env),customerId=o.customer_id||await ensureCustomer({name:o.name||'PKSK Customer',phone:o.phone||'',email:o.email||''},env),code=await uniqueCode(env),t=now();await env.DB.prepare('INSERT INTO licenses (id,customer_id,product_id,order_id,access_code,status,max_devices,starts_at,expires_at,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)').bind(`lic_${crypto.randomUUID()}`,customerId,p.id,o.id,code,'active',MAX_DEVICES,t,null,t,t).run();return code}
 async function attachItem(orderId,p,env){if(await env.DB.prepare('SELECT id FROM order_items WHERE order_id=? LIMIT 1').bind(orderId).first())return;await env.DB.prepare('INSERT INTO order_items (id,order_id,product_id,product_name_snapshot,unit_price_minor,quantity,line_total_minor,created_at) VALUES (?,?,?,?,?,?,?,?)').bind(`item_${crypto.randomUUID()}`,orderId,p.id,p.name,3500,1,3500,now()).run()}
-async function createOrder(d,env,provider,ref){const name=str(d.name).slice(0,120),p=phone(d.phone),email=str(d.email).slice(0,160).toLowerCase();if(!name||p.length<10)return{ok:false,error:'Nama dan WhatsApp diperlukan.'};const customerId=await ensureCustomer({name,phone:p,email},env),prod=await ensureProduct(env),orderNo=str(d.orderNo)||makeOrder();let o=await env.DB.prepare('SELECT * FROM orders WHERE id=?').bind(orderNo).first();if(o?.payment_status==='paid')return{ok:true,orderNo,status:'paid',accessCode:await issueLicense({...o,name,phone:p,email},env)};if(!o){const t=now();await env.DB.prepare(`INSERT INTO orders (id,customer_id,source,currency,subtotal_minor,discount_minor,shipping_minor,tax_minor,total_minor,payment_status,fulfillment_status,referral_code,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(orderNo,customerId,'pksk','MYR',3500,0,0,0,3500,'pending','pending',str(d.referralCode||d.ref)||null,t,t).run();o=await env.DB.prepare('SELECT * FROM orders WHERE id=?').bind(orderNo).first();await attachItem(orderNo,prod,env)}else if(!await env.DB.prepare('SELECT id FROM order_items WHERE order_id=? LIMIT 1').bind(orderNo).first())await attachItem(orderNo,prod,env);if(provider==='qr'&&!ref)ref='manual';const existingPay=await env.DB.prepare('SELECT id FROM payments WHERE order_id=? AND provider=? AND status=? LIMIT 1').bind(orderNo,provider,'pending').first();if(!existingPay)await env.DB.prepare('INSERT INTO payments (id,order_id,provider,provider_reference,method,amount_minor,currency,status,metadata_json,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)').bind(`pay_${crypto.randomUUID()}`,orderNo,provider,ref||null,provider==='toyyibpay'?'fpx':'qr',3500,'MYR','pending',JSON.stringify({name,phone:p,email,transactionRef:provider==='qr'?ref:null}),now(),now()).run();return{ok:true,orderNo,status:'pending',amount:PRICE}}
-async function createBill(d,env){if(!env.DB)return{ok:false,error:'Database tidak tersedia.'};const o=await createOrder(d,env,'toyyibpay',null);if(!o.ok||o.status==='paid')return o;const previous=await env.DB.prepare("SELECT provider_reference FROM payments WHERE order_id=? AND provider='toyyibpay' AND status='pending' LIMIT 1").bind(o.orderNo).first();if(previous?.provider_reference)return{...o,provider:'toyyibpay',billCode:previous.provider_reference,billUrl:`${String(env.TOYYIBPAY_ENV||'').toLowerCase()==='sandbox'?'https://dev.toyyibpay.com':'https://toyyibpay.com'}/${previous.provider_reference}`};let bill;try{bill=await createToyyibBill({amountMinor:3500,orderRef:o.orderNo,name:str(d.name),phone:d.phone,email:d.email,billName:'REQOO PKSK 50',description:`Akses latihan PKSK 50 ${o.orderNo}`,returnUrl:`${SITE}/api/pksk-payment-v2?action=redirect`,callbackUrl:`${SITE}/api/pksk-payment-v2?action=callback`,emailContent:'Terima kasih membeli akses latihan REQOO PKSK 50.'},env)}catch(error){await env.DB.batch([env.DB.prepare("UPDATE payments SET status='failed',updated_at=? WHERE order_id=? AND provider='toyyibpay' AND status='pending'").bind(now(),o.orderNo),env.DB.prepare("UPDATE orders SET payment_status='failed',fulfillment_status='cancelled',updated_at=? WHERE id=?").bind(now(),o.orderNo)]);return{ok:false,error:error?.message||'ToyyibPay gagal mencipta bayaran.'}}try{await env.DB.prepare("UPDATE payments SET provider_reference=?,updated_at=? WHERE order_id=? AND provider='toyyibpay' AND status='pending'").bind(bill.billCode,now(),o.orderNo).run()}catch(error){console.error('REQOO PKSK ToyyibPay reference update:',error)}return{...o,provider:'toyyibpay',billCode:bill.billCode,billUrl:bill.billUrl,paymentRef:bill.billCode}}
+async function createOrder(d,env,provider,ref){const name=str(d.name).slice(0,120),p=phone(d.phone),email=str(d.email).slice(0,160).toLowerCase();if(!name||p.length<10)return{ok:false,error:'Nama dan WhatsApp diperlukan.'};const customerId=await ensureCustomer({name,phone:p,email},env),prod=await ensureProduct(env),orderNo=str(d.orderNo)||makeOrder();let o=await env.DB.prepare('SELECT * FROM orders WHERE id=?').bind(orderNo).first();if(o?.payment_status==='paid')return{ok:true,orderNo,status:'paid',accessCode:await issueLicense({...o,name,phone:p,email},env)};if(!o){const t=now();await env.DB.prepare(`INSERT INTO orders (id,customer_id,source,currency,subtotal_minor,discount_minor,shipping_minor,tax_minor,total_minor,payment_status,fulfillment_status,referral_code,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(orderNo,customerId,'pksk','MYR',3500,0,0,0,3500,'pending','pending',str(d.referralCode||d.ref)||null,t,t).run();o=await env.DB.prepare('SELECT * FROM orders WHERE id=?').bind(orderNo).first();await attachItem(orderNo,prod,env)}else if(!await env.DB.prepare('SELECT id FROM order_items WHERE order_id=? LIMIT 1').bind(orderNo).first())await attachItem(orderNo,prod,env);if(provider==='qr'&&!ref)ref='manual';const existingPay=await env.DB.prepare('SELECT id FROM payments WHERE order_id=? AND provider=? AND status=? LIMIT 1').bind(orderNo,provider,'pending').first();if(!existingPay)await env.DB.prepare('INSERT INTO payments (id,order_id,provider,provider_reference,method,amount_minor,currency,status,metadata_json,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)').bind(`pay_${crypto.randomUUID()}`,orderNo,provider,ref||null,(provider==='toyyibpay'||provider==='billplz')?'fpx':'qr',3500,'MYR','pending',JSON.stringify({name,phone:p,email,transactionRef:provider==='qr'?ref:null}),now(),now()).run();return{ok:true,orderNo,status:'pending',amount:PRICE}}
+async function createBill(d,env){
+ if(!env.DB)return{ok:false,error:'Database tidak tersedia.'};
+ const o=await createOrder(d,env,'billplz',null);
+ if(!o.ok||o.status==='paid')return o;
+ const existing=await env.DB.prepare("SELECT provider_reference,metadata_json FROM payments WHERE order_id=? AND provider='billplz' AND status='pending' LIMIT 1").bind(o.orderNo).first();
+ if(existing?.provider_reference){
+   let meta={};try{meta=JSON.parse(existing.metadata_json||'{}')}catch{}
+   if(meta.billUrl)return{...o,provider:'billplz',billCode:existing.provider_reference,billUrl:meta.billUrl};
+   return{ok:false,error:'Bil lama wujud tetapi pautan bayaran tiada. Hubungi pentadbir.'};
+ }
+ let bill;
+ try{
+   bill=await createBillplzBill({
+     amountMinor:3500,orderRef:o.orderNo,name:str(d.name),phone:d.phone,email:d.email,
+     description:'REQOO PKSK 50 '+o.orderNo,
+     returnUrl:SITE+'/api/pksk-payment-v2?action=billplzRedirect',
+     callbackUrl:SITE+'/api/pksk-payment-v2?action=billplzCallback'
+   },env);
+ }catch(error){
+   await env.DB.batch([
+     env.DB.prepare("UPDATE payments SET status='failed',updated_at=? WHERE order_id=? AND provider='billplz' AND status='pending'").bind(now(),o.orderNo),
+     env.DB.prepare("UPDATE orders SET payment_status='failed',fulfillment_status='cancelled',updated_at=? WHERE id=? AND payment_status='pending'").bind(now(),o.orderNo)
+   ]);
+   return{ok:false,error:'Billplz gagal menyediakan bayaran. Sila cuba lagi atau hubungi kami.'};
+ }
+ await env.DB.prepare("UPDATE payments SET provider_reference=?,metadata_json=?,updated_at=? WHERE order_id=? AND provider='billplz' AND status='pending'")
+   .bind(bill.billId,JSON.stringify({billUrl:bill.billUrl}),now(),o.orderNo).run();
+ return{...o,provider:'billplz',billCode:bill.billId,billUrl:bill.billUrl,paymentRef:bill.billId};
+}
 async function createQR(d,env){if(!env.DB)return{ok:false,error:'Database tidak tersedia.'};const tx=str(d.transactionRef).slice(0,100);if(tx.length<4)return{ok:false,error:'Nombor rujukan transaksi diperlukan.'};return{...(await createOrder(d,env,'qr',tx)),method:'qr',transactionRef:tx}}
 async function uploadReceipt(request,env){const form=await request.formData(),orderNo=str(form.get('orderNo')).slice(0,100),file=form.get('receipt');if(!orderNo||!file||typeof file.arrayBuffer!=='function')return json({ok:false,error:'Order dan resit diperlukan.'},400);if(file.size>5*1024*1024)return json({ok:false,error:'Saiz resit maksimum 5MB.'},400);const type=str(file.type).toLowerCase();if(!['image/jpeg','image/png','image/webp','application/pdf'].includes(type))return json({ok:false,error:'Resit mesti JPG, PNG, WEBP atau PDF.'},400);const o=await env.DB.prepare('SELECT id FROM orders WHERE id=? LIMIT 1').bind(orderNo).first();if(!o)return json({ok:false,error:'Order tidak dijumpai.'},404);const p=await env.DB.prepare("SELECT id,metadata_json FROM payments WHERE order_id=? AND provider='qr' ORDER BY created_at DESC LIMIT 1").bind(orderNo).first();if(!p)return json({ok:false,error:'Bayaran QR tidak dijumpai.'},404);if(!env.MEDIA)return json({ok:false,error:'Storage resit belum tersedia.'},500);const ext=type==='application/pdf'?'pdf':type==='image/jpeg'?'jpg':type.split('/')[1],key=`pksk-receipts/${orderNo}/${crypto.randomUUID()}.${ext}`;await env.MEDIA.put(key,await file.arrayBuffer(),{httpMetadata:{contentType:type,cacheControl:'private, no-store'}});let meta={};try{meta=JSON.parse(p.metadata_json||'{}')}catch{}meta.receipt_key=key;meta.receipt_name=str(file.name).slice(0,180);meta.receipt_type=type;meta.receipt_uploaded_at=now();await env.DB.prepare('UPDATE payments SET metadata_json=?,updated_at=? WHERE id=?').bind(JSON.stringify(meta),now(),p.id).run();return json({ok:true,orderNo,uploaded:true})}
 async function status(d,env){const o=str(d.orderNo);if(!o)return{ok:false,error:'Order diperlukan.'};const r=await env.DB.prepare('SELECT * FROM orders WHERE id=?').bind(o).first();if(!r)return{ok:true,found:false};const l=await env.DB.prepare('SELECT * FROM licenses WHERE order_id=? LIMIT 1').bind(o).first();const p=await env.DB.prepare("SELECT metadata_json FROM payments WHERE order_id=? ORDER BY created_at DESC LIMIT 1").bind(o).first();let receiptUploaded=false;try{receiptUploaded=!!JSON.parse(p?.metadata_json||'{}').receipt_key}catch{}return{ok:true,found:true,orderNo:o,status:r.payment_status||'pending',accessCode:l?.access_code||'',receiptUploaded}}
 async function callback(d,env){if(!env.DB||!env.TOYYIBPAY_USER_SECRET_KEY)return new Response('Configuration missing',{status:500});const verified=verifyToyyibCallback(d,env);if(!verified.valid)return new Response('Invalid hash',{status:401});if(!verified.orderId)return new Response('Missing order id',{status:400});const pay=await env.DB.prepare("SELECT p.*,o.total_minor FROM payments p JOIN orders o ON o.id=p.order_id WHERE p.provider='toyyibpay' AND (p.order_id=? OR p.provider_reference=?) LIMIT 1").bind(verified.orderId,verified.billCode).first();if(!pay)return new Response('OK');if(verified.billCode&&pay.provider_reference&&verified.billCode!==pay.provider_reference)return new Response('Bill mismatch',{status:400});if(!verified.paid)return new Response('OK');if(!callbackAmountMatches(verified.amount,pay.amount_minor))return new Response('Amount mismatch',{status:400});if(pay.status!=='paid'){const t=now();await env.DB.prepare("UPDATE payments SET status='paid',paid_at=?,updated_at=?,metadata_json=? WHERE id=?").bind(t,t,JSON.stringify({refno:verified.refno,transactionId:verified.transactionId}),pay.id).run();await env.DB.prepare("UPDATE orders SET payment_status='paid',fulfillment_status='fulfilled',updated_at=? WHERE id=?").bind(t,pay.order_id).run()}const o=await env.DB.prepare('SELECT o.*,c.name,c.phone,c.email FROM orders o JOIN customers c ON c.id=o.customer_id WHERE o.id=?').bind(pay.order_id).first();await issueLicense(o,env);return new Response('OK')}
 async function redirect(d,env){const orderId=str(d.order_id),billCode=str(d.billcode);const p=orderId?await env.DB.prepare("SELECT order_id,status FROM payments WHERE provider='toyyibpay' AND order_id=? LIMIT 1").bind(orderId).first():billCode?await env.DB.prepare("SELECT order_id,status FROM payments WHERE provider='toyyibpay' AND provider_reference=? LIMIT 1").bind(billCode).first():null;const u=new URL(PAYMENT_URL);u.searchParams.set('payment',p?.status==='paid'?'success':'pending');if(p?.order_id)u.searchParams.set('order',p.order_id);return new Response(null,{status:302,headers:{Location:u.toString(),'cache-control':'no-store'}})}
+
+
+async function billplzCallback(request,env){
+ if(!env.DB)return json({ok:false,error:'Database unavailable'},503);
+ const data=await parseBillplzCallback(request);
+ if(!data)return json({ok:false,error:'Invalid callback format'},400);
+ const v=await verifyBillplzCallback(data,env);
+ if(!v.valid)return json({ok:false,error:'Invalid X Signature'},401);
+ const p=await env.DB.prepare("SELECT p.*,o.total_minor,o.payment_status,o.source FROM payments p JOIN orders o ON o.id=p.order_id WHERE p.provider='billplz' AND p.provider_reference=? LIMIT 1").bind(v.billId).first();
+ if(!p)return json({ok:false,error:'Unknown bill'},404);
+ if(!v.paid)return json({ok:true});
+ if(p.source!=='pksk'||!matchesBillplzPayment(v,p,env)||Number(p.total_minor)!==Number(p.amount_minor))
+   return json({ok:false,error:'Bill mismatch'},409);
+ if(p.status!=='paid'){
+   if(p.status!=='pending'||p.payment_status==='paid')return json({ok:false,error:'Order is not pending'},409);
+   const t=now();
+   await env.DB.batch([
+     env.DB.prepare("UPDATE payments SET status='paid',paid_at=?,updated_at=? WHERE id=? AND status='pending'").bind(t,t,p.id),
+     env.DB.prepare("UPDATE orders SET payment_status='paid',fulfillment_status='fulfilled',updated_at=? WHERE id=? AND payment_status='pending'").bind(t,p.order_id)
+   ]);
+ }
+ const o=await env.DB.prepare("SELECT o.*,c.name,c.phone,c.email FROM orders o JOIN customers c ON c.id=o.customer_id WHERE o.id=?").bind(p.order_id).first();
+ await issueLicense(o,env);
+ return json({ok:true});
+}
+
+async function billplzRedirect(params,env){
+ const v=await verifyBillplzRedirect(params,env);
+ const p=v.valid&&v.billId
+  ?await env.DB.prepare("SELECT order_id,status FROM payments WHERE provider='billplz' AND provider_reference=? LIMIT 1").bind(v.billId).first()
+  :null;
+ const url=new URL(PAYMENT_URL);
+ url.searchParams.set('payment',p?.status==='paid'?'success':'pending');
+ if(p?.order_id)url.searchParams.set('order',p.order_id);
+ return new Response(null,{status:302,headers:{Location:url.toString(),'cache-control':'no-store'}});
+}
