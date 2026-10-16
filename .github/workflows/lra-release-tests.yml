@@ -19,7 +19,7 @@ jobs:
           node-version: 24
       - name: Install test-only dependencies
         run: |
-          npm install --prefix /tmp/lra-runtime playwright@1.51.1 @axe-core/playwright@4.14.0 --no-audit --no-fund
+          npm install --prefix /tmp/lra-runtime playwright@1.51.1 @axe-core/playwright@4.14.0 miniflare@4.20260730.0 --no-audit --no-fund
           /tmp/lra-runtime/node_modules/.bin/playwright install --with-deps chromium ${{ matrix.browser }}
       - name: Run isolated browser, database and offline checks
         env:
@@ -28,6 +28,7 @@ jobs:
           REQOO_TEST_OUTPUT: /tmp/lra-results
         run: |
           node tests/lra-api.mjs
+          LRA_D1_RUNTIME=workerd node tests/lra-api.mjs
           node tests/app-cache-isolation.mjs
           node tests/lra-browser.cjs
           node tests/lra-pwa.cjs

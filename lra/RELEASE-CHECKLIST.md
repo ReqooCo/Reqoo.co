@@ -47,7 +47,7 @@ This verifies the visible table rows, not the entire 7.50–12.00 m range. The p
 ## Remaining release gates
 
 - [ ] **Physical iPhone Safari and Android Chrome:** keyboard/date controls, install/standalone mode, safe areas, back navigation from WhatsApp and accessibility with VoiceOver/TalkBack.
-- [x] **Chromium and WebKit CI:** both jobs passed on commit `3fdb93e` in [run 38925643184](https://github.com/ReqooCo/Reqoo.co/actions/runs/38925643184). Local WebKit launch was unavailable, so this evidence comes from the GitHub runner. Any subsequent commit must also pass the same checks.
+- [x] **Chromium and WebKit CI:** both jobs passed on commit `a6fde30` in [run 38966325892](https://github.com/ReqooCo/Reqoo.co/actions/runs/38966325892). Local WebKit launch was unavailable, so this evidence comes from the GitHub runner. Any subsequent commit must also pass the same checks.
 - [ ] **Cloudflare D1 staging integration:** test transactional guards and real binding behavior with two operators. The local SQLite adapter is not a Cloudflare staging deployment.
 - [ ] **Full current Pond C table:** confirm remaining storage levels with the approved source. SJAM C manual-entry/zero rule was confirmed by the operator on 17 October 2026.
 - [ ] **Staging WhatsApp handoff:** confirm the phone opens the intended text/contact picker without submitting an operational message.
@@ -66,10 +66,11 @@ Deploy/test the frontend and API as one release. Do not deploy only the new fron
 From repository root, Node 24:
 
 ```sh
-npm install --prefix /tmp/lra-runtime playwright@1.51.1 @axe-core/playwright@4.14.0 --no-audit --no-fund
+npm install --prefix /tmp/lra-runtime playwright@1.51.1 @axe-core/playwright@4.14.0 miniflare@4.20260730.0 --no-audit --no-fund
 /tmp/lra-runtime/node_modules/.bin/playwright install --with-deps chromium webkit
 export NODE_PATH=/tmp/lra-runtime/node_modules
 node tests/lra-api.mjs
+LRA_D1_RUNTIME=workerd node tests/lra-api.mjs
 node tests/app-cache-isolation.mjs
 node tests/lra-browser.cjs
 REQOO_BROWSER=webkit node tests/lra-browser.cjs
@@ -87,3 +88,19 @@ The new photograph `IMG_3E50BB14-2275-4302-9EA0-6C729D76361E.jpeg` visibly shows
 New regression cases: RW 2485 m³/h plus manual SJAM C 100 m³/h gives 44.4 days at 11.99 m using the existing combined-outflow formula; explicit SJAM C 0 gives 46.1 days. Changing daily actual, or restoring the legacy auto flag, must not overwrite the manual hourly reading. The nonzero example is a software arithmetic check, not an additional official table row.
 
 Cache revision for this clarification: v48; morning asset v15. Earlier v47 results above remain historical evidence; local Chromium browser/axe, API and PWA checks passed again for this revision; CI must also pass before release. Physical-device, D1 staging and full storage-table gates remain open.
+
+## Local D1 verification and deployment review
+
+- [x] The complete API regression suite also passes against ephemeral **Miniflare 4.20260730.0 / workerd D1**: stale writes, injected read/write races, atomic rollback, repeated Undo, history, manual meter preservation and exact WhatsApp redirects. Handlers run in Node with the real local D1 binding; this does not certify deployed Worker routing or remote D1. The fixture uses compatibility date 2026-07-30 (supported by the pinned binary), not production's 2026-08-23. No production config, credentials or database is loaded.
+- [x] The same D1 suite is added to both CI browser jobs. The previous SJAM revision `a6fde30` passed all three workflows: isolated release checks (38966325892), Production smoke (38966325960), Shop regression (38966325941).
+- [x] Deployment review: `.github/workflows/deploy.yml` deploys on every push to `main`, applies remote migrations, then API and web sequentially. Merging this PR therefore changes production automatically. The alternate web workflow applies only to `rebuild/v1-simple`. No workflow was triggered manually and no deployment credentials were used.
+- [ ] Final remote staging and device acceptance remains required; local D1 success does not close those gates.
+
+### Acceptance handoff (synthetic records only)
+
+1. Provide an isolated Worker/D1 staging environment with no production bindings and publish this branch's frontend/API together. Record the tested commit and staging URL.
+2. On a physical iPhone and Android phone, open all six tabs, enter synthetic readings, reload drafts, install the PWA, edit offline and reconnect. Verify keyboard, date controls, safe areas and screen-reader labels.
+3. Open the same synthetic stock/report in two sessions. Save in session A, then attempt a different save in B: B must receive a conflict without changing A's data. Reload explicitly, retry, and verify history plus two successive Undo actions.
+4. Open each WhatsApp report in the phone's contact picker, check the full text and return to the app **without sending**. No access code may appear in the handoff URL.
+5. Compare the current approved workbook's remaining levels and nonzero SJAM scenario with the app; record source revision, input/output and reviewer. The six visible rows alone are insufficient.
+6. Record pass/fail evidence here. Only after every gate passes should PR #182 be marked ready and merged during a coordinated API/web release. Monitor the deployment workflow and verify the new asset versions; if deployment partially fails, restore the matching previous API/web release without changing D1 records or deleting local drafts.
