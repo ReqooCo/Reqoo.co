@@ -22,6 +22,7 @@ async function ensure(env){
   let pending=ENSURE_CACHE.get(db);if(pending)return pending;
   pending=db.batch([
     db.prepare("CREATE TABLE IF NOT EXISTS reqoo_payments(id TEXT PRIMARY KEY,order_id TEXT NOT NULL,invoice_document_id TEXT,receipt_number TEXT NOT NULL UNIQUE,amount_minor INTEGER NOT NULL,payment_type TEXT NOT NULL CHECK(payment_type IN ('deposit','partial','final','full')),method TEXT NOT NULL,reference TEXT,note TEXT,paid_at TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'confirmed',share_token TEXT NOT NULL UNIQUE,created_at TEXT NOT NULL,updated_at TEXT NOT NULL)"),
+    db.prepare('CREATE TABLE IF NOT EXISTS reqoo_workspace_archives(order_id TEXT PRIMARY KEY,reference TEXT NOT NULL,reason TEXT NOT NULL,actor_name TEXT NOT NULL,created_at TEXT NOT NULL)'),
     db.prepare('CREATE INDEX IF NOT EXISTS idx_reqoo_payments_order ON reqoo_payments(order_id,paid_at)'),
     db.prepare('CREATE INDEX IF NOT EXISTS idx_reqoo_payments_invoice ON reqoo_payments(invoice_document_id,paid_at)'),
     db.prepare('CREATE TABLE IF NOT EXISTS reqoo_document_sequences(seq_key TEXT PRIMARY KEY,next_number INTEGER NOT NULL DEFAULT 1,updated_at TEXT NOT NULL)')
@@ -411,7 +412,7 @@ const WORKSPACES_CTE="WITH doc_rollup AS (SELECT order_id,COUNT(*) doc_count,MAX
 async function documentWorkspaces(d,env){
  await ensure(env);
  const number=(v,f,max)=>Number.isFinite(Number(v))?Math.min(max,Math.max(0,Math.floor(Number(v)))):f;
- const limit=Math.max(1,number(d.limit??40,40,100)),offset=number(d.offset??0,0,1000000),q=S(d.q).slice(0,160),where=['1=1'],args=[];
+ const limit=Math.max(1,number(d.limit??40,40,100)),offset=number(d.offset??0,0,1000000),q=S(d.q).slice(0,160),where=['NOT EXISTS(SELECT 1 FROM reqoo_workspace_archives a WHERE a.order_id=w.order_id)'],args=[];
  if(q){where.push("(instr(lower(w.reference),lower(?))>0 OR instr(lower(w.customer_name),lower(?))>0 OR instr(w.customer_phone,?)>0 OR instr(lower(w.order_id),lower(?))>0 OR EXISTS(SELECT 1 FROM reqoo_documents d WHERE d.order_id=w.order_id AND instr(lower(d.number),lower(?))>0) OR EXISTS(SELECT 1 FROM reqoo_payments p WHERE p.order_id=w.order_id AND p.status='confirmed' AND instr(lower(p.receipt_number),lower(?))>0))");args.push(q,q,q,q,q,q)}
  const filter=S(d.filter);if(filter==='quotation')where.push("stage='quotation'");if(filter==='paid')where.push("stage='paid'");if(filter==='outstanding')where.push("stage IN ('invoice','partial') AND balance_minor>0");
  const clause=where.join(' AND '),[rows,count]=await Promise.all([env.DB.prepare(WORKSPACES_CTE+'SELECT w.* FROM workspaces w WHERE '+clause+' ORDER BY datetime(updated_at) DESC,order_id DESC LIMIT ? OFFSET ?').bind(...args,limit,offset).all(),env.DB.prepare(WORKSPACES_CTE+'SELECT COUNT(*) total FROM workspaces w WHERE '+clause).bind(...args).first()]);
