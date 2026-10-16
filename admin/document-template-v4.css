@@ -92,3 +92,5 @@
  .rqPaperTop{margin-top:1mm!important}
  .rqPaperFoot{margin-top:auto!important}
 }
+
+@media print{.rqPaper{overflow:visible!important;break-inside:auto!important;height:auto!important;aspect-ratio:auto!important}.rqPaper table{break-inside:auto}.rqPaper thead{display:table-header-group}.rqPaper tr{break-inside:avoid}.rqPaperFoot{break-inside:avoid}}

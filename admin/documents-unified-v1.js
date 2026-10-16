@@ -12,27 +12,24 @@ function rowType(row){
 }
 function rows(){return $$('#docHistory .rqHistRow')}
 function syncCounts(){
- const all=rows();
- const set=(id,n)=>{const el=document.getElementById(id);if(el)el.textContent=String(n)};
- set('docSaved',all.length);
- set('docQuoteCount',all.filter(r=>rowType(r)==='quotation').length);
- set('docInvoiceCount',all.filter(r=>rowType(r)==='invoice').length);
- set('docReceiptCount',all.filter(r=>rowType(r)==='receipt').length);
- $$('.rqDocTab').forEach(b=>{const type=b.dataset.docFilter,count=type==='all'?all.length:all.filter(r=>rowType(r)===type).length;const badge=b.querySelector('em');if(badge)badge.textContent=String(count)});
+ const counts=window.__REQOO_DOCUMENT_COUNTS__||{};
+ const set=(id,n)=>{const el=document.getElementById(id);if(el)el.textContent=n===undefined?'—':String(n)};
+ set('docSaved',counts.all);set('docQuoteCount',counts.quotation);set('docInvoiceCount',counts.invoice);set('docReceiptCount',counts.receipt);
+ $$('.rqDocTab').forEach(b=>{const badge=b.querySelector('em');if(badge)badge.textContent=counts[b.dataset.docFilter]??'—'});
 }
 function applyFilter(){
- const q=($('#docUnifiedSearch')?.value||'').trim().toLowerCase();
  let shown=0;
  rows().forEach(row=>{
-   const type=rowType(row),okType=activeFilter==='all'||type===activeFilter,okSearch=!q||row.textContent.toLowerCase().includes(q),okFinance=row.dataset.rqFinanceMatch!=='0',show=okType&&okSearch&&okFinance;
+   // Search is authoritative on the server, including order references absent from row text.
+   const type=rowType(row),okType=activeFilter==='all'||type===activeFilter,okFinance=row.dataset.rqFinanceMatch!=='0',show=okType&&okFinance;
    row.hidden=!show;if(show)shown++;
  });
- const empty=$('#docUnifiedEmpty');if(empty)empty.hidden=shown>0;
+ const empty=$('#docUnifiedEmpty');if(empty)empty.hidden=shown>0||$('#docHistory')?.getAttribute('aria-busy')==='true';
  $$('.rqDocTab').forEach(b=>{const on=b.dataset.docFilter===activeFilter;b.classList.toggle('active',on);b.setAttribute('aria-selected',on?'true':'false')});
 }
 function refreshUnified(){syncCounts();applyFilter()}
 function initTabs(){
- $$('.rqDocTab').forEach(b=>b.addEventListener('click',()=>{activeFilter=b.dataset.docFilter||'all';applyFilter()}));
+ $$('.rqDocTab').forEach(b=>b.addEventListener('click',()=>{activeFilter=b.dataset.docFilter||'all';document.dispatchEvent(new CustomEvent('rq:documents-type-filter',{detail:{type:activeFilter}}));applyFilter()}));
  $('#docUnifiedSearch')?.addEventListener('input',applyFilter);
  document.addEventListener('rq:documents-finance-filter',applyFilter);
 }
@@ -47,6 +44,22 @@ function initQuoteComposer(){
  new MutationObserver(sync).observe(body,{attributes:true,attributeFilter:['class']});btn.addEventListener('click',()=>setTimeout(sync,0));sync();
 }
 function initObserver(){const h=$('#docHistory');if(!h)return;new MutationObserver(()=>setTimeout(refreshUnified,0)).observe(h,{childList:true,subtree:true});setTimeout(refreshUnified,100)}
-function init(){initTabs();initOrderDrawer();initQuoteComposer();initObserver()}
+function initDialogs(){
+ let current=null,returnTo=null;
+ const sync=()=>{const next=$('.rqPaymentModal.open')||$('.rqDocsModal.open')||$('.rqDocDrawer.open');if(next===current)return;
+  if(next){if(!current)returnTo=document.activeElement;current=next;next.setAttribute('role','dialog');next.setAttribute('aria-modal','true');next.querySelector('button')?.focus()}
+  else{current=null;if(returnTo?.isConnected)returnTo.focus();returnTo=null}
+ };
+ new MutationObserver(sync).observe(document.body,{subtree:true,attributes:true,attributeFilter:['class']});
+ document.addEventListener('keydown',e=>{if(!current)return;
+  if(e.key==='Escape'){e.preventDefault();current.querySelector('.rqDocsClose,.rqPaymentClose,.rqDocDrawerClose')?.click();return}
+  if(e.key!=='Tab')return;
+  const focusable=[...current.querySelectorAll('button,input,textarea,select,a[href],summary,[tabindex="0"]')].filter(x=>!x.disabled&&x.getClientRects().length);
+  const first=focusable[0],last=focusable.at(-1);if(!first)return;
+  if(e.shiftKey&&(document.activeElement===first||!current.contains(document.activeElement))){e.preventDefault();last.focus()}
+  else if(!e.shiftKey&&(document.activeElement===last||!current.contains(document.activeElement))){e.preventDefault();first.focus()}
+ });
+}
+function init(){document.addEventListener('rq:documents-counts',syncCounts);initTabs();initOrderDrawer();initQuoteComposer();initObserver();initDialogs()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();

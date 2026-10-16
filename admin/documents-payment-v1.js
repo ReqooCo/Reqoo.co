@@ -37,8 +37,9 @@ function enrichInvoices(){
   const metaHtml=`<span>Total <b>${money(s.totalMinor)}</b></span><span>Paid <b class="${s.balanceMinor===0?'settled':''}">${money(s.paidMinor)}</b></span><span>Balance <b class="${s.balanceMinor===0?'settled':'balance'}">${money(s.balanceMinor)}</b></span>`;if(meta&&meta.innerHTML!==metaHtml)meta.innerHTML=metaHtml;
   const badge=row.querySelector('.rqDocBadge');if(badge&&s.paymentStatus){const label=s.paymentStatus==='partial'?'PARTIAL':s.paymentStatus==='paid'?'PAID':badge.textContent;if(badge.textContent!==label)badge.textContent=label;badge.classList.toggle('paid',s.paymentStatus==='paid');badge.classList.toggle('pending',s.paymentStatus!=='paid')}
   const acts=row.querySelector('.rqHistActions');if(!acts)return;let btn=acts.querySelector('.rqRecordPaymentBtn');
-  if(s.balanceMinor>0){if(!btn){btn=document.createElement('button');btn.type='button';btn.className='btn rqRecordPaymentBtn';btn.textContent='Record Payment';acts.prepend(btn)}btn.onclick=()=>openPayment(doc,s)}else if(btn)btn.remove();
-  let fix=acts.querySelector('.rqCorrectPaymentBtn');if(s.paymentStatus==='paid'){if(!fix){fix=document.createElement('button');fix.type='button';fix.className='btn rqCorrectPaymentBtn';fix.textContent='Betulkan / Undo Paid';acts.prepend(fix)}fix.onclick=()=>correctPaid(doc,s)}else if(fix)fix.remove()
+  const preview=acts.querySelector('[data-open-doc]');if(preview)preview.classList.toggle('primary',s.balanceMinor<=0);
+  if(s.balanceMinor>0){if(!btn){btn=document.createElement('button');btn.type='button';btn.className='btn primary rqRecordPaymentBtn';btn.textContent='Record Payment';acts.prepend(btn)}btn.onclick=()=>openPayment(doc,s)}else if(btn)btn.remove();
+  let fix=acts.querySelector('.rqCorrectPaymentBtn');if(s.paymentStatus==='paid'){if(!fix){fix=document.createElement('button');fix.type='button';fix.className='btn rqCorrectPaymentBtn';fix.textContent='Betulkan / Undo Paid';(acts.querySelector('.rqDocumentMenu')||acts).append(fix)}fix.onclick=()=>correctPaid(doc,s)}else if(fix)fix.remove()
  })
 }
 function clearPaymentRows(){$$('#docHistory .rqPaymentReceiptRow').forEach(r=>r.remove())}
@@ -81,7 +82,7 @@ async function refreshData(resetPayments=true){
  try{
   const shared=Array.isArray(window.__REQOO_DOCUMENTS__)?window.__REQOO_DOCUMENTS__:[],orderIds=[...new Set(shared.filter(x=>x.type==='invoice').map(x=>String(x.order_id||'')).filter(Boolean))];
   paymentQuery=($('#docUnifiedSearch')?.value||'').trim();
-  const d=await api('documentsFinanceDashboard',{orderIds,includePayments:true,paymentLimit:80,paymentOffset:resetPayments?0:paymentOffset,q:paymentQuery},'POST');
+  const d=await api('documentsFinanceDashboard',{orderIds,includePayments:false,paymentLimit:80,paymentOffset:resetPayments?0:paymentOffset,q:paymentQuery},'POST');
   docs=shared.slice();summaries=new Map((d.summaries||[]).map(x=>[String(x.orderId),x]));
   if(resetPayments){payments=Array.isArray(d.payments)?d.payments:[];paymentOffset=payments.length;clearPaymentRows()}else{const seen=new Set(payments.map(x=>String(x.id)));for(const p of d.payments||[])if(!seen.has(String(p.id))){payments.push(p);seen.add(String(p.id))}paymentOffset=Number(d.paymentOffset||0)+(d.payments||[]).length}
   paymentsHasMore=!!d.paymentsHasMore;enrichInvoices();injectPaymentReceipts();

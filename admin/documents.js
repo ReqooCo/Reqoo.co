@@ -1,6 +1,7 @@
 (()=>{
 'use strict';
 const API='/api/shop-admin';
+let documentOffset=0,documentTotal=0,documentHasMore=false,documentSeq=0,documentFilter='all';
 let orders=[],documents=[],activeDoc=null,editingQuoteId=null,docSettings={},ordersLoaded=false,ordersLoading=null,orderOffset=0,orderTotal=0,orderHasMore=false,orderLoadSeq=0,settingsLoaded=false,settingsLoading=null,docsLoading=null,documentsReady=false;const deepParams=new URLSearchParams(location.search),initialDocOrder=deepParams.get('order')||'',initialDocQuery=deepParams.get('q')||'';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -50,13 +51,13 @@ function publishDocuments(){
   }
 }
 function renderHistory(){
-  $('docSaved').textContent=documents.length;
+
   $('docHistory').innerHTML=documents.map(d=>{
     const quote=d.type==='quotation',paid=!quote&&String(d.payment_status).toLowerCase()==='paid';
     const status=quote?String(d.status||'issued').toUpperCase():(paid?'PAID':String(d.status||'issued').toUpperCase());
-    return `<article class="rqHistRow"><div><div class="rqHistType">${esc(typeLabel(d.type).toUpperCase())}</div><div class="rqHistNo">${esc(d.number)}</div></div><div class="rqHistDate">${esc(dateFmt(d.issued_at||d.created_at))}</div><div class="rqHistCustomer">${esc(d.customer_name||'Customer')}<br><span class="rqDocMeta">${esc(d.customer_phone||'')}</span></div><div><span class="rqDocBadge ${paid?'paid':'pending'}">${esc(status)}</span></div><div class="rqHistActions"><button class="btn" data-open-doc="${esc(d.id)}">Buka</button><button class="btn" data-share-doc="${esc(d.id)}">WhatsApp</button></div></article>`;
+    return `<article class="rqHistRow" data-document-id="${esc(d.id)}"><div><div class="rqHistType">${esc(typeLabel(d.type).toUpperCase())}</div><div class="rqHistNo">${esc(d.number)}</div></div><div class="rqHistDate">${esc(dateFmt(d.issued_at||d.created_at))}</div><div class="rqHistCustomer">${esc(d.customer_name||'Customer')}<br><span class="rqDocMeta">${esc(d.customer_phone||'')}</span></div><div><span class="rqDocBadge ${paid?'paid':'pending'}">${esc(status)}</span></div><div class="rqHistActions"><button class="btn primary" data-open-doc="${esc(d.id)}">${quote?(d.status==='accepted'?'Teruskan ke order':'Semak quotation'):'Pratonton'}</button><details class="rqDocumentMore"><summary aria-label="Tindakan lain untuk ${esc(d.number)}">Lagi</summary><div class="rqDocumentMenu">${d.payment_id?'':`<button class="btn" data-share-doc="${esc(d.id)}">WhatsApp</button>`}</div></details></div></article>`;
   }).join('')||'<div class="rqDocsState">Belum ada dokumen rasmi dijana.</div>';
-  document.querySelectorAll('[data-open-doc]').forEach(b=>b.addEventListener('click',()=>openSaved(b.dataset.openDoc)));
+  document.querySelectorAll('[data-open-doc]').forEach(b=>b.addEventListener('click',async()=>{await openSaved(b.dataset.openDoc);if(activeDoc?.type==='quotation'&&activeDoc.status==='accepted')$('docConvert').focus()}));
   document.querySelectorAll('[data-share-doc]').forEach(b=>b.addEventListener('click',async()=>{await openSaved(b.dataset.shareDoc,false);shareWhatsApp()}));
   publishDocuments();
 }
@@ -83,20 +84,33 @@ async function loadOrders(reset=false){
   }).catch(e=>{if(seq===orderLoadSeq){$('docState').textContent=e.message;toast(e.message,true)}return orders}).finally(()=>{ordersLoading=null});
   return ordersLoading;
 }
-async function load(force=false){
-  if(docsLoading)return docsLoading;
-  if(!documents.length)$('docHistory').innerHTML='<div class="rqDocsState">Memuatkan dokumen…</div>';
-  docsLoading=api('listDocuments',{limit:150}).then(d=>{
-    documents=Array.isArray(d.documents)?d.documents:[];renderHistory();return documents;
-  }).catch(e=>{$('docHistory').innerHTML='<div class="rqDocsState">'+esc(e.message)+'</div>';toast(e.message,true);throw e}).finally(()=>{docsLoading=null});
-  const result=await docsLoading;
-  return result;
+async function load(force=false,append=false){
+  const seq=++documentSeq,offset=append?documentOffset:0;
+  const host=$('docHistory'),state=$('docResultsState'),more=$('loadMoreDocuments');
+  host.setAttribute('aria-busy','true');state.textContent='Memuatkan dokumen…';more.disabled=true;
+  if(!append){documents=[];host.innerHTML='<div class="rqDocsState">Memuatkan dokumen…</div>'}
+  try{
+    const d=await api('listDocuments',{limit:80,offset,q:$('docUnifiedSearch').value.trim(),type:documentFilter==='all'?'':documentFilter});
+    if(seq!==documentSeq)return;
+    const batch=Array.isArray(d.documents)?d.documents:[],seen=new Set(documents.map(x=>String(x.id)));
+    documents=append?[...documents,...batch.filter(x=>!seen.has(String(x.id)))]:batch;
+    documentOffset=Number(d.offset||0)+batch.length;documentTotal=Number(d.total??documents.length);documentHasMore=!!d.hasMore;
+    if(d.stats){window.__REQOO_DOCUMENT_COUNTS__=d.stats;document.dispatchEvent(new CustomEvent('rq:documents-counts',{detail:d.stats}))}
+    renderHistory();state.textContent=documents.length+' daripada '+documentTotal+' dokumen · carian semua rekod';
+    more.hidden=!documentHasMore;
+    return documents;
+  }catch(e){if(seq===documentSeq){state.textContent='Gagal memuatkan dokumen. '+e.message;host.innerHTML='<div class="rqDocsState">Cuba semula menggunakan butang Muat semula.</div>';toast(e.message,true)}}
+  finally{if(seq===documentSeq){host.setAttribute('aria-busy','false');more.disabled=false}}
 }
+let documentSearchTimer;
+$('docUnifiedSearch').addEventListener('input',()=>{clearTimeout(documentSearchTimer);if(document.documentElement.dataset.rqFinanceMode!=='1')documentSearchTimer=setTimeout(()=>load(true),260)});
+document.addEventListener('rq:documents-type-filter',e=>{clearTimeout(documentSearchTimer);documentFilter=e.detail.type;load(true)});
+$('loadMoreDocuments').addEventListener('click',()=>load(false,true));
 async function applyDeepLink(){let term=initialDocQuery;if(initialDocOrder){try{const exact=await api('listDocuments',{orderId:initialDocOrder,limit:50}),seen=new Set(documents.map(d=>String(d.id)));for(const d of exact.documents||[]){if(!seen.has(String(d.id))){documents.push(d);seen.add(String(d.id))}}renderHistory()}catch{}let match=null;try{const detail=await api('getOrder',{orderId:initialDocOrder});match=detail.order||null}catch{}term=match?orderRef(match):initialDocOrder;$('docSearch').value=term;await loadOrders(true);if(match&&!orders.some(o=>String(o.id)===String(match.id))){orders.unshift(match);renderOrders()}const panel=$('rqOrderSourcePanel'),btn=$('toggleOrderDrawer');panel?.classList.add('open');btn?.classList.add('active');btn?.setAttribute('aria-expanded','true');setTimeout(()=>panel?.scrollIntoView({behavior:'smooth',block:'start'}),40)}if(term){const unified=$('docUnifiedSearch');if(unified){unified.value=term;setTimeout(()=>unified.dispatchEvent(new Event('input',{bubbles:true})),0)}}}
 async function createAndOpen(type,id){
   try{toast('Menjana '+typeLabel(type)+'…');const d=await api('createDocument',{type,orderId:id},'POST');activeDoc=d.document;if(d.created){documents.unshift(activeDoc);toast(activeDoc.number+' disimpan');}else toast(activeDoc.number+' sudah wujud');renderOrders();renderHistory();showDocument();}catch(e){toast(e.message,true)}
 }
-async function openSaved(id,show=true){try{const d=await api('getDocument',{documentId:id});activeDoc=d.document;if(show)showDocument();return activeDoc}catch(e){toast(e.message,true);throw e}}
+async function openSaved(id,show=true){const receipt=documents.find(d=>String(d.id)===String(id)&&d.payment_id);if(receipt){document.dispatchEvent(new CustomEvent('rq:documents-open-payment',{detail:{id:receipt.payment_id}}));return receipt}try{const d=await api('getDocument',{documentId:id});activeDoc=d.document;if(show)showDocument();return activeDoc}catch(e){toast(e.message,true);throw e}}
 function showDocument(){
   if(!activeDoc)return;
   const meta=quoteMeta(activeDoc),isCustomQuote=activeDoc.type==='quotation'&&meta.source==='custom',canConvert=isCustomQuote&&!meta.convertedOrderId,canEdit=canConvert,pct=Math.max(0,Math.min(100,Number(meta.depositPercent||0))),canDepositInvoice=isCustomQuote&&!!meta.convertedOrderId&&pct>0&&pct<100;
@@ -136,7 +150,7 @@ function paper(doc){
   return `<section class="rqPaper"><div class="rqPaperTop"><div><div class="rqPaperBrand">${esc(c.companyName||'REQOO.CO')}</div><div class="rqPaperLegal">by ${esc(LEGAL_NAME)}</div><div class="rqPaperReg">SSM: ${esc(regNo)}</div><div class="rqDocMeta">Quality · Design · Innovation</div><div class="rqPaperCompany">${esc(companyLines)}</div></div><div class="rqPaperType"><h1>${esc(typeLabel(doc.type).toUpperCase())}</h1><small>${esc(doc.number)}</small></div></div><div class="rqPaperGrid"><div><div class="rqPaperLabel">BILL TO</div>${customerBlock(doc,meta)}</div><div><div class="rqPaperLabel">DETAIL</div>${detail}</div></div>${doc.type==='receipt'?'<div class="rqReceiptNote">Bayaran telah disahkan oleh Admin Reqoo.</div>':''}${table}${totals}${paymentTerms(meta,isQuote)}${quoteInfo}${bank}<div class="rqPaperFoot">${esc(foot)}<br>Generated from REQOO Admin · ${esc(doc.number)}</div></section>`;
 }
 function close(){ $('docModal').classList.remove('open');$('docModal').setAttribute('aria-hidden','true') }
-function printDoc(){if(!activeDoc)return;const w=window.open('','_blank');if(!w)return toast('Benarkan popup untuk Print / Save PDF.',true);w.document.write('<!doctype html><html><head><title>'+esc(activeDoc.number)+'</title><link rel="stylesheet" href="/admin/document-template-v4.css?v=2"><link rel="stylesheet" href="/admin/document-deposit-note-v1.css?v=2"><style>body{background:#fff!important;padding:18px}.rqPaper{box-shadow:none;border:0}@media print{body{padding:0}.rqPaper{min-height:0!important;break-inside:auto!important}.rqPaperFoot{margin-top:18px!important}}</style></head><body>'+paper(activeDoc)+'</body></html>');w.document.close();w.focus();setTimeout(()=>w.print(),350)}
+function printDoc(){if(!activeDoc)return;const w=window.open('','_blank');if(!w)return toast('Benarkan popup untuk Print / Save PDF.',true);w.document.write('<!doctype html><html><head><title>'+esc(activeDoc.number)+'</title><link rel="stylesheet" href="/admin/document-template-v4.css?v=3"><link rel="stylesheet" href="/admin/document-deposit-note-v1.css?v=2"><style>body{background:#fff!important;padding:18px}.rqPaper{box-shadow:none;border:0}@media print{body{padding:0}.rqPaper{min-height:0!important;break-inside:auto!important}.rqPaperFoot{margin-top:18px!important}}</style></head><body>'+paper(activeDoc)+'</body></html>');w.document.close();w.focus();setTimeout(()=>w.print(),350)}
 function waPhone(v){let n=String(v||'').replace(/\D/g,'');if(n.startsWith('0'))n='60'+n.slice(1);return n}
 function shareWhatsApp(){
   if(!activeDoc)return;

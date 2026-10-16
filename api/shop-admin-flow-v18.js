@@ -423,13 +423,24 @@ async function documentFlow(d,env){
 async function canonicalDocuments(d,request,env){
   await ensure(env);
   await syncLegacyPaidPayments(env,S(d.orderId||d.orderRef||d.orderNo));
-  const r=await legacy({request,env});if(!r.ok)return r;
-  let out={};try{out=await r.clone().json()}catch{return r}
-  if(!out.ok||!Array.isArray(out.documents))return r;
-  const used=(await env.DB.prepare("SELECT receipt_number FROM reqoo_payments WHERE status='confirmed'").all()).results||[];
-  const canonical=new Set(used.map(x=>S(x.receipt_number)).filter(Boolean));
-  const documents=out.documents.filter(doc=>!(doc?.type==='receipt'&&canonical.has(S(doc.number))));
-  return J({...out,documents,hiddenLegacyReceiptCollisions:out.documents.length-documents.length},r.status);
+  const bounded=(v,f,max)=>Number.isFinite(Number(v))?Math.min(max,Math.max(0,Math.floor(Number(v)))):f;
+  const limit=Math.max(1,bounded(d.limit??80,80,500)),offset=bounded(d.offset??0,0,1000000);
+  // Exclude legacy receipts already represented by the canonical payment ledger before paging.
+  const base="NOT (d.type='receipt' AND EXISTS (SELECT 1 FROM reqoo_payments p WHERE p.status='confirmed' AND p.receipt_number=d.number))";
+  const headers="WITH headers AS (SELECT d.id,d.type,d.number,d.order_id,d.status,d.currency,d.subtotal_minor,d.discount_minor,d.shipping_minor,d.tax_minor,d.total_minor,d.issued_at,d.due_at,d.customer_name,d.customer_phone,d.customer_email,d.company_json,d.payment_status,d.share_token,d.created_at,d.updated_at,NULL payment_id FROM reqoo_documents d WHERE "+base+" UNION ALL SELECT p.id,'receipt',p.receipt_number,p.order_id,'paid',o.currency,p.amount_minor,0,0,0,p.amount_minor,p.paid_at,NULL,c.name,c.phone,c.email,'{}','paid',p.share_token,p.created_at,p.updated_at,p.id FROM reqoo_payments p JOIN orders o ON o.id=p.order_id LEFT JOIN customers c ON c.id=o.customer_id WHERE p.status='confirmed') ";
+  const where=['1=1'],args=[],type=S(d.type),orderId=S(d.orderId||d.orderRef),q=S(d.q).slice(0,160);
+  if(type){where.push('d.type=?');args.push(type)}
+  if(orderId){where.push('d.order_id=?');args.push(orderId)}
+  if(q){where.push("(instr(lower(d.number),lower(?))>0 OR instr(lower(d.customer_name),lower(?))>0 OR instr(d.customer_phone,?)>0 OR instr(lower(d.order_id),lower(?))>0 OR EXISTS (SELECT 1 FROM orders o WHERE o.id=d.order_id AND instr(lower(o.order_no),lower(?))>0))");args.push(q,q,q,q,q)}
+  const clause=where.join(' AND ');
+  const [result,count,counts]=await Promise.all([
+    env.DB.prepare(headers+'SELECT d.* FROM headers d WHERE '+clause+' ORDER BY d.created_at DESC,d.id DESC LIMIT ? OFFSET ?').bind(...args,limit,offset).all(),
+    env.DB.prepare(headers+'SELECT COUNT(*) total FROM headers d WHERE '+clause).bind(...args).first(),
+    env.DB.prepare(headers+'SELECT d.type,COUNT(*) total FROM headers d GROUP BY d.type').all()
+  ]);
+  const documents=result.results||[],stats={all:0,quotation:0,invoice:0,receipt:0,delivery_order:0};
+  for(const row of counts.results||[]){stats[row.type]=Number(row.total);stats.all+=Number(row.total)}
+  return J({ok:true,documents,total:Number(count?.total||0),offset,limit,hasMore:offset+documents.length<Number(count?.total||0),stats});
 }
 async function documentIntegrityAudit(env){
   await ensure(env);
