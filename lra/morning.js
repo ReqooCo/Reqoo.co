@@ -1,6 +1,7 @@
 // Daily 0700 LRA Semenyih 2 reports: five formats, one set of readings.
 (function(){
 'use strict';
+let expectedUpdatedAt=null,restoredMorningDraft=false;
 const el=id=>document.getElementById('m_'+id);
 const keys=['twFlowHourly','cwt1','cwt2','production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','pondTwlLevel','criticalLevel','criticalPercent','criticalStorage','intakeB','wt1','sjamB','sjamCActual','intakeCHourly','sjamCHourly','dp1','dp2','dpOutHourly','dpPressure'];
 const defaults={designCapacity:'100',pondTwlCapacity:'3984.50',pondTwlLevel:'12.0',criticalLevel:'7.50',criticalPercent:'30.00',criticalStorage:'1226'};
@@ -186,7 +187,7 @@ function criticalFlowMld(){
 function criticalFlowIssue(){
  if(!get('pondCFlowValue'))return 'Masukkan bacaan kadar flowmeter RW @0700 secara manual untuk kira Days to Critical. RW totalizer harian ialah nilai berasingan.';
  if(!valid(criticalFlowMld()))return 'Semak bacaan kadar RW @0700 dan unit m³/jam atau MLD.';
- if(!valid(n('sjamCHourly')))return 'Isi kadar SJAM C @0700. Gunakan 0 jika tiada aliran SJAM C.';
+ if(!valid(n('sjamCHourly'))||n('sjamCHourly')<0)return 'Isi bacaan flowmeter SJAM C @0700 secara manual. Masukkan 0 jika tidak beroperasi; nilai kosong atau negatif tidak sah.';
  return '';
 }
 function updateForecastFields(){
@@ -194,10 +195,9 @@ function updateForecastFields(){
  el('forecastAuto').checked=false;
  const flow=criticalFlowMld();
  el('intakeCHourly').value=valid(flow)?(flow*1000/24).toFixed(5):'';
- if(el('sjamForecastAuto').checked){
-  const x=n('sjamCActual');
-  el('sjamCHourly').value=valid(x)?(x*1000/24).toFixed(2):'';
- }
+ // SJAM C is a manual 0700 meter reading, including an explicit zero when stopped.
+ // Keep the legacy flag for draft compatibility, but never derive this meter from daily actual.
+ el('sjamForecastAuto').checked=false;
 }
 const signedChange=(a,b)=>(a-b>0?'+':'')+(a-b).toFixed(2);
 function applyPreviousChange(){
@@ -259,7 +259,7 @@ function metrics(){
   cap=n('pondTwlCapacity'),critical=n('criticalStorage');
  const inflow=sum(n('intakeB'),n('wt1'),n('sjamB'));
  const outflow=sum(n('rwAbst'),n('sjamCActual'));
- const forecastWtp=mldFromHour('intakeCHourly'),forecastSjam=mldFromHour('sjamCHourly');
+ const forecastWtp=mldFromHour('intakeCHourly'),forecastSjam=valid(n('sjamCHourly'))&&n('sjamCHourly')>=0?mldFromHour('sjamCHourly'):null;
  const forecastTotal=sum(forecastWtp,forecastSjam);
  const margin=sub(prod,design);
  return {
@@ -418,7 +418,7 @@ function formData(){
  values.forecastAuto=el('forecastAuto').checked;values.sjamForecastAuto=el('sjamForecastAuto').checked;
  values.pondStorageAuto=el('storageAuto').checked;values.criticalStorageAuto=el('criticalStorageAuto').checked;
  values.pondAProblem=problemA();values.pondANote=get('pondANote');
- return{values,operator:get('operator')};
+ return{values,operator:get('operator'),expectedUpdatedAt};
 }
 function save(){
  if(!get('date'))return;
@@ -479,10 +479,11 @@ function apply(data){
  render();
 }
 function restore(){
+ expectedUpdatedAt=null;restoredMorningDraft=false;
  reset();
  try{
   const draft=JSON.parse(localStorage.getItem(storedKey())||'null');
-  if(draft)apply(draft);
+  if(draft){restoredMorningDraft=true;apply(draft);expectedUpdatedAt=typeof draft.expectedUpdatedAt==='string'?draft.expectedUpdatedAt:null;}
   el('draft').textContent=draft?'Draf '+dmy()+' dipulihkan':'Draf baharu · '+dmy();
  }catch(e){el('draft').textContent='Draf baharu'}
  render();
@@ -490,16 +491,22 @@ function restore(){
 async function retrieve(silent=false){
  const code=localStorage.getItem('s2_access_key');
  if(!code){el('onlineStatus').textContent='Masukkan access code S2 pada panel Status Semasa Loji dahulu.';return}
+ const requestedDate=get('date');
  try{
-  const response=await fetch('/api/s2-morning?date='+encodeURIComponent(get('date')),{headers:{'X-S2-Key':code},cache:'no-store'});
+  const response=await fetch('/api/s2-morning?date='+encodeURIComponent(requestedDate),{headers:{'X-S2-Key':code},cache:'no-store'});
   const data=await response.json();
+  if(get('date')!==requestedDate)return;
   if(!response.ok||!data.ok)throw Error(data.error||'Ralat database');
-  if(!data.report){el('onlineStatus').textContent='Belum ada rekod online bagi '+dmy();return}
+  if(!data.report){expectedUpdatedAt='';save();el('onlineStatus').textContent='Belum ada rekod online bagi '+dmy();return}
   const date=new Date(data.report.updatedAt);
   el('onlineStatus').textContent='Rekod online: '+(Number.isFinite(date.valueOf())?date.toLocaleString('ms-MY'):'-')+' · '+data.report.operator;
-  if(silent)return;
+  if(silent){
+   const same=Object.entries(data.report.values||{}).every(([k,v])=>String(formData().values[k]??'')===String(v??''));
+   if((expectedUpdatedAt===null&&!restoredMorningDraft)||same){expectedUpdatedAt=data.report.updatedAt;save()}
+   return;
+  }
   if(!confirm('Gantikan bacaan semasa dengan rekod online '+dmy()+'?'))return;
-  apply(data.report);save();
+  apply(data.report);expectedUpdatedAt=data.report.updatedAt;save();
  }catch(e){el('onlineStatus').textContent='Tidak dapat akses database: '+e.message}
 }
 const localDate=()=>{const d=new Date();return new Date(d.valueOf()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)};
@@ -596,6 +603,7 @@ document.querySelectorAll('.m_copy').forEach(b=>b.addEventListener('click',async
 }));
 document.getElementById('m_share').addEventListener('submit',event=>{
  const no=Number(event.submitter?.value||0);
+ if(expectedUpdatedAt===null){event.preventDefault();retrieve(true);alert('Semak sambungan rekod online dahulu, kemudian cuba hantar semula.');return}
  if(![1,2,3,4,5].includes(no)){event.preventDefault();return}
  if(no===5&&sivValid()){event.preventDefault();alert(sivValid());return}
  if([2,3,4].includes(no)&&criticalFlowIssue()){
@@ -610,7 +618,7 @@ document.getElementById('m_share').addEventListener('submit',event=>{
  }
  const missing=keys.filter(k=>!defaults[k]&&!get(k));
  if(no!==5&&missing.length&&!confirm('Masih ada '+missing.length+' bacaan kosong. Teruskan report dengan tanda - ?')){event.preventDefault();return}
- el('waKey').value=code;el('waDate').value=get('date');el('waOperator').value=get('operator')||'-';
+ el('waRevision').value=expectedUpdatedAt;el('waKey').value=code;el('waDate').value=get('date');el('waOperator').value=get('operator')||'-';
  el('waValues').value=JSON.stringify(formData().values);el('waText').value=reportText(no);
  save();
 });

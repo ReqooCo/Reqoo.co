@@ -10,7 +10,7 @@
 <meta name="robots" content="noindex,nofollow,noarchive">
 <title>Reqoo LRA Report</title>
 <link rel="manifest" href="./manifest.webmanifest">
-<link rel="apple-touch-icon" href="./icon.svg">
+<link rel="apple-touch-icon" href="./icon-180.png">
 <style>
 :root{
   --bg:#eef4f2;--card:#fff;--text:#18352f;--muted:#72867f;
@@ -114,31 +114,102 @@ details.more[open]>summary:after{content:"−"}
 .mSignBtn[aria-pressed="true"]{background:#2f7864;color:#fff;border-color:#2f7864}
 .mSignBtn:active{transform:scale(.97)}
 @media(max-width:350px){.mSignedInput{gap:4px}.mSignBtn{flex-basis:31px}}
+
+/* LRA UI refinement: compact, accessible, mobile-first. No operational calculations changed. */
+:root{--bg:#f3f6f5;--line:#dde6e2;--accent:#256b58;--accent-dark:#19523f}
+body{background:#f3f6f5;line-height:1.45}
+.wrap{max-width:720px;padding:12px 12px calc(100px + env(safe-area-inset-bottom,0px))}
+.head{border-radius:14px;padding:16px;box-shadow:none;background:#205c4a}
+.head h1{font-size:19px;letter-spacing:-.02em}.head p{font-size:12px}
+.card{border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:none;background:#fff}
+.card h2{font-size:15px;letter-spacing:-.01em}
+label{font-size:12px;line-height:1.35}
+input,select,textarea,button{touch-action:manipulation}
+input:not([type="checkbox"]):not([type="hidden"]),select,textarea{min-height:44px;font-size:16px}
+button,.btn{min-height:42px}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #67b99c;outline-offset:2px}
+.preview,.pumpPreview{font-size:12px;line-height:1.6;max-height:340px}
+.mSource{font-size:11px!important;line-height:1.45}
+.more summary,details summary{cursor:pointer;min-height:40px;align-content:center}
+@media(max-width:390px){.wrap{padding-left:9px;padding-right:9px}.card{padding:11px}.head{padding:13px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+
+/* Phase 2: task-first navigation and clearer reading rhythm */
+.tabs{display:flex;gap:6px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scrollbar-width:thin;padding:4px 1px 9px;margin-bottom:8px}
+.tabs .tabBtn{flex:0 0 auto;scroll-snap-align:start;min-width:88px;min-height:48px;padding:8px 12px;border-radius:11px;font-size:12px;line-height:1.25;white-space:nowrap}
+.tabs .tabBtn.active{box-shadow:none}
+.tabSub{display:block;font-size:10px;font-weight:500;opacity:.72;margin-top:2px}
+.liveBoard{border-radius:12px;box-shadow:none;margin-bottom:12px}
+.liveHead{gap:10px}.liveHead small{line-height:1.4}
+.field{min-width:0}.field input,.field select{max-width:100%}
+.btns{gap:8px}.btns button{flex:1 1 auto}
+.panel .quickTitle{align-items:center;gap:8px}
+.panel .quickTitle h2{margin-bottom:0}
+@media(max-width:390px){.tabs .tabBtn{min-width:82px}.tabSub{font-size:10px}}
+
+
+/* Phase 3: prevent cramped two-column controls on narrow devices */
+@media(max-width:420px){
+ .grid,.dateTimeGrid{column-gap:9px;row-gap:11px}
+ .grid>.field{min-width:0}
+ .grid>.field .pumpHead{flex-wrap:wrap;gap:4px}
+ .grid>.field .problemTag{max-width:100%}
+ .autoRow{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .autoRow>*:last-child:nth-child(odd){grid-column:1/-1}
+ .stat small{font-size:10px;white-space:normal}
+ .stat b{font-size:13px;white-space:normal;overflow-wrap:anywhere}
+ .convert{font-size:11px;flex-wrap:wrap}
+ .btns{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .historyItem button{min-height:40px;font-size:12px;padding:8px 12px}
+}
+@media(max-width:345px){
+ .grid,.dateTimeGrid{grid-template-columns:minmax(0,1fr)}
+ .grid>.full,.sectionLine{grid-column:1}
+ .btns{grid-template-columns:minmax(0,1fr)}
+}
+
+/* Release audit: readable controls and safe keyboard/touch access. */
+:root{--muted:#536c62}
+.small{font-size:12px}.notice{font-size:12px}.problemTag,.changeTag{min-height:32px;font-size:11px}
+.stockDashRow{grid-template-columns:minmax(0,1fr) auto 44px}.stockEdit{width:44px;height:44px}
+.stockDashName,.stockName,.stockTx label,.stockProjected,.stockDashHead span{font-size:12px}
+.stockTx{grid-template-columns:minmax(0,1fr)}
+.switch{height:44px;display:flex;align-items:center}.slider{top:10px;bottom:10px}
+.switch input{display:block;position:absolute;inset:0;opacity:0;width:100%;height:100%;z-index:1;cursor:pointer}
+.switch:focus-within{outline:3px solid var(--accent);outline-offset:3px;border-radius:8px}
+.preview,.pumpPreview{overflow-wrap:anywhere}.panel{scroll-margin-top:80px}
+@media(max-width:420px){.stockList,.stockDashGrid{grid-template-columns:minmax(0,1fr)}.pumpHead{flex-wrap:wrap}.reportMeta{grid-template-columns:minmax(0,1fr)}}
+.liveBoard>summary{cursor:pointer;list-style:none;min-height:56px}.liveBoard>summary::after{content:'＋';font-size:20px}.liveBoard[open]>summary::after{content:'−'}
+.liveStamp,.liveEmpty,.liveHead small{color:#50675d;font-size:11px}
+.tabs .tabBtn{color:#36594c}.tabSub{opacity:1;color:#496659}
+.problemTag,.changeTag{color:#65553d}.morningStats small{color:#50675d;font-size:11px}
+.mSource{color:#50675d!important}.mMeterResult small{color:#50675d}
 </style>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <header class="head">
     <div><h1>Reqoo · LRA Report</h1><p>Status Operasi LRA Semenyih 2</p></div>
     <button id="installBtn" class="install">Pasang</button>
   </header>
 
-  <section class="liveBoard" id="liveBoard">
-    <div class="liveHead">
+  <details class="liveBoard" id="liveBoard">
+    <summary class="liveHead">
       <div><b>Status Semasa Loji</b><small id="liveMeta">Auto refresh setiap 30 saat</small></div>
       <span class="modeChip">DB LIVE</span>
-    </div>
+    </summary>
     <div id="liveAccessBox" class="liveAccess">
-      <div class="row"><input id="liveAccessKey" type="password" placeholder="Access code S2"><button id="liveAccessSave" type="button">Sambung</button></div>
+      <div class="row"><input id="liveAccessKey" aria-label="Access code S2" type="password" placeholder="Access code S2"><button id="liveAccessSave" type="button">Sambung</button></div>
     </div>
     <div id="liveGrid" class="liveGrid">
       <div class="liveCard"><div class="liveEmpty">Menyambung status operasi…</div></div>
     </div>
-  </section>
+  </details>
 
-  <nav class="tabs" aria-label="Jenis report">
-    <button class="tabBtn active" data-tab="ops">Operasi</button>
-    <button class="tabBtn" data-tab="morning">0700</button>
+  <nav class="tabs" aria-label="Jenis report" role="tablist">
+    <button class="tabBtn active" data-tab="ops">Operasi <span class="tabSub">2 jam</span></button>
+    <button class="tabBtn" data-tab="morning">0700 <span class="tabSub">Harian</span></button>
     <button class="tabBtn" data-tab="intakeB">Intake B</button>
     <button class="tabBtn" data-tab="intakeC">Intake C</button>
     <button class="tabBtn" data-tab="twps">TWPS</button>
@@ -149,61 +220,61 @@ details.more[open]>summary:after{content:"−"}
   <section class="card">
     <div class="quickTitle"><h2>Report</h2><span class="modeChip">2 JAM SEKALI</span></div>
     <div class="dateTimeGrid">
-      <div class="field"><label>Tarikh</label><input id="date" type="date"></div>
-      <div class="field"><label>Masa report</label><select id="time"></select></div>
+      <div class="field"><label for="date">Tarikh</label><input id="date" type="date"></div>
+      <div class="field"><label for="time">Masa report</label><select id="time"></select></div>
     </div>
   </section>
 
   <section class="card">
     <div class="quickTitle"><h2>Quick Report</h2><span class="modeChip">OPERASI</span></div>
     <div class="grid">
-      <div class="field"><label>RWP</label><select id="rwp"><option value="126">126 MLD</option><option value="63">63 MLD</option></select></div>
-      <div class="field"><label>TWP</label><select id="twp"><option value="100">100 MLD</option><option value="50">50 MLD</option></select></div>
+      <div class="field"><label for="rwp">RWP</label><select id="rwp"><option value="126">126 MLD</option><option value="63">63 MLD</option></select></div>
+      <div class="field"><label for="twp">TWP</label><select id="twp"><option value="100">100 MLD</option><option value="50">50 MLD</option></select></div>
 
       <div class="field" id="rwField">
-        <div class="pumpHead"><label>RW Inflow <span>(m3/h)</span></label><label class="problemTag"><input id="rwProblem" type="checkbox">Problem</label></div>
+        <div class="pumpHead"><label for="rw">RW Inflow <span>(m3/h)</span></label><label class="problemTag"><input id="rwProblem" type="checkbox">Problem</label></div>
         <input id="rw" inputmode="decimal" value="4213">
-        <div id="rwNoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="rwNote" value="RW Inflow under maintenance / bacaan tidak tepat"></div>
+        <div id="rwNoteWrap" class="problemNoteWrap hidden"><label for="rwNote">Nota WhatsApp</label><input id="rwNote" value="RW Inflow under maintenance / bacaan tidak tepat"></div>
       </div>
       <div class="field" id="twField">
-        <div class="pumpHead"><label>TW Outflow <span>(m3/h)</span></label><label class="problemTag"><input id="twProblem" type="checkbox">Problem</label></div>
+        <div class="pumpHead"><label for="tw">TW Outflow <span>(m3/h)</span></label><label class="problemTag"><input id="twProblem" type="checkbox">Problem</label></div>
         <input id="tw" inputmode="decimal" value="4156">
-        <div id="twNoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="twNote" value="TW Outflow under maintenance / bacaan tidak tepat"></div>
+        <div id="twNoteWrap" class="problemNoteWrap hidden"><label for="twNote">Nota WhatsApp</label><input id="twNote" value="TW Outflow under maintenance / bacaan tidak tepat"></div>
       </div>
 
       <div class="sectionLine"></div>
 
       <div class="field" id="tank1Field">
-        <div class="pumpHead"><label>Tangki Air No.1 <span>(m)</span></label><label class="problemTag"><input id="tank1Problem" type="checkbox">Problem</label></div>
+        <div class="pumpHead"><label for="tank1">Tangki Air No.1 <span>(m)</span></label><label class="problemTag"><input id="tank1Problem" type="checkbox">Problem</label></div>
         <input id="tank1" inputmode="decimal" value="4.03">
-        <div id="tank1NoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="tank1Note" value="Paras Tangki Air Bersih No.1 under maintenance (level problem)"></div>
+        <div id="tank1NoteWrap" class="problemNoteWrap hidden"><label for="tank1Note">Nota WhatsApp</label><input id="tank1Note" value="Paras Tangki Air Bersih No.1 under maintenance (level problem)"></div>
       </div>
       <div class="field" id="tank2Field">
-        <div class="pumpHead"><label>Tangki Air No.2</label><label class="problemTag"><input id="tank2Problem" type="checkbox" checked>Problem</label></div>
+        <div class="pumpHead"><label for="tank2">Tangki Air No.2</label><label class="problemTag"><input id="tank2Problem" type="checkbox" checked>Problem</label></div>
         <input id="tank2" inputmode="decimal" value="" placeholder="Bacaan terakhir / kosong">
-        <div id="tank2NoteWrap" class="problemNoteWrap"><label>Nota WhatsApp</label><input id="tank2Note" value="Paras tangki no.2 under maintenance (sensor ULS rosak)"></div>
+        <div id="tank2NoteWrap" class="problemNoteWrap"><label for="tank2Note">Nota WhatsApp</label><input id="tank2Note" value="Paras tangki no.2 under maintenance (sensor ULS rosak)"></div>
       </div>
 
       <div class="field" id="pond1Field">
-        <div class="pumpHead"><label>Desa Putra No.1 <span>(m)</span></label><label class="problemTag"><input id="pond1Problem" type="checkbox">Problem</label></div>
+        <div class="pumpHead"><label for="pond1">Desa Putra No.1 <span>(m)</span></label><label class="problemTag"><input id="pond1Problem" type="checkbox">Problem</label></div>
         <input id="pond1" inputmode="decimal" value="7.55">
-        <div id="pond1NoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="pond1Note" value="Paras Desa Putra No.1 under maintenance (level problem)"></div>
+        <div id="pond1NoteWrap" class="problemNoteWrap hidden"><label for="pond1Note">Nota WhatsApp</label><input id="pond1Note" value="Paras Desa Putra No.1 under maintenance (level problem)"></div>
       </div>
       <div class="field" id="pond2Field">
-        <div class="pumpHead"><label>Desa Putra No.2 <span>(m)</span></label><label class="problemTag"><input id="pond2Problem" type="checkbox">Problem</label></div>
+        <div class="pumpHead"><label for="pond2">Desa Putra No.2 <span>(m)</span></label><label class="problemTag"><input id="pond2Problem" type="checkbox">Problem</label></div>
         <input id="pond2" inputmode="decimal" value="7.81">
-        <div id="pond2NoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="pond2Note" value="Paras Desa Putra No.2 under maintenance (level problem)"></div>
+        <div id="pond2NoteWrap" class="problemNoteWrap hidden"><label for="pond2Note">Nota WhatsApp</label><input id="pond2Note" value="Paras Desa Putra No.2 under maintenance (level problem)"></div>
       </div>
 
-      <div class="field"><label>DP Outflow <span>(m3/h)</span></label><input id="pondOut" inputmode="decimal" value="3692.25"></div>
+      <div class="field"><label for="pondOut">DP Outflow <span>(m3/h)</span></label><input id="pondOut" inputmode="decimal" value="3692.25"></div>
       <div class="field"><label>DP Outflow <span>(MLD)</span></label><div class="readonlyField"><small>Auto</small><b id="pondMld">88.614 MLD</b></div></div>
 
       <div class="sectionLine"></div>
 
       <div class="field full" id="riverField">
-        <div class="pumpHead"><label>Paras Sg Langat <span>(m)</span></label><label class="problemTag"><input id="riverProblem" type="checkbox" checked>Problem</label></div>
+        <div class="pumpHead"><label for="river">Paras Sg Langat <span>(m)</span></label><label class="problemTag"><input id="riverProblem" type="checkbox" checked>Problem</label></div>
         <input id="river" inputmode="decimal" value="6.13">
-        <div id="riverNoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="riverNote" value="Paras Sg Langat tidak tepat under maintenance (SCADA Lost Comm)"></div>
+        <div id="riverNoteWrap" class="problemNoteWrap hidden"><label for="riverNote">Nota WhatsApp</label><input id="riverNote" value="Paras Sg Langat tidak tepat under maintenance (SCADA Lost Comm)"></div>
       </div>
     </div>
 
@@ -219,7 +290,7 @@ details.more[open]>summary:after{content:"−"}
     <summary>Tetapan & Maintenance</summary>
     <div class="moreBody">
       <div class="grid" style="padding-top:9px">
-        <div class="field full"><label>Paras maksima Sg Langat (m)</label><input id="riverMax" inputmode="decimal" value="10.11"></div>
+        <div class="field full"><label for="riverMax">Paras maksima Sg Langat (m)</label><input id="riverMax" inputmode="decimal" value="10.11"></div>
       </div>
       <label style="margin-top:8px">Nota tambahan</label><textarea id="note" rows="2" placeholder="Optional"></textarea>
     </div>
@@ -228,7 +299,7 @@ details.more[open]>summary:after{content:"−"}
   <details class="more">
     <summary>Preview WhatsApp & Simpan</summary>
     <div class="moreBody">
-      <div id="preview" class="preview"></div>
+      <div id="preview" class="preview" tabindex="0"></div>
       <div class="btns"><button id="save" class="btn light">Simpan History</button><button id="remind" class="btn green">Set Reminder</button></div>
       <p class="small">Data dan history disimpan dalam telefon ini sahaja. WhatsApp masih perlukan tekan Send.</p>
     </div>
@@ -244,7 +315,7 @@ details.more[open]>summary:after{content:"−"}
 <section class="card"><div class="quickTitle"><h2>Laporan Pagi · 0700</h2><span class="modeChip">5 FORMAT</span></div>
 <div class="grid"><div class="field"><label for="m_date">Tarikh</label><input id="m_date" type="date"></div><div class="field"><label for="m_operator">Disediakan oleh (DB)</label><input id="m_operator" placeholder="Nama staf"></div></div>
 <div class="notice ok"><b>1 borang bacaan, 6 laporan WhatsApp.</b> Ikut langkah di bawah. Nombor harian (MLD) bukan sama dengan bacaan flow seketika (m³/jam).</div>
-<details class="more" open id="m_startGuide">
+<details class="more" id="m_startGuide">
 <summary>Cara isi pagi 0700 · Ikut 4 langkah</summary>
 <div class="moreBody">
 <p class="small"><b>1. Input manual:</b> isi RW/TW flowmeter pukul 0700, total harian RW/TW, purata bulan, paras Pond A/B/C, CWT, Desa Putra, pumping Intake B, outflow DP dan pressure.</p>
@@ -329,8 +400,8 @@ details.more[open]>summary:after{content:"−"}
 <div class="field"><label for="m_wt1">WT1 <span class="small">(MLD)</span></label><input id="m_wt1" inputmode="decimal" autocomplete="off" placeholder="0" value=""></div>
 <div class="field"><label for="m_sjamB">SJAM B <span class="small">(MLD)</span></label><input id="m_sjamB" inputmode="decimal" autocomplete="off" placeholder="0" value=""></div></div></section>
 <section class="card"><div class="quickTitle"><h2>07 · Outflow & Critical Pond C</h2><span class="modeChip">0700</span></div><div class="grid"><div class="field"><label for="m_sjamCActual">SJAM C → SS Intake (actual) <span class="small">(MLD)</span></label><input id="m_sjamCActual" inputmode="decimal" autocomplete="off" placeholder="0" value=""></div>
-<div class="field"><label for="m_sjamCHourly">SJAM C Critical Forecast Flow <span class="small">(m³/hr)</span></label><input id="m_sjamCHourly" inputmode="decimal" autocomplete="off" placeholder="Isi 0 jika tiada SJAM C forecast" value="">
-<label class="mAutoLabel"><input id="m_sjamForecastAuto" type="checkbox"> Gunakan SJAM C Actual sebagai andaian forecast (pilihan)</label></div></div><p class="small"><b>10. Pumped to WTP</b> = Total RW Abstraction Harian (satu input sahaja). <b>Days to Critical</b> guna kadar RW Flowmeter @0700 yang diisi di bahagian atas. Contoh 2,485 m³/jam = 59.640 MLD → 46.1 hari pada paras 11.99m apabila SJAM C 0.</p></section>
+<div class="field"><label for="m_sjamCHourly">Flowmeter SJAM C @0700 <span class="small">(m³/hr)</span></label><input id="m_sjamCHourly" inputmode="decimal" autocomplete="off" placeholder="Isi bacaan meter / 0 jika tidak beroperasi" value="">
+<input id="m_sjamForecastAuto" type="checkbox" hidden style="display:none"><small class="mSource">Isi manual apabila SJAM C beroperasi. Jika tidak beroperasi, masukkan 0. Bacaan ini berasingan daripada jumlah harian SJAM C.</small></div></div><p class="small"><b>10. Pumped to WTP</b> = Total RW Abstraction Harian (satu input sahaja). <b>Days to Critical</b> guna kadar RW Flowmeter @0700 yang diisi di bahagian atas. Contoh 2,485 m³/jam = 59.640 MLD → 46.1 hari pada paras 11.99m apabila SJAM C 0.</p></section>
 <details class="more"><summary>Tetapan Pond C · Capacity & Critical</summary><div class="moreBody">
 <p class="small">Padanan rujukan lama: 7.50m = 1,226.00 ML, 11.07m = 3,414.41 ML, 12.00m = 3,984.50 ML. Kadar padanan: 613 ML/m dalam julat 7.50–12.00m. Ini pengiraan anggaran daripada data rujukan, bukan bacaan meter storage.</p>
 <p id="m_storageStatus" class="small" style="color:#33725b"></p><div class="grid"><div class="field"><label for="m_pondTwlCapacity">Capacity @ TWL 12m <span class="small">(ML)</span></label><input id="m_pondTwlCapacity" inputmode="decimal" autocomplete="off" placeholder="3984.50" value="3984.50"></div>
@@ -383,13 +454,13 @@ details.more[open]>summary:after{content:"−"}
 <div class="field" style="margin-top:10px"><label for="m_oExtraNote">Nota tambahan (pilihan)</label><textarea id="m_oExtraNote" rows="2" placeholder="Jika ada isu lain"></textarea></div>
 </div></details>
 <p class="small" id="m_opsReady">Lengkapkan bacaan RW/TW, CWT, Desa Putra dan Sg Langat; tandakan Problem jika sensor tidak tepat.</p>
-<div id="m_preview_ops" class="preview"></div>
+<div id="m_preview_ops" class="preview" tabindex="0"></div>
 <div class="btns"><button type="button" id="m_copyOps" class="btn light">Copy Operasi</button><button type="submit" form="m_opsShare" class="btn wa">WhatsApp Operasi</button></div>
 </div></details>
-<details class="more mFormat" id="m_card_1" open><summary>Format 1 · Pengeluaran & Status Kolam</summary><div class="moreBody"><p class="small">Total Prod, Pond A/B/C, Desa Putra</p><div id="m_preview_1" class="preview"></div><div class="btns"><button type="button" class="btn light m_copy" data-number="1">Copy 1</button><button type="submit" form="m_share" name="formatNumber" value="1" class="btn wa">WhatsApp 1</button></div></div></details>
-<details class="more mFormat" id="m_card_2" ><summary>Format 2 · Pengeluaran & ORS Pond C</summary><div class="moreBody"><p class="small">Paras, margin & critical storage</p><div id="m_preview_2" class="preview"></div><div class="btns"><button type="button" class="btn light m_copy" data-number="2">Copy 2</button><button type="submit" form="m_share" name="formatNumber" value="2" class="btn wa">WhatsApp 2</button></div></div></details>
-<details class="more mFormat" id="m_card_3" ><summary>Format 3 · Kiraan Aliran Pond C</summary><div class="moreBody"><p class="small">Inflow, outflow dan hari kritikal</p><div id="m_preview_3" class="preview"></div><div class="btns"><button type="button" class="btn light m_copy" data-number="3">Copy 3</button><button type="submit" form="m_share" name="formatNumber" value="3" class="btn wa">WhatsApp 3</button></div></div></details>
-<details class="more mFormat" id="m_card_4" ><summary>Format 4 · Ringkasan ORS Pond C</summary><div class="moreBody"><p class="small">Ringkasan keadaan simpanan Pond C</p><div id="m_preview_4" class="preview"></div><div class="btns"><button type="button" class="btn light m_copy" data-number="4">Copy 4</button><button type="submit" form="m_share" name="formatNumber" value="4" class="btn wa">WhatsApp 4</button></div></div></details>
+<details class="more mFormat" id="m_card_1" open><summary>Format 1 · Pengeluaran & Status Kolam</summary><div class="moreBody"><p class="small">Total Prod, Pond A/B/C, Desa Putra</p><div id="m_preview_1" class="preview" tabindex="0"></div><div class="btns"><button type="button" class="btn light m_copy" data-number="1">Copy 1</button><button type="submit" form="m_share" name="formatNumber" value="1" class="btn wa">WhatsApp 1</button></div></div></details>
+<details class="more mFormat" id="m_card_2" ><summary>Format 2 · Pengeluaran & ORS Pond C</summary><div class="moreBody"><p class="small">Paras, margin & critical storage</p><div id="m_preview_2" class="preview" tabindex="0"></div><div class="btns"><button type="button" class="btn light m_copy" data-number="2">Copy 2</button><button type="submit" form="m_share" name="formatNumber" value="2" class="btn wa">WhatsApp 2</button></div></div></details>
+<details class="more mFormat" id="m_card_3" ><summary>Format 3 · Kiraan Aliran Pond C</summary><div class="moreBody"><p class="small">Inflow, outflow dan hari kritikal</p><div id="m_preview_3" class="preview" tabindex="0"></div><div class="btns"><button type="button" class="btn light m_copy" data-number="3">Copy 3</button><button type="submit" form="m_share" name="formatNumber" value="3" class="btn wa">WhatsApp 3</button></div></div></details>
+<details class="more mFormat" id="m_card_4" ><summary>Format 4 · Ringkasan ORS Pond C</summary><div class="moreBody"><p class="small">Ringkasan keadaan simpanan Pond C</p><div id="m_preview_4" class="preview" tabindex="0"></div><div class="btns"><button type="button" class="btn light m_copy" data-number="4">Copy 4</button><button type="submit" form="m_share" name="formatNumber" value="4" class="btn wa">WhatsApp 4</button></div></div></details>
 <section class="card">
  <div class="quickTitle"><h2>Sasaran SIV · Format 5</h2><span class="modeChip">FORMAT 5</span></div>
  <p class="small">Jumlah Pengeluaran ambil terus daripada <b>Total Prod</b> di bahagian 01. Isi sasaran mengikut bulan; peningkatan dan peratus dikira automatik.</p>
@@ -404,7 +475,7 @@ details.more[open]>summary:after{content:"−"}
   <div class="field" style="margin-top:9px"><label for="m_sivChallengeB">b) Kawalan Paras Kolam Desa Putra</label><textarea id="m_sivChallengeB" rows="3" style="width:100%;min-height:86px"></textarea></div>
  </div></details>
 </section>
-<details class="more mFormat" id="m_card_5"><summary>Format 5 · SIV Not achieved / Achieved</summary><div class="moreBody"><p class="small">Pengeluaran, sasaran, peningkatan (%) dan Challenges</p><div id="m_preview_5" class="preview"></div><div class="btns"><button type="button" class="btn light m_copy" data-number="5">Copy 5</button><button type="submit" form="m_share" name="formatNumber" value="5" class="btn wa">WhatsApp 5</button></div></div></details>
+<details class="more mFormat" id="m_card_5"><summary>Format 5 · SIV Not achieved / Achieved</summary><div class="moreBody"><p class="small">Pengeluaran, sasaran, peningkatan (%) dan Challenges</p><div id="m_preview_5" class="preview" tabindex="0"></div><div class="btns"><button type="button" class="btn light m_copy" data-number="5">Copy 5</button><button type="submit" form="m_share" name="formatNumber" value="5" class="btn wa">WhatsApp 5</button></div></div></details>
 <form id="m_opsShare" method="POST" action="/api/s2-live-share">
 <input type="hidden" name="accessKey" id="m_opsAccess">
 <input type="hidden" name="section" value="ops"><input type="hidden" name="reportDate" id="m_opsDate">
@@ -413,7 +484,7 @@ details.more[open]>summary:after{content:"−"}
 <input type="hidden" name="reportText" id="m_opsText">
 </form>
 <form id="m_share" method="POST" action="/api/s2-morning-share">
-<input type="hidden" name="accessKey" id="m_waKey"><input type="hidden" name="reportDate" id="m_waDate">
+<input type="hidden" name="expectedUpdatedAt" id="m_waRevision"><input type="hidden" name="accessKey" id="m_waKey"><input type="hidden" name="reportDate" id="m_waDate">
 <input type="hidden" name="operator" id="m_waOperator"><input type="hidden" name="values" id="m_waValues"><input type="hidden" name="reportText" id="m_waText">
 </form></div>
 
@@ -421,16 +492,16 @@ details.more[open]>summary:after{content:"−"}
     <section class="card">
       <div class="quickTitle"><h2>RWTPS · Intake B</h2><span class="modeChip">PUMP STATUS</span></div>
       <div class="reportMeta">
-        <div class="field"><label>Tarikh</label><input id="ibDate" type="date"></div>
-        <div class="field"><label>Masa</label><input id="ibTime" type="time" step="60"></div>
+        <div class="field"><label for="ibDate">Tarikh</label><input id="ibDate" type="date"></div>
+        <div class="field"><label for="ibTime">Masa</label><input id="ibTime" type="time" step="60"></div>
       </div>
       <div class="pumpGrid">
-        <div class="field"><div class="pumpHead"><label>Pump No.1</label><label class="changeTag"><input id="ibC1" type="checkbox">Berubah</label></div><select id="ibP1" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
-        <div class="field"><div class="pumpHead"><label>Pump No.2</label><label class="changeTag"><input id="ibC2" type="checkbox">Berubah</label></div><select id="ibP2" class="pumpStatus"><option value="Run">Run</option><option value="Stop">Stop</option></select></div>
-        <div class="field" id="ibPondBField"><div class="pumpHead"><label>Paras Pond B (m)</label><label class="problemTag"><input id="ibPondBProblem" type="checkbox">Problem</label></div><input id="ibPondB" inputmode="decimal" value="5.98"><div id="ibPondBNoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="ibPondBNote" value="Paras Pond B under maintenance (level problem)"></div></div>
-        <div class="field" id="ibPondCField"><div class="pumpHead"><label>Paras Pond C (m)</label><label class="problemTag"><input id="ibPondCProblem" type="checkbox">Problem</label></div><input id="ibPondC" inputmode="decimal" value="11.96"><div id="ibPondCNoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="ibPondCNote" value="Paras Pond C under maintenance (level problem)"></div></div>
+        <div class="field"><div class="pumpHead"><label for="ibP1">Pump No.1</label><label class="changeTag"><input id="ibC1" type="checkbox">Berubah</label></div><select id="ibP1" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
+        <div class="field"><div class="pumpHead"><label for="ibP2">Pump No.2</label><label class="changeTag"><input id="ibC2" type="checkbox">Berubah</label></div><select id="ibP2" class="pumpStatus"><option value="Run">Run</option><option value="Stop">Stop</option></select></div>
+        <div class="field" id="ibPondBField"><div class="pumpHead"><label for="ibPondB">Paras Pond B (m)</label><label class="problemTag"><input id="ibPondBProblem" type="checkbox">Problem</label></div><input id="ibPondB" inputmode="decimal" value="5.98"><div id="ibPondBNoteWrap" class="problemNoteWrap hidden"><label for="ibPondBNote">Nota WhatsApp</label><input id="ibPondBNote" value="Paras Pond B under maintenance (level problem)"></div></div>
+        <div class="field" id="ibPondCField"><div class="pumpHead"><label for="ibPondC">Paras Pond C (m)</label><label class="problemTag"><input id="ibPondCProblem" type="checkbox">Problem</label></div><input id="ibPondC" inputmode="decimal" value="11.96"><div id="ibPondCNoteWrap" class="problemNoteWrap hidden"><label for="ibPondCNote">Nota WhatsApp</label><input id="ibPondCNote" value="Paras Pond C under maintenance (level problem)"></div></div>
       </div>
-<details class="more" style="margin:7px 0 0"><summary>Preview WhatsApp</summary><div class="moreBody"><div id="ibPreview" class="pumpPreview"></div></div></details>
+<details class="more" style="margin:7px 0 0"><summary>Preview WhatsApp</summary><div class="moreBody"><div id="ibPreview" class="pumpPreview" tabindex="0"></div></div></details>
     </section>
   </div>
 
@@ -438,21 +509,21 @@ details.more[open]>summary:after{content:"−"}
     <section class="card">
       <div class="quickTitle"><h2>RWPS · Intake C</h2><span class="modeChip">PUMP STATUS</span></div>
       <div class="reportMeta">
-        <div class="field"><label>Tarikh</label><input id="icDate" type="date"></div>
-        <div class="field"><label>Masa</label><input id="icTime" type="time" step="60"></div>
+        <div class="field"><label for="icDate">Tarikh</label><input id="icDate" type="date"></div>
+        <div class="field"><label for="icTime">Masa</label><input id="icTime" type="time" step="60"></div>
       </div>
       <div class="pumpGrid">
-        <div class="field"><div class="pumpHead"><label>Pump No.1</label><label class="changeTag"><input id="icC1" type="checkbox">Berubah</label></div><select id="icP1" class="pumpStatus"><option value="Run">Run</option><option value="Stop">Stop</option></select></div>
-        <div class="field"><div class="pumpHead"><label>Pump No.2</label><label class="changeTag"><input id="icC2" type="checkbox">Berubah</label></div><select id="icP2" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
-        <div class="field"><div class="pumpHead"><label>Pump No.3</label><label class="changeTag"><input id="icC3" type="checkbox">Berubah</label></div><select id="icP3" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
-        <div class="field"><div class="pumpHead"><label>Pump No.4</label><label class="changeTag"><input id="icC4" type="checkbox">Berubah</label></div><select id="icP4" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
+        <div class="field"><div class="pumpHead"><label for="icP1">Pump No.1</label><label class="changeTag"><input id="icC1" type="checkbox">Berubah</label></div><select id="icP1" class="pumpStatus"><option value="Run">Run</option><option value="Stop">Stop</option></select></div>
+        <div class="field"><div class="pumpHead"><label for="icP2">Pump No.2</label><label class="changeTag"><input id="icC2" type="checkbox">Berubah</label></div><select id="icP2" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
+        <div class="field"><div class="pumpHead"><label for="icP3">Pump No.3</label><label class="changeTag"><input id="icC3" type="checkbox">Berubah</label></div><select id="icP3" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
+        <div class="field"><div class="pumpHead"><label for="icP4">Pump No.4</label><label class="changeTag"><input id="icC4" type="checkbox">Berubah</label></div><select id="icP4" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
         <div class="sectionLine"></div>
-        <div class="field"><label>Total Pumping</label><select id="icTotal"><option value="63">63 MLD</option><option value="126">126 MLD</option></select></div>
-        <div class="field"><label>RW Inflow (m3/h)</label><input id="icRw" inputmode="decimal" value="2518"></div>
-        <div class="field" id="icPondBField"><div class="pumpHead"><label>Pond B (m)</label><label class="problemTag"><input id="icPondBProblem" type="checkbox">Problem</label></div><input id="icPondB" inputmode="decimal" value="5.93"><div id="icPondBNoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="icPondBNote" value="Paras Pond B under maintenance (level problem)"></div></div>
-        <div class="field" id="icPondCField"><div class="pumpHead"><label>Pond C (m)</label><label class="problemTag"><input id="icPondCProblem" type="checkbox">Problem</label></div><input id="icPondC" inputmode="decimal" value="11.96"><div id="icPondCNoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="icPondCNote" value="Paras Pond C under maintenance (level problem)"></div></div>
+        <div class="field"><label for="icTotal">Total Pumping</label><select id="icTotal"><option value="63">63 MLD</option><option value="126">126 MLD</option></select></div>
+        <div class="field"><label for="icRw">RW Inflow (m3/h)</label><input id="icRw" inputmode="decimal" value="2518"></div>
+        <div class="field" id="icPondBField"><div class="pumpHead"><label for="icPondB">Pond B (m)</label><label class="problemTag"><input id="icPondBProblem" type="checkbox">Problem</label></div><input id="icPondB" inputmode="decimal" value="5.93"><div id="icPondBNoteWrap" class="problemNoteWrap hidden"><label for="icPondBNote">Nota WhatsApp</label><input id="icPondBNote" value="Paras Pond B under maintenance (level problem)"></div></div>
+        <div class="field" id="icPondCField"><div class="pumpHead"><label for="icPondC">Pond C (m)</label><label class="problemTag"><input id="icPondCProblem" type="checkbox">Problem</label></div><input id="icPondC" inputmode="decimal" value="11.96"><div id="icPondCNoteWrap" class="problemNoteWrap hidden"><label for="icPondCNote">Nota WhatsApp</label><input id="icPondCNote" value="Paras Pond C under maintenance (level problem)"></div></div>
       </div>
-<details class="more" style="margin:7px 0 0"><summary>Preview WhatsApp</summary><div class="moreBody"><div id="icPreview" class="pumpPreview"></div></div></details>
+<details class="more" style="margin:7px 0 0"><summary>Preview WhatsApp</summary><div class="moreBody"><div id="icPreview" class="pumpPreview" tabindex="0"></div></div></details>
     </section>
   </div>
 
@@ -460,34 +531,34 @@ details.more[open]>summary:after{content:"−"}
     <section class="card">
       <div class="quickTitle"><h2>TWPS</h2><span class="modeChip">PUMP STATUS</span></div>
       <div class="reportMeta">
-        <div class="field"><label>Tarikh</label><input id="twpsDate" type="date"></div>
-        <div class="field"><label>Masa</label><input id="twpsTime" type="time" step="60"></div>
+        <div class="field"><label for="twpsDate">Tarikh</label><input id="twpsDate" type="date"></div>
+        <div class="field"><label for="twpsTime">Masa</label><input id="twpsTime" type="time" step="60"></div>
       </div>
       <div class="pumpGrid">
-        <div class="field"><div class="pumpHead"><label>Pump No.1</label><label class="changeTag"><input id="twpsC1" type="checkbox">Berubah</label></div><select id="twpsP1" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
-        <div class="field"><div class="pumpHead"><label>Pump No.2</label><label class="changeTag"><input id="twpsC2" type="checkbox">Berubah</label></div><select id="twpsP2" class="pumpStatus"><option value="Run">Run</option><option value="Stop">Stop</option></select></div>
-        <div class="field"><div class="pumpHead"><label>Pump No.3</label><label class="changeTag"><input id="twpsC3" type="checkbox">Berubah</label></div><select id="twpsP3" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
-        <div class="field"><div class="pumpHead"><label>Pump No.4</label><label class="changeTag"><input id="twpsC4" type="checkbox">Berubah</label></div><select id="twpsP4" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
+        <div class="field"><div class="pumpHead"><label for="twpsP1">Pump No.1</label><label class="changeTag"><input id="twpsC1" type="checkbox">Berubah</label></div><select id="twpsP1" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
+        <div class="field"><div class="pumpHead"><label for="twpsP2">Pump No.2</label><label class="changeTag"><input id="twpsC2" type="checkbox">Berubah</label></div><select id="twpsP2" class="pumpStatus"><option value="Run">Run</option><option value="Stop">Stop</option></select></div>
+        <div class="field"><div class="pumpHead"><label for="twpsP3">Pump No.3</label><label class="changeTag"><input id="twpsC3" type="checkbox">Berubah</label></div><select id="twpsP3" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
+        <div class="field"><div class="pumpHead"><label for="twpsP4">Pump No.4</label><label class="changeTag"><input id="twpsC4" type="checkbox">Berubah</label></div><select id="twpsP4" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
         <div class="sectionLine"></div>
-        <div class="field"><label>Total Pumping</label><select id="twpsTotal"><option value="50">50 MLD</option><option value="100">100 MLD</option></select></div>
-        <div class="field"><label>TW Outflow (m3/h)</label><input id="twpsOut" inputmode="decimal" value="2236"></div>
+        <div class="field"><label for="twpsTotal">Total Pumping</label><select id="twpsTotal"><option value="50">50 MLD</option><option value="100">100 MLD</option></select></div>
+        <div class="field"><label for="twpsOut">TW Outflow (m3/h)</label><input id="twpsOut" inputmode="decimal" value="2236"></div>
         <div class="sectionLine"></div>
-        <div class="field" id="twpsCwt1Field"><div class="pumpHead"><label>CWT 1 (m)</label><label class="problemTag"><input id="twpsCwt1Problem" type="checkbox">Problem</label></div><input id="twpsCwt1" inputmode="decimal" value="4.07"><div id="twpsCwt1NoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="twpsCwt1Note" value="Paras CWT 1 under maintenance (level problem)"></div></div>
-        <div class="field" id="twpsCwt2Field"><div class="pumpHead"><label>CWT 2</label><label class="problemTag"><input id="twpsCwt2Problem" type="checkbox" checked>Problem</label></div><input id="twpsCwt2" inputmode="decimal" value="" placeholder="Bacaan terakhir / kosong"><div id="twpsCwt2NoteWrap" class="problemNoteWrap"><label>Nota WhatsApp</label><input id="twpsCwt2Note" value="Paras tangki no.2 under maintenance (sensor ULS rosak)"></div></div>
-        <div class="field" id="twpsDp1Field"><div class="pumpHead"><label>DP 1 (m)</label><label class="problemTag"><input id="twpsDp1Problem" type="checkbox">Problem</label></div><input id="twpsDp1" inputmode="decimal" value="7.76"><div id="twpsDp1NoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="twpsDp1Note" value="Paras Desa Putra No.1 under maintenance (level problem)"></div></div>
-        <div class="field" id="twpsDp2Field"><div class="pumpHead"><label>DP 2 (m)</label><label class="problemTag"><input id="twpsDp2Problem" type="checkbox">Problem</label></div><input id="twpsDp2" inputmode="decimal" value="8.05"><div id="twpsDp2NoteWrap" class="problemNoteWrap hidden"><label>Nota WhatsApp</label><input id="twpsDp2Note" value="Paras Desa Putra No.2 under maintenance (level problem)"></div></div>
+        <div class="field" id="twpsCwt1Field"><div class="pumpHead"><label for="twpsCwt1">CWT 1 (m)</label><label class="problemTag"><input id="twpsCwt1Problem" type="checkbox">Problem</label></div><input id="twpsCwt1" inputmode="decimal" value="4.07"><div id="twpsCwt1NoteWrap" class="problemNoteWrap hidden"><label for="twpsCwt1Note">Nota WhatsApp</label><input id="twpsCwt1Note" value="Paras CWT 1 under maintenance (level problem)"></div></div>
+        <div class="field" id="twpsCwt2Field"><div class="pumpHead"><label for="twpsCwt2">CWT 2</label><label class="problemTag"><input id="twpsCwt2Problem" type="checkbox" checked>Problem</label></div><input id="twpsCwt2" inputmode="decimal" value="" placeholder="Bacaan terakhir / kosong"><div id="twpsCwt2NoteWrap" class="problemNoteWrap"><label for="twpsCwt2Note">Nota WhatsApp</label><input id="twpsCwt2Note" value="Paras tangki no.2 under maintenance (sensor ULS rosak)"></div></div>
+        <div class="field" id="twpsDp1Field"><div class="pumpHead"><label for="twpsDp1">DP 1 (m)</label><label class="problemTag"><input id="twpsDp1Problem" type="checkbox">Problem</label></div><input id="twpsDp1" inputmode="decimal" value="7.76"><div id="twpsDp1NoteWrap" class="problemNoteWrap hidden"><label for="twpsDp1Note">Nota WhatsApp</label><input id="twpsDp1Note" value="Paras Desa Putra No.1 under maintenance (level problem)"></div></div>
+        <div class="field" id="twpsDp2Field"><div class="pumpHead"><label for="twpsDp2">DP 2 (m)</label><label class="problemTag"><input id="twpsDp2Problem" type="checkbox">Problem</label></div><input id="twpsDp2" inputmode="decimal" value="8.05"><div id="twpsDp2NoteWrap" class="problemNoteWrap hidden"><label for="twpsDp2Note">Nota WhatsApp</label><input id="twpsDp2Note" value="Paras Desa Putra No.2 under maintenance (level problem)"></div></div>
       </div>
-<details class="more" style="margin:7px 0 0"><summary>Preview WhatsApp</summary><div class="moreBody"><div id="twpsPreview" class="pumpPreview"></div></div></details>
+<details class="more" style="margin:7px 0 0"><summary>Preview WhatsApp</summary><div class="moreBody"><div id="twpsPreview" class="pumpPreview" tabindex="0"></div></div></details>
     </section>
   </div>
 
   <div id="panel-stock" class="panel">
     <section class="card">
       <div class="quickTitle"><h2>Stok Bahan Kimia</h2><span class="modeChip">DB LIVE</span></div>
-      <div class="field" style="margin-bottom:8px"><label>Tarikh stok</label><input id="stockDate" type="date"></div>
+      <div class="field" style="margin-bottom:8px"><label for="stockDate">Tarikh stok</label><input id="stockDate" type="date"></div>
       <div id="stockAccessBox" class="stockAccess">
         <label>Access code S2</label>
-        <div class="stockActions"><input id="stockAccessKey" type="password" placeholder="Kod sama macam Breakdown"><button id="stockAccessSave" class="btn green" type="button">Sambung</button></div>
+        <div class="stockActions"><input id="stockAccessKey" aria-label="Access code S2 untuk stok" type="password" placeholder="Kod sama macam Breakdown"><button id="stockAccessSave" class="btn green" type="button">Sambung</button></div>
       </div>
       <div id="stockSyncMeta" class="stockSync">Menyambung ke database S2…</div>
       <div id="stockDashboard" class="stockDashboard"></div>
@@ -498,6 +569,7 @@ details.more[open]>summary:after{content:"−"}
           <div id="stockNotice" class="notice ok" style="margin-top:9px">Syif pagi isi penggunaan 24 jam. Penerimaan stok boleh direkod bila-bila masa.</div>
           <div class="stockActions">
             <button id="stockCommit" class="btn green">Simpan Perubahan</button>
+            <button id="stockReload" class="btn light" type="button">Muat semula stok</button>
             <button id="stockUndo" class="btn light">Undo Terakhir</button>
           </div>
         </div>
@@ -506,7 +578,7 @@ details.more[open]>summary:after{content:"−"}
 
     <details class="more">
       <summary>Preview WhatsApp Stok</summary>
-      <div class="moreBody"><div id="stockPreview" class="pumpPreview"></div></div>
+      <div class="moreBody"><div id="stockPreview" class="pumpPreview" tabindex="0"></div></div>
     </details>
 
     <details class="more">
@@ -514,7 +586,7 @@ details.more[open]>summary:after{content:"−"}
       <div class="moreBody"><div id="stockHistory" class="stockHistory small">Belum ada transaksi.</div></div>
     </details>
   </div>
-</div>
+</main>
 
 <div class="bottom"><div class="bottomIn"><button id="share" class="btn light">Share</button><form id="waForm" class="waForm" action="/api/s2-live-share" method="POST">
 <input type="hidden" name="accessKey" id="waAccessKey">
@@ -554,7 +626,7 @@ function syncAutoDates(){
  if($('stockPreview')) previewStock();
 }
 function v(x){return String($(x)?.value||'').trim()}
-function n(x){let z=Number(v(x));return Number.isFinite(z)?z:null}
+function n(x){const raw=v(x);if(!raw||raw==='-')return null;const z=Number(raw);return Number.isFinite(z)?z:null}
 function ck(x){return !!$(x)?.checked}
 function rwP(){return v('rwp')==='63'?{a:2200,b:2300}:{a:4200,b:4500}}
 function twP(){return v('twp')==='50'?{n:2200,p:7.0}:{n:4200,p:7.6}}
@@ -649,6 +721,7 @@ const LIVE_API='/api/s2-live';
 let liveState={},liveLoading=false;
 function liveAccess(){return localStorage.getItem('s2_access_key')||''}
 function showLiveAccess(show=true){
+ if(show)$('liveBoard').open=true;
  if($('liveAccessBox'))$('liveAccessBox').style.display=show?'block':'none';
  if(show&&$('liveAccessKey')&&!$('liveAccessKey').value)$('liveAccessKey').value=liveAccess();
 }
@@ -664,6 +737,7 @@ async function liveApi(method='GET',data=null){
  showLiveAccess(false);
  return j;
 }
+function htmlText(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function liveStamp(item){
  if(!item?.updated_at)return'Belum ada update online';
  const d=new Date(item.updated_at);
@@ -672,21 +746,21 @@ function liveStamp(item){
 }
 function livePumpChip(no,status){
  const st=String(status||'').toLowerCase(),cls=st==='run'?'run':st==='stop'?'stop':'';
- return '<span class="livePump '+cls+'">P'+no+' '+(status||'-').toUpperCase()+'</span>';
+ return '<span class="livePump '+cls+'">P'+no+' '+htmlText((status||'-').toUpperCase())+'</span>';
 }
 function liveCard(section,title,body,item){
  return '<div class="liveCard"><div class="liveCardHead"><b>'+title+'</b><button type="button" class="liveEditBtn" data-live-jump="'+section+'">Update</button></div>'+
    (item?body:'<div class="liveEmpty">Belum ada status online.</div>')+
-   '<div class="liveStamp">'+liveStamp(item)+'</div></div>';
+   '<div class="liveStamp">'+htmlText(liveStamp(item))+'</div></div>';
 }
 function renderLive(){
  if(!$('liveGrid'))return;
  const o=liveState.ops,b=liveState.intakeB,c=liveState.intakeC,t=liveState.twps;
  const od=o?.data||{},bd=b?.data||{},cd=c?.data||{},td=t?.data||{};
- const opsBody='<div class="liveFlow"><div class="liveMetric"><small>RWP</small><b>'+(od.rwp||'-')+' MLD</b></div><div class="liveMetric"><small>TWP</small><b>'+(od.twp||'-')+' MLD</b></div><div class="liveMetric"><small>RW</small><b>'+(od.rw||'-')+' m³/h</b></div><div class="liveMetric"><small>TW</small><b>'+(od.tw||'-')+' m³/h</b></div></div>';
+ const opsBody='<div class="liveFlow"><div class="liveMetric"><small>RWP</small><b>'+htmlText(od.rwp||'-')+' MLD</b></div><div class="liveMetric"><small>TWP</small><b>'+htmlText(od.twp||'-')+' MLD</b></div><div class="liveMetric"><small>RW</small><b>'+htmlText(od.rw||'-')+' m³/h</b></div><div class="liveMetric"><small>TW</small><b>'+htmlText(od.tw||'-')+' m³/h</b></div></div>';
  const ibBody='<div class="livePumps">'+livePumpChip(1,bd.p1)+livePumpChip(2,bd.p2)+'</div>';
- const icBody='<div class="livePumps">'+[1,2,3,4].map(i=>livePumpChip(i,cd['p'+i])).join('')+'</div><div class="liveStamp">'+(cd.total?cd.total+' MLD':'')+'</div>';
- const twBody='<div class="livePumps">'+[1,2,3,4].map(i=>livePumpChip(i,td['p'+i])).join('')+'</div><div class="liveStamp">'+(td.total?td.total+' MLD':'')+'</div>';
+ const icBody='<div class="livePumps">'+[1,2,3,4].map(i=>livePumpChip(i,cd['p'+i])).join('')+'</div><div class="liveStamp">'+(cd.total?htmlText(cd.total)+' MLD':'')+'</div>';
+ const twBody='<div class="livePumps">'+[1,2,3,4].map(i=>livePumpChip(i,td['p'+i])).join('')+'</div><div class="liveStamp">'+(td.total?htmlText(td.total)+' MLD':'')+'</div>';
  $('liveGrid').innerHTML=
    liveCard('ops','Operasi',opsBody,o)+
    liveCard('intakeB','Intake B · RWTPS',ibBody,b)+
@@ -747,7 +821,7 @@ const CHEMS=[
  {k:'carbon',name:'Activated Carbon',initial:7.500},
  {k:'calhypo',name:'Calcium Hypoclorite',initial:1.440}
 ];
-let stockState={},stockServerMeta=null,stockLoading=false;
+let stockState={},stockVersions={},stockServerMeta=null,stockLoading=false,stockLastBatch=null;
 
 function fmtMt(x){return Number(x||0).toFixed(3)}
 function stockAccess(){return localStorage.getItem('s2_access_key')||''}
@@ -779,26 +853,27 @@ async function chemApi(method='GET',data=null,query=''){
  return j;
 }
 function applyStockItems(items){
- (items||[]).forEach(r=>stockState[r.chemical_key]=Number(r.stock_mt||0));
+ (items||[]).forEach(r=>{stockState[r.chemical_key]=Number(r.stock_mt||0);stockVersions[r.chemical_key]=r.updated_at});
  CHEMS.forEach(c=>{if(!Number.isFinite(Number(stockState[c.k])))stockState[c.k]=c.initial});
 }
 async function loadStock(silent=false){
- if(stockLoading)return;
+ if(stockLoading||stockHasPending())return;
  stockLoading=true;
  try{
    if($('stockDate')&&!$('stockDate').value)$('stockDate').value=localDate();
    const j=await chemApi('GET',null,'?action=state');
+   if(stockHasPending())return;
    applyStockItems(j.items);
    stockServerMeta=j.last_update||null;
    renderStock();
    await renderStockHistory(true);
    const m=stockServerMeta;
-   if($('stockSyncMeta'))$('stockSyncMeta').innerHTML=m
-     ? '<b>Database S2</b> · terakhir direkod '+fmtSyncTime(m.updated_at)+' · '+(m.updated_shift||'-')+' · '+(m.updated_by||'-')
-     : '<b>Database S2</b> · belum ada kemas kini.';
+   if($('stockSyncMeta'))$('stockSyncMeta').textContent=m
+     ? 'Database S2 · terakhir direkod '+fmtSyncTime(m.updated_at)+' · '+(m.updated_shift||'-')+' · '+(m.updated_by||'-')
+     : 'Database S2 · belum ada kemas kini.';
    if(!silent&&$('stockNotice')){$('stockNotice').className='notice ok';$('stockNotice').textContent='Data stok diselaraskan dari database S2.'}
  }catch(e){
-   if($('stockSyncMeta'))$('stockSyncMeta').innerHTML='<b>Database S2</b> · belum bersambung';
+   if($('stockSyncMeta'))$('stockSyncMeta').textContent='Database S2 · belum bersambung';
    if($('stockNotice')){$('stockNotice').className='notice warn';$('stockNotice').textContent=e.message}
  }finally{stockLoading=false}
 }
@@ -813,18 +888,20 @@ function renderStockDashboard(){
 }
 async function editDashboardStock(key){
  const c=CHEMS.find(x=>x.k===key);if(!c)return;
+ if(stockHasPending()){alert('Simpan perubahan stok dalam borang dahulu.');return}
  const cur=fmtMt(stockState[c.k]);
  const raw=prompt('Betulkan stok semasa '+c.name+' (MT):',cur);
  if(raw===null)return;
  const val=Number(String(raw).trim());
- if(!Number.isFinite(val)||val<0){alert('Nilai MT tidak sah.');return}
+ if(!String(raw).trim()||!Number.isFinite(val)||val<0){alert('Nilai MT tidak sah.');return}
  if(Math.abs(val-Number(stockState[c.k]||0))<0.000001)return;
  if(!confirm(c.name+'\n'+cur+' MT → '+fmtMt(val)+' MT\n\nSimpan pembetulan ke database?'))return;
  try{
-   const j=await chemApi('POST',{action:'commit',reportDate:v('stockDate')||localDate(),shift:stockShift(),operator:stockOperator(),changes:[{key:c.k,type:'set',mt:val}]});
+   const j=await chemApi('POST',{action:'commit',reportDate:v('stockDate')||localDate(),shift:stockShift(),operator:stockOperator(),changes:[{key:c.k,type:'set',mt:val,expectedUpdatedAt:stockVersions[c.k]}]});
+   localStorage.removeItem('rqLraStockDraft');
    applyStockItems(j.items);stockServerMeta=j.last_update||null;
    renderStock();renderStockDashboard();await renderStockHistory(true);
-   if($('stockSyncMeta'))$('stockSyncMeta').innerHTML='<b>Database S2</b> · dikemas kini '+fmtSyncTime(stockServerMeta?.updated_at)+' · '+(stockServerMeta?.updated_shift||stockShift())+' · '+(stockServerMeta?.updated_by||stockOperator());
+   if($('stockSyncMeta'))$('stockSyncMeta').textContent='Database S2 · dikemas kini '+fmtSyncTime(stockServerMeta?.updated_at)+' · '+(stockServerMeta?.updated_shift||stockShift())+' · '+(stockServerMeta?.updated_by||stockOperator());
    $('stockNotice').className='notice ok';$('stockNotice').textContent='Pembetulan '+c.name+' berjaya disimpan ke database.';
  }catch(e){
    $('stockNotice').className='notice warn';$('stockNotice').textContent=e.message;
@@ -846,8 +923,8 @@ function renderStock(){
  renderStockDashboard();
  $('stockList').innerHTML=CHEMS.map(c=>{
    const controls=c.direct
-    ? '<div><label>Masukkan stok terkini (MT)</label><input id="direct_'+c.k+'" inputmode="decimal" value="'+fmtMt(stockState[c.k])+'"></div>'
-    : '<div class="stockTx"><div><label>Guna 24j (-kg) · syif pagi</label><input id="use_'+c.k+'" inputmode="decimal" placeholder="0"></div><div><label>Terima (+kg) · bila stok sampai</label><input id="add_'+c.k+'" inputmode="decimal" placeholder="0"></div></div>';
+    ? '<div><label for="direct_'+c.k+'">Masukkan stok terkini (MT)</label><input id="direct_'+c.k+'" inputmode="decimal" value="'+fmtMt(stockState[c.k])+'"></div>'
+    : '<div class="stockTx"><div><label for="use_'+c.k+'">Guna 24j (-kg) · syif pagi</label><input id="use_'+c.k+'" inputmode="decimal" placeholder="0"></div><div><label for="add_'+c.k+'">Terima (+kg) · bila stok sampai</label><input id="add_'+c.k+'" inputmode="decimal" placeholder="0"></div></div>';
    return `
    <div class="stockRow">
     <div class="stockTop">
@@ -860,22 +937,43 @@ function renderStock(){
  }).join('');
  CHEMS.forEach(c=>{
    const list=c.direct?['direct_'+c.k]:['use_'+c.k,'add_'+c.k];
-   list.forEach(id=>$(id)?.addEventListener('input',previewStock));
+   list.forEach(id=>$(id)?.addEventListener('input',()=>{previewStock();saveStockDraft()}));
  });
  previewStock();
 }
+function saveStockDraft(){
+ const values={};
+ CHEMS.forEach(c=>(c.direct?['direct_']:['use_','add_']).forEach(p=>values[p+c.k]=$(p+c.k)?.value||''));
+ localStorage.setItem('rqLraStockDraft',JSON.stringify({date:v('stockDate'),values,state:stockState,versions:stockVersions}));
+}
+function restoreStockDraft(){
+ try{
+  const d=JSON.parse(localStorage.getItem('rqLraStockDraft')||'null');
+  if(!d||!d.state||!d.values||!d.versions)return;
+  stockState=d.state;stockVersions=d.versions;$('stockDate').value=d.date||localDate();renderStock();
+  Object.entries(d.values).forEach(([id,value])=>{if(/^(direct|use|add)_/.test(id)&&$(id))$(id).value=value});
+  previewStock();
+ }catch{}
+}
 function stockHasPending(){
- return CHEMS.some(c=>{
-   if(c.direct){
-     const raw=String($('direct_'+c.k)?.value||'').trim(),x=Number(raw);
-     return raw!==''&&Number.isFinite(x)&&Math.abs(x-Number(stockState[c.k]||0))>0.000001;
-   }
-   const u=Number($('use_'+c.k)?.value||0),a=Number($('add_'+c.k)?.value||0);
-   return (Number.isFinite(u)&&u>0)||(Number.isFinite(a)&&a>0);
- });
+ return CHEMS.some(c=>c.direct
+  ? $('direct_'+c.k)&&$('direct_'+c.k).value!==fmtMt(stockState[c.k])
+  : ['use_','add_'].some(prefix=>String($(prefix+c.k)?.value||'').trim()!==''));
+}
+function stockInputIssue(){
+ for(const c of CHEMS){
+  for(const prefix of c.direct?['direct_']:['use_','add_']){
+   const input=$(prefix+c.k),raw=String(input?.value||'').trim();
+   const bad=(c.direct&&!raw)||(raw!==''&&(!Number.isFinite(Number(raw))||Number(raw)<0));
+   input?.setAttribute('aria-invalid',String(bad));
+   if(bad)return c.name+': masukkan nombor sifar atau positif yang sah.';
+  }
+  if(stockNew(c)<0)return c.name+': penggunaan melebihi stok tersedia.';
+ }
+ return '';
 }
 function previewStock(){
- let bad=false,changed=false;
+ let bad=!!stockInputIssue(),changed=false;
  CHEMS.forEach(c=>{
    const x=stockNew(c);
    if($('new_'+c.k))$('new_'+c.k).textContent=fmtMt(x)+' MT';
@@ -911,6 +1009,7 @@ function stockText(projected=false){
  return L.join('\n');
 }
 async function commitStock(){
+ const issue=stockInputIssue();if(issue){alert(issue);return}
  const changes=[];
  for(const chem of CHEMS){
    const next=stockNew(chem);
@@ -918,11 +1017,11 @@ async function commitStock(){
    if(chem.direct){
      const raw=String($('direct_'+chem.k)?.value||'').trim(),direct=Number(raw);
      if(raw===''||!Number.isFinite(direct)){alert(chem.name+': masukkan nilai stok dalam MT.');return}
-     if(Math.abs(direct-Number(stockState[chem.k]||0))>0.000001)changes.push({key:chem.k,type:'set',mt:direct});
+     if(Math.abs(direct-Number(stockState[chem.k]||0))>0.000001)changes.push({key:chem.k,type:'set',mt:direct,expectedUpdatedAt:stockVersions[chem.k]});
    }else{
      const use=Number($('use_'+chem.k)?.value||0),add=Number($('add_'+chem.k)?.value||0);
      if((Number.isFinite(use)&&use>0)||(Number.isFinite(add)&&add>0)){
-       changes.push({key:chem.k,type:'tx',useKg:Number.isFinite(use)?use:0,receiveKg:Number.isFinite(add)?add:0});
+       changes.push({key:chem.k,type:'tx',expectedUpdatedAt:stockVersions[chem.k],useKg:Number.isFinite(use)?use:0,receiveKg:Number.isFinite(add)?add:0});
      }
    }
  }
@@ -930,19 +1029,22 @@ async function commitStock(){
  $('stockCommit').disabled=true;
  try{
    const j=await chemApi('POST',{action:'commit',reportDate:v('stockDate')||localDate(),shift:stockShift(),operator:stockOperator(),changes});
+   localStorage.removeItem('rqLraStockDraft');
    applyStockItems(j.items);stockServerMeta=j.last_update||null;
    renderStock();await renderStockHistory(true);
-   if($('stockSyncMeta'))$('stockSyncMeta').innerHTML='<b>Database S2</b> · dikemas kini '+fmtSyncTime(stockServerMeta?.updated_at)+' · '+(stockServerMeta?.updated_shift||stockShift())+' · '+(stockServerMeta?.updated_by||stockOperator());
+   if($('stockSyncMeta'))$('stockSyncMeta').textContent='Database S2 · dikemas kini '+fmtSyncTime(stockServerMeta?.updated_at)+' · '+(stockServerMeta?.updated_shift||stockShift())+' · '+(stockServerMeta?.updated_by||stockOperator());
    $('stockNotice').className='notice ok';$('stockNotice').textContent='Stok berjaya disimpan ke database. Semua telefon akan nampak nilai yang sama.';
  }catch(e){
    $('stockNotice').className='notice warn';$('stockNotice').textContent=e.message;
  }finally{$('stockCommit').disabled=false}
 }
 async function undoStock(){
+ if(stockHasPending()){alert('Simpan perubahan stok dalam borang dahulu.');return}
  if(!confirm('Undo transaksi chemical terakhir dalam database?'))return;
  $('stockUndo').disabled=true;
  try{
-   const j=await chemApi('POST',{action:'undoLast'});
+   const j=await chemApi('POST',{action:'undoLast',expectedBatchId:stockLastBatch});
+   localStorage.removeItem('rqLraStockDraft');
    applyStockItems(j.items);stockServerMeta=j.last_update||null;
    renderStock();await renderStockHistory(true);
    $('stockNotice').className='notice ok';$('stockNotice').textContent='Transaksi terakhir telah di-Undo dalam database.';
@@ -954,18 +1056,28 @@ async function renderStockHistory(silent=false){
  if(!$('stockHistory'))return;
  try{
    const j=await chemApi('GET',null,'?action=history&limit=40');
+   stockLastBatch=j.items?.[0]?.batch_id||null;
    const groups=[];
    for(const r of (j.items||[])){
      let g=groups.find(x=>x.id===r.batch_id);
      if(!g){g={id:r.batch_id,at:r.created_at,date:r.report_date,shift:r.shift_name,operator:r.operator_name,rows:[]};groups.push(g)}
      g.rows.push(r);
    }
-   $('stockHistory').innerHTML=groups.length?groups.slice(0,12).map(g=>{
-     const parts=g.rows.map(r=>['SET','CORRECTION'].includes(r.event_type)
-       ? r.chemical_name+': '+fmtMt(r.before_mt)+' → '+fmtMt(r.after_mt)+' MT'
-       : r.chemical_name+': '+(Number(r.use_kg)>0?'-'+Number(r.use_kg)+'kg ':'')+(Number(r.receive_kg)>0?'+'+Number(r.receive_kg)+'kg':'')+' → '+fmtMt(r.after_mt)+' MT').join('<br>');
-     return '<div class="stockHistItem"><b>'+fdate(g.date||'')+' · '+(g.shift||'-')+'</b> · '+(g.operator||'-')+'<br>'+parts+'</div>';
-   }).join(''):'Belum ada transaksi.';
+   const host=$('stockHistory');host.replaceChildren();
+   if(!groups.length){host.textContent='Belum ada transaksi.';return}
+   for(const g of groups.slice(0,12)){
+     const item=document.createElement('div');item.className='stockHistItem';
+     const heading=document.createElement('b');heading.textContent=fdate(g.date||'')+' · '+(g.shift||'-');
+     item.append(heading,document.createTextNode(' · '+(g.operator||'-')));
+     for(const r of g.rows){
+       const part=document.createElement('div');
+       part.textContent=['SET','CORRECTION'].includes(r.event_type)
+         ? String(r.chemical_name||'-')+': '+fmtMt(r.before_mt)+' → '+fmtMt(r.after_mt)+' MT'
+         : String(r.chemical_name||'-')+': '+(Number(r.use_kg)>0?'-'+Number(r.use_kg)+'kg ':'')+(Number(r.receive_kg)>0?'+'+Number(r.receive_kg)+'kg':'')+' → '+fmtMt(r.after_mt)+' MT';
+       item.append(part);
+     }
+     host.append(item);
+   }
  }catch(e){
    if(!silent)$('stockHistory').textContent=e.message;
  }
@@ -996,7 +1108,7 @@ function refresh(){
  let r=rwP(),t=twP(),m=mld();
  $('rwNormal').textContent=r.a+'m3/h ~ '+r.b+'m3/h';$('twNormal').textContent=t.n+' m3/h';$('pressure').textContent=t.p.toFixed(1)+' bar';$('pondMld').textContent=(m===null?'-':clean(m))+' MLD';$('preview').textContent=opsText();
  let a=n('rw'),b=n('tw'),msg=[];if(!ck('rwProblem')&&a!==null&&(a<r.a||a>r.b))msg.push('RW '+a+' di luar '+r.a+'-'+r.b);if(!ck('twProblem')&&b!==null&&b<t.n)msg.push('TW '+b+' di bawah '+t.n);
- $('notice').className='notice '+(msg.length?'warn':'ok');$('notice').textContent=msg.length?'Semak: '+msg.join('. '):'OK - bacaan utama dalam julat.';
+ $('notice').className='notice '+(msg.length?'warn':'ok');$('notice').textContent=msg.length?'Semak: '+msg.join('. '):a===null||b===null?'Isi bacaan RW dan TW; gunakan tanda masalah jika sensor tidak tepat.':'OK - bacaan utama dalam julat.';
  saveDraft();
 }
 function refreshPump(){
@@ -1032,23 +1144,57 @@ function load(){
  const today=localDate();
  ['date','ibDate','icDate','twpsDate'].forEach(id=>{if($(id))$(id).value=today});
 }
-function hist(){let h=JSON.parse(localStorage.getItem('rqLraHist')||'[]');$('history').innerHTML=h.length?h.map(x=>'<div class="historyItem"><b>'+x.date+' @ '+x.time.replace(':','')+'</b><br>'+x.flow+'<br><button onclick="openHist('+x.id+')">Buka</button><button onclick="waHist('+x.id+')">WhatsApp</button></div>').join(''):'Belum ada report.'}
+function hist(){
+ let h=[];try{const saved=JSON.parse(localStorage.getItem('rqLraHist')||'[]');h=Array.isArray(saved)?saved:[]}catch{}
+ const host=$('history');host.replaceChildren();
+ if(!h.length){host.textContent='Belum ada report.';return}
+ h.forEach(x=>{
+  const item=document.createElement('div');item.className='historyItem';
+  const heading=document.createElement('b');heading.textContent=String(x.date||'-')+' @ '+String(x.time||'-').replace(':','');
+  const flow=document.createElement('div');flow.textContent=String(x.flow||'-');
+  const open=document.createElement('button');open.type='button';open.textContent='Buka';open.addEventListener('click',()=>openHist(x.id));
+  const wa=document.createElement('button');wa.type='button';wa.textContent='WhatsApp';wa.addEventListener('click',()=>waHist(x.id));
+  item.append(heading,flow,open,wa);host.append(item);
+ });
+}
 window.openHist=id=>{let h=JSON.parse(localStorage.getItem('rqLraHist')||'[]'),x=h.find(y=>y.id===id);if(!x)return;Object.entries(x.data).forEach(([k,z])=>{if(!$(k))return;if($(k).type==='checkbox')$(k).checked=!!z;else $(k).value=z});refresh();switchTab('ops');scrollTo({top:0,behavior:'smooth'})}
 window.waHist=id=>{let h=JSON.parse(localStorage.getItem('rqLraHist')||'[]'),x=h.find(y=>y.id===id);if(x)location.href='https://wa.me/?text='+encodeURIComponent(x.text)}
 $('save').onclick=()=>{let h=JSON.parse(localStorage.getItem('rqLraHist')||'[]');h.unshift({id:Date.now(),date:fdate(v('date')),time:v('time'),flow:'RWP '+v('rwp')+' / TWP '+v('twp'),text:opsText(),data:draft()});localStorage.setItem('rqLraHist',JSON.stringify(h.slice(0,60)));hist();$('notice').textContent='Report disimpan.'}
 
 function switchTab(tab){
+ const panel=$('panel-'+tab);
+ if(!panel){tab='ops'}
  activeTab=tab;localStorage.setItem('rqLraActiveTab',tab);
- document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
- document.querySelectorAll('.tabBtn').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));
+ document.querySelectorAll('.panel').forEach(x=>{const selected=x.id==='panel-'+tab;x.classList.toggle('active',selected);x.setAttribute('role','tabpanel');x.setAttribute('aria-hidden',String(!selected))});
+ document.querySelectorAll('.tabBtn').forEach(x=>{const selected=x.dataset.tab===tab;x.classList.toggle('active',selected);x.setAttribute('aria-selected',String(selected));x.tabIndex=selected?0:-1});
  $('panel-'+tab).classList.add('active');
  if(tab==='stock'){loadStock(true);}
  if(typeof window.morningTabChanged==='function')window.morningTabChanged(tab);
 }
-document.querySelectorAll('.tabBtn').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+document.querySelectorAll('.tabBtn').forEach(b=>{
+ b.setAttribute('role','tab');b.setAttribute('aria-controls','panel-'+b.dataset.tab);
+ b.onclick=()=>switchTab(b.dataset.tab);
+ b.addEventListener('keydown',event=>{
+  if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+  event.preventDefault();
+  const tabs=[...document.querySelectorAll('.tabBtn')],index=tabs.indexOf(b);
+  const next=event.key==='Home'?0:event.key==='End'?tabs.length-1:(index+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;
+  switchTab(tabs[next].dataset.tab);tabs[next].focus();tabs[next].scrollIntoView({block:'nearest',inline:'nearest'});
+ });
+});
+/* Expose a clear, keyboard-accessible relationship between each tab and panel. */
+document.querySelectorAll('.panel').forEach(panel=>{
+ const name=panel.id.replace(/^panel-/,'');
+ const trigger=document.querySelector('.tabBtn[data-tab="'+name+'"]');
+ if(trigger){trigger.id='lra-tab-'+name;panel.setAttribute('aria-labelledby',trigger.id)}
+});
 $('stockCommit').onclick=commitStock;
 $('stockUndo').onclick=undoStock;
-$('stockDate').addEventListener('change',previewStock);
+$('stockReload').onclick=()=>{
+ if(stockHasPending()&&!confirm('Buang input stok yang belum disimpan dan muat nilai database terkini? Salin draf dahulu jika perlu.'))return;
+ localStorage.removeItem('rqLraStockDraft');renderStock();loadStock(false);
+};
+$('stockDate').addEventListener('change',()=>{previewStock();saveStockDraft()});
 $('stockAccessSave').onclick=()=>{const k=v('stockAccessKey');if(!k)return;localStorage.setItem('s2_access_key',k);loadStock(false);loadLive(true)};
 $('liveAccessSave').onclick=()=>{const k=v('liveAccessKey');if(!k)return;localStorage.setItem('s2_access_key',k);showLiveAccess(false);loadLive(false);if(activeTab==='stock')loadStock(true)};
 
@@ -1060,6 +1206,7 @@ function fire(){let x=JSON.parse(localStorage.getItem('rqLraReminder')||'null');
 $('waForm').addEventListener('submit',event=>{
  if(activeTab==='stock'){
    event.preventDefault();
+   const issue=stockInputIssue();if(issue){alert(issue);return}
    location.href='https://wa.me/?text='+encodeURIComponent(currentText());
    return;
  }
@@ -1086,7 +1233,7 @@ $('waForm').addEventListener('submit',event=>{
  // Form navigation is initiated by the tap; server saves first then redirects
  // directly to wa.me/?text so WhatsApp can show the group/contact picker.
 });
-$('share').onclick=async()=>{if(navigator.share)try{await navigator.share({title:'LRA Semenyih 2',text:currentText()});return}catch(e){};try{await navigator.clipboard.writeText(currentText());alert('Report dah copy.')}catch(e){location.href='https://wa.me/?text='+encodeURIComponent(currentText())}};
+$('share').onclick=async()=>{if(activeTab==='stock'){const issue=stockInputIssue();if(issue){alert(issue);return}}if(navigator.share)try{await navigator.share({title:'LRA Semenyih 2',text:currentText()});return}catch(e){};try{await navigator.clipboard.writeText(currentText());alert('Report dah copy.')}catch(e){location.href='https://wa.me/?text='+encodeURIComponent(currentText())}};
 
 ids.forEach(x=>$(x).addEventListener('input',refresh));['rwp','twp','time'].forEach(x=>$(x).addEventListener('change',refresh));
 pumpIds.forEach(x=>{if(!$(x))return;$(x).addEventListener('input',refreshPump);$(x).addEventListener('change',refreshPump)});
@@ -1100,9 +1247,9 @@ if(standalone())$('installBtn').style.display='none';
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){syncAutoDates();loadLive(true);if(activeTab==='stock'&&!stockHasPending())loadStock(true)}});
 window.addEventListener('focus',()=>{syncAutoDates();loadLive(true);if(activeTab==='stock'&&!stockHasPending())loadStock(true)});
 
-load();syncMaintenance();refresh();refreshPump();hist();arm();loadLive(true);loadStock(true);setInterval(()=>{loadLive(true);if(activeTab==='stock'&&!stockHasPending())loadStock(true)},30000);switchTab(localStorage.getItem('rqLraActiveTab')||'ops');
+load();syncMaintenance();refresh();refreshPump();hist();arm();restoreStockDraft();loadLive(true);loadStock(true);setInterval(()=>{loadLive(true);if(activeTab==='stock'&&!stockHasPending())loadStock(true)},30000);switchTab(localStorage.getItem('rqLraActiveTab')||'ops');
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
 </script>
-<script src="./morning.js?v=13"></script>
+<script src="./morning.js?v=15"></script>
 </body>
 </html>

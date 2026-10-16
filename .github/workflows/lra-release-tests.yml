@@ -1,0 +1,39 @@
+name: LRA isolated release checks
+on:
+  pull_request:
+    paths: ['lra/**', 'api/s2-chemical.js', 'api/s2-morning.js', 'tests/lra-*', '.github/workflows/lra-release-tests.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolated-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        browser: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install test-only dependencies
+        run: |
+          npm install --prefix /tmp/lra-runtime playwright@1.51.1 @axe-core/playwright@4.14.0 miniflare@4.20260730.0 --no-audit --no-fund
+          /tmp/lra-runtime/node_modules/.bin/playwright install --with-deps chromium ${{ matrix.browser }}
+      - name: Run isolated browser, database and offline checks
+        env:
+          NODE_PATH: /tmp/lra-runtime/node_modules
+          REQOO_BROWSER: ${{ matrix.browser }}
+          REQOO_TEST_OUTPUT: /tmp/lra-results
+        run: |
+          node tests/lra-api.mjs
+          LRA_D1_RUNTIME=workerd node tests/lra-api.mjs
+          node tests/app-cache-isolation.mjs
+          node tests/lra-browser.cjs
+          node tests/lra-pwa.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lra-${{ matrix.browser }}-evidence
+          path: /tmp/lra-results

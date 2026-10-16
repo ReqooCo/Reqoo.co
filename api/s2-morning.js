@@ -3,7 +3,7 @@ const ACCESS_HASH='da55872021a7acbbd84f80edee8c565ec1e9e5d926a1f18a4a6d6e1ed1586
 const KEYS=['twFlowHourly','cwt1','cwt2','production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','pondTwlLevel','criticalLevel','criticalPercent','criticalStorage','intakeB','wt1','sjamB','sjamCActual','intakeCHourly','sjamCHourly','dp1','dp2','dpOutHourly','dpPressure','sivTarget','sivStatus','sivChallengeA','sivChallengeB','twTotalizerPrevious','twTotalizerCurrent','twTotalizerUnit','rwTotalizerPrevious','rwTotalizerCurrent','rwTotalizerUnit','pondCFlowValue','pondCFlowUnit','forecastAuto','sjamForecastAuto','pondStorageAuto','criticalStorageAuto','pondAProblem','pondANote','oRwp','oTwp','oRiver','oRiverMax','oExtraNote','oRwProblem','oRwNote','oTwProblem','oTwNote','oRiverProblem','oRiverNote','oCwt1Problem','oCwt1Note','oCwt2Problem','oCwt2Note','oDp1Problem','oDp1Note','oDp2Problem','oDp2Note'];
 const json=(x,status=200)=>new Response(JSON.stringify(x),{status,headers:HEADERS});
 const t=(x,n=120)=>String(x??'').trim().slice(0,n);
-const dateOK=x=>/^\d{4}-\d{2}-\d{2}$/.test(x)&&new Date(x+'T00:00:00Z').toISOString().slice(0,10)===x;
+const dateOK=x=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(x))return false;const d=new Date(x+'T00:00:00Z');return Number.isFinite(d.valueOf())&&d.toISOString().slice(0,10)===x};
 async function digest(x){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(String(x||'')));return Array.from(new Uint8Array(b)).map(v=>v.toString(16).padStart(2,'0')).join('')}
 function errPage(msg,status=400){const safe=t(msg,600).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');return new Response('<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>Report 0700</title><main style="font:16px system-ui;max-width:550px;margin:35px auto;padding:15px;color:#214d40"><h2>Report belum dihantar</h2><p>'+safe+'</p><a href="https://reqoo.co/lra/">Kembali ke LRA Report</a></main>',{status,headers:{'content-type':'text/html;charset=UTF-8','cache-control':'no-store','x-content-type-options':'nosniff','referrer-policy':'no-referrer'}})}
 async function ensure(db){await db.batch([
@@ -114,12 +114,19 @@ export async function onRequest({request,env}){
    if(share&&expectedCriticalDays!==null&&!reportText.includes('*'+expectedCriticalDays+'* days'))
      throw Error('Preview Days to Critical tidak selaras dengan RW flow Pond C @0700. Buka semula app dan semak bacaan.');
 
-   const now=new Date().toISOString(),body=JSON.stringify(values);
+   const current=await env.DB.prepare('SELECT data_json,updated_at FROM s2_morning_reports WHERE report_date=?').bind(date).first();
+   const body=JSON.stringify(values);
+   const expected=t(x.expectedUpdatedAt,50);
+   if(x.expectedUpdatedAt===undefined||(current&&expected!==current.updated_at&&body!==current.data_json)){
+     const msg='Rekod 0700 telah berubah atau belum disemak online. Salin draf, muat rekod online dan semak sebelum hantar semula.';
+     return share?errPage(msg,409):json({ok:false,error:msg},409);
+   }
+   const now=new Date(Math.max(Date.now(),(Date.parse(current?.updated_at)||0)+1)).toISOString();
    await env.DB.batch([
-     env.DB.prepare('INSERT INTO s2_morning_reports(report_date,data_json,updated_at,updated_by,last_format) VALUES(?,?,?,?,?) ON CONFLICT(report_date) DO UPDATE SET data_json=excluded.data_json, updated_at=excluded.updated_at,updated_by=excluded.updated_by,last_format=excluded.last_format').bind(date,body,now,operator,number),
-     env.DB.prepare('INSERT INTO s2_morning_history(id,report_date,data_json,updated_at,updated_by,format_number,report_text) VALUES(?,?,?,?,?,?,?)').bind(crypto.randomUUID(),date,body,now,operator,number,reportText)
+     env.DB.prepare('INSERT INTO s2_morning_reports(report_date,data_json,updated_at,updated_by,last_format) VALUES(?,?,?,?,?) ON CONFLICT(report_date) DO UPDATE SET data_json=excluded.data_json, updated_at=excluded.updated_at,updated_by=excluded.updated_by,last_format=excluded.last_format WHERE s2_morning_reports.updated_at=?').bind(date,body,now,operator,number,current?.updated_at||''),
+     env.DB.prepare('INSERT INTO s2_morning_history(id,report_date,data_json,updated_at,updated_by,format_number,report_text) VALUES(?,CASE WHEN changes()=1 THEN ? ELSE NULL END,?,?,?,?,?)').bind(crypto.randomUUID(),date,body,now,operator,number,reportText)
    ]);
    if(share)return new Response(null,{status:303,headers:{location:'https://wa.me/?text='+encodeURIComponent(reportText),'cache-control':'no-store','referrer-policy':'no-referrer'}});
    return json({ok:true,updatedAt:now});
- }catch(e){const msg=t(e?.message||e,500);return share?errPage(msg,400):json({ok:false,error:msg},400)}
+ }catch(e){const conflict=/NOT NULL constraint failed.*report_date/i.test(String(e));const msg=conflict?'Rekod berubah semasa simpan. Salin draf dan semak rekod online.':t(e?.message||e,500);return share?errPage(msg,conflict?409:400):json({ok:false,error:msg},conflict?409:400)}
 }

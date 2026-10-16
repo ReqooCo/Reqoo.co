@@ -95,25 +95,29 @@ async function commit(env,d){
   const reportDate=text(d.reportDate,10);
   const operator=text(d.operator,120)||'-';
   const shift=text(d.shift,20).toUpperCase()||'-';
-  const created=now(),batch=id('chem');
-  const updates=[],events=[];
+  const created=new Date(Math.max(Date.now(),...current.map(r=>(Date.parse(r.updated_at)||0)+1))).toISOString(),batch=id('chem');
+  const statements=[],seen=new Set();
 
   for(const raw of changes){
     const key=text(raw.key,40);
     const meta=META[key],cur=byKey[key];
+    if(seen.has(key))return json({ok:false,error:'Bahan kimia berulang'},400);
+    seen.add(key);
     if(!meta||!cur)return json({ok:false,error:'Bahan kimia tidak sah'},400);
+    if(raw.expectedUpdatedAt!==cur.updated_at)return json({ok:false,error:'Stok telah berubah atau versi app lama. Salin draf anda, muat semula stok dan semak sebelum menyimpan.'},409);
     const before=num(cur.stock_mt),type=text(raw.type,20).toLowerCase();
     let after=before,useKg=0,receiveKg=0,inputMt=null,eventType='';
 
     if(type==='set'){
+      if(raw.mt===null||String(raw.mt??'').trim()==='')return json({ok:false,error:'Nilai stok diperlukan'},400);
       inputMt=Number(raw.mt);
       if(!Number.isFinite(inputMt)||inputMt<0)return json({ok:false,error:'Nilai '+meta.name+' tidak sah'},400);
       after=inputMt;eventType=meta.direct?'SET':'CORRECTION';
     }else{
       if(meta.direct)return json({ok:false,error:meta.name+' perlu masukkan nilai MT terus'},400);
       if(type!=='tx')return json({ok:false,error:meta.name+' guna transaksi kg'},400);
-      useKg=Math.max(0,num(raw.useKg));
-      receiveKg=Math.max(0,num(raw.receiveKg));
+      useKg=Number(raw.useKg??0);receiveKg=Number(raw.receiveKg??0);
+      if(!Number.isFinite(useKg)||!Number.isFinite(receiveKg)||useKg<0||receiveKg<0)return json({ok:false,error:'Transaksi kg tidak sah'},400);
       if(useKg<=0&&receiveKg<=0)continue;
       after=before-useKg/1000+receiveKg/1000;
       eventType=useKg>0&&receiveKg>0?'USE_RECEIVE':useKg>0?'USE':'RECEIVE';
@@ -121,30 +125,47 @@ async function commit(env,d){
     if(after<0)return json({ok:false,error:meta.name+': stok tak boleh kurang daripada 0 MT'},400);
     if(Math.abs(after-before)<0.0000001)continue;
 
-    updates.push(env.DB.prepare(`UPDATE s2_chemical_stock
-      SET stock_mt=?,updated_at=?,updated_by=?,updated_shift=?,report_date=? WHERE chemical_key=?`)
-      .bind(after,created,operator,shift,reportDate,key));
-    events.push(env.DB.prepare(`INSERT INTO s2_chemical_events
+    statements.push(env.DB.prepare(`UPDATE s2_chemical_stock
+      SET stock_mt=?,updated_at=?,updated_by=?,updated_shift=?,report_date=? WHERE chemical_key=? AND updated_at=? AND stock_mt=?`)
+      .bind(after,created,operator,shift,reportDate,key,cur.updated_at,before));
+    statements.push(env.DB.prepare(`INSERT INTO s2_chemical_events
       (id,batch_id,chemical_key,event_type,use_kg,receive_kg,input_mt,before_mt,after_mt,report_date,shift_name,operator_name,created_at)
-      VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+      VALUES(?,CASE WHEN changes()=1 THEN ? ELSE NULL END,?,?,?,?,?,?,?,?,?,?,?)`)
       .bind(id('ce'),batch,key,eventType,useKg,receiveKg,inputMt,before,after,reportDate,shift,operator,created));
   }
-  if(!updates.length)return json({ok:false,error:'Tiada perubahan stok'},400);
-  await env.DB.batch([...updates,...events]);
+  if(!statements.length)return json({ok:false,error:'Tiada perubahan stok'},400);
+  // D1 batch is atomic. A failed compare-and-set makes the NOT NULL event guard
+  // fail, rolling back the entire batch instead of losing another operator's update.
+  try{await env.DB.batch(statements)}catch(error){
+    if(/NOT NULL constraint failed.*batch_id/i.test(String(error)))return json({ok:false,error:'Stok berubah semasa simpan. Muat semula dan semak draf.'},409);
+    throw error;
+  }
   return json({ok:true,batch_id:batch,...await state(env)});
 }
 
-async function undoLast(env){
+async function undoLast(env,d){
   const last=await env.DB.prepare('SELECT batch_id,created_at FROM s2_chemical_events ORDER BY created_at DESC LIMIT 1').first();
   if(!last)return json({ok:false,error:'Tiada transaksi untuk Undo'},400);
+  if(d.expectedBatchId!==last.batch_id)return json({ok:false,error:'Transaksi terbaru berubah. Muat semula sejarah sebelum Undo.'},409);
   const q=await env.DB.prepare('SELECT * FROM s2_chemical_events WHERE batch_id=? ORDER BY created_at ASC').bind(last.batch_id).all();
   const rows=q.results||[];
   if(!rows.length)return json({ok:false,error:'Transaksi tidak dijumpai'},404);
-  const t=now();
-  const restores=rows.map(r=>env.DB.prepare(`UPDATE s2_chemical_stock SET stock_mt=?,updated_at=?,updated_by=?,updated_shift=?,report_date=? WHERE chemical_key=?`)
-    .bind(num(r.before_mt),t,'UNDO: '+text(r.operator_name,100),text(r.shift_name,20),text(r.report_date,10),r.chemical_key));
-  const deletes=[env.DB.prepare('DELETE FROM s2_chemical_events WHERE batch_id=?').bind(last.batch_id)];
-  await env.DB.batch([...restores,...deletes]);
+  const current=Object.fromEntries((await state(env)).items.map(r=>[r.chemical_key,r]));
+  const t=new Date(Math.max(Date.now(),...Object.values(current).map(r=>(Date.parse(r.updated_at)||0)+1))).toISOString();
+  const statements=[];
+  for(const r of rows){
+    const snapshot=current[r.chemical_key];
+    if(!snapshot||Number(snapshot.stock_mt)!==Number(r.after_mt))return json({ok:false,error:'Stok tidak sepadan dengan transaksi. Muat semula sejarah.'},409);
+    statements.push(env.DB.prepare(`UPDATE s2_chemical_stock SET stock_mt=?,updated_at=?,updated_by=?,updated_shift=?,report_date=? WHERE chemical_key=? AND updated_at=? AND stock_mt=?`)
+      .bind(num(r.before_mt),t,'UNDO: '+text(r.operator_name,100),text(r.shift_name,20),text(r.report_date,10),r.chemical_key,snapshot.updated_at,r.after_mt));
+    // Existing NOT NULL column acts as an atomic rollback guard on a stale Undo.
+    statements.push(env.DB.prepare(`UPDATE s2_chemical_events SET batch_id=CASE WHEN changes()=1 THEN batch_id ELSE NULL END WHERE id=?`).bind(r.id));
+  }
+  statements.push(env.DB.prepare('DELETE FROM s2_chemical_events WHERE batch_id=?').bind(last.batch_id));
+  try{await env.DB.batch(statements)}catch(error){
+    if(/NOT NULL constraint failed.*batch_id/i.test(String(error)))return json({ok:false,error:'Stok berubah semasa Undo. Muat semula sejarah.'},409);
+    throw error;
+  }
   return json({ok:true,undone_batch:last.batch_id,...await state(env)});
 }
 
@@ -162,8 +183,8 @@ export async function onRequest({request,env}){
     if(request.method!=='POST')return json({ok:false,error:'Method tidak disokong'},405);
     let d={};try{d=await request.json()}catch{return json({ok:false,error:'Data tidak sah'},400)}
     const action=text(d.action,30);
-    if(action==='commit')return commit(env,d);
-    if(action==='undoLast')return undoLast(env);
+    if(action==='commit')return await commit(env,d);
+    if(action==='undoLast')return await undoLast(env,d);
     return json({ok:false,error:'Action tidak dikenali'},400);
   }catch(err){
     return json({ok:false,error:String(err?.message||err||'Ralat server')},500);
