@@ -1206,6 +1206,7 @@ function fire(){let x=JSON.parse(localStorage.getItem('rqLraReminder')||'null');
 $('waForm').addEventListener('submit',event=>{
  if(activeTab==='stock'){
    event.preventDefault();
+   const issue=stockInputIssue();if(issue){alert(issue);return}
    location.href='https://wa.me/?text='+encodeURIComponent(currentText());
    return;
  }
@@ -1232,7 +1233,7 @@ $('waForm').addEventListener('submit',event=>{
  // Form navigation is initiated by the tap; server saves first then redirects
  // directly to wa.me/?text so WhatsApp can show the group/contact picker.
 });
-$('share').onclick=async()=>{if(navigator.share)try{await navigator.share({title:'LRA Semenyih 2',text:currentText()});return}catch(e){};try{await navigator.clipboard.writeText(currentText());alert('Report dah copy.')}catch(e){location.href='https://wa.me/?text='+encodeURIComponent(currentText())}};
+$('share').onclick=async()=>{if(activeTab==='stock'){const issue=stockInputIssue();if(issue){alert(issue);return}}if(navigator.share)try{await navigator.share({title:'LRA Semenyih 2',text:currentText()});return}catch(e){};try{await navigator.clipboard.writeText(currentText());alert('Report dah copy.')}catch(e){location.href='https://wa.me/?text='+encodeURIComponent(currentText())}};
 
 ids.forEach(x=>$(x).addEventListener('input',refresh));['rwp','twp','time'].forEach(x=>$(x).addEventListener('change',refresh));
 pumpIds.forEach(x=>{if(!$(x))return;$(x).addEventListener('input',refreshPump);$(x).addEventListener('change',refreshPump)});

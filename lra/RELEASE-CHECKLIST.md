@@ -10,11 +10,11 @@ Local tests use Chromium 134.0.6998.35, Playwright 1.51.1, axe-core 4.14.0 and N
 - [x] All six tabs at **320, 375, 390, 430 and 768 CSS px**: 30 expanded-panel checks; no horizontal page overflow or controls extending outside viewport.
 - [x] Operasi, 0700, Intake B, Intake C and TWPS input drafts survive reload. Stock pending input survives tab switches, refresh and reload.
 - [x] Invalid stored active tab recovers to Operasi; keyboard End activates Stok. Tab/panel ARIA associations retained.
-- [x] All five 0700 previews render. Five 0700 and four operational form-submit payloads match their previews. No real message sent.
+- [x] All five 0700 previews render. Five 0700 formats, the separate Operasi 0700 and four shift operational form-submit payloads match their previews. No real message sent.
 - [x] RW flowmeter **2485 m³/h** and TW flowmeter **2309 m³/h** remain separate manual readings. Changing daily RW abstraction does not change these readings or Days to Critical.
 - [x] Six visible Pond C table rows matched (see below). Formula code unchanged.
 - [x] Stored HTML attack strings in live status and stock metadata remain inert text.
-- [x] Negative chemical input rejected before network. API rejects negative/invalid quantities, blank stock corrections and duplicate chemical keys.
+- [x] Negative chemical input rejected before save or WhatsApp navigation. API rejects negative/invalid quantities, blank stock corrections and duplicate chemical keys.
 - [x] **Zero axe WCAG 2/2.1 A/AA violations** across all six expanded panels in the local Chromium fixture run. This is automated coverage, not a full manual accessibility certification.
 - [x] No uncaught browser errors in the regression run.
 - [x] Production API handlers tested with an isolated, in-memory SQLite D1 adapter: authentication, persistence, 700 kg conversion, stale-writer rejection, atomic race rollback, targeted Undo and repeated Undo.
@@ -47,7 +47,7 @@ This verifies the visible table rows, not the entire 7.50–12.00 m range. The p
 ## Remaining release gates
 
 - [ ] **Physical iPhone Safari and Android Chrome:** keyboard/date controls, install/standalone mode, safe areas, back navigation from WhatsApp and accessibility with VoiceOver/TalkBack.
-- [ ] **WebKit browser regression:** local WebKit binary downloaded, but launch blocked by missing host GTK/GStreamer libraries. CI matrix added for Chromium and WebKit; record the actual result before approving.
+- [x] **Chromium and WebKit CI:** both jobs passed on commit `3fdb93e` in [run 38925643184](https://github.com/ReqooCo/Reqoo.co/actions/runs/38925643184). Local WebKit launch was unavailable, so this evidence comes from the GitHub runner. Any subsequent commit must also pass the same checks.
 - [ ] **Cloudflare D1 staging integration:** test transactional guards and real binding behavior with two operators. The local SQLite adapter is not a Cloudflare staging deployment.
 - [ ] **Full current Pond C table:** confirm remaining levels and nonzero SJAM C rule with the approved source.
 - [ ] **Staging WhatsApp handoff:** confirm the phone opens the intended text/contact picker without submitting an operational message.
