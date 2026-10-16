@@ -1015,12 +1015,21 @@ async function renderStockHistory(silent=false){
      if(!g){g={id:r.batch_id,at:r.created_at,date:r.report_date,shift:r.shift_name,operator:r.operator_name,rows:[]};groups.push(g)}
      g.rows.push(r);
    }
-   $('stockHistory').innerHTML=groups.length?groups.slice(0,12).map(g=>{
-     const parts=g.rows.map(r=>['SET','CORRECTION'].includes(r.event_type)
-       ? r.chemical_name+': '+fmtMt(r.before_mt)+' → '+fmtMt(r.after_mt)+' MT'
-       : r.chemical_name+': '+(Number(r.use_kg)>0?'-'+Number(r.use_kg)+'kg ':'')+(Number(r.receive_kg)>0?'+'+Number(r.receive_kg)+'kg':'')+' → '+fmtMt(r.after_mt)+' MT').join('<br>');
-     return '<div class="stockHistItem"><b>'+fdate(g.date||'')+' · '+(g.shift||'-')+'</b> · '+(g.operator||'-')+'<br>'+parts+'</div>';
-   }).join(''):'Belum ada transaksi.';
+   const host=$('stockHistory');host.replaceChildren();
+   if(!groups.length){host.textContent='Belum ada transaksi.';return}
+   for(const g of groups.slice(0,12)){
+     const item=document.createElement('div');item.className='stockHistItem';
+     const heading=document.createElement('b');heading.textContent=fdate(g.date||'')+' · '+(g.shift||'-');
+     item.append(heading,document.createTextNode(' · '+(g.operator||'-')));
+     for(const r of g.rows){
+       const part=document.createElement('div');
+       part.textContent=['SET','CORRECTION'].includes(r.event_type)
+         ? String(r.chemical_name||'-')+': '+fmtMt(r.before_mt)+' → '+fmtMt(r.after_mt)+' MT'
+         : String(r.chemical_name||'-')+': '+(Number(r.use_kg)>0?'-'+Number(r.use_kg)+'kg ':'')+(Number(r.receive_kg)>0?'+'+Number(r.receive_kg)+'kg':'')+' → '+fmtMt(r.after_mt)+' MT';
+       item.append(part);
+     }
+     host.append(item);
+   }
  }catch(e){
    if(!silent)$('stockHistory').textContent=e.message;
  }
