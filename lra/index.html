@@ -114,6 +114,26 @@ details.more[open]>summary:after{content:"−"}
 .mSignBtn[aria-pressed="true"]{background:#2f7864;color:#fff;border-color:#2f7864}
 .mSignBtn:active{transform:scale(.97)}
 @media(max-width:350px){.mSignedInput{gap:4px}.mSignBtn{flex-basis:31px}}
+
+/* LRA UI refinement: compact, accessible, mobile-first. No operational calculations changed. */
+:root{--bg:#f3f6f5;--line:#dde6e2;--accent:#256b58;--accent-dark:#19523f}
+body{background:#f3f6f5;line-height:1.45}
+.wrap{max-width:720px;padding:12px 12px calc(100px + env(safe-area-inset-bottom,0px))}
+.head{border-radius:14px;padding:16px;box-shadow:none;background:#205c4a}
+.head h1{font-size:19px;letter-spacing:-.02em}.head p{font-size:12px}
+.card{border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:none;background:#fff}
+.card h2{font-size:15px;letter-spacing:-.01em}
+label{font-size:12px;line-height:1.35}
+input,select,textarea,button{touch-action:manipulation}
+input:not([type="checkbox"]):not([type="hidden"]),select,textarea{min-height:44px;font-size:16px}
+button,.btn{min-height:42px}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #67b99c;outline-offset:2px}
+.preview,.pumpPreview{font-size:12px;line-height:1.6;max-height:340px}
+.mSource{font-size:11px!important;line-height:1.45}
+.more summary,details summary{cursor:pointer;min-height:40px;align-content:center}
+@media(max-width:390px){.wrap{padding-left:9px;padding-right:9px}.card{padding:11px}.head{padding:13px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
 </style>
 </head>
 <body>
@@ -244,7 +264,7 @@ details.more[open]>summary:after{content:"−"}
 <section class="card"><div class="quickTitle"><h2>Laporan Pagi · 0700</h2><span class="modeChip">5 FORMAT</span></div>
 <div class="grid"><div class="field"><label for="m_date">Tarikh</label><input id="m_date" type="date"></div><div class="field"><label for="m_operator">Disediakan oleh (DB)</label><input id="m_operator" placeholder="Nama staf"></div></div>
 <div class="notice ok"><b>1 borang bacaan, 6 laporan WhatsApp.</b> Ikut langkah di bawah. Nombor harian (MLD) bukan sama dengan bacaan flow seketika (m³/jam).</div>
-<details class="more" open id="m_startGuide">
+<details class="more" id="m_startGuide">
 <summary>Cara isi pagi 0700 · Ikut 4 langkah</summary>
 <div class="moreBody">
 <p class="small"><b>1. Input manual:</b> isi RW/TW flowmeter pukul 0700, total harian RW/TW, purata bulan, paras Pond A/B/C, CWT, Desa Putra, pumping Intake B, outflow DP dan pressure.</p>
