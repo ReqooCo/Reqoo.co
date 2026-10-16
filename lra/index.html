@@ -1125,6 +1125,12 @@ document.querySelectorAll('.tabBtn').forEach(b=>{
   switchTab(tabs[next].dataset.tab);tabs[next].focus();tabs[next].scrollIntoView({block:'nearest',inline:'nearest'});
  });
 });
+/* Expose a clear, keyboard-accessible relationship between each tab and panel. */
+document.querySelectorAll('.panel').forEach(panel=>{
+ const name=panel.id.replace(/^panel-/,'');
+ const trigger=document.querySelector('.tabBtn[data-tab="'+name+'"]');
+ if(trigger){trigger.id='lra-tab-'+name;panel.setAttribute('aria-labelledby',trigger.id)}
+});
 $('stockCommit').onclick=commitStock;
 $('stockUndo').onclick=undoStock;
 $('stockDate').addEventListener('change',previewStock);
