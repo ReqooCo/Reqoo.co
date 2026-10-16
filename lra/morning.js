@@ -187,7 +187,7 @@ function criticalFlowMld(){
 function criticalFlowIssue(){
  if(!get('pondCFlowValue'))return 'Masukkan bacaan kadar flowmeter RW @0700 secara manual untuk kira Days to Critical. RW totalizer harian ialah nilai berasingan.';
  if(!valid(criticalFlowMld()))return 'Semak bacaan kadar RW @0700 dan unit m³/jam atau MLD.';
- if(!valid(n('sjamCHourly')))return 'Isi kadar SJAM C @0700. Gunakan 0 jika tiada aliran SJAM C.';
+ if(!valid(n('sjamCHourly'))||n('sjamCHourly')<0)return 'Isi bacaan flowmeter SJAM C @0700 secara manual. Masukkan 0 jika tidak beroperasi; nilai kosong atau negatif tidak sah.';
  return '';
 }
 function updateForecastFields(){
@@ -195,10 +195,9 @@ function updateForecastFields(){
  el('forecastAuto').checked=false;
  const flow=criticalFlowMld();
  el('intakeCHourly').value=valid(flow)?(flow*1000/24).toFixed(5):'';
- if(el('sjamForecastAuto').checked){
-  const x=n('sjamCActual');
-  el('sjamCHourly').value=valid(x)?(x*1000/24).toFixed(2):'';
- }
+ // SJAM C is a manual 0700 meter reading, including an explicit zero when stopped.
+ // Keep the legacy flag for draft compatibility, but never derive this meter from daily actual.
+ el('sjamForecastAuto').checked=false;
 }
 const signedChange=(a,b)=>(a-b>0?'+':'')+(a-b).toFixed(2);
 function applyPreviousChange(){
@@ -260,7 +259,7 @@ function metrics(){
   cap=n('pondTwlCapacity'),critical=n('criticalStorage');
  const inflow=sum(n('intakeB'),n('wt1'),n('sjamB'));
  const outflow=sum(n('rwAbst'),n('sjamCActual'));
- const forecastWtp=mldFromHour('intakeCHourly'),forecastSjam=mldFromHour('sjamCHourly');
+ const forecastWtp=mldFromHour('intakeCHourly'),forecastSjam=valid(n('sjamCHourly'))&&n('sjamCHourly')>=0?mldFromHour('sjamCHourly'):null;
  const forecastTotal=sum(forecastWtp,forecastSjam);
  const margin=sub(prod,design);
  return {

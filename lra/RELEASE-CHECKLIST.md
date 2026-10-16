@@ -49,7 +49,7 @@ This verifies the visible table rows, not the entire 7.50–12.00 m range. The p
 - [ ] **Physical iPhone Safari and Android Chrome:** keyboard/date controls, install/standalone mode, safe areas, back navigation from WhatsApp and accessibility with VoiceOver/TalkBack.
 - [x] **Chromium and WebKit CI:** both jobs passed on commit `3fdb93e` in [run 38925643184](https://github.com/ReqooCo/Reqoo.co/actions/runs/38925643184). Local WebKit launch was unavailable, so this evidence comes from the GitHub runner. Any subsequent commit must also pass the same checks.
 - [ ] **Cloudflare D1 staging integration:** test transactional guards and real binding behavior with two operators. The local SQLite adapter is not a Cloudflare staging deployment.
-- [ ] **Full current Pond C table:** confirm remaining levels and nonzero SJAM C rule with the approved source.
+- [ ] **Full current Pond C table:** confirm remaining storage levels with the approved source. SJAM C manual-entry/zero rule was confirmed by the operator on 17 October 2026.
 - [ ] **Staging WhatsApp handoff:** confirm the phone opens the intended text/contact picker without submitting an operational message.
 - [ ] Review CI results, deployment ownership and the coordinated frontend/API rollout below.
 
@@ -77,3 +77,13 @@ node tests/lra-pwa.cjs
 ```
 
 Browser fixtures abort external navigation. API tests replace the access hash only in an in-memory test module and use synthetic data. PWA tests bind only to loopback. Screenshots and axe JSON are written to `REQOO_TEST_OUTPUT` (default sibling `lra-test-results`), and the GitHub workflow uploads them as test evidence. No production secret is required.
+
+## 17 October 2026 — SJAM C operator clarification
+
+The operator confirmed: enter the SJAM C flowmeter reading manually when operating; explicitly enter **0** when stopped. The hourly reading remains independent of daily SJAM C actual (MLD). The old optional daily-actual-to-forecast conversion is disabled, including for restored legacy drafts; existing raw readings are retained. Blank and negative hourly readings do not produce Days to Critical.
+
+The new photograph `IMG_3E50BB14-2275-4302-9EA0-6C729D76361E.jpeg` visibly shows the spreadsheet formula `=(D7-1226)/L6`. This supports the zero-SJAM-C example already checked. It does not establish unseen storage rows.
+
+New regression cases: RW 2485 m³/h plus manual SJAM C 100 m³/h gives 44.4 days at 11.99 m using the existing combined-outflow formula; explicit SJAM C 0 gives 46.1 days. Changing daily actual, or restoring the legacy auto flag, must not overwrite the manual hourly reading. The nonzero example is a software arithmetic check, not an additional official table row.
+
+Cache revision for this clarification: v48; morning asset v15. Earlier v47 results above remain historical evidence; local Chromium browser/axe, API and PWA checks passed again for this revision; CI must also pass before release. Physical-device, D1 staging and full storage-table gates remain open.

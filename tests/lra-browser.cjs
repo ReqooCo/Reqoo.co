@@ -51,6 +51,14 @@ const root=path.resolve(__dirname,'..'),out=process.env.REQOO_TEST_OUTPUT||path.
  assert.match(await p.locator('#m_days').textContent(),/46.1/);assert.equal(await p.locator('#m_twFlowHourly').inputValue(),'2309');
  await p.locator('#m_rwAbst').fill('80');assert.match(await p.locator('#m_days').textContent(),/46.1/);assert.equal(await p.locator('#m_pondCFlowValue').inputValue(),'2485');results.push('PASS manual RW/TW remain independent of daily totals; table case 46.1');
  for(let i=1;i<=5;i++){const text=await p.locator('#m_preview_'+i).textContent();assert.ok(text.length>80);if([2,3,4].includes(i))assert.match(text,/46.1/)}results.push('PASS all five 0700 previews');
+ await p.locator('#m_sjamCHourly').fill('100');assert.match(await p.locator('#m_days').textContent(),/44.4/);
+ await p.evaluate(()=>document.getElementById('m_sjamForecastAuto').checked=true);
+ await p.locator('#m_sjamCActual').fill('9.6');assert.equal(await p.locator('#m_sjamCHourly').inputValue(),'100');
+ assert.equal(await p.locator('#m_sjamForecastAuto').isChecked(),false);
+ for(const value of ['', '-1']){await p.locator('#m_sjamCHourly').fill(value);assert.ok(!(await p.locator('#m_days').textContent()).includes('hari'));}
+ await p.locator('#m_sjamCHourly').fill('0');assert.match(await p.locator('#m_days').textContent(),/46.1/);
+ results.push('PASS SJAM C manual on=100m3/h, off=explicit 0, blank/negative invalid, daily actual and legacy auto flag cannot overwrite meter');
+
  for(const [level,storage,days] of [['12.00','3984.50','46.3'],['11.99','3978.37','46.1'],['11.98','3972.24','46.0'],['11.90','3923.20','45.2'],['11.85','3892.55','44.7'],['11.80','3861.90','44.2']]){
   await p.locator('#m_pondC').fill(level);assert.equal(await p.locator('#m_pondStorage').inputValue(),storage);assert.ok((await p.locator('#m_days').textContent()).includes(days));
  }await p.locator('#m_pondC').fill('11.99');results.push('PASS six visible official table rows at 59.64 MLD (12.00–11.80m)');

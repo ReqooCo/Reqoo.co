@@ -400,8 +400,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 <div class="field"><label for="m_wt1">WT1 <span class="small">(MLD)</span></label><input id="m_wt1" inputmode="decimal" autocomplete="off" placeholder="0" value=""></div>
 <div class="field"><label for="m_sjamB">SJAM B <span class="small">(MLD)</span></label><input id="m_sjamB" inputmode="decimal" autocomplete="off" placeholder="0" value=""></div></div></section>
 <section class="card"><div class="quickTitle"><h2>07 · Outflow & Critical Pond C</h2><span class="modeChip">0700</span></div><div class="grid"><div class="field"><label for="m_sjamCActual">SJAM C → SS Intake (actual) <span class="small">(MLD)</span></label><input id="m_sjamCActual" inputmode="decimal" autocomplete="off" placeholder="0" value=""></div>
-<div class="field"><label for="m_sjamCHourly">SJAM C Critical Forecast Flow <span class="small">(m³/hr)</span></label><input id="m_sjamCHourly" inputmode="decimal" autocomplete="off" placeholder="Isi 0 jika tiada SJAM C forecast" value="">
-<label class="mAutoLabel"><input id="m_sjamForecastAuto" type="checkbox"> Gunakan SJAM C Actual sebagai andaian forecast (pilihan)</label></div></div><p class="small"><b>10. Pumped to WTP</b> = Total RW Abstraction Harian (satu input sahaja). <b>Days to Critical</b> guna kadar RW Flowmeter @0700 yang diisi di bahagian atas. Contoh 2,485 m³/jam = 59.640 MLD → 46.1 hari pada paras 11.99m apabila SJAM C 0.</p></section>
+<div class="field"><label for="m_sjamCHourly">Flowmeter SJAM C @0700 <span class="small">(m³/hr)</span></label><input id="m_sjamCHourly" inputmode="decimal" autocomplete="off" placeholder="Isi bacaan meter / 0 jika tidak beroperasi" value="">
+<input id="m_sjamForecastAuto" type="checkbox" hidden style="display:none"><small class="mSource">Isi manual apabila SJAM C beroperasi. Jika tidak beroperasi, masukkan 0. Bacaan ini berasingan daripada jumlah harian SJAM C.</small></div></div><p class="small"><b>10. Pumped to WTP</b> = Total RW Abstraction Harian (satu input sahaja). <b>Days to Critical</b> guna kadar RW Flowmeter @0700 yang diisi di bahagian atas. Contoh 2,485 m³/jam = 59.640 MLD → 46.1 hari pada paras 11.99m apabila SJAM C 0.</p></section>
 <details class="more"><summary>Tetapan Pond C · Capacity & Critical</summary><div class="moreBody">
 <p class="small">Padanan rujukan lama: 7.50m = 1,226.00 ML, 11.07m = 3,414.41 ML, 12.00m = 3,984.50 ML. Kadar padanan: 613 ML/m dalam julat 7.50–12.00m. Ini pengiraan anggaran daripada data rujukan, bukan bacaan meter storage.</p>
 <p id="m_storageStatus" class="small" style="color:#33725b"></p><div class="grid"><div class="field"><label for="m_pondTwlCapacity">Capacity @ TWL 12m <span class="small">(ML)</span></label><input id="m_pondTwlCapacity" inputmode="decimal" autocomplete="off" placeholder="3984.50" value="3984.50"></div>
@@ -1250,6 +1250,6 @@ window.addEventListener('focus',()=>{syncAutoDates();loadLive(true);if(activeTab
 load();syncMaintenance();refresh();refreshPump();hist();arm();restoreStockDraft();loadLive(true);loadStock(true);setInterval(()=>{loadLive(true);if(activeTab==='stock'&&!stockHasPending())loadStock(true)},30000);switchTab(localStorage.getItem('rqLraActiveTab')||'ops');
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
 </script>
-<script src="./morning.js?v=14"></script>
+<script src="./morning.js?v=15"></script>
 </body>
 </html>

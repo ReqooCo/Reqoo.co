@@ -55,3 +55,9 @@ for(const amount of [10,20]){state=await(await call(chem,'/api/s2-chemical')).js
 for(let i=0;i<2;i++){const h=await(await call(chem,'/api/s2-chemical?action=history')).json();assert.equal((await call(chem,'/api/s2-chemical',{action:'undoLast',expectedBatchId:h.items[0].batch_id})).status,200)}
 assert.equal(db.db.prepare("SELECT stock_mt FROM s2_chemical_stock WHERE chemical_key='lime'").get().stock_mt,lime.stock_mt);
 console.log('PASS repeated Undo preserves preceding history and restores original balance');
+
+for(const [hourly,status] of [['',400],['-1',400],['0',200],['100',200]]){
+ const response=await call(morning,'/api/s2-morning',{reportDate:hourly==='100'?'2026-10-18':'2026-10-17',formatNumber:3,expectedUpdatedAt:'',values:{...values,sjamCHourly:hourly}});
+ assert.equal(response.status,status);
+}
+console.log('PASS SJAM C API rejects blank/negative and accepts explicit zero/manual positive meter');
