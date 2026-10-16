@@ -42,14 +42,14 @@ Column checked: **Actual RW Abstraction (Pond C to WTP), 59.64 MLD**. SJAM C for
 
 Example: `(3978.37 − 1226) / (2485 × 24 / 1000) = 46.1497…`, displayed **46.1 days**. Daily RW abstraction 93.954 MLD is not substituted into this forecast.
 
-This verifies the visible table rows, not the entire 7.50–12.00 m range. The photograph does not establish workbook revision approval, all lower-level rows, or a nonzero SJAM C scenario. Obtain the current workbook/readable full table for complete operational sign-off; do not extrapolate this six-row check into a claim that every official row was checked.
+This verifies the visible table rows, not the entire 7.50–12.00 m range. The photograph does not establish workbook revision approval, all lower-level rows, or a nonzero SJAM C scenario. Superseded for formula acceptance by the 17 October formula photographs and operator instruction below; no claim is made that every workbook row was visually checked.
 
 ## Remaining release gates
 
 - [ ] **Physical iPhone Safari and Android Chrome:** keyboard/date controls, install/standalone mode, safe areas, back navigation from WhatsApp and accessibility with VoiceOver/TalkBack.
 - [x] **Chromium and WebKit CI:** both jobs passed on commit `a6fde30` in [run 38966325892](https://github.com/ReqooCo/Reqoo.co/actions/runs/38966325892). Local WebKit launch was unavailable, so this evidence comes from the GitHub runner. Any subsequent commit must also pass the same checks.
 - [ ] **Cloudflare D1 staging integration:** test transactional guards and real binding behavior with two operators. The local SQLite adapter is not a Cloudflare staging deployment.
-- [ ] **Full current Pond C table:** confirm remaining storage levels with the approved source. SJAM C manual-entry/zero rule was confirmed by the operator on 17 October 2026.
+- [x] **Pond C formula reference:** operator requested formula-based verification on 17 October 2026; photographed storage and critical-day formulas match existing code. Full-table transcription is no longer a release gate. See evidence below.
 - [ ] **Staging WhatsApp handoff:** confirm the phone opens the intended text/contact picker without submitting an operational message.
 - [ ] Review CI results, deployment ownership and the coordinated frontend/API rollout below.
 
@@ -87,7 +87,7 @@ The new photograph `IMG_3E50BB14-2275-4302-9EA0-6C729D76361E.jpeg` visibly shows
 
 New regression cases: RW 2485 m³/h plus manual SJAM C 100 m³/h gives 44.4 days at 11.99 m using the existing combined-outflow formula; explicit SJAM C 0 gives 46.1 days. Changing daily actual, or restoring the legacy auto flag, must not overwrite the manual hourly reading. The nonzero example is a software arithmetic check, not an additional official table row.
 
-Cache revision for this clarification: v48; morning asset v15. Earlier v47 results above remain historical evidence; local Chromium browser/axe, API and PWA checks passed again for this revision; CI must also pass before release. Physical-device, D1 staging and full storage-table gates remain open.
+Cache revision for this clarification: v48; morning asset v15. Earlier v47 results above remain historical evidence; local Chromium browser/axe, API and PWA checks passed again for this revision; CI must also pass before release. Physical-device and D1 staging gates remain open. The former full storage-table gate is superseded by formula acceptance below.
 
 ## Local D1 verification and deployment review
 
@@ -102,5 +102,28 @@ Cache revision for this clarification: v48; morning asset v15. Earlier v47 resul
 2. On a physical iPhone and Android phone, open all six tabs, enter synthetic readings, reload drafts, install the PWA, edit offline and reconnect. Verify keyboard, date controls, safe areas and screen-reader labels.
 3. Open the same synthetic stock/report in two sessions. Save in session A, then attempt a different save in B: B must receive a conflict without changing A's data. Reload explicitly, retry, and verify history plus two successive Undo actions.
 4. Open each WhatsApp report in the phone's contact picker, check the full text and return to the app **without sending**. No access code may appear in the handoff URL.
-5. Compare the current approved workbook's remaining levels and nonzero SJAM scenario with the app; record source revision, input/output and reviewer. The six visible rows alone are insufficient.
+5. Retain the formula evidence below. Verify manual SJAM C entry and zero when stopped during staging acceptance; do not substitute daily totals into the hourly forecast.
 6. Record pass/fail evidence here. Only after every gate passes should PR #182 be marked ready and merged during a coordinated API/web release. Monitor the deployment workflow and verify the new asset versions; if deployment partially fails, restore the matching previous API/web release without changing D1 records or deleting local drafts.
+
+## 17 October 2026 — operator-approved formula basis
+
+User instruction: **“Ikut rumus je senang”**. All ten newly supplied photographs were read from their local attachments. This supersedes the requirement to obtain/transcribe every table row; it does not waive staging or device testing.
+
+| Source photograph | Visible workbook formula | Interpretation |
+| --- | --- | --- |
+| IMG_5148EFA8-9CF6-4F24-AE60-C03A0EBCC3DF.jpeg | `=613000*(A8-5.5)` | Volume in m³ from level in m |
+| IMG_535998C9-B6F7-4C5E-838F-07C43B482D3F.jpeg | `=B8/1000000` | Volume in million m³ |
+| IMG_F7764995-795B-4668-8BDD-910F22CB3188.jpeg | `=C8*1000` | Storage ML = `613*(level-5.5)` |
+| IMG_D250305A-7A4B-466F-B646-D162DDB44CA8.jpeg | `=(D8-3187.6)/50` | Days to normal at 50 MLD |
+| IMG_E85AF4CB-DB0A-42DB-9496-15C0892FFA1F.jpeg | `=(D8-3187.6)/100` | Days to normal at 100 MLD |
+| IMG_EA2C7523-F89C-40C6-A577-3C3B7F7AC869.jpeg | `=(D7-1226)/50` | Days to critical at 50 MLD |
+| IMG_790D374A-4A0A-4059-A5CD-7658200B61E6.jpeg | `=(D7-1226)/L6` | Days to critical at actual RW rate in MLD |
+| IMG_A9A9F750-2389-4AA0-91CD-582B19911514.jpeg | `=(D7-613)/50` | Days to dead storage at 50 MLD |
+| IMG_610BE2B0-8B22-4D22-8054-13E3D3243897.jpeg | `=D7/3984.5*100` | Storage percentage |
+| IMG_452BDB33-B590-480C-8C72-6F0A48DA2BE7.jpeg | `=(3984.5-D8)/217` | Separate WT1 + 126 MLD column; not critical-day denominator |
+
+Existing frontend/API storage `1226+(level-7.5)*613` is algebraically identical to the photographed `613*(level-5.5)`. Executed both actual source functions in isolated Node VM contexts and compared every 0.01 m increment from 7.50 to 12.00: **451/451 levels passed in both implementations**. At 11.99 m, storage is 3978.37 ML and RW 2485 m³/h converts to 59.64 MLD, producing **46.1 days** with SJAM C stopped.
+
+Runtime formulas, supported range, manual overrides and WhatsApp formats are unchanged. RW and SJAM C remain manual hourly inputs; the existing combined-outflow forecast adds SJAM C when operating, with explicit zero when stopped. The photographs document the RW-only spreadsheet case; the SJAM extension remains the existing app behavior, not a newly photographed workbook formula. TW and daily abstraction/production remain separate manual readings. No new normal-level/dead-storage features are added.
+
+This update changes documentation only. Runtime commit `ecbbfcc` passed Chromium/WebKit, local D1, PWA, Shop and Production smoke CI (run 38970596774 and companion workflows). Production remains unchanged.
