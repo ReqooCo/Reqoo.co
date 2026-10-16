@@ -6,9 +6,9 @@ const overdue=fs.readFileSync(new URL('../admin/documents-overdue-v1.js',import.
 const overdueCss=fs.readFileSync(new URL('../admin/documents-overdue-v1.css',import.meta.url),'utf8');
 const unified=fs.readFileSync(new URL('../admin/documents-unified-v1.js',import.meta.url),'utf8');
 
-assert.match(html,/documents-overdue-v1\.css\?v=2/);
-assert.match(html,/documents-overdue-v1\.js\?v=4/);
-assert.match(html,/documents-unified-v1\.js\?v=2/);
+assert.match(fs.readFileSync(new URL('../admin/documents-workspace.css',import.meta.url),'utf8'),/Source: documents-overdue-v1\.css/);
+assert.match(html,/documents-overdue-v1\.js\?v=\d+/);
+assert.match(html,/documents-unified-v1\.js\?v=\d+/);
 
 assert.match(overdue,/documentsFinanceDashboard/);assert.match(overdue,/rq:documents-finance-ready/);assert.match(overdue,/__REQOO_DOCS_FINANCE__/);assert.match(overdue,/rqLoadMoreFinanceInvoices/);assert.match(overdue,/limit:80/);assert.match(overdue,/financeSeq/);assert.doesNotMatch(overdue,/paymentSummary/);assert.doesNotMatch(overdue,/listDocuments/);assert.doesNotMatch(overdue,/listPayments/);
 assert.match(overdue,/OUTSTANDING/);

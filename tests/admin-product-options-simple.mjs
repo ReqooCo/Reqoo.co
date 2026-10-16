@@ -1,11 +1,11 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
-const html=fs.readFileSync('admin/products.html','utf8');
-const js=fs.readFileSync('admin/product-option-matrix.js','utf8');
-const css=fs.readFileSync('admin/products.css','utf8');
+const html=fs.readFileSync(new URL('../admin/products.html',import.meta.url),'utf8');
+const js=fs.readFileSync(new URL('../admin/product-option-matrix.js',import.meta.url),'utf8');
+const css=fs.readFileSync(new URL('../admin/product-options.css',import.meta.url),'utf8');
 assert.match(html,/product-option-matrix\.js\?v=2/);
-assert.match(js,/Pilihan produk/);
+assert.match(html,/<h3>Pilihan produk<\/h3>/);
 assert.match(js,/Saiz & harga/);
 assert.doesNotMatch(js,/Bina pilihan/);assert.match(js,/reqoo:product-editor-hydrate/);
-assert.match(css,/\.rqSimpleOptions/);
+assert.match(css,/\.rqOptionHero/);
 console.log('admin simple product options: ok');

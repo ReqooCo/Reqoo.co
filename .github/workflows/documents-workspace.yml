@@ -1,0 +1,48 @@
+name: Documents workspace regression
+on:
+  pull_request:
+    paths:
+      - 'admin/documents*'
+      - 'admin/document-*'
+      - 'api/shop-admin-flow-v18.js'
+      - 'scripts/build-documents-workspace.mjs'
+      - 'tests/admin-documents*'
+      - '.github/workflows/documents-workspace.yml'
+permissions:
+  contents: read
+jobs:
+  documents:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Validate workspace and in-memory D1 workflows
+        run: |
+          node scripts/build-documents-workspace.mjs --check
+          node --check admin/documents.js
+          node --check api/shop-admin-flow-v18.js
+          node tests/admin-documents-pack.mjs
+          node tests/admin-documents-v2.mjs
+          node tests/admin-documents-performance.mjs
+          node tests/admin-documents-overdue.mjs
+          node tests/admin-documents-finance-scalability.mjs
+          node tests/admin-documents-workspace.mjs
+          node tests/admin-orders-documents-scalability.mjs
+          node tests/admin-payment-ledger-consistency.mjs
+      - name: Install browser test dependencies
+        run: |
+          npm install --no-save --no-package-lock playwright@1.62.1 jsdom@30.0.1
+          npx playwright install --with-deps chromium
+      - name: Validate browser and first paint with fixtures
+        env:
+          REQOO_TEST_OUTPUT: test-results/documents
+        run: |
+          node tests/admin-documents-fast-load.cjs
+          node tests/admin-documents-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: documents-fixture-previews
+          path: test-results/documents

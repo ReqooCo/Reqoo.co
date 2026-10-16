@@ -53,15 +53,15 @@ assert.match(v18,/Nombor receipt unik gagal dijana/);
 assert.match(v18,/Invoice telah selesai dibayar/);
 assert.match(v18,/Amaun melebihi baki semasa/);
 
-assert.match(html,/Create Custom Quotation/);
+assert.match(html,/Quotation baharu/);
 assert.match(html,/id="docEdit"/);assert.match(html,/id="docConvert"/);assert.match(html,/id="docDepositInvoice"/);
-assert.match(html,/SSM REGISTRATION NO/);
+assert.match(html,/NO. PENDAFTARAN SSM/);
 assert.match(html,/id="qDeposit"[^>]*value="50"/);
-assert.match(html,/documents\.js\?v=11/);
-assert.match(html,/documents\.css\?v=5/);
-assert.match(html,/documents-payment-v1\.js\?v=5/);
-assert.match(html,/documents-drawer-v1\.js\?v=3/);
-assert.match(html,/documents-drawer-v1\.css\?v=1/);
+assert.match(html,/documents\.js\?v=\d+/);
+assert.match(html,/documents-workspace\.css\?v=\d+/);
+assert.match(html,/documents-payment-v1\.js\?v=\d+/);
+assert.match(html,/documents-drawer-v1\.js\?v=\d+/);
+assert.match(fs.readFileSync(new URL('../admin/documents-workspace.css',import.meta.url),'utf8'),/Source: documents-drawer-v1\.css/);
 assert.match(css,/document-template-v4\.css/);
 assert.match(templateCss,/background:#17191d/);
 assert.match(templateCss,/Thank you for your business/);assert.match(templateCss,/Neutral document typography/);assert.match(templateCss,/color:#111!important/,'Document typography should be monochrome black');
@@ -80,19 +80,19 @@ assert.match(ui,/quoteMeta/);assert.match(ui,/function paymentTerms/);assert.mat
 assert.match(ui,/AB ART TRADING/);
 assert.match(ui,/201903337879 \(003053605-X\)/);
 
-assert.match(paymentJs,/Record Payment/);assert.match(paymentJs,/Betulkan Payment/);assert.match(paymentJs,/correctPayment/);assert.match(paymentJs,/DEPOSIT/);
+assert.match(paymentJs,/Record Payment/);assert.match(paymentJs,/Betulkan \/ Undo Paid/);assert.match(paymentJs,/correctPayment/);assert.match(paymentJs,/<option value="deposit">Deposit/);
 assert.match(paymentJs,/Save Payment & Create Receipt/);
-assert.match(paymentJs,/documentsFinanceDashboard/);assert.doesNotMatch(paymentJs,/listPayments/);assert.doesNotMatch(paymentJs,/paymentSummary/);
+assert.match(paymentJs,/documentsFinanceDashboard/);assert.doesNotMatch(paymentJs,/listPayments/);assert.match(paymentJs,/api\('paymentSummary',\{orderId:doc.order_id\}/,'correction must read exact order summary');
 assert.match(drawerJs,/DOCUMENT FLOW/);
-assert.match(drawerJs,/Payment Timeline/);
+assert.match(drawerJs,/Aktiviti order dan bayaran/);assert.match(drawerJs,/activityHtml/);
 assert.match(drawerJs,/documentFlow/);assert.doesNotMatch(drawerJs,/paymentSummary/);assert.doesNotMatch(drawerJs,/listPayments/);assert.doesNotMatch(drawerJs,/listDocuments/);
 assert.match(drawerJs,/data-drawer-open-payment/);
 assert.match(drawerJs,/Record Payment/);
 assert.match(drawerCss,/\.rqDocDrawer/);
 assert.match(drawerCss,/\.rqPaymentTimeline/);
 
-assert.match(publicHtml,/document-public-v1\.js\?v=7/);
-assert.match(publicHtml,/document-public-v1\.css\?v=6/);
+assert.match(publicHtml,/document-public-v1\.js\?v=\d+/);
+assert.match(publicHtml,/document-public-v1\.css\?v=\d+/);
 assert.match(publicCss,/document-template-v4\.css/);assert.match(publicCss,/overflow:visible!important/,'Public document must not crop long content');assert.match(publicCss,/break-inside:auto!important/,'Print should paginate naturally');
 assert.match(publicUi,/publicDocument/);
 assert.match(publicUi,/quoteMeta/);assert.match(publicUi,/Deposit Required/);assert.match(publicUi,/AMOUNT DUE NOW/);assert.match(publicUi,/function paymentTerms/);assert.match(publicUi,/rqPaperPaymentTerms/);
