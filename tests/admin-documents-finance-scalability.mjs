@@ -91,7 +91,7 @@ assert.equal(flow.selectedDocument.number,'INV-FIN-00800');
 const paymentUi=fs.readFileSync(new URL('../admin/documents-payment-v1.js',import.meta.url),'utf8');
 const overdueUi=fs.readFileSync(new URL('../admin/documents-overdue-v1.js',import.meta.url),'utf8');
 const drawerUi=fs.readFileSync(new URL('../admin/documents-drawer-v1.js',import.meta.url),'utf8');
-assert.match(paymentUi,/documentsFinanceDashboard/);assert.match(paymentUi,/loadMorePayments/);assert.match(paymentUi,/api\('paymentSummary',\{orderId:doc.order_id\}/);assert.doesNotMatch(paymentUi,/listPayments/);assert.doesNotMatch(paymentUi,/api\('listDocuments'/);
+assert.match(paymentUi,/documentsFinanceDashboard/);assert.doesNotMatch(paymentUi,/injectPaymentReceipts|loadMorePayments/,'canonical list must own receipt paging');assert.match(paymentUi,/includePayments:false/);assert.match(paymentUi,/api\('paymentSummary',\{orderId:doc.order_id\}/);assert.doesNotMatch(paymentUi,/listPayments/);assert.doesNotMatch(paymentUi,/api\('listDocuments'/);
 assert.match(overdueUi,/documentsFinanceDashboard/);assert.match(overdueUi,/rqLoadMoreFinanceInvoices/);assert.match(overdueUi,/financeSeq/);assert.doesNotMatch(overdueUi,/paymentSummary/);assert.doesNotMatch(overdueUi,/listPayments/);assert.doesNotMatch(overdueUi,/listDocuments/);
 assert.match(drawerUi,/documentFlow/);assert.doesNotMatch(drawerUi,/paymentSummary/);assert.doesNotMatch(drawerUi,/listPayments/);assert.doesNotMatch(drawerUi,/listDocuments/);
 

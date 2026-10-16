@@ -8,7 +8,7 @@ try{
 const context=await browser.newContext({viewport:{width:1440,height:1000}});
 await context.addInitScript(()=>{window.print=()=>{};Element.prototype.scrollIntoView=function(){};});
 const records=Array.from({length:85},(_,i)=>({id:'doc'+i,type:i%2?'quotation':'invoice',number:(i%2?'QT':'INV')+'-TEST-'+i,order_id:'ord'+i,customer_name:i===84?'Historical Customer':'Test Customer '+i,customer_phone:'0123456789',total_minor:30000,payment_status:'pending',status:'issued',created_at:'2026-10-01T12:00:00Z',issued_at:'2026-10-01T12:00:00Z',due_at:'2026-10-31',company:{companyName:'REQOO.CO',quoteMeta:{depositPercent:50}},items:Array.from({length:50},(_,j)=>({description:'Item '+j+' — Custom packaging with approved artwork',variation:'Standard',quantity:1,unit_price_minor:600,line_total_minor:600}))}));
-let mode='normal',settingsCalls=0,orderCalls=0;const actions=[];
+let mode='normal',settingsCalls=0,orderCalls=0,financeDelay=0;const actions=[];
 await context.route('**/*',async route=>{
 const u=new URL(route.request().url());if(u.hostname!=='reqoo.test'){await route.abort();return}
 if(u.pathname==='/api/shop-admin'){
@@ -19,11 +19,16 @@ if(d.action==='listDocuments'){
  if(mode==='loading')await new Promise(r=>setTimeout(r,500));
  const filtered=mode==='empty'?[]:records.filter(x=>(!d.type||x.type===d.type)&&(!d.q||JSON.stringify(x).toLowerCase().includes(d.q.toLowerCase())));
  const offset=Number(d.offset||0),limit=Number(d.limit||80);body={ok:true,documents:filtered.slice(offset,offset+limit),total:filtered.length,offset,hasMore:offset+limit<filtered.length,stats:{all:85,quotation:42,invoice:43,receipt:0,delivery_order:0}};
-}else if(d.action==='documentsFinanceDashboard'){body={ok:true,documents:[],payments:[],summaries:records.filter(x=>x.type==='invoice').map(x=>({orderId:x.order_id,totalMinor:30000,paidMinor:0,balanceMinor:30000,paymentStatus:'pending'})),stats:{all:43,outstandingCount:43,outstandingMinor:1290000,paidCount:0},invoices:[],invoiceTotal:0};}
+}else if(d.action==='documentsFinanceDashboard'){if(financeDelay)await new Promise(r=>setTimeout(r,financeDelay));body={ok:true,documents:[],payments:[],summaries:records.filter(x=>x.type==='invoice').map(x=>({orderId:x.order_id,totalMinor:30000,paidMinor:0,balanceMinor:30000,paymentStatus:'pending'})),stats:{all:43,outstandingCount:43,outstandingMinor:1290000,paidCount:0},invoices:[],invoiceTotal:0};}
 else if(d.action==='documentSettings'){settingsCalls++;body.settings={quoteValidDays:7};}
 else if(d.action==='ordersDashboard'){orderCalls++;body={ok:true,orders:[],total:0,stats:{}};}
 else if(d.action==='getDocument'){body.document=records.find(x=>x.id===d.documentId);}
-else if(d.action==='documentFlow'){body={ok:true,selectedDocument:records[0],documents:[records[0]],payments:[],summary:{totalMinor:30000,paidMinor:0,balanceMinor:30000}};}
+else if(d.action==='getPaymentReceipt'){body.receipt={id:'fixture-pay',receipt_number:'RC-TIMELINE',order_id:'ord0',order_no:'RQ-ord0',invoice_number:records[0].number,customer_name:records[0].customer_name,paid_at:'2026-10-02T12:00:00Z',amount_minor:15000,payment_type:'deposit',method:'bank_transfer',company:{companyName:'REQOO.CO'},summary:{totalMinor:30000,paidMinor:15000,balanceMinor:15000}};}
+else if(d.action==='documentFlow'){
+ const selected=records.find(x=>x.number===d.key)||records[0];
+ await new Promise(r=>setTimeout(r,selected.id==='doc0'?180:10));
+ body={ok:true,selectedDocument:selected,order:{id:selected.order_id,order_no:'RQ-'+selected.order_id,created_at:'2026-09-30T12:00:00Z'},documents:[{...records[1],issued_at:'2026-09-29T12:00:00Z'},selected,{id:'legacy-receipt',type:'receipt',number:'RC-TIMELINE',issued_at:'2026-10-02T12:00:00Z'}],payments:[{id:'fixture-pay',receipt_number:'RC-TIMELINE',paid_at:'2026-10-02T12:00:00Z',amount_minor:15000,payment_type:'deposit',method:'bank_transfer'}],summary:{totalMinor:30000,paidMinor:15000,balanceMinor:15000}};
+}
 else throw Error('Unexpected fixture action '+d.action);
 await route.fulfill({json:body});return;
 }
@@ -49,6 +54,25 @@ await page.locator('#docUnifiedSearch').fill('ord0');await page.waitForFunction(
 await page.locator('#docUnifiedSearch').fill('');await page.waitForFunction(()=>document.querySelectorAll('#docHistory .rqHistRow').length===80);
 await page.locator('[data-doc-filter="quotation"]').click();await page.waitForFunction(()=>document.querySelector('#docResultsState').textContent.startsWith('42 daripada 42'));
 await page.locator('[data-doc-filter="all"]').click();await page.waitForFunction(()=>document.querySelectorAll('#docHistory .rqHistRow').length===80);
+await page.locator('[data-document-id="doc0"] .rqHistNo').click();await page.waitForSelector('.rqActivityTimeline');
+assert.equal(await page.locator('.rqActivityTimeline li').count(),4,'timeline includes quotation, order, invoice and canonical payment once');
+assert.deepEqual(await page.locator('.rqActivityTimeline li b').allTextContents(),['Quotation dikeluarkan','Order dicipta','Invoice dikeluarkan','Deposit disahkan']);
+assert.equal(await page.locator('.rqActivityTimeline [data-drawer-open-payment="fixture-pay"]').count(),1);
+await page.screenshot({path:path.join(out,'documents-timeline-desktop.png'),fullPage:false});
+await page.setViewportSize({width:390,height:844});
+await page.screenshot({path:path.join(out,'documents-timeline-mobile.png'),fullPage:false});
+assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'activity drawer fits mobile');
+await page.setViewportSize({width:1440,height:1000});
+await page.locator('.rqActivityTimeline [data-drawer-open-payment="fixture-pay"]').click();
+await page.waitForSelector('#rqReceiptModal.open');
+assert.match(await page.locator('#rqReceiptPaper').innerText(),/RC-TIMELINE/);
+assert.match(await page.locator('.rqReceiptAmount').innerText(),/RM150.00/);
+await page.locator('#rqReceiptClose').click();
+await page.locator('[data-document-id="doc0"] .rqHistNo').click();
+await page.evaluate(()=>document.querySelector('[data-document-id="doc2"]').click());
+await page.waitForFunction(()=>document.querySelector('#rqDocDrawerSub').textContent.includes('Test Customer 2'));
+await page.waitForTimeout(220);assert.match(await page.locator('#rqDocDrawerSub').innerText(),/Test Customer 2/,'late response must not overwrite newly selected document');
+await page.locator('#rqDocDrawerClose').click();
 await page.locator('[data-open-doc="doc0"]').click();await page.waitForSelector('#docModal.open');
 // WhatsApp URL creation is checked without sending a message or opening the service.
 await page.evaluate(()=>{window.savedOpen=window.open;window.open=(url)=>{window.sharedUrl=url;return null}});
@@ -71,6 +95,16 @@ mode='empty';await page.locator('#refreshDocs').click();await page.waitForFuncti
 mode='loading';await page.locator('#refreshDocs').click();assert.equal(await page.locator('#docHistory').getAttribute('aria-busy'),'true');await page.waitForFunction(()=>document.querySelector('#docHistory').getAttribute('aria-busy')==='false');
 mode='error';await page.locator('#refreshDocs').click();await page.waitForFunction(()=>document.querySelector('#docResultsState').textContent.includes('Fixture unavailable'));
 mode='normal';await page.locator('#refreshDocs').click();await page.waitForSelector('#docHistory .rqHistRow');
+financeDelay=180;
+await page.waitForTimeout(500);
+const financeCalls=actions.filter(x=>x==='documentsFinanceDashboard').length;
+await page.locator('[data-doc-filter="quotation"]').click();
+for(let i=0;i<30&&actions.filter(x=>x==='documentsFinanceDashboard').length===financeCalls;i++)await page.waitForTimeout(20);
+assert.ok(actions.filter(x=>x==='documentsFinanceDashboard').length>financeCalls,'quotation change starts scoped finance refresh');
+const previousSnapshot=await page.evaluate(()=>window.__REQOO_DOCS_FINANCE__?.at||0);
+await page.locator('[data-doc-filter="all"]').click();
+await page.waitForFunction(at=>window.__REQOO_DOCS_FINANCE__?.at>at&&window.__REQOO_DOCS_FINANCE__.documents.length===80,previousSnapshot);
+assert.deepEqual(await page.evaluate(()=>window.__REQOO_DOCS_FINANCE__.documents.map(x=>x.id)),await page.evaluate(()=>window.__REQOO_DOCUMENTS__.map(x=>x.id)),'late finance response must not publish a stale document snapshot');
 assert.deepEqual(errors,[]);console.log('PASS: browser desktop/mobile, historical search, paging, filters, lazy loading, quotation math, deposit default, WhatsApp URL, A4 PDF and loading/empty/error recovery.');
 }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exit(1)});

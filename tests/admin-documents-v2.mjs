@@ -80,11 +80,11 @@ assert.match(ui,/quoteMeta/);assert.match(ui,/function paymentTerms/);assert.mat
 assert.match(ui,/AB ART TRADING/);
 assert.match(ui,/201903337879 \(003053605-X\)/);
 
-assert.match(paymentJs,/Record Payment/);assert.match(paymentJs,/Betulkan \/ Undo Paid/);assert.match(paymentJs,/correctPayment/);assert.match(paymentJs,/DEPOSIT/);
+assert.match(paymentJs,/Record Payment/);assert.match(paymentJs,/Betulkan \/ Undo Paid/);assert.match(paymentJs,/correctPayment/);assert.match(paymentJs,/<option value="deposit">Deposit/);
 assert.match(paymentJs,/Save Payment & Create Receipt/);
 assert.match(paymentJs,/documentsFinanceDashboard/);assert.doesNotMatch(paymentJs,/listPayments/);assert.match(paymentJs,/api\('paymentSummary',\{orderId:doc.order_id\}/,'correction must read exact order summary');
 assert.match(drawerJs,/DOCUMENT FLOW/);
-assert.match(drawerJs,/Payment Timeline/);
+assert.match(drawerJs,/Aktiviti order dan bayaran/);assert.match(drawerJs,/activityHtml/);
 assert.match(drawerJs,/documentFlow/);assert.doesNotMatch(drawerJs,/paymentSummary/);assert.doesNotMatch(drawerJs,/listPayments/);assert.doesNotMatch(drawerJs,/listDocuments/);
 assert.match(drawerJs,/data-drawer-open-payment/);
 assert.match(drawerJs,/Record Payment/);

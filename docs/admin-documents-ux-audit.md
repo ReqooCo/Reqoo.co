@@ -43,6 +43,14 @@ All tests use fixtures or in-memory SQLite through a D1-compatible adapter. No l
 
 ## Review limits
 
-Customer approval is recorded by Admin using the existing quotation-status API; no new public approval portal is introduced. Native phone hardware, physical printers, live WhatsApp delivery and production D1 are not tested. Settings ownership, complete legacy CSS/JS removal and a single mixed chronological order/payment activity feed remain follow-up refactors; the existing linked document flow and payment timeline are preserved.
+Customer approval is recorded by Admin using the existing quotation-status API; no new public approval portal is introduced. Native phone hardware, physical printers, live WhatsApp delivery and production D1 are not tested. Settings ownership and complete legacy CSS/JS removal remain follow-up refactors.
+
+## Follow-up: chronological activity and one receipt list
+
+The drawer now combines document issue dates, the order creation date and confirmed payment dates into one chronological activity timeline. Each event links to the existing document, order or receipt view. A legacy receipt with the same number as a confirmed payment is omitted from the activity feed to avoid presenting the payment twice. No approval or production milestones are invented from the current status.
+
+The payment module no longer injects a second list of receipt rows or maintains separate receipt pagination. The canonical document list owns all receipt search and paging. Redundant search-triggered finance calls were removed; finance refreshes follow the published document snapshot. Outdated finance responses are discarded and a refresh is queued against the latest list. Drawer responses are invalidated when another document is selected or the drawer closes.
+
+The six pre-existing regression failures described above have since been repaired through test-only changes, and all 56 offline `.mjs` suites now pass. The previous follow-up CI run passed Documents, Shop and Production smoke. The new browser coverage checks chronological event ordering, duplicate receipt suppression, receipt opening, mobile layout, competing drawer responses and stale finance snapshots. Live production smoke remains a CI check rather than a local transaction test.
 
 Review the generated stylesheet together with its sources. Do not merge to main or deploy without the owner's approval.

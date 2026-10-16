@@ -615,6 +615,15 @@ body.rq-admin-shell.rqDocsPage .rqHistRow:focus-visible{outline:2px solid #aa925
 
 /* Source: documents-workspace-tokens.css */
 /* Workspace rules. The paper template is shared by preview, public links and print. */
+.rqActivityTimeline{list-style:none;margin:0;padding:0}
+.rqActivityTimeline li{display:grid;grid-template-columns:90px minmax(0,1fr);gap:16px;padding:16px 0;border-bottom:1px solid #e3e8ee}
+.rqActivityTimeline time{font-size:11px;color:#596879;line-height:1.6}
+.rqActivityTimeline li>div{border-left:2px solid #c8d7e4;padding-left:16px;min-width:0}
+.rqActivityTimeline b{display:block;font-size:13px}
+.rqActivityTimeline p{font-size:12px;line-height:1.6;color:#596879;overflow-wrap:anywhere;margin:5px 0}
+.rqActivityTimeline strong{display:block;margin-bottom:8px;font-size:14px;color:#276449}
+.rqActivityTimeline .rqDocMiniBtn{margin-top:5px}
+@media(max-width:480px){.rqActivityTimeline li{grid-template-columns:70px minmax(0,1fr);gap:10px}}
 body.rq-admin-shell.rqDocsPage{--workspace-bg:#f4f6f8;--workspace-ink:#202b38;--workspace-muted:#596879;--workspace-line:#dce2e8;background:var(--workspace-bg)!important;color:var(--workspace-ink)!important;font-family:Inter,system-ui,sans-serif}
 body.rq-admin-shell.rqDocsPage .rqDocsApp{width:min(1280px,calc(100% - 40px));padding:32px 0 80px}
 body.rq-admin-shell.rqDocsPage .rqDocsHead{align-items:center;margin-bottom:28px}
