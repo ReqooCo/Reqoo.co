@@ -1,0 +1,73 @@
+/* Shared ivory/sage workspace theme. Load after legacy page styles.
+   Documents keeps its own workspace and printable paper rules. */
+body.rq-admin-shell{
+ --rq-bg:#f5f3ef;--rq-surface:#fffefb;--rq-surface-soft:#f3f5ee;--rq-text:#2c3936;--rq-muted:#62716a;--rq-faint:#69786d;
+ --rq-line:#dedfd5;--rq-line-strong:#cbd6c5;--rq-accent:#496452;--rq-accent-soft:#e8efdf;
+ --rq-success:#3e684c;--rq-success-soft:#e8f2e3;--rq-warning:#71562e;--rq-warning-soft:#f8efd9;
+ --rq-danger:#9f2f24;--rq-danger-soft:#fdefec;--rq-info:#315a98;--rq-info-soft:#eef3fb;
+ --rq-shadow:0 4px 20px #4d584407;
+ background:radial-gradient(ellipse at 90% 0%,#e7ece380,transparent 50%),radial-gradient(ellipse at 15% 50%,#eee4d770,transparent 55%),linear-gradient(145deg,#f8f6f2,#f0f3ee)!important;
+}
+body.rq-admin-shell .rqAdminSide{background:linear-gradient(165deg,#f4f0e7,#e8eee5 70%,#e4ece2)!important;border-right:1px solid #d8dfd1!important;box-shadow:4px 0 24px #43584505!important}
+body.rq-admin-shell :is(.rqAdminBrand,.rqAdminNav a){color:#405249!important}
+body.rq-admin-shell .rqAdminNav a.active{background:linear-gradient(115deg,#dfe8d5,#eae3cf)!important;border-color:#c5d1b8!important;color:#2d493b!important;box-shadow:inset 0 1px 0 #ffffff90}
+body.rq-admin-shell .rqAdminNav a:hover{background:#e2e9daaa!important;color:#2d493b!important}
+body.rq-admin-shell .rqAdminNav a.active:before{background:linear-gradient(#94ad81,#b8a674)!important}
+body.rq-admin-shell .rqAdminNav a.active .rqAdminIcon{color:#486542!important}
+body.rq-admin-shell :is(.rqAdminGroupTitle,.rqAdminSide small,.rqAdminSide p,.rqAdminSideFoot){color:#667466!important;border-color:#d3ddcc!important}
+body.rq-admin-shell .rqAdminLogout{color:#465c4c!important;border-color:#c4d0bf!important;background:#ffffff40!important}
+body.rq-admin-shell .rqAdminLogout:hover{background:#e2e9da!important}
+body.rq-admin-shell .rqAdminMobile{background:linear-gradient(110deg,#faf8f1f5,#edf3e9f5)!important;border-color:#d3decbbb!important;box-shadow:0 -5px 24px #304a3b0a!important}
+body.rq-admin-shell .rqAdminMobile :is(a,button){color:#52674f!important}
+body.rq-admin-shell .rqAdminMobile :is(a,button).active{background:linear-gradient(130deg,#dce8d1,#e8e0c9)!important;color:#34543c!important}
+body.rq-admin-shell :is(.rqAdminMoreSheet,.rqAdminMoreList a){background:#fffdf8;color:#405249;border-color:#d8dfd1}
+body.rq-admin-shell .rqAdminMoreList a.active{background:#e8efdf;border-color:#b9cba9;color:#345437}
+body.rq-admin-shell .rqAdminMoreBackdrop{background:#253c3140}
+body.rq-admin-shell:not(.rqDocsPage){font-size:14px!important;line-height:1.55;--bg:#f5f3ef;--panel:#fffefb;--ink:#2c3936;--text:#2c3936;--card:#fffefb;--muted:#62716a;--line:#dedfd5;--gold:#496452;--gold2:#58746a}
+body.rq-admin-shell:not(.rqDocsPage) :is(.wrap,.app){min-width:0}
+body.rq-admin-shell:not(.rqDocsPage) :is(.rqOrdersHead,.rqProductionHead,.rqProductsHead,.rqCustomersHead,.rqFinanceHead,.hero){align-items:center!important;margin-bottom:24px!important;padding-bottom:20px!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(h1,.hero h1){font-size:30px!important;line-height:1.25!important;letter-spacing:-.8px!important;color:var(--rq-text)!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(.rqOrdersHead,.rqProductionHead,.rqProductsHead,.rqCustomersHead,.rqFinanceHead,.hero,.rqAdminContext) p{font-size:13px!important;line-height:1.65!important;color:var(--rq-muted)!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(.rqOrdersEyebrow,.rqProductionEyebrow,.rqProductsEyebrow,.rqCustomersEyebrow,.rqFinanceEyebrow,.label){font-size:10px!important;letter-spacing:1px!important;color:var(--rq-muted)!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(.rqOrdersPanel,.rqProductionPanel,.rqProductsPanel,.rqCustomerPanel,.rqFinancePanel,.rqDashPanel,.rqCard,.card,.module){background:linear-gradient(145deg,#fffefbee,#f7f8f3d9)!important;border:1px solid var(--rq-line)!important;border-radius:14px!important;box-shadow:var(--rq-shadow)!important;color:var(--rq-text)!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(.rqOrdersStats,.rqProductionStats,.rqProductsStats,.rqCustomerStats,.rqFinanceStats){gap:16px!important;margin-bottom:24px!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(.rqOrdersStats,.rqProductionStats,.rqProductsStats,.rqCustomerStats,.rqFinanceStats)>article,body.rq-admin-shell:not(.rqDocsPage) :is(.rqKpi,.stat){padding:20px!important;min-height:110px!important;border:1px solid #e2e5da!important;border-radius:16px!important;background:linear-gradient(140deg,#fffdf7,#eff4e9)!important;box-shadow:var(--rq-shadow)!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(.rqOrdersStats,.rqProductionStats,.rqProductsStats,.rqCustomerStats,.rqFinanceStats)>article:nth-child(1),body.rq-admin-shell:not(.rqDocsPage) .rqKpi:nth-child(1){background:linear-gradient(130deg,#fbf4e7,#f6efdfaa)!important;border-color:#e8ddc8!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(.rqOrdersStats,.rqProductionStats,.rqProductsStats,.rqCustomerStats,.rqFinanceStats)>article>span,body.rq-admin-shell:not(.rqDocsPage) .rqKpi small{font-size:10px!important;color:var(--rq-muted)!important;letter-spacing:.7px!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(.rqOrdersStats,.rqProductionStats,.rqProductsStats,.rqCustomerStats,.rqFinanceStats)>article strong,body.rq-admin-shell:not(.rqDocsPage) :is(.rqKpi b,.stat b){font-size:26px!important;line-height:1.4!important;overflow-wrap:anywhere}
+body.rq-admin-shell:not(.rqDocsPage) :is(.rqKpi span,.rqOrdersStats small,.rqProductionStats small,.rqProductsStats small,.rqCustomerStats small,.rqFinanceStats small){font-size:11px!important;line-height:1.6;color:var(--rq-muted)!important}
+body.rq-admin-shell:not(.rqDocsPage) .btn{display:inline-flex;align-items:center;justify-content:center;min-height:40px!important;height:auto!important;padding:9px 13px!important;font-size:12px!important;line-height:1.4;border-radius:7px!important;font-weight:600!important;background:linear-gradient(145deg,#fffef9,#f1f3ed)!important;color:var(--rq-text)!important;border:1px solid #d8ded2!important;white-space:normal}
+body.rq-admin-shell:not(.rqDocsPage) :is(.btn.primary,.login-btn,.row>button:not(.eye)){background:linear-gradient(135deg,#58746a,#405e57)!important;border-color:#557367!important;color:#fff!important;box-shadow:0 3px 9px #38584919,inset 0 1px 0 #ffffff26!important}
+body.rq-admin-shell:not(.rqDocsPage) .btn.danger{color:var(--rq-danger)!important;border-color:#dfb7b1!important;background:#fff7f4!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(input,textarea,select){font:inherit;font-size:14px!important;color:var(--rq-text)!important;background:#fffefbd9!important;border:1px solid #d6ddd1!important;border-radius:7px!important;min-width:0}
+body.rq-admin-shell:not(.rqDocsPage) :is(input:not([type=checkbox]):not([type=radio]),select){min-height:42px;padding:10px 12px}
+body.rq-admin-shell:not(.rqDocsPage) :is(input,textarea,select):focus{border-color:#829b76!important;box-shadow:0 0 0 3px #829b761c!important}
+body.rq-admin-shell :is(button,input,textarea,select,summary,a):focus-visible{outline:3px solid #3189c7!important;outline-offset:3px!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(.rqOrdersToolbar,.rqProductionToolbar,.rqProductsToolbar,.rqCustomerToolbar){background:linear-gradient(120deg,#fffdf9de,#f4f7f1b8)!important;gap:12px;flex-wrap:wrap}
+body.rq-admin-shell:not(.rqDocsPage) :is(table thead th,.rqOrderTableHead,.rqVariantHeader){background:#f2efe7!important;color:#62716a!important;font-size:11px!important;line-height:1.5!important;letter-spacing:.6px!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(table tbody td,.rqOrderRow,.rqProductionRow,.rqCustomerRow){font-size:13px!important;line-height:1.6!important;color:var(--rq-text)!important;border-color:#e4e7dc!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(table tbody tr:hover,.rqOrderRow:hover,.rqProductionRow:hover,.rqCustomerRow:hover){background:#f1f5edcc!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(.rqOrderRef,.rqOrderCustomer b,.rqOrderAmount,.rqCustomerName b,.rqProductionInfo>b){font-size:13px!important;line-height:1.6!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(.rqOrderCustomer small,.rqOrderDate,.rqCustomerName>span,.rqCustomerMetric,.rqCustomerMeta,.rqProductionInfo p){font-size:12px!important;line-height:1.65!important;color:var(--rq-muted)!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(.rqStatus,.rqBadge,.rqCustomerBadge){font-size:10px!important;line-height:1.5!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(.tabs,.rqProductsTabs,.rqCrmTabs){background:#eef0e8!important;border-color:#d9dfd1!important;flex-wrap:wrap}
+body.rq-admin-shell:not(.rqDocsPage) :is(.tabs .tab,.rqProductsTabs button,.rqCrmTabs button){min-height:38px;font-size:12px!important;padding:9px 12px!important;color:#62716a!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(.tabs .tab.active,.rqProductsTabs button.active,.rqCrmTabs button.active){background:linear-gradient(135deg,#edf3e6,#dde8d7)!important;color:#345d4c!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(.rqOrderDrawerCard,.rqProductionDrawerCard,.rqProductDrawerCard,.rqCustomerDrawerBox,.modalBox){background:linear-gradient(155deg,#fffdf8,#f0f4ed)!important;color:var(--rq-text)!important;border-color:#d9dfd1!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(.rqOrderDrawerHead,.rqProductionDrawerHead,.rqProductDrawerHead,.rqCustomerDrawerHead,.modalHead){background:linear-gradient(120deg,#f4f0e6,#eaf1e4)!important;border-color:#dce2d4!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(.note,.notice,.rqAdminContextBadge,.tag){background:#f4f4e9!important;color:#52674f!important;border-color:#d9dfcd!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(.brand,.back,.rqDashHead h2,.rqFinancePanelHead h2){color:var(--rq-text)!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(.rqDashHead p,.rqDashFoot,.hint,.rqFinancePanelHead span){color:var(--rq-muted)!important;font-size:12px!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(.rqAction,.rqMiniAction,.rqCustomerOpen){background:linear-gradient(145deg,#fffef9,#f1f3ed)!important;color:#405d47!important;border-color:#d8ded2!important;font-size:12px!important;min-height:40px;line-height:1.5}
+body.rq-admin-shell:not(.rqDocsPage) .rqAction.primary{background:linear-gradient(135deg,#58746a,#405e57)!important;color:#fff!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(.rqAction span,.rqOpsRow small,.rqDashEmpty,.rqAllClear span,.rqFinanceRow,.rqPayLine,.rqPayValue){font-size:12px!important;line-height:1.65!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(.rqDashPanelHead small,.rqDashPanelHead>a,.rqFinancePanelHead>a){font-size:11px!important;color:#52674f!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(.rqBar,.rqTrendBar,.rqPayFill){background:linear-gradient(135deg,#a9bf96,#58746a)!important}
+body.rq-admin-shell:not(.rqDocsPage) :is(.rqBarValue,.rqBarLabel,.rqTrendCol>span,.rqTrendCol>small){font-size:11px!important;color:#52674f!important}
+@media(max-width:900px){body.rq-admin-shell:not(.rqDocsPage) :is(.rqOrdersHead,.rqProductionHead,.rqProductsHead,.rqCustomersHead,.rqFinanceHead,.hero){align-items:flex-start!important}body.rq-admin-shell:not(.rqDocsPage) :is(.btn,.rqProductsTabs button,.rqCrmTabs button){min-height:44px!important}}
+@media(max-width:600px){body.rq-admin-shell:not(.rqDocsPage) :is(h1,.hero h1){font-size:25px!important}body.rq-admin-shell:not(.rqDocsPage) :is(.rqOrdersStats,.rqProductionStats,.rqProductsStats,.rqCustomerStats,.rqFinanceStats){gap:10px!important}body.rq-admin-shell:not(.rqDocsPage) :is(.rqOrdersStats,.rqProductionStats,.rqProductsStats,.rqCustomerStats,.rqFinanceStats)>article,body.rq-admin-shell:not(.rqDocsPage) .rqKpi{padding:14px!important;min-height:100px!important}body.rq-admin-shell:not(.rqDocsPage) :is(.rqOrdersStats,.rqProductionStats,.rqProductsStats,.rqCustomerStats,.rqFinanceStats)>article strong{font-size:23px!important}}
+
+/* Settings content editor and PKSK share the same workspace surfaces. */
+body.rq-admin-shell:not(.rqDocsPage) :is(.item,.detailbox){background:#fffefb!important;border-color:var(--rq-line)!important;color:var(--rq-text)!important}
+body.rq-admin-shell:not(.rqDocsPage) .toggle{color:var(--rq-muted)!important}
+body.rq-admin-shell:not(.rqDocsPage) .metric{border-top-color:#a9bf96!important}

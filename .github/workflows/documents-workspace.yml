@@ -4,6 +4,10 @@ on:
     paths:
       - 'admin/documents*'
       - 'admin/document-*'
+      - 'admin/admin-*'
+      - '_web_worker.js'
+      - 'functions/_middleware.js'
+      - 'tests/admin-theme-browser.cjs'
       - 'api/shop-admin-flow-v18.js'
       - 'scripts/build-documents-workspace.mjs'
       - 'tests/admin-documents*'
@@ -41,6 +45,7 @@ jobs:
         run: |
           node tests/admin-documents-fast-load.cjs
           node tests/admin-documents-browser.cjs
+          node tests/admin-theme-browser.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
