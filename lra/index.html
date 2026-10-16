@@ -148,6 +148,27 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .panel .quickTitle h2{margin-bottom:0}
 @media(max-width:390px){.tabs .tabBtn{min-width:82px}.tabSub{font-size:10px}}
 
+
+/* Phase 3: prevent cramped two-column controls on narrow devices */
+@media(max-width:420px){
+ .grid,.dateTimeGrid{column-gap:9px;row-gap:11px}
+ .grid>.field{min-width:0}
+ .grid>.field .pumpHead{flex-wrap:wrap;gap:4px}
+ .grid>.field .problemTag{max-width:100%}
+ .autoRow{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .autoRow>*:last-child:nth-child(odd){grid-column:1/-1}
+ .stat small{font-size:10px;white-space:normal}
+ .stat b{font-size:13px;white-space:normal;overflow-wrap:anywhere}
+ .convert{font-size:11px;flex-wrap:wrap}
+ .btns{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .historyItem button{min-height:40px;font-size:12px;padding:8px 12px}
+}
+@media(max-width:345px){
+ .grid,.dateTimeGrid{grid-template-columns:minmax(0,1fr)}
+ .grid>.full,.sectionLine{grid-column:1}
+ .btns{grid-template-columns:minmax(0,1fr)}
+}
+
 </style>
 </head>
 <body>
@@ -1091,7 +1112,17 @@ function switchTab(tab){
  if(tab==='stock'){loadStock(true);}
  if(typeof window.morningTabChanged==='function')window.morningTabChanged(tab);
 }
-document.querySelectorAll('.tabBtn').forEach(b=>{b.setAttribute('role','tab');b.setAttribute('aria-controls','panel-'+b.dataset.tab);b.onclick=()=>switchTab(b.dataset.tab)});
+document.querySelectorAll('.tabBtn').forEach(b=>{
+ b.setAttribute('role','tab');b.setAttribute('aria-controls','panel-'+b.dataset.tab);
+ b.onclick=()=>switchTab(b.dataset.tab);
+ b.addEventListener('keydown',event=>{
+  if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+  event.preventDefault();
+  const tabs=[...document.querySelectorAll('.tabBtn')],index=tabs.indexOf(b);
+  const next=event.key==='Home'?0:event.key==='End'?tabs.length-1:(index+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;
+  switchTab(tabs[next].dataset.tab);tabs[next].focus();tabs[next].scrollIntoView({block:'nearest',inline:'nearest'});
+ });
+});
 $('stockCommit').onclick=commitStock;
 $('stockUndo').onclick=undoStock;
 $('stockDate').addEventListener('change',previewStock);
