@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-store">
 <title>REQOO.CO — Documents</title>
-<link rel="stylesheet" href="/admin/documents-workspace.css?v=3">
+<link rel="stylesheet" href="/admin/documents-workspace.css?v=4">
 </head>
 <body class="rqDocsPage">
 <main class="wrap rqDocsApp">
@@ -40,6 +40,12 @@
     <article class="rqDocsStat"><span>INVOICE SELESAI DIBAYAR</span><strong id="rqFinPaidSummary">—</strong><small>Rekod bayaran terperinci di <a href="/admin/finance.html">Finance</a></small></article>
   </section>
   <div hidden><span id="docSaved"></span><span id="docReceiptCount"></span><span id="docOrders"></span><span id="docPaid"></span></div>
+
+  <section class="rqDocsPanel rqMonthly" id="rqMonthlyPanel" aria-labelledby="rqMonthlyTitle" hidden>
+    <div class="rqDocsPanelHead"><div><div class="rqDocsEyebrow">PRESTASI BULANAN</div><h2 id="rqMonthlyTitle">Gambaran perniagaan</h2><p>Trend dokumen dan bayaran sepanjang tahun.</p></div><div class="rqMonthlyControls"><label for="rqMonthlyYear">Tahun</label><select id="rqMonthlyYear"></select><button class="btn" id="rqMonthlyRefresh" type="button">Muat semula carta</button></div></div>
+    <div id="rqMonthlyState" class="rqDocsState" role="status" aria-live="polite">Memuatkan carta…</div>
+    <div id="rqMonthlyContent" hidden></div>
+  </section>
 
   <section class="rqDocsPanel rqDocsUnifiedPanel">
     <div class="rqDocsPanelHead">
@@ -125,5 +131,6 @@
 <script src="/admin/documents-payment-v1.js?v=8"></script>
 <script src="/admin/documents-drawer-v1.js?v=5"></script>
 <script src="/admin/documents-overdue-v1.js?v=5"></script>
+<script src="/admin/documents-monthly.js?v=1"></script>
 </body>
 </html>

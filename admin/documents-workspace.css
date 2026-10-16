@@ -615,6 +615,32 @@ body.rq-admin-shell.rqDocsPage .rqHistRow:focus-visible{outline:2px solid #aa925
 
 /* Source: documents-workspace-tokens.css */
 /* Workspace rules. The paper template is shared by preview, public links and print. */
+.rqMonthly{margin-bottom:24px;overflow:hidden!important}
+.rqMonthlyControls{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.rqMonthlyControls label{font-size:12px;color:#62716a}
+.rqMonthlyTotals{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:0 24px 22px}
+.rqMonthlyTotals>div{padding:14px 18px;border:1px solid #e1e7d9;border-radius:12px;background:linear-gradient(120deg,#f3f5ed,#fffdf7)}
+.rqMonthlyTotals span{display:block;font-size:11px;color:#62716a;margin-bottom:7px}
+.rqMonthlyTotals strong{font-size:22px;letter-spacing:-.6px;color:#344c40}
+.rqMonthlyCharts{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:0 24px}
+.rqMonthlyCharts article{min-width:0;padding:18px 16px 6px;border:1px solid #e2e5da;border-radius:14px;background:linear-gradient(150deg,#fefdf9,#f1f5ed70)}
+.rqMonthlyCharts h3{margin:0 0 12px;font-size:14px!important;color:#405249!important;letter-spacing:0!important}
+.rqMonthlyCharts h3 small{float:right;font-size:10px;color:#69796c;font-weight:500}
+.rqMonthlyCharts svg{display:block;width:100%;height:auto;overflow:visible}
+.rqChartLegend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:15px}
+.rqChartLegend span{display:flex;gap:6px;align-items:center;font-size:10px;color:#5c6c60}
+.rqChartLegend i{width:9px;height:9px;border-radius:3px;display:inline-block}
+.rqChartGrid{stroke:#e2e7dc;stroke-width:1;stroke-dasharray:3 5}
+.rqChartLabel{fill:#637366;font-size:11px;font-family:system-ui,sans-serif}
+.rqMonthlyCharts rect:hover{filter:brightness(.92)}
+.rqMonthlyNote{font-size:11px!important;line-height:1.7!important;color:#657463!important;padding:10px 24px 0;margin-bottom:12px}
+.rqMonthlyData{margin:0 24px 22px;font-size:12px;color:#4d6654}
+.rqMonthlyData summary{cursor:pointer;padding:8px 0}
+.rqMonthlyData table{width:100%;border-collapse:collapse;margin-top:12px;font-size:11px}
+.rqMonthlyData caption{text-align:left;margin-bottom:12px;font-weight:600}
+.rqMonthlyData th,.rqMonthlyData td{padding:9px;border-bottom:1px solid #e0e5da;text-align:right}
+.rqMonthlyData th:first-child{text-align:left}
+@media(max-width:1099px){.rqMonthly{display:none!important}}
 .rqActivityTimeline{list-style:none;margin:0;padding:0}
 .rqActivityTimeline li{display:grid;grid-template-columns:90px minmax(0,1fr);gap:16px;padding:16px 0;border-bottom:1px solid #e3e8ee}
 .rqActivityTimeline time{font-size:11px;color:#596879;line-height:1.6}

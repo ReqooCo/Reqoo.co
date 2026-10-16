@@ -8,7 +8,7 @@ try{
 const context=await browser.newContext({viewport:{width:1440,height:1000}});
 await context.addInitScript(()=>{window.print=()=>{};Element.prototype.scrollIntoView=function(){};});
 const records=Array.from({length:85},(_,i)=>({id:'doc'+i,type:i%2?'quotation':'invoice',number:(i%2?'QT':'INV')+'-TEST-'+i,order_id:'ord'+i,customer_name:i===84?'Historical Customer':'Test Customer '+i,customer_phone:'0123456789',total_minor:30000,payment_status:'pending',status:'issued',created_at:'2026-10-01T12:00:00Z',issued_at:'2026-10-01T12:00:00Z',due_at:'2026-10-31',company:{companyName:'REQOO.CO',quoteMeta:{depositPercent:50}},items:Array.from({length:50},(_,j)=>({description:'Item '+j+' — Custom packaging with approved artwork',variation:'Standard',quantity:1,unit_price_minor:600,line_total_minor:600}))}));
-let mode='normal',settingsCalls=0,orderCalls=0,financeDelay=0;const actions=[];
+let mode='normal',settingsCalls=0,orderCalls=0,financeDelay=0,chartFail=false;const actions=[];
 await context.route('**/*',async route=>{
 const u=new URL(route.request().url());if(u.hostname!=='reqoo.test'){await route.abort();return}
 if(u.pathname==='/api/shop-admin'){
@@ -19,6 +19,10 @@ if(d.action==='listDocuments'){
  if(mode==='loading')await new Promise(r=>setTimeout(r,500));
  const filtered=mode==='empty'?[]:records.filter(x=>(!d.type||x.type===d.type)&&(!d.q||JSON.stringify(x).toLowerCase().includes(d.q.toLowerCase())));
  const offset=Number(d.offset||0),limit=Number(d.limit||80);body={ok:true,documents:filtered.slice(offset,offset+limit),total:filtered.length,offset,hasMore:offset+limit<filtered.length,stats:{all:85,quotation:42,invoice:43,receipt:0,delivery_order:0}};
+}else if(d.action==='documentsMonthlySummary'){
+ if(chartFail){await route.fulfill({status:503,json:{ok:false,error:'Carta ujian tidak tersedia.'}});return}
+ const selected=Number(d.year),empty=selected!==new Date().getFullYear();
+ body={ok:true,year:selected,timeZone:'Asia/Kuala_Lumpur',months:Array.from({length:12},(_,i)=>({month:i+1,quotationCount:empty?0:8+(i*7)%21,invoiceCount:empty?0:5+(i*3)%17,deliveryCount:empty?0:3+(i*2)%11,invoiceMinor:empty?0:180000+(i*73000)%550000,paidMinor:empty?0:140000+(i*41000)%450000,paymentCount:empty?0:7+i}))};
 }else if(d.action==='documentsFinanceDashboard'){if(financeDelay)await new Promise(r=>setTimeout(r,financeDelay));body={ok:true,documents:[],payments:[],summaries:records.filter(x=>x.type==='invoice').map(x=>({orderId:x.order_id,totalMinor:30000,paidMinor:0,balanceMinor:30000,paymentStatus:'pending'})),stats:{all:43,outstandingCount:43,outstandingMinor:1290000,paidCount:0},invoices:[],invoiceTotal:0};}
 else if(d.action==='documentSettings'){settingsCalls++;body.settings={quoteValidDays:7};}
 else if(d.action==='ordersDashboard'){orderCalls++;body={ok:true,orders:[],total:0,stats:{}};}
@@ -44,11 +48,19 @@ await page.waitForSelector('#docHistory .rqHistRow');await page.waitForSelector(
 assert.equal(settingsCalls,0);assert.equal(orderCalls,0);
 assert.equal(await page.locator('#docQuoteCount').innerText(),'42');
 assert.equal(await page.locator('#docHistory .rqHistRow').count(),80);
+await page.waitForSelector('.rqMonthlyCharts svg');assert.equal(await page.locator('.rqMonthlyCharts svg').count(),2);
+await page.locator('.rqMonthlyData summary').click();assert.equal(await page.locator('.rqMonthlyData tbody tr').count(),12);await page.locator('.rqMonthlyData summary').click();
+const currentYear=await page.locator('#rqMonthlyYear').inputValue();
+await page.locator('#rqMonthlyYear').selectOption(String(Number(currentYear)-1));await page.waitForFunction(()=>document.querySelector('#rqMonthlyContent').textContent.includes('Belum ada aktiviti'));
+chartFail=true;await page.locator('#rqMonthlyRefresh').click();await page.waitForFunction(()=>document.querySelector('#rqMonthlyState').textContent.includes('Carta ujian tidak tersedia'));
+chartFail=false;await page.locator('#rqMonthlyYear').selectOption(currentYear);await page.waitForSelector('.rqMonthlyCharts svg');
 await page.locator('#loadMoreDocuments').click();await page.waitForFunction(()=>document.querySelectorAll('#docHistory .rqHistRow').length===85);
 await page.evaluate(()=>scrollTo(0,0));
 console.log('Workspace typography:',await page.locator('.rqDocsApp').evaluate(el=>getComputedStyle(el).fontFamily));
 await page.screenshot({path:path.join(out,'documents-desktop.png'),fullPage:false});
+const monthlyCalls=actions.filter(a=>a==='documentsMonthlySummary').length;
 await page.locator('#docUnifiedSearch').fill('Historical');await page.waitForFunction(()=>document.querySelector('#docResultsState').textContent.startsWith('1 daripada 1'));
+assert.equal(actions.filter(a=>a==='documentsMonthlySummary').length,monthlyCalls,'list search must not refetch or filter annual charts');
 assert.match(await page.locator('#docHistory').innerText(),/Historical Customer/);
 await page.locator('#docUnifiedSearch').fill('ord0');await page.waitForFunction(()=>document.querySelector('#docResultsState').textContent.startsWith('1 daripada 1'));assert.ok(await page.locator('#docHistory .rqHistRow').isVisible(),'order reference search remains visible even without reference in row text');
 await page.locator('#docUnifiedSearch').fill('');await page.waitForFunction(()=>document.querySelectorAll('#docHistory .rqHistRow').length===80);
@@ -88,6 +100,7 @@ await page.locator('.rqRecordPaymentBtn').first().click();await page.waitForSele
 await page.locator('#toggleQuoteBuilder').click();assert.equal(await page.locator('#qDeposit').inputValue(),'50');
 await page.locator('#qCustomer').fill('Fixture Customer');await page.locator('[data-q="description"]').fill('Packaging');await page.locator('[data-q="quantity"]').fill('3');await page.locator('[data-q="unit"]').fill('100.01');await page.locator('#qDiscount').fill('10.03');await page.locator('#qShipping').fill('10');assert.equal(await page.locator('#qTotal').innerText(),'RM300.00');
 await page.setViewportSize({width:390,height:844});await page.screenshot({path:path.join(out,'documents-mobile-builder.png'),fullPage:true});
+assert.ok(!await page.locator('#rqMonthlyPanel').isVisible(),'monthly charts are desktop only');
 assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'builder must fit mobile');
 await page.locator('#toggleQuoteBuilder').click();await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(out,'documents-mobile.png'),fullPage:false});
 assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'list must fit mobile');

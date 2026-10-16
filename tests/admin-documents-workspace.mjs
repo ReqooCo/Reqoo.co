@@ -59,5 +59,26 @@ assert.equal(old.documents[0].share_token,quote.share_token,'existing list consu
 assert.equal(old.documents[0].subtotal_minor,quote.subtotal_minor);
 assert.equal((await call('listDocuments',{limit:'bad',offset:'bad'})).documents.length,80);
 assert.equal((await call('listDocuments',{limit:0})).documents.length,1);
+assert.equal((await call('documentsMonthlySummary',{year:2026},false)).statusCode,401);
+assert.equal((await call('documentsMonthlySummary',{year:'2026 OR 1=1'})).statusCode,400);
+assert.equal((await call('documentsMonthlySummary',{year:1999})).statusCode,400);
+// Boundary dates verify Malaysia grouping rather than UTC month grouping.
+sqlite.prepare("UPDATE reqoo_documents SET issued_at='2026-01-31T16:30:00Z' WHERE type='quotation'").run();
+sqlite.prepare("UPDATE reqoo_documents SET issued_at='2026-02-15T00:00:00Z' WHERE type='invoice'").run();
+sqlite.prepare("UPDATE reqoo_documents SET issued_at='2026-03-01T00:00:00Z' WHERE type='delivery_order'").run();
+sqlite.prepare("UPDATE reqoo_payments SET paid_at='2026-01-31T16:30:00Z'").run();
+const monthly=await call('documentsMonthlySummary',{year:2026});
+assert.equal(monthly.months.length,12);assert.equal(monthly.timeZone,'Asia/Kuala_Lumpur');
+assert.equal(monthly.months[0].quotationCount,0);
+assert.equal(monthly.months[1].quotationCount,206,'all quotations, beyond first 150 headers');
+assert.equal(monthly.months[1].invoiceMinor,30000);
+assert.equal(monthly.months[1].paidMinor,30000,'deposit, partial and final count once, receipts are not added');
+assert.equal(monthly.months[1].paymentCount,3);
+assert.equal(monthly.months[2].deliveryCount,1);
+sqlite.prepare("UPDATE reqoo_documents SET status='void' WHERE type='invoice'").run();
+assert.equal((await call('documentsMonthlySummary',{year:2026})).months[1].invoiceMinor,0);
+sqlite.prepare("UPDATE reqoo_payments SET status='void' WHERE payment_type='deposit'").run();
+assert.equal((await call('documentsMonthlySummary',{year:2026})).months[1].paidMinor,15000);
+assert.ok((await call('documentsMonthlySummary',{year:2001})).months.every(m=>m.invoiceMinor===0&&m.quotationCount===0&&m.paidMinor===0));
 console.log('PASS: in-memory D1 workflow, approval, conversion retry, 50% deposit, partial/final payments, unique receipts, delivery, global counts, paging, historical search and Admin access.');
 sqlite.close();

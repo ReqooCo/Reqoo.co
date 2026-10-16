@@ -54,3 +54,11 @@ The payment module no longer injects a second list of receipt rows or maintains 
 The six pre-existing regression failures described above have since been repaired through test-only changes, and all 56 offline `.mjs` suites now pass. The previous follow-up CI run passed Documents, Shop and Production smoke. The new browser coverage checks chronological event ordering, duplicate receipt suppression, receipt opening, mobile layout, competing drawer responses and stale finance snapshots. Live production smoke remains a CI check rather than a local transaction test.
 
 Review the generated stylesheet together with its sources. Do not merge to main or deploy without the owner's approval.
+
+## Desktop monthly charts
+
+The Documents workspace now includes a desktop-only annual view (1100px and wider), with year selection and two monthly charts: full invoice value versus confirmed payments received (RM), and issued quotations/invoices/delivery orders (counts). A collapsible table exposes all twelve monthly values. Empty years, errors and retry are explicit. Chart data is independent of list search, type filters and pagination.
+
+The authenticated `documentsMonthlySummary` action aggregates all matching D1 rows into twelve zero-filled months, using Malaysia time (UTC+8). Document counts/value follow `issued_at` and exclude void/cancelled documents. Payment totals follow `paid_at` (falling back to `created_at`) and include only confirmed ledger payments; deposit, partial and final payments are counted once, and receipt document values are not added. These are issuance and cash-receipt measures, not revenue recognition or historical outstanding balances. No schema migration is needed.
+
+Local tests cover >150 records, UTC-to-Malaysia month boundaries, void documents/payments, invalid years and access denial. Browser fixtures cover year changes, empty years, error/retry, the twelve-row table, independence from list search, and hiding charts on mobile. Previews use synthetic data only.

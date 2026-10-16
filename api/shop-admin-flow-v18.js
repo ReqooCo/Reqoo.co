@@ -406,6 +406,19 @@ async function documentsFinanceDashboard(d,env){
   }
   return J({ok:true,filter,query:q,stats:{all:Number(stats?.all_count||0),outstandingCount:Number(stats?.outstanding_count||0),outstandingMinor:Number(stats?.outstanding_minor||0),partialCount:Number(stats?.partial_count||0),dueSoonCount:Number(stats?.due_soon_count||0),dueSoonMinor:Number(stats?.due_soon_minor||0),overdueCount:Number(stats?.overdue_count||0),overdueMinor:Number(stats?.overdue_minor||0),paidCount:Number(stats?.paid_count||0)},invoices,invoiceTotal,invoiceOffset:offset,invoiceLimit:limit,invoicesHasMore,summaries,payments,paymentOffset,paymentLimit,paymentsHasMore});
 }
+async function documentsMonthlySummary(d,env){
+ await ensure(env);
+ const year=d.year==null?new Date(Date.now()+8*3600000).getUTCFullYear():Number(d.year);
+ if(!Number.isInteger(year)||year<2000||year>2100)return J({ok:false,error:'Tahun tidak sah.'},400);
+ const [docs,payments]=await Promise.all([
+  env.DB.prepare("SELECT strftime('%m',datetime(issued_at,'+8 hours')) month,SUM(CASE WHEN type='quotation' THEN 1 ELSE 0 END) quotation_count,SUM(CASE WHEN type='invoice' THEN 1 ELSE 0 END) invoice_count,SUM(CASE WHEN type='delivery_order' THEN 1 ELSE 0 END) delivery_count,SUM(CASE WHEN type='invoice' THEN total_minor ELSE 0 END) invoice_minor FROM reqoo_documents WHERE strftime('%Y',datetime(issued_at,'+8 hours'))=? AND status NOT IN ('void','cancelled') GROUP BY month").bind(String(year)).all(),
+  env.DB.prepare("SELECT strftime('%m',datetime(COALESCE(paid_at,created_at),'+8 hours')) month,SUM(amount_minor) paid_minor,COUNT(*) payment_count FROM reqoo_payments WHERE status='confirmed' AND strftime('%Y',datetime(COALESCE(paid_at,created_at),'+8 hours'))=? GROUP BY month").bind(String(year)).all()
+ ]);
+ const docMap=new Map((docs.results||[]).map(r=>[Number(r.month),r])),payMap=new Map((payments.results||[]).map(r=>[Number(r.month),r]));
+ const months=Array.from({length:12},(_,i)=>{const n=i+1,a=docMap.get(n)||{},b=payMap.get(n)||{};return{month:n,quotationCount:Number(a.quotation_count||0),invoiceCount:Number(a.invoice_count||0),deliveryCount:Number(a.delivery_count||0),invoiceMinor:Number(a.invoice_minor||0),paidMinor:Number(b.paid_minor||0),paymentCount:Number(b.payment_count||0)}});
+ return J({ok:true,year,timeZone:'Asia/Kuala_Lumpur',months,generatedAt:NOW()});
+}
+
 async function documentFlow(d,env){
   await ensure(env);
   const key=S(d.key||d.documentId||d.documentNumber||d.paymentId||d.receiptNumber);if(!key)return J({ok:false,error:'Dokumen atau receipt diperlukan'},400);
@@ -456,7 +469,7 @@ export async function onRequest({request,env}){
   if(!env.DB)return J({ok:false,error:'D1 binding DB tidak dijumpai'},503);
   try{
     const d=await data(request),action=S(d.action);
-    if(['recordPayment','correctPayment','listPayments','paymentSummary','getPaymentReceipt','listDocuments','documentIntegrityAudit','customerDashboard','customerDetail','customerRecords','ordersDashboard','financeDashboard','financeTransactions','documentsFinanceDashboard','documentFlow'].includes(action)){
+    if(['recordPayment','correctPayment','listPayments','paymentSummary','getPaymentReceipt','listDocuments','documentIntegrityAudit','customerDashboard','customerDetail','customerRecords','ordersDashboard','financeDashboard','financeTransactions','documentsFinanceDashboard','documentsMonthlySummary','documentFlow'].includes(action)){
       if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);
       if(action==='recordPayment')return await recordPayment(d,request,env);
       if(action==='correctPayment')return await correctPayment(d,env);
@@ -473,6 +486,7 @@ export async function onRequest({request,env}){
       if(action==='financeTransactions')return await financeTransactions(d,env);
       if(action==='documentsFinanceDashboard')return await documentsFinanceDashboard(d,env);
       if(action==='documentFlow')return await documentFlow(d,env);
+      if(action==='documentsMonthlySummary')return await documentsMonthlySummary(d,env);
     }
     if(action==='dashboardSummary'){
       if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);
