@@ -1,4 +1,5 @@
 import { onRequest as legacy } from './shop-admin-flow-v17.js';
+import { onRequest as documentApi } from './shop-admin-flow-v12.js';
 
 const C={'access-control-allow-origin':'*','access-control-allow-methods':'GET,POST,OPTIONS','access-control-allow-headers':'Content-Type,X-Admin-Token','cache-control':'no-store'};
 const S=v=>String(v??'').trim();
@@ -406,6 +407,25 @@ async function documentsFinanceDashboard(d,env){
   }
   return J({ok:true,filter,query:q,stats:{all:Number(stats?.all_count||0),outstandingCount:Number(stats?.outstanding_count||0),outstandingMinor:Number(stats?.outstanding_minor||0),partialCount:Number(stats?.partial_count||0),dueSoonCount:Number(stats?.due_soon_count||0),dueSoonMinor:Number(stats?.due_soon_minor||0),overdueCount:Number(stats?.overdue_count||0),overdueMinor:Number(stats?.overdue_minor||0),paidCount:Number(stats?.paid_count||0)},invoices,invoiceTotal,invoiceOffset:offset,invoiceLimit:limit,invoicesHasMore,summaries,payments,paymentOffset,paymentLimit,paymentsHasMore});
 }
+const WORKSPACES_CTE="WITH doc_rollup AS (SELECT order_id,COUNT(*) doc_count,MAX(customer_name) customer_name,MAX(customer_phone) customer_phone,MAX(created_at) latest_document,MAX(CASE WHEN type='quotation' THEN number END) quote_number,MAX(CASE WHEN type='quotation' THEN total_minor END) quote_total,MAX(CASE WHEN type='invoice' THEN number END) invoice_number,MAX(CASE WHEN type='invoice' THEN total_minor END) invoice_total,SUM(CASE WHEN type='quotation' THEN 1 ELSE 0 END) quotation_count,SUM(CASE WHEN type='invoice' THEN 1 ELSE 0 END) invoice_count,SUM(CASE WHEN type='delivery_order' THEN 1 ELSE 0 END) delivery_count,SUM(CASE WHEN type='receipt' AND NOT EXISTS(SELECT 1 FROM reqoo_payments p WHERE p.status='confirmed' AND p.receipt_number=reqoo_documents.number) THEN 1 ELSE 0 END) legacy_receipt_count FROM reqoo_documents GROUP BY order_id), pay_rollup AS (SELECT order_id,SUM(amount_minor) paid_minor,COUNT(*) receipt_count,MAX(created_at) latest_payment FROM reqoo_payments WHERE status='confirmed' GROUP BY order_id), keys AS (SELECT id order_id FROM orders UNION SELECT order_id FROM reqoo_documents UNION SELECT order_id FROM reqoo_payments WHERE status='confirmed'), grouped AS (SELECT k.order_id,COALESCE(o.order_no,d.quote_number,d.invoice_number,k.order_id) reference,COALESCE(c.name,d.customer_name,'Pelanggan') customer_name,COALESCE(c.phone,d.customer_phone,'') customer_phone,o.fulfillment_status,COALESCE(d.quotation_count,0) quotation_count,COALESCE(d.invoice_count,0) invoice_count,COALESCE(d.delivery_count,0) delivery_count,COALESCE(d.legacy_receipt_count,0)+COALESCE(p.receipt_count,0) receipt_count,COALESCE(d.invoice_total,d.quote_total,o.total_minor,0) total_minor,COALESCE(p.paid_minor,CASE WHEN o.payment_status='paid' THEN COALESCE(d.invoice_total,o.total_minor,0) ELSE 0 END) raw_paid_minor,MAX(COALESCE(o.updated_at,''),COALESCE(d.latest_document,''),COALESCE(p.latest_payment,'')) updated_at FROM keys k LEFT JOIN orders o ON o.id=k.order_id LEFT JOIN customers c ON c.id=o.customer_id LEFT JOIN doc_rollup d ON d.order_id=k.order_id LEFT JOIN pay_rollup p ON p.order_id=k.order_id), workspaces AS (SELECT *,MIN(total_minor,raw_paid_minor) paid_minor,MAX(0,total_minor-raw_paid_minor) balance_minor,CASE WHEN fulfillment_status='cancelled' THEN 'cancelled' WHEN invoice_count>0 AND total_minor>0 AND raw_paid_minor>=total_minor THEN 'paid' WHEN raw_paid_minor>0 THEN 'partial' WHEN invoice_count>0 THEN 'invoice' WHEN quotation_count>0 THEN 'quotation' ELSE 'order' END stage FROM grouped) ";
+async function documentWorkspaces(d,env){
+ await ensure(env);
+ const number=(v,f,max)=>Number.isFinite(Number(v))?Math.min(max,Math.max(0,Math.floor(Number(v)))):f;
+ const limit=Math.max(1,number(d.limit??40,40,100)),offset=number(d.offset??0,0,1000000),q=S(d.q).slice(0,160),where=['1=1'],args=[];
+ if(q){where.push("(instr(lower(w.reference),lower(?))>0 OR instr(lower(w.customer_name),lower(?))>0 OR instr(w.customer_phone,?)>0 OR instr(lower(w.order_id),lower(?))>0 OR EXISTS(SELECT 1 FROM reqoo_documents d WHERE d.order_id=w.order_id AND instr(lower(d.number),lower(?))>0) OR EXISTS(SELECT 1 FROM reqoo_payments p WHERE p.order_id=w.order_id AND p.status='confirmed' AND instr(lower(p.receipt_number),lower(?))>0))");args.push(q,q,q,q,q,q)}
+ const filter=S(d.filter);if(filter==='quotation')where.push("stage='quotation'");if(filter==='paid')where.push("stage='paid'");if(filter==='outstanding')where.push("stage IN ('invoice','partial') AND balance_minor>0");
+ const clause=where.join(' AND '),[rows,count]=await Promise.all([env.DB.prepare(WORKSPACES_CTE+'SELECT w.* FROM workspaces w WHERE '+clause+' ORDER BY datetime(updated_at) DESC,order_id DESC LIMIT ? OFFSET ?').bind(...args,limit,offset).all(),env.DB.prepare(WORKSPACES_CTE+'SELECT COUNT(*) total FROM workspaces w WHERE '+clause).bind(...args).first()]);
+ const workspaces=rows.results||[],total=Number(count?.total||0);return J({ok:true,workspaces,total,offset,limit,hasMore:offset+workspaces.length<total});
+}
+async function createOrderQuotation(d,request,env){
+ if(request.method!=='POST')return J({ok:false,error:'Gunakan POST untuk menjana quotation.'},405);
+ const orderId=S(d.orderId);const order=await orderByKey(orderId,env);if(!order)return J({ok:false,error:'Order tidak dijumpai.'},404);
+ const next=new Request(request.url,{method:'POST',headers:{...Object.fromEntries(request.headers),'content-type':'application/json'},body:JSON.stringify({...d,action:'createDocument',type:'quotation',orderId:order.id})});
+ const response=await documentApi({request:next,env});if(!response.ok)return response;const out=await response.json();
+ if(out.created&&out.document){const company={...out.document.company,quoteMeta:{...out.document.company?.quoteMeta,source:'order',convertedOrderId:order.id,convertedOrderNo:order.order_no,depositPercent:50}};await env.DB.prepare('UPDATE reqoo_documents SET company_json=? WHERE id=?').bind(JSON.stringify(company),out.document.id).run();out.document.company=company}
+ return J(out);
+}
+
 async function documentsMonthlySummary(d,env){
  await ensure(env);
  const year=d.year==null?new Date(Date.now()+8*3600000).getUTCFullYear():Number(d.year);
@@ -422,9 +442,11 @@ async function documentsMonthlySummary(d,env){
 async function documentFlow(d,env){
   await ensure(env);
   const key=S(d.key||d.documentId||d.documentNumber||d.paymentId||d.receiptNumber);if(!key)return J({ok:false,error:'Dokumen atau receipt diperlukan'},400);
-  const selectedDocument=await env.DB.prepare("SELECT * FROM reqoo_documents WHERE id=? OR number=? LIMIT 1").bind(key,key).first();
+  let selectedDocument=await env.DB.prepare("SELECT * FROM reqoo_documents WHERE id=? OR number=? LIMIT 1").bind(key,key).first();
+  if(!selectedDocument)selectedDocument=await env.DB.prepare("SELECT * FROM reqoo_documents WHERE order_id=? ORDER BY created_at,id LIMIT 1").bind(key).first();
   const selectedPayment=selectedDocument?null:await env.DB.prepare("SELECT p.*,o.order_no,c.name customer_name,c.phone customer_phone,c.email customer_email,rd.number invoice_number FROM reqoo_payments p JOIN orders o ON o.id=p.order_id LEFT JOIN customers c ON c.id=o.customer_id LEFT JOIN reqoo_documents rd ON rd.id=p.invoice_document_id WHERE p.id=? OR p.receipt_number=? LIMIT 1").bind(key,key).first();
-  const orderId=S(selectedDocument?.order_id||selectedPayment?.order_id);if(!orderId)return J({ok:false,error:'Dokumen tidak dijumpai'},404);
+  const directOrder=selectedDocument||selectedPayment?null:await orderByKey(key,env);
+  const orderId=S(selectedDocument?.order_id||selectedPayment?.order_id||directOrder?.id);if(!orderId)return J({ok:false,error:'Dokumen tidak dijumpai'},404);
   const documents=(await env.DB.prepare("SELECT * FROM reqoo_documents WHERE order_id=? ORDER BY created_at,id").bind(orderId).all()).results||[];
   if(orderId.startsWith('custom:'))return J({ok:true,selectedDocument,selectedPayment,documents,payments:[],summary:null,order:null});
   const order=await orderByKey(orderId,env);if(!order)return J({ok:false,error:'Order tidak dijumpai'},404);
@@ -469,7 +491,7 @@ export async function onRequest({request,env}){
   if(!env.DB)return J({ok:false,error:'D1 binding DB tidak dijumpai'},503);
   try{
     const d=await data(request),action=S(d.action);
-    if(['recordPayment','correctPayment','listPayments','paymentSummary','getPaymentReceipt','listDocuments','documentIntegrityAudit','customerDashboard','customerDetail','customerRecords','ordersDashboard','financeDashboard','financeTransactions','documentsFinanceDashboard','documentsMonthlySummary','documentFlow'].includes(action)){
+    if(['recordPayment','correctPayment','listPayments','paymentSummary','getPaymentReceipt','listDocuments','documentIntegrityAudit','customerDashboard','customerDetail','customerRecords','ordersDashboard','financeDashboard','financeTransactions','documentsFinanceDashboard','documentsMonthlySummary','documentWorkspaces','createOrderQuotation','documentFlow'].includes(action)){
       if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);
       if(action==='recordPayment')return await recordPayment(d,request,env);
       if(action==='correctPayment')return await correctPayment(d,env);
@@ -487,6 +509,8 @@ export async function onRequest({request,env}){
       if(action==='documentsFinanceDashboard')return await documentsFinanceDashboard(d,env);
       if(action==='documentFlow')return await documentFlow(d,env);
       if(action==='documentsMonthlySummary')return await documentsMonthlySummary(d,env);
+      if(action==='documentWorkspaces')return await documentWorkspaces(d,env);
+      if(action==='createOrderQuotation')return await createOrderQuotation(d,request,env);
     }
     if(action==='dashboardSummary'){
       if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);
