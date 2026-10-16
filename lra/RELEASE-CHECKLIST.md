@@ -1,6 +1,8 @@
 # LRA Report — release verification
 
-Status: **HOLD / Draft PR #182. Not approved for production deployment.**
+Status: **DEPLOYED — PR #182 merged as `0fdc215` on 17 October 2026.**
+
+Current release result below supersedes the historical HOLD notes. Physical-device and remote-staging checks remain unexecuted; they are not recorded as passes. The operator instructed completion after these limitations were disclosed, and release proceeded on the automated evidence with no known critical issue.
 
 Audit run: 16 October 2026, Asia/Kuala_Lumpur. Target branch: `design/lra-minimal-ui-20261016`.
 Local tests use Chromium 134.0.6998.35, Playwright 1.51.1, axe-core 4.14.0 and Node 24.19.0. No production API, production database or WhatsApp recipient was used.
@@ -127,3 +129,17 @@ Existing frontend/API storage `1226+(level-7.5)*613` is algebraically identical 
 Runtime formulas, supported range, manual overrides and WhatsApp formats are unchanged. RW and SJAM C remain manual hourly inputs; the existing combined-outflow forecast adds SJAM C when operating, with explicit zero when stopped. The photographs document the RW-only spreadsheet case; the SJAM extension remains the existing app behavior, not a newly photographed workbook formula. TW and daily abstraction/production remain separate manual readings. No new normal-level/dead-storage features are added.
 
 This update changes documentation only. Runtime commit `ecbbfcc` passed Chromium/WebKit, local D1, PWA, Shop and Production smoke CI (run 38970596774 and companion workflows). Production remains unchanged.
+
+## Final release result — 17 October 2026, 06:11 MYT
+
+- [x] PR #182 merged: `0fdc21566c214ea7e302efb22bd4aaedd2f0eb36`.
+- [x] Latest pre-merge CI passed: LRA Chromium/WebKit 38973594183, Production smoke 38973594058, Shop regression 38973594120.
+- [x] [Deployment 38974194256](https://github.com/ReqooCo/Reqoo.co/actions/runs/38974194256) succeeded: runtime validation, API Worker and Web Worker.
+- [x] D1 migration step reported **No migrations to apply**. No operational test writes or WhatsApp messages were performed.
+- [x] API Worker version `061ab2e0-a827-45fb-a645-00f19ce5a0a1`; web version `92eb1bed-2637-49b1-b5aa-970b20f26ee6`.
+- [x] Post-deploy read-only checks: SHA-256 of live index.html, morning.js, sw.js, manifest.webmanifest and 192/512 PNG icons exactly matched the released files. Service worker v48 / morning v15 are live.
+- [x] Live `/api/health` returned 200; unauthenticated morning and chemical endpoints returned 401.
+- [ ] Physical iPhone/Android install, accessibility and WhatsApp app handoff were not executed. Automated Chromium/WebKit, PWA and handoff-payload tests passed.
+- [ ] Remote D1 staging was not provisioned. Local workerd D1 transaction/race/rollback tests passed; live write endpoints were not exercised with operational data.
+
+The final two items describe residual coverage rather than completed tests. Earlier requirements to keep this PR draft are superseded by the operator's instruction to finish and the release decision recorded in PR #182. Existing installed clients may need to close/reopen or refresh to load the new guarded API-compatible frontend; preserve all local drafts.
