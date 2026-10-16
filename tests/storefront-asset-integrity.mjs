@@ -1,8 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 import assert from 'node:assert/strict';
 
-const root=path.resolve(new URL('..',import.meta.url).pathname);
+const root=fileURLToPath(new URL('..',import.meta.url));
 const pages=['plaque/index.html','tumbler/index.html'];
 for(const page of pages){
   const html=fs.readFileSync(path.join(root,page),'utf8');

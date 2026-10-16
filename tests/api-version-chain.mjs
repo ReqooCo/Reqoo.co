@@ -1,8 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 import assert from 'node:assert/strict';
 
-const root=path.resolve(new URL('..',import.meta.url).pathname);
+const root=fileURLToPath(new URL('..',import.meta.url));
 const apiDir=path.join(root,'api');
 const files=fs.readdirSync(apiDir).filter(x=>x.endsWith('.js'));
 for(const file of files){

@@ -1,8 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 import assert from 'node:assert/strict';
 
-const root=path.resolve(new URL('..',import.meta.url).pathname);
+const root=fileURLToPath(new URL('..',import.meta.url));
 const activePages=[
   'admin/index.html','admin/orders.html','admin/production.html','admin/products.html',
   'admin/documents.html','admin/customers.html','admin/finance.html','admin/settings.html'
