@@ -14,7 +14,8 @@ const pkskAdmin=fs.readFileSync(new URL('../admin/sim-v2.html',import.meta.url),
 const legacyAdmin=fs.readFileSync(new URL('../shop/admin.html',import.meta.url),'utf8');
 assert.match(worker,/admin-base\.css\?v=1/,'canonical Admin base CSS must be injected');
 assert.match(worker,/admin-flow\.css\?v=2/,'canonical Admin flow CSS must be injected last');
-assert.match(worker,/admin-shell\.js\?v=3/,'canonical Admin shell runtime must be injected');
+assert.match(worker,/admin-shell\.js\?v=4/,'canonical Admin shell runtime must be injected');
+assert.match(worker,/admin-theme\.css\?v=1/,'shared workspace theme must be injected');
 assert.match(worker,/admin-ui-v1/,'Admin response must advertise the canonical UI runtime');
 assert.match(worker,/assetRequest\('\/shop\/admin\.html',request\)\);\s*return injectShopAdminSafe\(response\)/,'Shop Admin must remain isolated in safe mode');
 assert.match(worker,/shop-admin-safe-mode-v1/,'Shop Admin safe mode marker must remain active');
