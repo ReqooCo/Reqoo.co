@@ -6,5 +6,5 @@ const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8'
 assert.match(html,/COLLECTED/);assert.match(html,/OUTSTANDING/);assert.match(html,/COLLECTION TREND/);assert.match(html,/Top products/i);assert.match(html,/\/admin\/orders\.html/);assert.doesNotMatch(html,/\/shop\/admin\.html#orders/);
 assert.match(js,/financeDashboard/);assert.match(js,/financeTransactions/);assert.match(js,/loadMoreFinance/);assert.match(js,/Deposit \/ partial/);assert.match(js,/confirmed payment ledger/);assert.doesNotMatch(js,/listOrders/);assert.doesNotMatch(js,/listPayments/);assert.doesNotMatch(js,/paymentSummary/);assert.doesNotMatch(js,/productsDashboard/);assert.doesNotMatch(js,/limit:2000/);
 assert.match(shell,/Finance/);assert.match(shell,/\/admin\/finance\.html/);
-assert.match(worker,/settings\|documents\|customers\|finance/);assert.match(worker,/admin-shell\.js\?v=4/);
+assert.match(worker,/settings\|documents\|customers\|finance/);assert.match(worker,/admin-shell\.js\?v=5/);
 console.log('PASS: Finance uses one aggregate dashboard and lazy transaction history from the confirmed payment ledger.');

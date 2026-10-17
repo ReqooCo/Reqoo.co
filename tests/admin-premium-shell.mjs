@@ -14,8 +14,8 @@ const pkskAdmin=fs.readFileSync(new URL('../admin/sim-v2.html',import.meta.url),
 const legacyAdmin=fs.readFileSync(new URL('../shop/admin.html',import.meta.url),'utf8');
 assert.match(worker,/admin-base\.css\?v=1/,'canonical Admin base CSS must be injected');
 assert.match(worker,/admin-flow\.css\?v=2/,'canonical Admin flow CSS must be injected last');
-assert.match(worker,/admin-shell\.js\?v=4/,'canonical Admin shell runtime must be injected');
-assert.match(worker,/admin-theme\.css\?v=1/,'shared workspace theme must be injected');
+assert.match(worker,/admin-shell\.js\?v=5/,'canonical Admin shell runtime must be injected');
+assert.match(worker,/admin-theme\.css\?v=2/,'shared workspace theme must be injected');
 assert.match(worker,/admin-ui-v1/,'Admin response must advertise the canonical UI runtime');
 assert.match(worker,/assetRequest\('\/shop\/admin\.html',request\)\);\s*return injectShopAdminSafe\(response\)/,'Shop Admin must remain isolated in safe mode');
 assert.match(worker,/shop-admin-safe-mode-v1/,'Shop Admin safe mode marker must remain active');
@@ -38,7 +38,7 @@ assert.match(index,/createSession/,'Admin login must exchange the secret for a s
 assert.doesNotMatch(index,/localStorage\.setItem\([^\n]*reqoo_admin_token/,'Admin login must never persist the secret in localStorage');
 assert.match(worker,/target\.hostname='admin\.reqoo\.co'/,'Web worker must canonicalize Admin UI to admin.reqoo.co');
 assert.match(middleware,/target\.hostname='admin\.reqoo\.co'/,'Pages middleware must canonicalize Admin UI to admin.reqoo.co');
-for(const src of canonicalRuntimes){assert.doesNotMatch(src,/localStorage\.getItem/,'Canonical Admin runtime must not read an Admin secret from localStorage');assert.doesNotMatch(src,/X-Admin-Token/,'Canonical Admin runtime must rely on HttpOnly session auth');}
+for(const src of canonicalRuntimes){assert.doesNotMatch(src.replaceAll('localStorage.getItem(draftKey)',''),/localStorage\.getItem/,'Only explicit quotation draft storage may be read; Admin secrets must stay in HttpOnly cookies');assert.doesNotMatch(src,/X-Admin-Token/,'Canonical Admin runtime must rely on HttpOnly session auth');}
 const inlineScript=html=>html.match(/<script>([\s\S]*?)<\/script>/)?.[1]||'';
 new Function(inlineScript(index));
 new Function(inlineScript(settings));

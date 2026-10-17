@@ -110,6 +110,7 @@ jobs:
           node tests/admin-customer-detail-scalability.mjs
           node tests/admin-finance-dashboard.mjs
           node tests/admin-finance-scalability.mjs
+          node tests/admin-business-workflows.mjs
       - run: npm install --no-save --no-package-lock jsdom@30.0.1
       - name: Run Documents fast-load DOM regression
         run: node tests/admin-documents-fast-load.cjs
