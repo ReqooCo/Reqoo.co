@@ -38,15 +38,16 @@ function requirePaymentToken(request, env){
   return null;
 }
 
-async function createBill(d, env) {
+export async function createBill(d, env) {
   const missing=required(env); if(missing)return {ok:false,error:missing,configurationRequired:true};
-  const amount=Math.round(Number(d.amount||0)*100);
+  const amount=Number.isInteger(d.amountMinor) ? d.amountMinor : Math.round(Number(d.amount||0)*100);
   const name=String(d.name||'').trim(), email=String(d.email||'').trim();
   if(amount<=0||!name||!email)return {ok:false,error:'amount, name dan email diperlukan'};
   const publicOrigin=String(env.REQOO_PUBLIC_ORIGIN || 'https://reqoo.co').replace(/\/$/,'');
   let origin;
   try { origin=new URL(publicOrigin).origin; } catch { return {ok:false,error:'REQOO_PUBLIC_ORIGIN tidak sah'}; }
-  const callbackUrl=`${origin}/api/billplz`;
+  const callbackUrl=String(d.callbackUrl || `${origin}/api/billplz`);
+  if(new URL(callbackUrl).origin!==origin)return {ok:false,error:'CALLBACK_URL_NOT_ALLOWED'};
   const redirectUrl=String(d.redirectUrl || origin);
   try { if(new URL(redirectUrl).origin!==origin)return {ok:false,error:'REDIRECT_URL_NOT_ALLOWED'}; } catch { return {ok:false,error:'REDIRECT_URL_INVALID'}; }
   const params=new URLSearchParams();
@@ -66,7 +67,7 @@ async function createBill(d, env) {
   return {ok:true,provider:'billplz',billId:data.id,billUrl:data.url,collectionId:data.collection_id,state:data.state||'due',amount:Number(data.amount||amount)/100,raw:data};
 }
 
-async function verifyCallback(d, env) {
+export async function verifyCallback(d, env) {
   const signature=String(d.x_signature||'');
   if(!signature)return {ok:false,valid:false,error:'x_signature diperlukan'};
   if(!env.BILLPLZ_X_SIGNATURE_KEY)return {ok:false,valid:false,error:'BILLPLZ_X_SIGNATURE_KEY belum ditetapkan',configurationRequired:true};
