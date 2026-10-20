@@ -7,7 +7,7 @@ export async function onRequest(context) {
   try {
     const body = await input(request);
     const action = String(body.action || '');
-    if (action === 'health') return json({ ok:true, provider:'Billplz', apiVersion:'v4', configured:!!(env.BILLPLZ_API_KEY && env.BILLPLZ_COLLECTION_ID && env.BILLPLZ_X_SIGNATURE_KEY) });
+    if (action === 'health') return json({ ok:true, provider:'Billplz', apiVersion:'v4', configured:!!((env.BILLPLZ_API_KEY || env.BILLPLZ_SECRET_KEY) && env.BILLPLZ_COLLECTION_ID && env.BILLPLZ_X_SIGNATURE_KEY) });
     if (action === 'createBill') {
       const auth = requirePaymentToken(request, env);
       if (auth) return auth;
@@ -30,7 +30,7 @@ async function input(request) {
 function cors(){return {'access-control-allow-origin':'*','access-control-allow-methods':'GET,POST,OPTIONS','access-control-allow-headers':'Content-Type,X-Reqoo-Payment-Token','cache-control':'no-store'};}
 function json(data,status=200){return new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=UTF-8',...cors()}});}
 function apiBase(env){return String(env.BILLPLZ_ENV || 'sandbox').toLowerCase()==='production' ? PROD_API : SANDBOX_API;}
-function required(env){if(!env.BILLPLZ_API_KEY)return 'BILLPLZ_API_KEY belum ditetapkan';if(!env.BILLPLZ_COLLECTION_ID)return 'BILLPLZ_COLLECTION_ID belum ditetapkan';if(!env.BILLPLZ_X_SIGNATURE_KEY)return 'BILLPLZ_X_SIGNATURE_KEY belum ditetapkan';return '';}
+function required(env){if(!(env.BILLPLZ_API_KEY || env.BILLPLZ_SECRET_KEY))return 'BILLPLZ_API_KEY belum ditetapkan';if(!env.BILLPLZ_COLLECTION_ID)return 'BILLPLZ_COLLECTION_ID belum ditetapkan';if(!env.BILLPLZ_X_SIGNATURE_KEY)return 'BILLPLZ_X_SIGNATURE_KEY belum ditetapkan';return '';}
 function requirePaymentToken(request, env){
   const expected=String(env.REQOO_PAYMENT_TOKEN || '');
   if(!expected)return json({ok:false,error:'PAYMENT_AUTH_NOT_CONFIGURED'},503);
@@ -60,7 +60,7 @@ export async function createBill(d, env) {
   params.set('redirect_url',redirectUrl);
   if(d.mobile)params.set('mobile',String(d.mobile));
   if(d.dueAt)params.set('due_at',String(d.dueAt));
-  const auth=btoa(`${env.BILLPLZ_API_KEY}:`);
+  const auth=btoa(`${(env.BILLPLZ_API_KEY || env.BILLPLZ_SECRET_KEY)}:`);
   const response=await fetch(`${apiBase(env)}/v4/bills`,{method:'POST',headers:{authorization:`Basic ${auth}`,'content-type':'application/x-www-form-urlencoded'},body:params});
   const data=await response.json().catch(()=>({}));
   if(!response.ok)return {ok:false,error:data?.error?.message||data?.error||`Billplz HTTP ${response.status}`,provider:data};
