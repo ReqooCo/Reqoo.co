@@ -92,15 +92,20 @@ async function billplzCallback(d,env){
  if(!verified.valid)return new Response('Invalid signature',{status:401});
  const payment=await env.DB.prepare("SELECT p.*,o.total_minor,o.customer_id FROM payments p JOIN orders o ON o.id=p.order_id WHERE p.provider='billplz' AND p.provider_reference=? LIMIT 1").bind(verified.billId).first();
  if(!payment)return new Response('Unknown bill',{status:404});
- if(Number(d.amount)!==Number(payment.amount_minor))return new Response('Amount mismatch',{status:400});
+ if(!Number.isSafeInteger(Number(d.amount))||Number(d.amount)<=0||Number(d.amount)!==Number(payment.amount_minor)||Number(d.amount)!==Number(payment.total_minor))return new Response('Amount mismatch',{status:400});
  if(String(d.collection_id)!==String(env.BILLPLZ_COLLECTION_ID))return new Response('Collection mismatch',{status:400});
- if(!verified.paid||verified.state!=='paid')return new Response('OK');
+ if(!verified.paid||verified.state!=='paid'){
+  if(payment.status==='pending')await env.DB.prepare("UPDATE payments SET metadata_json=?,updated_at=? WHERE id=? AND status='pending'").bind(JSON.stringify({billId:verified.billId,lastAttempt:S(d.transaction_status)||'unpaid',state:verified.state}),new Date().toISOString(),payment.id).run();
+  return new Response('OK');
+ }
+ if(Number(d.paid_amount)!==Number(payment.amount_minor))return new Response('Paid amount mismatch',{status:400});
+ if(!['pending','paid'].includes(payment.status))return new Response('Payment requires reconciliation',{status:409});
  if(payment.status!=='paid'){
   const t=new Date().toISOString(),meta=JSON.stringify({billId:verified.billId,transactionId:S(d.transaction_id)});
   await env.DB.batch([
    env.DB.prepare("UPDATE payments SET status='paid',paid_at=?,updated_at=?,metadata_json=? WHERE id=? AND status='pending'").bind(t,t,meta,payment.id),
    env.DB.prepare("UPDATE orders SET payment_status='paid',updated_at=? WHERE id=? AND payment_status='pending'").bind(t,payment.order_id),
-   env.DB.prepare('INSERT INTO activity_events(id,customer_id,order_id,event_type,trace_id,metadata_json,created_at) VALUES(?,?,?,?,?,?,?)').bind(`evt_${crypto.randomUUID()}`,payment.customer_id,payment.order_id,'payment.paid',payment.order_id,meta,t)
+   env.DB.prepare('INSERT OR IGNORE INTO activity_events(id,customer_id,order_id,event_type,trace_id,metadata_json,created_at) VALUES(?,?,?,?,?,?,?)').bind(`evt_billplz_paid_${payment.id}`,payment.customer_id,payment.order_id,'payment.paid',payment.order_id,meta,t)
   ]);
  }
  return new Response('OK');
@@ -133,9 +138,11 @@ async function toyyibRedirect(d,env){
 export async function onRequest({request,env}){
   if(request.method==='OPTIONS')return new Response(null,{status:204,headers:C});
   if(!env.DB)return R({ok:false,error:'D1 binding DB tidak dijumpai'},503);
+  const callbackBody=request.clone();
   const d=await data(request),action=S(d.action);
   try{
-    if(action==='billplzCallback'){if(request.method!=='POST')return R({ok:false,error:'Method not allowed'},405);return billplzCallback(d,env);}
+    if(action==='paymentHealth')return R({ok:true,provider:'billplz',environment:String(env.BILLPLZ_ENV||'sandbox').trim().toLowerCase(),configured:!!(env.BILLPLZ_API_KEY&&env.BILLPLZ_COLLECTION_ID&&env.BILLPLZ_X_SIGNATURE_KEY),db:!!env.DB});
+    if(action==='billplzCallback'){if(request.method!=='POST')return R({ok:false,error:'Method not allowed'},405);const type=request.headers.get('content-type')||'';const posted=type.includes('application/json')?await callbackBody.json():Object.fromEntries(new URLSearchParams(await callbackBody.text()));return await billplzCallback(posted,env);}
     if(action==='billplzRedirect')return billplzRedirect(d,env);
     if(action==='toyyibpayCallback')return toyyibCallback(d,env);
     if(action==='toyyibpayRedirect')return toyyibRedirect(d,env);

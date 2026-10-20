@@ -6,7 +6,7 @@ async function proxyApi(request,url){
   const proxied=new Request(target.toString(),request);
   // Keep the save-and-share 303 as a browser navigation so iOS can hand off to WhatsApp.
   if(['/api/s2-live-share','/api/s2-wq-share','/api/s2-morning-share'].includes(url.pathname))return fetch(new Request(proxied,{redirect:'manual'}));
-  return fetch(proxied);
+  return fetch(new Request(proxied,{redirect:'manual'}));
 }
 
 async function injectDocumentPreview(response){

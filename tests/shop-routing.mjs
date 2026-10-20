@@ -38,3 +38,12 @@ assert.match(previewBody,/REQOO\.CO — Document/);
 assert.doesNotMatch(previewBody,/property="og:image"/,'Document links must not force a generic image preview');
 assert.doesNotMatch(previewBody,/property="og:title"/,'Document links should rely on the WhatsApp message rather than a social card');
 console.log('PASS: Shop routing/premium CSS and Botanical Atelier homepage inject correctly.');
+
+const originalFetch=globalThis.fetch;
+try{
+ let forwarded;
+ globalThis.fetch=async request=>{forwarded=request;return new Response(null,{status:302,headers:{Location:'https://shop.reqoo.co/?payment=pending'}})};
+ const result=await worker.fetch(new Request('https://shop.reqoo.co/api/shop?action=billplzCallback',{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded'},body:'id=test&paid=false'}),{});
+ assert.equal(forwarded.url,'https://api.reqoo.co/api/shop?action=billplzCallback');
+ assert.equal(forwarded.method,'POST');assert.equal(await forwarded.text(),'id=test&paid=false');assert.equal(forwarded.redirect,'manual');assert.equal(result.status,302);
+}finally{globalThis.fetch=originalFetch}

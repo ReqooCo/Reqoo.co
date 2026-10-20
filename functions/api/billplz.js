@@ -7,7 +7,7 @@ export async function onRequest(context) {
   try {
     const body = await input(request);
     const action = String(body.action || '');
-    if (action === 'health') return json({ ok:true, provider:'Billplz', apiVersion:'v4', configured:!!((env.BILLPLZ_API_KEY || env.BILLPLZ_SECRET_KEY) && env.BILLPLZ_COLLECTION_ID && env.BILLPLZ_X_SIGNATURE_KEY) });
+    if (action === 'health') return json({ ok:true, provider:'Billplz', apiVersion:'v3', configured:!!((env.BILLPLZ_API_KEY || env.BILLPLZ_SECRET_KEY || env.BILLPLZ_KEY) && env.BILLPLZ_COLLECTION_ID && env.BILLPLZ_X_SIGNATURE_KEY) });
     if (action === 'createBill') {
       const auth = requirePaymentToken(request, env);
       if (auth) return auth;
@@ -29,8 +29,8 @@ async function input(request) {
 
 function cors(){return {'access-control-allow-origin':'*','access-control-allow-methods':'GET,POST,OPTIONS','access-control-allow-headers':'Content-Type,X-Reqoo-Payment-Token','cache-control':'no-store'};}
 function json(data,status=200){return new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=UTF-8',...cors()}});}
-function apiBase(env){return String(env.BILLPLZ_ENV || 'sandbox').toLowerCase()==='production' ? PROD_API : SANDBOX_API;}
-function required(env){if(!(env.BILLPLZ_API_KEY || env.BILLPLZ_SECRET_KEY))return 'BILLPLZ_API_KEY belum ditetapkan';if(!env.BILLPLZ_COLLECTION_ID)return 'BILLPLZ_COLLECTION_ID belum ditetapkan';if(!env.BILLPLZ_X_SIGNATURE_KEY)return 'BILLPLZ_X_SIGNATURE_KEY belum ditetapkan';return '';}
+function apiBase(env){const mode=String(env.BILLPLZ_ENV || 'sandbox').trim().toLowerCase();if(!['production','sandbox'].includes(mode))throw Error('BILLPLZ_ENV_INVALID');return mode==='production'?PROD_API:SANDBOX_API;}
+function required(env){if(!(env.BILLPLZ_API_KEY || env.BILLPLZ_SECRET_KEY || env.BILLPLZ_KEY))return 'BILLPLZ_API_KEY belum ditetapkan';if(!env.BILLPLZ_COLLECTION_ID)return 'BILLPLZ_COLLECTION_ID belum ditetapkan';if(!env.BILLPLZ_X_SIGNATURE_KEY)return 'BILLPLZ_X_SIGNATURE_KEY belum ditetapkan';return '';}
 function requirePaymentToken(request, env){
   const expected=String(env.REQOO_PAYMENT_TOKEN || '');
   if(!expected)return json({ok:false,error:'PAYMENT_AUTH_NOT_CONFIGURED'},503);
@@ -42,12 +42,12 @@ export async function createBill(d, env) {
   const missing=required(env); if(missing)return {ok:false,error:missing,configurationRequired:true};
   const amount=Number.isInteger(d.amountMinor) ? d.amountMinor : Math.round(Number(d.amount||0)*100);
   const name=String(d.name||'').trim(), email=String(d.email||'').trim();
-  if(amount<=0||!name||!email)return {ok:false,error:'amount, name dan email diperlukan'};
+  if(!Number.isSafeInteger(amount)||amount<=0||!name||(!email&&!d.mobile))return {ok:false,error:'amount, name dan email diperlukan'};
   const publicOrigin=String(env.REQOO_PUBLIC_ORIGIN || 'https://reqoo.co').replace(/\/$/,'');
   let origin;
   try { origin=new URL(publicOrigin).origin; } catch { return {ok:false,error:'REQOO_PUBLIC_ORIGIN tidak sah'}; }
   const callbackUrl=String(d.callbackUrl || `${origin}/api/billplz`);
-  if(!['https://reqoo.co','https://shop.reqoo.co'].includes(new URL(callbackUrl).origin))return {ok:false,error:'CALLBACK_URL_NOT_ALLOWED'};
+  try {if(!['https://reqoo.co','https://shop.reqoo.co','https://api.reqoo.co'].includes(new URL(callbackUrl).origin))return {ok:false,error:'CALLBACK_URL_NOT_ALLOWED'};} catch{return {ok:false,error:'CALLBACK_URL_INVALID'};}
   const redirectUrl=String(d.redirectUrl || origin);
   try { if(!['https://reqoo.co','https://shop.reqoo.co'].includes(new URL(redirectUrl).origin))return {ok:false,error:'REDIRECT_URL_NOT_ALLOWED'}; } catch { return {ok:false,error:'REDIRECT_URL_INVALID'}; }
   const params=new URLSearchParams();
@@ -58,12 +58,15 @@ export async function createBill(d, env) {
   params.set('amount',String(amount));
   params.set('callback_url',callbackUrl);
   params.set('redirect_url',redirectUrl);
-  if(d.mobile)params.set('mobile',String(d.mobile));
+  if(d.mobile)params.set('mobile','+'+String(d.mobile).replace(/\D/g,''));
+  if(d.orderRef){params.set('reference_2_label','Order');params.set('reference_2',String(d.orderRef));}
   if(d.dueAt)params.set('due_at',String(d.dueAt));
-  const auth=btoa(`${(env.BILLPLZ_API_KEY || env.BILLPLZ_SECRET_KEY)}:`);
-  const response=await fetch(`${apiBase(env)}/v4/bills`,{method:'POST',headers:{authorization:`Basic ${auth}`,'content-type':'application/x-www-form-urlencoded'},body:params});
+  const auth=btoa(`${(env.BILLPLZ_API_KEY || env.BILLPLZ_SECRET_KEY || env.BILLPLZ_KEY)}:`);
+  const response=await fetch(`${apiBase(env)}/v3/bills`,{method:'POST',headers:{authorization:`Basic ${auth}`,'content-type':'application/x-www-form-urlencoded'},body:params,signal:AbortSignal.timeout(15000)});
   const data=await response.json().catch(()=>({}));
-  if(!response.ok)return {ok:false,error:data?.error?.message||data?.error||`Billplz HTTP ${response.status}`,provider:data};
+  if(!response.ok)return {ok:false,error:`BILLPLZ_HTTP_${response.status}`};
+  let billUrl;try{billUrl=new URL(data.url)}catch{return {ok:false,error:'BILLPLZ_INVALID_RESPONSE'}}
+  if(!data.id||billUrl.origin!==new URL(apiBase(env)).origin||String(data.collection_id)!==String(env.BILLPLZ_COLLECTION_ID)||Number(data.amount)!==amount)return {ok:false,error:'BILLPLZ_INVALID_RESPONSE'};
   return {ok:true,provider:'billplz',billId:data.id,billUrl:data.url,collectionId:data.collection_id,state:data.state||'due',amount:Number(data.amount||amount)/100,raw:data};
 }
 
@@ -71,18 +74,12 @@ export async function verifyCallback(d, env) {
   const signature=String(d.x_signature||'');
   if(!signature)return {ok:false,valid:false,error:'x_signature diperlukan'};
   if(!env.BILLPLZ_X_SIGNATURE_KEY)return {ok:false,valid:false,error:'BILLPLZ_X_SIGNATURE_KEY belum ditetapkan',configurationRequired:true};
-  const pairs=[];
-  for(const [key,value] of Object.entries(d)){
-    if(key==='x_signature')continue;
-    if(value===undefined||value===null)continue;
-    pairs.push([key,String(value)]);
-  }
-  pairs.sort((a,b)=>a[0].toLowerCase().localeCompare(b[0].toLowerCase()));
-  const source=pairs.map(([k,v])=>`${k}${v}`).join('|');
+  const source=Object.entries(d).filter(([key])=>key!=='x_signature').map(([key,value])=>key+String(value??'')).sort((a,b)=>a.toLowerCase()<b.toLowerCase()?-1:a.toLowerCase()>b.toLowerCase()?1:0).join('|');
   const bytes=new TextEncoder().encode(source);
   const secret=new TextEncoder().encode(String(env.BILLPLZ_X_SIGNATURE_KEY));
   const cryptoKey=await crypto.subtle.importKey('raw',secret,{name:'HMAC',hash:'SHA-256'},false,['sign']);
   const digest=new Uint8Array(await crypto.subtle.sign('HMAC',cryptoKey,bytes));
   const computed=Array.from(digest,x=>x.toString(16).padStart(2,'0')).join('');
-  return {ok:true,valid:computed.toLowerCase()===signature.toLowerCase(),billId:String(d.id||''),paid:String(d.paid).toLowerCase()==='true',state:String(d.state||'')};
+  let diff=0;for(let i=0;i<computed.length;i++)diff|=computed.charCodeAt(i)^(signature.toLowerCase().charCodeAt(i)||0);
+  return {ok:true,valid:/^[a-f0-9]{64}$/i.test(signature)&&diff===0,billId:String(d.id||''),paid:String(d.paid).toLowerCase()==='true',state:String(d.state||'')};
 }

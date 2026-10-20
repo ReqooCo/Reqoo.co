@@ -24,8 +24,8 @@ try{
 }finally{globalThis.fetch=originalFetch}
 
 const shop=fs.readFileSync('shop/shop-core-v1.js','utf8'),pksk=fs.readFileSync('sim/pksk/payment-v2/index.html','utf8');
-for(const [source,label] of [[shop,'Shop'],[pksk,'PKSK']]){assert.match(source,/Online Banking/);assert.match(source,/ToyyibPay/);assert.match(source,/QR AB Art|AB Art/);}
-assert.match(shop,/payment:'toyyibpay'/);assert.match(shop,/payment:'manual_qr'/);
+for(const [source,label] of [[shop,'Shop'],[pksk,'PKSK']]){assert.match(source,/Online Banking/);assert.match(source,label==='Shop'?/Billplz/:/ToyyibPay/);assert.match(source,/QR AB Art|AB Art/);}
+assert.match(shop,/payment:'billplz'/);assert.match(shop,/payment:'manual_qr'/);
 assert.match(pksk,/createQR/);assert.match(pksk,/call\('create'/);
 for(const file of ['shop/assets/maybank-qr.jpeg','sim/pksk/payment/assets/maybank-qr.jpeg'])assert.equal(fs.readFileSync(file).subarray(0,3).toString('hex'),'ffd8ff');
 for(const script of pksk.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))new Function(script[1]);
