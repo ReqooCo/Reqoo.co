@@ -37,3 +37,6 @@ Guidance links ACSM 2026 resistance-training review and abdominal-exercise RCT P
 5. Update this handoff with changes, open issues and deployment state before finishing.
 
 At migration: source tests passed previously; new repository tests and deployment are to be checked by the migration turn. No remaining feature request beyond migration and chat continuity. Useful future option if requested: validated private JSON progress export/import.
+
+## UI polish — 2026-10-20
+Preserve the cream/olive design. Added readable instruction text, larger tap targets, consistent spacing, framed progress panel and a mobile timer row above two action buttons. Tiny screens stack progress; mobile navigation remains static. CSS cache version: 20261020-polish1. No workout/state/media logic changes. Migration PR #183 deployed successfully; live HTML, JS, CSS and march GIF matched source. Real iPhone visual acceptance still pending. Run node tests/gerak30.cjs for regression.
