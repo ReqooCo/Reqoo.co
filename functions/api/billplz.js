@@ -47,9 +47,9 @@ export async function createBill(d, env) {
   let origin;
   try { origin=new URL(publicOrigin).origin; } catch { return {ok:false,error:'REQOO_PUBLIC_ORIGIN tidak sah'}; }
   const callbackUrl=String(d.callbackUrl || `${origin}/api/billplz`);
-  if(new URL(callbackUrl).origin!==origin)return {ok:false,error:'CALLBACK_URL_NOT_ALLOWED'};
+  if(!['https://reqoo.co','https://shop.reqoo.co'].includes(new URL(callbackUrl).origin))return {ok:false,error:'CALLBACK_URL_NOT_ALLOWED'};
   const redirectUrl=String(d.redirectUrl || origin);
-  try { if(new URL(redirectUrl).origin!==origin)return {ok:false,error:'REDIRECT_URL_NOT_ALLOWED'}; } catch { return {ok:false,error:'REDIRECT_URL_INVALID'}; }
+  try { if(!['https://reqoo.co','https://shop.reqoo.co'].includes(new URL(redirectUrl).origin))return {ok:false,error:'REDIRECT_URL_NOT_ALLOWED'}; } catch { return {ok:false,error:'REDIRECT_URL_INVALID'}; }
   const params=new URLSearchParams();
   params.set('collection_id',String(env.BILLPLZ_COLLECTION_ID));
   params.set('description',String(d.description||'REQOO Order'));
