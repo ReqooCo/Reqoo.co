@@ -6,7 +6,7 @@ async function proxyApi(request,url){
   const proxied=new Request(target.toString(),request);
   // Keep the save-and-share 303 as a browser navigation so iOS can hand off to WhatsApp.
   if(['/api/s2-live-share','/api/s2-wq-share','/api/s2-morning-share'].includes(url.pathname))return fetch(new Request(proxied,{redirect:'manual'}));
-  return fetch(proxied);
+  return fetch(new Request(proxied,{redirect:'manual'}));
 }
 
 async function injectDocumentPreview(response){
@@ -44,7 +44,7 @@ async function injectShopRuntime(response,force=false){
   const isPublicShop=html.includes('<title>REQOO.CO — Shop</title>'),isAccount=html.includes('<title>REQOO.CO — Akaun</title>');
   const shopUi=isPublicShop?'<link rel="stylesheet" href="/shop/shop-mobile-premium-v1.css?v=1"><link rel="stylesheet" href="/shop/shop-desktop-premium-v1.css?v=1"><link rel="stylesheet" href="/shop/shop-inventory-v1.css?v=1"><link rel="stylesheet" href="/shop/shop-premium-v2.css?v=3">':isAccount?'<link rel="stylesheet" href="/shop/account-premium-v1.css?v=1">':'';
   const withUi=cleaned.replace('</head>',shopUi+'</head>');
-  const runtime=isPublicShop?'<script src="/shop/shop-core-v1.js?v=8"></script><script src="/shop/shop-inventory-v1.js?v=1"></script><script src="/shop/postpurchase-v1.js?v=1"></script>':isAccount?'<script src="/shop/account-premium-v1.js?v=1"></script>':'<script src="/shop/shop-core-v1.js?v=8"></script>';
+  const runtime=isPublicShop?'<script src="/shop/shop-core-v1.js?v=9"></script><script src="/shop/shop-inventory-v1.js?v=1"></script><script src="/shop/postpurchase-v1.js?v=1"></script>':isAccount?'<script src="/shop/account-premium-v1.js?v=1"></script>':'<script src="/shop/shop-core-v1.js?v=9"></script>';
   const body=withUi.replace('</body>',runtime+'</body>');
   const headers=new Headers(response.headers);
   headers.set('cache-control','no-store, no-cache, must-revalidate, max-age=0');

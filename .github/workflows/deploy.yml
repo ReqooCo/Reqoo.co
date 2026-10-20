@@ -16,6 +16,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
 
       - name: Validate final runtime
         shell: bash
@@ -28,6 +31,8 @@ jobs:
           node --check _web_worker.js
           node --check sim/pksk/simulator/js/app.js
           node tests/payment-toyyibpay-flow.mjs
+          node tests/payment-billplz-flow.mjs
+          node tests/billplz-contract.mjs
           node tests/app-cache-isolation.mjs
           test -f api/worker.js
           test -f api/wrangler.jsonc
@@ -46,6 +51,12 @@ jobs:
       - name: Install Wrangler
         shell: bash
         run: npm install --no-save --no-package-lock "wrangler@${WRANGLER_VERSION}"
+
+      - name: Verify existing Billplz Worker secrets (names only)
+        run: node scripts/check-billplz-deployment.mjs
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
       - name: Apply D1 migrations
         shell: bash
