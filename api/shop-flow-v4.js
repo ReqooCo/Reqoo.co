@@ -1,5 +1,6 @@
 import { onRequest as legacy } from './shop-flow-v3.js';
 import {callbackAmountMatches,verifyToyyibCallback} from '../functions/api/toyyibpay-core.js';
+import {verifyCallback as verifyBillplzCallback} from '../functions/api/billplz.js';
 
 const C={
   'access-control-allow-origin':'*',
@@ -86,6 +87,32 @@ async function getOrder(request,d,env){
   const address=await env.DB.prepare('SELECT name,phone,address,shipping_method_id FROM order_addresses WHERE order_id=?').bind(order.id).first();
   return R({ok:true,order:{...order,orderNo:order.order_no,name:order.customer_name||'',total:Number(order.total_minor||0)/100,subtotal:Number(order.subtotal_minor||0)/100,shipping:Number(order.shipping_minor||0)/100,discount:Number(order.discount_minor||0)/100,items,payments,address:address||null}});
 }
+async function billplzCallback(d,env){
+ const verified=await verifyBillplzCallback(d,env);
+ if(!verified.valid)return new Response('Invalid signature',{status:401});
+ const payment=await env.DB.prepare("SELECT p.*,o.total_minor,o.customer_id FROM payments p JOIN orders o ON o.id=p.order_id WHERE p.provider='billplz' AND p.provider_reference=? LIMIT 1").bind(verified.billId).first();
+ if(!payment)return new Response('Unknown bill',{status:404});
+ if(Number(d.amount)!==Number(payment.amount_minor))return new Response('Amount mismatch',{status:400});
+ if(String(d.collection_id)!==String(env.BILLPLZ_COLLECTION_ID))return new Response('Collection mismatch',{status:400});
+ if(!verified.paid||verified.state!=='paid')return new Response('OK');
+ if(payment.status!=='paid'){
+  const t=new Date().toISOString(),meta=JSON.stringify({billId:verified.billId,transactionId:S(d.transaction_id)});
+  await env.DB.batch([
+   env.DB.prepare("UPDATE payments SET status='paid',paid_at=?,updated_at=?,metadata_json=? WHERE id=? AND status='pending'").bind(t,t,meta,payment.id),
+   env.DB.prepare("UPDATE orders SET payment_status='paid',updated_at=? WHERE id=? AND payment_status='pending'").bind(t,payment.order_id),
+   env.DB.prepare('INSERT INTO activity_events(id,customer_id,order_id,event_type,trace_id,metadata_json,created_at) VALUES(?,?,?,?,?,?,?)').bind(`evt_${crypto.randomUUID()}`,payment.customer_id,payment.order_id,'payment.paid',payment.order_id,meta,t)
+  ]);
+ }
+ return new Response('OK');
+}
+async function billplzRedirect(d,env){
+ const billId=S(d['billplz[id]']);
+ const payment=billId?await env.DB.prepare("SELECT p.status,o.order_no FROM payments p JOIN orders o ON o.id=p.order_id WHERE p.provider='billplz' AND p.provider_reference=? LIMIT 1").bind(billId).first():null;
+ const url=new URL('https://shop.reqoo.co/');
+ url.searchParams.set('payment',payment?.status==='paid'?'success':'pending');
+ if(payment?.order_no)url.searchParams.set('order',payment.order_no);
+ return new Response(null,{status:302,headers:{Location:url.toString(),'cache-control':'no-store'}});
+}
 async function toyyibCallback(d,env){
  const verified=verifyToyyibCallback(d,env);if(!verified.valid)return new Response('Invalid hash',{status:401});
  const payment=await env.DB.prepare("SELECT p.*,o.order_no,o.total_minor,o.customer_id FROM payments p JOIN orders o ON o.id=p.order_id WHERE p.provider='toyyibpay' AND (p.provider_reference=? OR o.order_no=?) LIMIT 1").bind(verified.billCode,verified.orderId).first();
@@ -108,6 +135,8 @@ export async function onRequest({request,env}){
   if(!env.DB)return R({ok:false,error:'D1 binding DB tidak dijumpai'},503);
   const d=await data(request),action=S(d.action);
   try{
+    if(action==='billplzCallback'){if(request.method!=='POST')return R({ok:false,error:'Method not allowed'},405);return billplzCallback(d,env);}
+    if(action==='billplzRedirect')return billplzRedirect(d,env);
     if(action==='toyyibpayCallback')return toyyibCallback(d,env);
     if(action==='toyyibpayRedirect')return toyyibRedirect(d,env);
     if(action==='customerSession')return customerSession(d,env);
