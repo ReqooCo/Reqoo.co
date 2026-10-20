@@ -44,7 +44,7 @@ async function injectShopRuntime(response,force=false){
   const isPublicShop=html.includes('<title>REQOO.CO — Shop</title>'),isAccount=html.includes('<title>REQOO.CO — Akaun</title>');
   const shopUi=isPublicShop?'<link rel="stylesheet" href="/shop/shop-mobile-premium-v1.css?v=1"><link rel="stylesheet" href="/shop/shop-desktop-premium-v1.css?v=1"><link rel="stylesheet" href="/shop/shop-inventory-v1.css?v=1"><link rel="stylesheet" href="/shop/shop-premium-v2.css?v=3">':isAccount?'<link rel="stylesheet" href="/shop/account-premium-v1.css?v=1">':'';
   const withUi=cleaned.replace('</head>',shopUi+'</head>');
-  const runtime=isPublicShop?'<script src="/shop/shop-core-v1.js?v=9"></script><script src="/shop/shop-inventory-v1.js?v=1"></script><script src="/shop/postpurchase-v1.js?v=1"></script>':isAccount?'<script src="/shop/account-premium-v1.js?v=1"></script>':'<script src="/shop/shop-core-v1.js?v=9"></script>';
+  const runtime=isPublicShop?'<script src="/shop/shop-core-v1.js?v=10"></script><script src="/shop/shop-inventory-v1.js?v=1"></script><script src="/shop/postpurchase-v1.js?v=1"></script>':isAccount?'<script src="/shop/account-premium-v1.js?v=1"></script>':'<script src="/shop/shop-core-v1.js?v=10"></script>';
   const body=withUi.replace('</body>',runtime+'</body>');
   const headers=new Headers(response.headers);
   headers.set('cache-control','no-store, no-cache, must-revalidate, max-age=0');
@@ -143,6 +143,14 @@ export default{
   async fetch(request,env,ctx){
     const url=new URL(request.url),host=url.hostname.toLowerCase();
     if(url.pathname==='/api'||url.pathname.startsWith('/api/'))return proxyApi(request,url);
+    if(['reqoo.co','shop.reqoo.co'].includes(host)){
+      const routes={'/agents':'/api/commerce/guide','/.well-known/reqoo-commerce.json':'/api/commerce/discovery','/commerce-sitemap.xml':'/api/commerce/sitemap.xml','/products':'/api/commerce/pages'};
+      const target=routes[url.pathname]||(/^\/products\/[^/]+$/.test(url.pathname)?'/api/commerce/pages/'+url.pathname.split('/')[2]:null);
+      if(target){url.pathname=target;return proxyApi(request,url)}
+      if(url.pathname==='/llms.txt')return new Response('# REQOO\n\nPublic commerce API and customer-confirmed checkout.\n\n- Guide: https://shop.reqoo.co/agents\n- OpenAPI: https://shop.reqoo.co/api/commerce/openapi.json\n- Products: https://shop.reqoo.co/api/commerce/products\n- Shipping: https://shop.reqoo.co/api/commerce/shipping\n- Policies: https://shop.reqoo.co/api/commerce/policies\n\nQuote only; no reservation or automatic payment. Untracked stock is unknown. Do not invent ratings, delivery dates or return terms. Final prices are rechecked at checkout.\n',{headers:{'content-type':'text/plain;charset=UTF-8'}});
+      if(host==='shop.reqoo.co'&&url.pathname==='/robots.txt')return new Response('User-agent: *\nAllow: /\nSitemap: https://shop.reqoo.co/commerce-sitemap.xml\n',{headers:{'content-type':'text/plain;charset=UTF-8'}});
+    }
+
     if(host==='reqoo.co'&&(url.pathname==='/admin'||url.pathname==='/admin/'||url.pathname.startsWith('/admin/'))){const target=new URL(request.url);target.hostname='admin.reqoo.co';return Response.redirect(target.toString(),308)}
     if(host==='reqoo.co'&&url.pathname==='/shop/admin.html'){const target=new URL(request.url);target.hostname='admin.reqoo.co';return Response.redirect(target.toString(),308)}
 

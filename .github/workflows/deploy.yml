@@ -33,6 +33,7 @@ jobs:
           node tests/payment-toyyibpay-flow.mjs
           node tests/payment-billplz-flow.mjs
           node tests/billplz-contract.mjs
+          node tests/commerce.mjs
           node tests/app-cache-isolation.mjs
           test -f api/worker.js
           test -f api/wrangler.jsonc
