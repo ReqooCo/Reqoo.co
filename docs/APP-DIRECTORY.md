@@ -7,6 +7,7 @@ The app directory is `/apps/`. It groups existing routes by the user's task with
 | Shop | `/shop/`, `/tumbler/`, `/plaque/`, `/shop/?q=brooch` |
 | Belajar | `/sim/pksk/`, `/sim/pksk/access/`, `/play/` |
 | Kerja | `/lra/`, `/s2/`, `/ot/`, `/ot-share/` |
+| Kecergasan | `/gerak30/` |
 | Studio | `/laser-price/`, `/pricemaster/` |
 | Demo | `/bisnesflow-demo/`, `/sim/industry/` |
 | Admin | `https://admin.reqoo.co/` |
