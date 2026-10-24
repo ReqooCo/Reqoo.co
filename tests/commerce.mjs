@@ -26,7 +26,7 @@ try{
  assert.equal((await call('/quote',{items:[{productId:'p',variantId:'v',qty:1}],shippingId:'invented'})).status,400);
  assert.equal((await call('/products',{action:'createOrder'})).status,405);
  assert.equal((await call('/quote',{x:'x'.repeat(20000)})).status,413);
- const page=await (await call('/pages/p')).text();assert(page.includes('&lt;script&gt;'));assert(!page.includes('<script>alert(1)</script>'));const structured=JSON.parse(page.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);assert.equal(structured['@type'],'ProductGroup');assert.equal(structured.hasVariant.find(v=>v.sku==='unknown').offers.availability,undefined);
+ const page=await (await call('/pages/p')).text();assert(page.includes('&lt;script&gt;'));assert(!page.includes('<script>alert(1)</script>'));const structured=JSON.parse(page.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);assert.equal(structured['@type'],'ProductGroup');assert.match(page,/<meta name="description" content="[^"]+">/);assert.match(page,/<meta name="robots" content="index,follow,max-image-preview:large">/);assert.match(page,/<link rel="canonical" href="https:\/\/shop\.reqoo\.co\/products\/p">/);assert.equal(structured.hasVariant.find(v=>v.sku==='unknown').offers.availability,undefined);
  assert.match(await (await call('/sitemap.xml')).text(),/https:\/\/shop.reqoo.co\/products\/p/);
  for(const table of ['orders','payments','customers'])assert.equal(db.prepare(`SELECT count(*) n FROM ${table}`).get().n,0);
  assert.equal(db.prepare("SELECT stock_qty FROM product_variations WHERE id='v'").get().stock_qty,3);assert.equal(db.prepare("SELECT usage_count FROM promotions WHERE id='promo'").get().usage_count,0);
