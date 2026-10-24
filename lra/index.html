@@ -667,7 +667,7 @@ function initAutoReportTimes(){
    timeAuto[config.id]=true;
    const day=$(config.dateId);
    if(day&&day.value!==localDate())day.value=localDate();
-   setAutoReportHours(true);
+   setAutoReportHours();
    if(config.id==='time')refresh();else refreshPump();
   });
   showTimeMode(config);
