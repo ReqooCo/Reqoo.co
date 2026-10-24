@@ -498,7 +498,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
       <div class="quickTitle"><h2>RWTPS · Intake B</h2><span class="modeChip">PUMP STATUS</span></div>
       <div class="reportMeta">
         <div class="field"><label for="ibDate">Tarikh</label><input id="ibDate" type="date"></div>
-        <div class="field"><label for="ibTime">Masa (24 jam)</label><input id="ibTime" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="HH:mm" aria-label="Masa Intake B dalam format 24 jam"><div class="autoTimeHelp"><small id="ibTimeMode">Auto · ikut jam semasa</small><button id="ibTimeNow" type="button">Masa sekarang</button></div></div>
+        <div class="field"><label for="ibTime">Masa (24 jam)</label><input id="ibTime" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="HH:mm" aria-label="Masa Intake B dalam format 24 jam"><div class="autoTimeHelp"><small id="ibTimeMode">Auto · ikut jam semasa (24h)</small><button id="ibTimeNow" type="button">Masa sekarang</button></div></div>
       </div>
       <div class="pumpGrid">
         <div class="field"><div class="pumpHead"><label for="ibP1">Pump No.1</label><label class="changeTag"><input id="ibC1" type="checkbox">Berubah</label></div><select id="ibP1" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
@@ -515,7 +515,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
       <div class="quickTitle"><h2>RWPS · Intake C</h2><span class="modeChip">PUMP STATUS</span></div>
       <div class="reportMeta">
         <div class="field"><label for="icDate">Tarikh</label><input id="icDate" type="date"></div>
-        <div class="field"><label for="icTime">Masa (24 jam)</label><input id="icTime" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="HH:mm" aria-label="Masa Intake C dalam format 24 jam"><div class="autoTimeHelp"><small id="icTimeMode">Auto · ikut jam semasa</small><button id="icTimeNow" type="button">Masa sekarang</button></div></div>
+        <div class="field"><label for="icTime">Masa (24 jam)</label><input id="icTime" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="HH:mm" aria-label="Masa Intake C dalam format 24 jam"><div class="autoTimeHelp"><small id="icTimeMode">Auto · ikut jam semasa (24h)</small><button id="icTimeNow" type="button">Masa sekarang</button></div></div>
       </div>
       <div class="pumpGrid">
         <div class="field"><div class="pumpHead"><label for="icP1">Pump No.1</label><label class="changeTag"><input id="icC1" type="checkbox">Berubah</label></div><select id="icP1" class="pumpStatus"><option value="Run">Run</option><option value="Stop">Stop</option></select></div>
@@ -537,7 +537,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
       <div class="quickTitle"><h2>TWPS</h2><span class="modeChip">PUMP STATUS</span></div>
       <div class="reportMeta">
         <div class="field"><label for="twpsDate">Tarikh</label><input id="twpsDate" type="date"></div>
-        <div class="field"><label for="twpsTime">Masa (24 jam)</label><input id="twpsTime" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="HH:mm" aria-label="Masa TWPS dalam format 24 jam"><div class="autoTimeHelp"><small id="twpsTimeMode">Auto · ikut jam semasa</small><button id="twpsTimeNow" type="button">Masa sekarang</button></div></div>
+        <div class="field"><label for="twpsTime">Masa (24 jam)</label><input id="twpsTime" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="HH:mm" aria-label="Masa TWPS dalam format 24 jam"><div class="autoTimeHelp"><small id="twpsTimeMode">Auto · ikut jam semasa (24h)</small><button id="twpsTimeNow" type="button">Masa sekarang</button></div></div>
       </div>
       <div class="pumpGrid">
         <div class="field"><div class="pumpHead"><label for="twpsP1">Pump No.1</label><label class="changeTag"><input id="twpsC1" type="checkbox">Berubah</label></div><select id="twpsP1" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
@@ -714,7 +714,7 @@ function twP(){return v('twp')==='50'?{n:2200,p:7.0}:{n:4200,p:7.6}}
 function mld(){let x=n('pondOut');return x===null?null:x*24/1000}
 function clean(x,d=3){return x===null?'':x.toFixed(d).replace(/0+$/,'').replace(/\.$/,'')}
 function fdate(x){let a=(x||'').split('-');return a.length===3?a[2]+'/'+a[1]+'/'+a[0]:x}
-function ftime(x){return String(x||'').replace(':','')+'hrs'}
+function ftime(x){const time=normalize24hTime(x);return time?time.replace(':','')+'hrs':'-'}
 function marker(x){const m=String(x||'').trim().match(/^\(\*+\)$/);return m?m[0]:''}
 function levelVal(x){const z=String(x||'').trim();return z?z+'m':'-'}
 function assignedMarker(problemIds,target,offset=0){const on=problemIds.filter(id=>ck(id));const i=on.indexOf(target);return i<0?'':'('+'*'.repeat(i+1+offset)+')'}
