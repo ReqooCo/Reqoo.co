@@ -249,7 +249,7 @@ const sub=(x,y)=>all(x,y)?x-y:null;
 const mldFromHour=id=>valid(n(id))?n(id)*24/1000:null;
 const dmy=()=>{const p=get('date').split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:'-'};
 const month=()=>{const dt=new Date(get('date')+'T12:00:00Z');return Number.isFinite(dt.valueOf())?new Intl.DateTimeFormat('en-GB',{month:'short',timeZone:'UTC'}).format(dt):'Monthly'};
-const head=(plant=true)=>[].concat(plant?['*LRA Semenyih 2*']:[],[plant?'*_'+dmy()+'_*':'*'+dmy()+'*',plant?'*_0700a.m_*':'*0700a.m*','']);
+const head=(plant=true)=>[].concat(plant?['*LRA Semenyih 2*']:[],[plant?'*_'+dmy()+'_*':'*'+dmy()+'*',plant?'*_0700hrs_*':'*0700hrs*','']);
 const problemA=()=>el('pondAProblem').checked;
 const pondA=()=>metres('pondA')+(problemA()?'*':'');
 const change=(includeUnit=true)=>{const raw=get('pondChange'),x=n('pondChange');return metres('pondC')+' ('+(valid(x)?(raw.startsWith('+')?'+':'')+number(x,2)+(includeUnit?'m':''):'-')+')'};
@@ -499,7 +499,7 @@ async function retrieve(silent=false){
   if(!response.ok||!data.ok)throw Error(data.error||'Ralat database');
   if(!data.report){expectedUpdatedAt='';save();el('onlineStatus').textContent='Belum ada rekod online bagi '+dmy();return}
   const date=new Date(data.report.updatedAt);
-  el('onlineStatus').textContent='Rekod online: '+(Number.isFinite(date.valueOf())?date.toLocaleString('ms-MY'):'-')+' · '+data.report.operator;
+  el('onlineStatus').textContent='Rekod online: '+(Number.isFinite(date.valueOf())?date.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'})+' '+String(date.getHours()).padStart(2,'0')+String(date.getMinutes()).padStart(2,'0')+'hrs':'-')+' · '+data.report.operator;
   if(silent){
    const same=Object.entries(data.report.values||{}).every(([k,v])=>String(formData().values[k]??'')===String(v??''));
    if((expectedUpdatedAt===null&&!restoredMorningDraft)||same){expectedUpdatedAt=data.report.updatedAt;save()}
