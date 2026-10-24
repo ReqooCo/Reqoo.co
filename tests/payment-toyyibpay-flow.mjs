@@ -32,5 +32,5 @@ for(const script of pksk.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))new Func
 const tumbler=fs.readFileSync('tumbler/index.html','utf8');
 const tumblerRuntime=fs.readFileSync('tumbler/tumbler-order.js','utf8');
 assert.match(tumblerRuntime,/action:'createOrder'/);assert.match(tumblerRuntime,/payment:'toyyibpay'/);assert.match(tumblerRuntime,/expectedTotalMinor/);assert.match(tumblerRuntime,/d\.billUrl\|\|d\.payment\?\.billUrl/);assert.doesNotThrow(()=>new Function(tumblerRuntime),'Tumbler payment runtime must parse');
-for(const script of tumbler.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))new Function(script[1]);
+for(const script of tumbler.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)){if(/type=["']application\/ld\+json["']/i.test(script[1])){assert.doesNotThrow(()=>JSON.parse(script[2]));continue;}new Function(script[2]);}
 console.log('PASS: ToyyibPay FPX, callback verification, AB Art QR and both payment choices are wired.');
