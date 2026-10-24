@@ -226,7 +226,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
     <div class="quickTitle"><h2>Report</h2><span class="modeChip">2 JAM SEKALI</span></div>
     <div class="dateTimeGrid">
       <div class="field"><label for="date">Tarikh</label><input id="date" type="date"></div>
-      <div class="field"><label for="time">Masa report</label><select id="time"></select><div class="autoTimeHelp"><small id="opsTimeMode">Auto · ikut jam semasa</small><button id="opsTimeNow" type="button">Masa sekarang</button></div></div>
+      <div class="field"><label for="time">Masa report (24 jam)</label><select id="time"></select><div class="autoTimeHelp"><small id="opsTimeMode">Auto · ikut jam semasa</small><button id="opsTimeNow" type="button">Masa sekarang</button></div></div>
     </div>
   </section>
 
@@ -498,7 +498,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
       <div class="quickTitle"><h2>RWTPS · Intake B</h2><span class="modeChip">PUMP STATUS</span></div>
       <div class="reportMeta">
         <div class="field"><label for="ibDate">Tarikh</label><input id="ibDate" type="date"></div>
-        <div class="field"><label for="ibTime">Masa</label><input id="ibTime" type="time" step="60"><div class="autoTimeHelp"><small id="ibTimeMode">Auto · ikut jam semasa</small><button id="ibTimeNow" type="button">Masa sekarang</button></div></div>
+        <div class="field"><label for="ibTime">Masa (24 jam)</label><input id="ibTime" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="HH:mm" aria-label="Masa Intake B dalam format 24 jam"><div class="autoTimeHelp"><small id="ibTimeMode">Auto · ikut jam semasa</small><button id="ibTimeNow" type="button">Masa sekarang</button></div></div>
       </div>
       <div class="pumpGrid">
         <div class="field"><div class="pumpHead"><label for="ibP1">Pump No.1</label><label class="changeTag"><input id="ibC1" type="checkbox">Berubah</label></div><select id="ibP1" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
@@ -515,7 +515,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
       <div class="quickTitle"><h2>RWPS · Intake C</h2><span class="modeChip">PUMP STATUS</span></div>
       <div class="reportMeta">
         <div class="field"><label for="icDate">Tarikh</label><input id="icDate" type="date"></div>
-        <div class="field"><label for="icTime">Masa</label><input id="icTime" type="time" step="60"><div class="autoTimeHelp"><small id="icTimeMode">Auto · ikut jam semasa</small><button id="icTimeNow" type="button">Masa sekarang</button></div></div>
+        <div class="field"><label for="icTime">Masa (24 jam)</label><input id="icTime" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="HH:mm" aria-label="Masa Intake C dalam format 24 jam"><div class="autoTimeHelp"><small id="icTimeMode">Auto · ikut jam semasa</small><button id="icTimeNow" type="button">Masa sekarang</button></div></div>
       </div>
       <div class="pumpGrid">
         <div class="field"><div class="pumpHead"><label for="icP1">Pump No.1</label><label class="changeTag"><input id="icC1" type="checkbox">Berubah</label></div><select id="icP1" class="pumpStatus"><option value="Run">Run</option><option value="Stop">Stop</option></select></div>
@@ -537,7 +537,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
       <div class="quickTitle"><h2>TWPS</h2><span class="modeChip">PUMP STATUS</span></div>
       <div class="reportMeta">
         <div class="field"><label for="twpsDate">Tarikh</label><input id="twpsDate" type="date"></div>
-        <div class="field"><label for="twpsTime">Masa</label><input id="twpsTime" type="time" step="60"><div class="autoTimeHelp"><small id="twpsTimeMode">Auto · ikut jam semasa</small><button id="twpsTimeNow" type="button">Masa sekarang</button></div></div>
+        <div class="field"><label for="twpsTime">Masa (24 jam)</label><input id="twpsTime" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="HH:mm" aria-label="Masa TWPS dalam format 24 jam"><div class="autoTimeHelp"><small id="twpsTimeMode">Auto · ikut jam semasa</small><button id="twpsTimeNow" type="button">Masa sekarang</button></div></div>
       </div>
       <div class="pumpGrid">
         <div class="field"><div class="pumpHead"><label for="twpsP1">Pump No.1</label><label class="changeTag"><input id="twpsC1" type="checkbox">Berubah</label></div><select id="twpsP1" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
@@ -615,6 +615,22 @@ $('time').innerHTML=slots.map(x=>'<option value="'+x+'">'+x.replace(':','')+'</o
 
 function localDate(){let d=new Date(),o=d.getTimezoneOffset();return new Date(d-o*60000).toISOString().slice(0,10)}
 function localTime(){const d=new Date(),z=n=>String(n).padStart(2,'0');return z(d.getHours())+':'+z(d.getMinutes())}
+function normalize24hTime(v){
+ const raw=String(v??'').trim();
+ if(!raw)return null;
+ const digits=raw.replace(/\s+/g,'');
+ let h,m;
+ if(/^\d{1,2}:\d{1,2}$/.test(digits)){
+  const parts=digits.split(':');h=Number(parts[0]);m=Number(parts[1]);
+ }else if(/^\d{1,2}$/.test(digits)){
+  h=Number(digits);m=0;
+ }else if(/^\d{3,4}$/.test(digits)){
+  const padded=digits.padStart(4,'0');
+  h=Number(padded.slice(0,2));m=Number(padded.slice(2));
+ }else return null;
+ if(h<0||h>23||m<0||m>59)return null;
+ return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+}
 function currentReportHour(d=new Date()){return String(d.getHours()).padStart(2,'0')+':00'}
 function defaultSlot(){return currentReportHour()}
 const timeConfigs=[
@@ -624,6 +640,7 @@ const timeConfigs=[
  {id:'twpsTime',dateId:'twpsDate',mode:'twpsTimeMode',now:'twpsTimeNow'}
 ];
 const timeAuto=Object.fromEntries(timeConfigs.map(x=>[x.id,true]));
+const lastValidTime=Object.fromEntries(timeConfigs.map(x=>[x.id,'']));
 let lastAutoDate=localDate();
 function showTimeMode(config){
  const node=$(config.mode);
@@ -635,7 +652,7 @@ function setAutoReportHours(force=false){
  timeConfigs.forEach(config=>{
   const field=$(config.id),dateField=$(config.dateId);
   if(!field||(dateField?.value&&dateField.value!==today)||(!force&&!timeAuto[config.id]))return;
-  if(field.value!==current){field.value=current;if(config.id==='time')changedOps=true;else changedPump=true}
+  if(field.value!==current){field.value=current;lastValidTime[config.id]=current;if(config.id==='time')changedOps=true;else changedPump=true}
   showTimeMode(config);
  });
  return {changedOps,changedPump};
@@ -662,17 +679,32 @@ function initAutoReportTimes(){
  timeConfigs.forEach(config=>{
   const field=$(config.id),button=$(config.now);
   if(!field||!button)return;
-  field.addEventListener('change',()=>{timeAuto[config.id]=false;showTimeMode(config)});
+  field.addEventListener('change',()=>{
+   if(config.id!=='time'){
+    const normalized=normalize24hTime(field.value);
+    if(!normalized){
+     field.value=lastValidTime[config.id]||currentReportHour();
+     alert('Masa tidak sah. Guna format 24 jam HH:mm, contoh 08:00 atau 19:30. Boleh juga taip 0800 / 1930.');
+     return;
+    }
+    field.value=normalized;
+   }
+   lastValidTime[config.id]=field.value;
+   timeAuto[config.id]=false;showTimeMode(config);
+   if(config.id==='time')refresh();else refreshPump();
+  });
   button.addEventListener('click',()=>{
    timeAuto[config.id]=true;
    const day=$(config.dateId);
    if(day&&day.value!==localDate())day.value=localDate();
    setAutoReportHours();
+   lastValidTime[config.id]=$(config.id).value;
    if(config.id==='time')refresh();else refreshPump();
   });
   showTimeMode(config);
  });
  setAutoReportHours(true);
+ for(const config of timeConfigs)lastValidTime[config.id]=$(config.id)?.value||currentReportHour();
 }
 function v(x){return String($(x)?.value||'').trim()}
 function n(x){const raw=v(x);if(!raw||raw==='-')return null;const z=Number(raw);return Number.isFinite(z)?z:null}
@@ -1263,6 +1295,14 @@ $('waForm').addEventListener('submit',event=>{
  if(!['ops','intakeB','intakeC','twps'].includes(activeTab)){
    event.preventDefault();return;
  }
+ const timeField=activeTab==='ops'?'time':activeTab==='intakeB'?'ibTime':activeTab==='intakeC'?'icTime':'twpsTime';
+ const cleanTime=normalize24hTime(v(timeField));
+ if(!cleanTime){
+  event.preventDefault();
+  alert('Masa laporan tidak sah. Isi HH:mm dalam format 24 jam (contoh 0800 atau 1930).');
+  $(timeField).focus();return;
+ }
+ if($(timeField).value!==cleanTime)$(timeField).value=cleanTime;
  const key=liveAccess();
  if(!key){
    event.preventDefault();
