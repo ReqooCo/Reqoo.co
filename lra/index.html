@@ -1340,6 +1340,6 @@ window.addEventListener('focus',()=>{syncAutoDates();loadLive(true);if(activeTab
 load();initAutoReportTimes();syncMaintenance();refresh();refreshPump();hist();arm();restoreStockDraft();loadLive(true);loadStock(true);setInterval(()=>{syncAutoDates();loadLive(true);if(activeTab==='stock'&&!stockHasPending())loadStock(true)},30000);switchTab(localStorage.getItem('rqLraActiveTab')||'ops');
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
 </script>
-<script src="./morning.js?v=15"></script>
+<script src="./morning.js?v=16"></script>
 </body>
 </html>
