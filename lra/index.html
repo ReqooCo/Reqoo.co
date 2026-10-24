@@ -185,6 +185,11 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .tabs .tabBtn{color:#36594c}.tabSub{opacity:1;color:#496659}
 .problemTag,.changeTag{color:#65553d}.morningStats small{color:#50675d;font-size:11px}
 .mSource{color:#50675d!important}.mMeterResult small{color:#50675d}
+
+.autoTimeHelp{display:flex;flex-wrap:wrap;align-items:center;gap:5px;justify-content:space-between;margin-top:5px}
+.autoTimeHelp small{font-size:10px;color:#56826e;line-height:1.3}
+.autoTimeHelp button{border:1px solid #cadfd3;border-radius:7px;background:#f0f7f2;color:#306d56;padding:5px 7px;font-size:10px;font-weight:750;cursor:pointer}
+.autoTimeHelp button:active{background:#deefe3}
 </style>
 </head>
 <body>
@@ -221,7 +226,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
     <div class="quickTitle"><h2>Report</h2><span class="modeChip">2 JAM SEKALI</span></div>
     <div class="dateTimeGrid">
       <div class="field"><label for="date">Tarikh</label><input id="date" type="date"></div>
-      <div class="field"><label for="time">Masa report</label><select id="time"></select></div>
+      <div class="field"><label for="time">Masa report</label><select id="time"></select><div class="autoTimeHelp"><small id="opsTimeMode">Auto · ikut jam semasa</small><button id="opsTimeNow" type="button">Masa sekarang</button></div></div>
     </div>
   </section>
 
@@ -493,7 +498,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
       <div class="quickTitle"><h2>RWTPS · Intake B</h2><span class="modeChip">PUMP STATUS</span></div>
       <div class="reportMeta">
         <div class="field"><label for="ibDate">Tarikh</label><input id="ibDate" type="date"></div>
-        <div class="field"><label for="ibTime">Masa</label><input id="ibTime" type="time" step="60"></div>
+        <div class="field"><label for="ibTime">Masa</label><input id="ibTime" type="time" step="60"><div class="autoTimeHelp"><small id="ibTimeMode">Auto · ikut jam semasa</small><button id="ibTimeNow" type="button">Masa sekarang</button></div></div>
       </div>
       <div class="pumpGrid">
         <div class="field"><div class="pumpHead"><label for="ibP1">Pump No.1</label><label class="changeTag"><input id="ibC1" type="checkbox">Berubah</label></div><select id="ibP1" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
@@ -510,7 +515,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
       <div class="quickTitle"><h2>RWPS · Intake C</h2><span class="modeChip">PUMP STATUS</span></div>
       <div class="reportMeta">
         <div class="field"><label for="icDate">Tarikh</label><input id="icDate" type="date"></div>
-        <div class="field"><label for="icTime">Masa</label><input id="icTime" type="time" step="60"></div>
+        <div class="field"><label for="icTime">Masa</label><input id="icTime" type="time" step="60"><div class="autoTimeHelp"><small id="icTimeMode">Auto · ikut jam semasa</small><button id="icTimeNow" type="button">Masa sekarang</button></div></div>
       </div>
       <div class="pumpGrid">
         <div class="field"><div class="pumpHead"><label for="icP1">Pump No.1</label><label class="changeTag"><input id="icC1" type="checkbox">Berubah</label></div><select id="icP1" class="pumpStatus"><option value="Run">Run</option><option value="Stop">Stop</option></select></div>
@@ -532,7 +537,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
       <div class="quickTitle"><h2>TWPS</h2><span class="modeChip">PUMP STATUS</span></div>
       <div class="reportMeta">
         <div class="field"><label for="twpsDate">Tarikh</label><input id="twpsDate" type="date"></div>
-        <div class="field"><label for="twpsTime">Masa</label><input id="twpsTime" type="time" step="60"></div>
+        <div class="field"><label for="twpsTime">Masa</label><input id="twpsTime" type="time" step="60"><div class="autoTimeHelp"><small id="twpsTimeMode">Auto · ikut jam semasa</small><button id="twpsTimeNow" type="button">Masa sekarang</button></div></div>
       </div>
       <div class="pumpGrid">
         <div class="field"><div class="pumpHead"><label for="twpsP1">Pump No.1</label><label class="changeTag"><input id="twpsC1" type="checkbox">Berubah</label></div><select id="twpsP1" class="pumpStatus"><option value="Stop">Stop</option><option value="Run">Run</option></select></div>
@@ -605,25 +610,69 @@ const ids=['date','time','river','riverMax','riverProblem','riverNote','rwp','tw
 const pumpIds=['ibDate','ibTime','ibP1','ibP2','ibC1','ibC2','ibPondB','ibPondBProblem','ibPondBNote','ibPondC','ibPondCProblem','ibPondCNote','icDate','icTime','icP1','icP2','icP3','icP4','icC1','icC2','icC3','icC4','icTotal','icRw','icPondB','icPondBProblem','icPondBNote','icPondC','icPondCProblem','icPondCNote','twpsDate','twpsTime','twpsP1','twpsP2','twpsP3','twpsP4','twpsC1','twpsC2','twpsC3','twpsC4','twpsTotal','twpsOut','twpsCwt1','twpsCwt1Problem','twpsCwt1Note','twpsCwt2','twpsCwt2Problem','twpsCwt2Note','twpsDp1','twpsDp1Problem','twpsDp1Note','twpsDp2','twpsDp2Problem','twpsDp2Note'];
 let activeTab='ops';
 
-const slots=['08:00','10:00','12:00','14:00','16:00','18:00','20:00','22:00','00:00','02:00','04:00','06:00','07:00'];
+const slots=Array.from({length:24},(_,h)=>String(h).padStart(2,'0')+':00');
 $('time').innerHTML=slots.map(x=>'<option value="'+x+'">'+x.replace(':','')+'</option>').join('');
 
 function localDate(){let d=new Date(),o=d.getTimezoneOffset();return new Date(d-o*60000).toISOString().slice(0,10)}
 function localTime(){const d=new Date(),z=n=>String(n).padStart(2,'0');return z(d.getHours())+':'+z(d.getMinutes())}
-function defaultSlot(){let h=new Date().getHours(),e=Math.floor(h/2)*2,s=String(e).padStart(2,'0')+':00';return slots.includes(s)?s:'08:00'}
+function currentReportHour(d=new Date()){return String(d.getHours()).padStart(2,'0')+':00'}
+function defaultSlot(){return currentReportHour()}
+const timeConfigs=[
+ {id:'time',dateId:'date',mode:'opsTimeMode',now:'opsTimeNow'},
+ {id:'ibTime',dateId:'ibDate',mode:'ibTimeMode',now:'ibTimeNow'},
+ {id:'icTime',dateId:'icDate',mode:'icTimeMode',now:'icTimeNow'},
+ {id:'twpsTime',dateId:'twpsDate',mode:'twpsTimeMode',now:'twpsTimeNow'}
+];
+const timeAuto=Object.fromEntries(timeConfigs.map(x=>[x.id,true]));
 let lastAutoDate=localDate();
+function showTimeMode(config){
+ const node=$(config.mode);
+ if(node)node.textContent=timeAuto[config.id]?'Auto · ikut jam semasa':'Manual · masa dikunci';
+}
+function setAutoReportHours(force=false){
+ const current=currentReportHour(),today=localDate();
+ let changedOps=false,changedPump=false;
+ timeConfigs.forEach(config=>{
+  const field=$(config.id),dateField=$(config.dateId);
+  if(!field||(dateField?.value&&dateField.value!==today)||(!force&&!timeAuto[config.id]))return;
+  if(field.value!==current){field.value=current;if(config.id==='time')changedOps=true;else changedPump=true}
+  showTimeMode(config);
+ });
+ return {changedOps,changedPump};
+}
 function syncAutoDates(){
  const today=localDate();
- if(today===lastAutoDate)return;
- const dateIds=['date','ibDate','icDate','twpsDate','stockDate'];
- dateIds.forEach(id=>{
-   const el=$(id);
-   if(el && (!el.value || el.value===lastAutoDate)) el.value=today;
+ let datesChanged=false;
+ if(today!==lastAutoDate){
+  const dateIds=['date','ibDate','icDate','twpsDate','stockDate'];
+  dateIds.forEach(id=>{
+   const field=$(id);
+   if(field&&(!field.value||field.value===lastAutoDate)){field.value=today;datesChanged=true}
+  });
+  lastAutoDate=today;
+ }
+ const times=setAutoReportHours();
+ if(datesChanged||times.changedOps)refresh();
+ if(datesChanged||times.changedPump)refreshPump();
+ if(datesChanged&&$('stockPreview'))previewStock();
+}
+function initAutoReportTimes(){
+ // Historical saved report times are never reused as today's default.
+ // Manual overrides remain in place until "Masa sekarang" or a page reload.
+ timeConfigs.forEach(config=>{
+  const field=$(config.id),button=$(config.now);
+  if(!field||!button)return;
+  field.addEventListener('change',()=>{timeAuto[config.id]=false;showTimeMode(config)});
+  button.addEventListener('click',()=>{
+   timeAuto[config.id]=true;
+   const day=$(config.dateId);
+   if(day&&day.value!==localDate())day.value=localDate();
+   setAutoReportHours(true);
+   if(config.id==='time')refresh();else refreshPump();
+  });
+  showTimeMode(config);
  });
- lastAutoDate=today;
- refresh();
- refreshPump();
- if($('stockPreview')) previewStock();
+ setAutoReportHours(true);
 }
 function v(x){return String($(x)?.value||'').trim()}
 function n(x){const raw=v(x);if(!raw||raw==='-')return null;const z=Number(raw);return Number.isFinite(z)?z:null}
@@ -1118,8 +1167,8 @@ function refreshPump(){
 }
 function load(){
  let o=null;try{o=JSON.parse(localStorage.getItem('rqLraPwa')||'null')}catch(e){}
- $('date').value=localDate();$('time').value=(o&&o.time)||defaultSlot();
- if(o)ids.forEach(x=>{if(x==='date'||o[x]===undefined||!$(x))return;if($(x).type==='checkbox')$(x).checked=!!o[x];else $(x).value=o[x]});
+ $('date').value=localDate();$('time').value=defaultSlot();
+ if(o)ids.forEach(x=>{if(x==='date'||x==='time'||o[x]===undefined||!$(x))return;if($(x).type==='checkbox')$(x).checked=!!o[x];else $(x).value=o[x]});
  if(o){
    if(o.riverMaint===true&&o.riverProblem===undefined){
      $('riverProblem').checked=true;
@@ -1131,8 +1180,8 @@ function load(){
  }
  let p=null;try{p=JSON.parse(localStorage.getItem('rqLraPumpDraft')||'null')}catch(e){}
  ['ibDate','icDate','twpsDate'].forEach(x=>$(x).value=localDate());
- ['ibTime','icTime','twpsTime'].forEach(x=>$(x).value=(p&&p[x])||localTime());
- if(p)pumpIds.forEach(x=>{if(['ibDate','icDate','twpsDate'].includes(x)||p[x]===undefined||!$(x))return;if($(x).type==='checkbox')$(x).checked=!!p[x];else $(x).value=p[x]});
+ ['ibTime','icTime','twpsTime'].forEach(x=>$(x).value=currentReportHour());
+ if(p)pumpIds.forEach(x=>{if(['ibDate','icDate','twpsDate','ibTime','icTime','twpsTime'].includes(x)||p[x]===undefined||!$(x))return;if($(x).type==='checkbox')$(x).checked=!!p[x];else $(x).value=p[x]});
  if(p){
    if(p.twpsMaint===true)$('twpsCwt2Problem').checked=true;
    if(p.twpsReason&&!p.twpsCwt2Note)$('twpsCwt2Note').value='Paras tangki no.2 under maintenance ('+p.twpsReason+')';
@@ -1165,6 +1214,7 @@ function switchTab(tab){
  const panel=$('panel-'+tab);
  if(!panel){tab='ops'}
  activeTab=tab;localStorage.setItem('rqLraActiveTab',tab);
+ if(['ops','intakeB','intakeC','twps'].includes(tab))syncAutoDates();
  document.querySelectorAll('.panel').forEach(x=>{const selected=x.id==='panel-'+tab;x.classList.toggle('active',selected);x.setAttribute('role','tabpanel');x.setAttribute('aria-hidden',String(!selected))});
  document.querySelectorAll('.tabBtn').forEach(x=>{const selected=x.dataset.tab===tab;x.classList.toggle('active',selected);x.setAttribute('aria-selected',String(selected));x.tabIndex=selected?0:-1});
  $('panel-'+tab).classList.add('active');
@@ -1247,7 +1297,7 @@ if(standalone())$('installBtn').style.display='none';
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){syncAutoDates();loadLive(true);if(activeTab==='stock'&&!stockHasPending())loadStock(true)}});
 window.addEventListener('focus',()=>{syncAutoDates();loadLive(true);if(activeTab==='stock'&&!stockHasPending())loadStock(true)});
 
-load();syncMaintenance();refresh();refreshPump();hist();arm();restoreStockDraft();loadLive(true);loadStock(true);setInterval(()=>{loadLive(true);if(activeTab==='stock'&&!stockHasPending())loadStock(true)},30000);switchTab(localStorage.getItem('rqLraActiveTab')||'ops');
+load();initAutoReportTimes();syncMaintenance();refresh();refreshPump();hist();arm();restoreStockDraft();loadLive(true);loadStock(true);setInterval(()=>{syncAutoDates();loadLive(true);if(activeTab==='stock'&&!stockHasPending())loadStock(true)},30000);switchTab(localStorage.getItem('rqLraActiveTab')||'ops');
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
 </script>
 <script src="./morning.js?v=15"></script>
