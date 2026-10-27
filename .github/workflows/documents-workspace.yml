@@ -5,6 +5,12 @@ on:
       - 'admin/documents*'
       - 'admin/document-*'
       - 'admin/admin-*'
+      - 'admin/sales-workspace.js'
+      - 'admin/manage.html'
+      - 'admin/overview.js'
+      - 'admin/finance.html'
+      - 'migrations/0012_order_handoffs.sql'
+      - 'tests/admin-sales*'
       - '_web_worker.js'
       - 'functions/_middleware.js'
       - 'tests/admin-theme-browser.cjs'
@@ -40,6 +46,7 @@ jobs:
           node tests/admin-orders-documents-scalability.mjs
           node tests/admin-payment-ledger-consistency.mjs
           node tests/admin-business-workflows.mjs
+          node tests/admin-sales-workspace.mjs
       - name: Install browser test dependencies
         run: |
           npm install --no-save --no-package-lock playwright@1.62.1 jsdom@30.0.1
@@ -52,6 +59,7 @@ jobs:
           node tests/admin-documents-browser.cjs
           node tests/admin-theme-browser.cjs
           node tests/admin-business-browser.cjs
+          node tests/admin-sales-browser.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
