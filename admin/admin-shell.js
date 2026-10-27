@@ -2,9 +2,9 @@
 'use strict';
 if(!document.querySelector('link[href*="/admin/admin-flow.css"]')){const l=document.createElement('link');l.rel='stylesheet';l.href='/admin/admin-flow.css?v=2';document.head.appendChild(l)}
 if(!document.querySelector('link[href*="/admin/admin-theme.css"]')){const l=document.createElement('link');l.rel='stylesheet';l.href='/admin/admin-theme.css?v=2';document.head.appendChild(l)}
-if(!document.querySelector('script[src*="/admin/admin-business.js"]')){const s=document.createElement('script');s.src='/admin/admin-business.js?v=1';document.body.appendChild(s)}
+if(!document.querySelector('script[src*="/admin/admin-business.js"]')){const s=document.createElement('script');s.src='/admin/admin-business.js?v=2';document.body.appendChild(s)}
 const helper=document.createElement('script');helper.src='/admin/admin-simple.js?v=1';document.body.appendChild(helper);
-const simpleStyle=document.createElement('link');simpleStyle.rel='stylesheet';simpleStyle.href='/admin/admin-simple.css?v=1';document.head.appendChild(simpleStyle);
+const simpleStyle=document.createElement('link');simpleStyle.rel='stylesheet';simpleStyle.href='/admin/admin-simple.css?v=2';document.head.appendChild(simpleStyle);
 const path=location.pathname,hash=location.hash;
 const isShop=/\/shop\/admin\.html$/i.test(path),isOverview=/\/admin\/?$/i.test(path),isOrders=/\/admin\/orders\.html$/i.test(path),isProduction=/\/admin\/production\.html$/i.test(path),isProducts=/\/admin\/products\.html$/i.test(path),isDocuments=/\/admin\/documents\.html$/i.test(path),isCustomers=/\/admin\/customers\.html$/i.test(path),isFinance=/\/admin\/finance\.html$/i.test(path);
 document.body.classList.add('rq-admin-shell');

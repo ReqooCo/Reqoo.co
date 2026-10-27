@@ -5,3 +5,44 @@
 .rqSalesTabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.rqSalesTabs a{padding:9px 12px;border:1px solid #d5d5d0;border-radius:8px;color:inherit;text-decoration:none}.rqSalesTabs a[aria-current=page]{background:#24272c;color:white}
 .rqWorkCard{padding:16px;margin:12px 0;border:1px solid #deded9;border-radius:12px;background:#fff}.rqWorkCard h3{margin:0 0 12px}.rqWorkActions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.rqWorkItems{display:grid;gap:10px}.rqWorkItem{padding:12px;background:#f7f7f5;border-radius:8px}.rqWorkItem p{white-space:pre-wrap;margin:6px 0}.rqWorkCard label{display:block;margin:10px 0}.rqWorkCard input,.rqWorkCard select,.rqWorkCard textarea{display:block;width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;font:inherit}.rqWorkBadges{display:flex;gap:8px;flex-wrap:wrap}.rqWorkBadges span{padding:6px 10px;border-radius:20px;background:#f1f1ed}.rqWorkError{color:#a12b22}.rqSalesPage .rqDocsStats,.rqSalesPage #rqMonthlyPanel,.rqSalesPage #toggleOrderDrawer{display:none!important}.rqSalesPage .rqDocsHead{margin-bottom:12px}.rqSalesPage .rqDocsEyebrow{display:none}.rqSalesPage .rqWorkspaceDocs{display:none}.rqSalesPage .rqWorkspaceRow{grid-template-columns:minmax(0,1fr) minmax(120px,.5fr) auto}.rqSalesPage .rqDocDrawerEyebrow{display:none}.rqSalesPage .rqDocDrawer{width:min(820px,100vw)}
 @media(max-width:650px){.rqManageGrid{grid-template-columns:1fr}.rqSalesPage .rqWorkspaceRow{grid-template-columns:1fr auto}.rqSalesPage .rqWorkspaceAction{grid-column:1/-1}.rqSalesPage .rqDocDrawerMoney{gap:6px}.rqSalesPage .rqDocDrawerMoney b{font-size:15px;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}.rqInfo>span{max-width:min(280px,70vw);min-width:0}}
+
+/* Readable sales controls; printed documents retain their own typography. */
+.rqSalesPage .rqDocDrawer{font-size:16px;line-height:1.5}
+.rqSalesPage .rqDocDrawerHead h2{font-size:24px}
+.rqSalesPage .rqDocDrawerHead p,.rqSalesPage .rqDocDrawerCustomer p,.rqSalesPage .rqDocChainText span,.rqSalesPage .rqPaymentEmpty,.rqSalesPage .rqDocDrawerDue{font-size:14px}
+.rqSalesPage .rqDocDrawerCustomer h3{font-size:18px}
+.rqSalesPage .rqDocDrawerMoney span{font-size:13px;letter-spacing:0;color:#555}
+.rqSalesPage .rqDocDrawerMoney b{font-size:20px;white-space:normal;overflow:visible;overflow-wrap:anywhere}
+.rqSalesPage .rqDocChainText b{font-size:16px;white-space:normal;overflow:visible}
+.rqSalesPage .rqDocChainText span{white-space:normal}
+.rqSalesPage .rqDocMiniStatus,.rqSalesPage .rqDocDrawerOrder{font-size:12px;letter-spacing:0}
+.rqSalesPage .rqDocMiniBtn,.rqSalesPage .rqWorkspaceTabs button,.rqSalesPage .rqDocDrawer .btn{font-size:16px;min-height:44px}
+.rqSalesPage .rqQuoteEdit{margin:0 0 14px}
+.rqSalesPage #rqQuoteComposer input,.rqSalesPage #rqQuoteComposer select,.rqSalesPage #rqQuoteComposer textarea{font-size:16px}
+.rqSalesPage #rqQuoteComposer label{font-size:14px}
+@media(max-width:650px){
+ .rqSalesPage .rqDocChainItem{grid-template-columns:36px minmax(0,1fr);gap:10px}
+ .rqSalesPage .rqDocChainActions{grid-column:2;justify-content:flex-start;flex-wrap:wrap}
+ .rqSalesPage .rqDocDrawerCustomerTop{flex-wrap:wrap;gap:10px}
+ .rqSalesPage .rqDocDrawerMoney{grid-template-columns:1fr}
+ .rqSalesPage .rqDocDrawerMoney>div{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:10px 12px}
+ .rqSalesPage .rqDocDrawerMoney span{margin:0}
+ .rqSalesPage .rqDocDrawerMoney b{font-size:22px;text-align:right}
+}
+
+.rqSalesPage .rqWorkspaceRow{align-items:start}
+.rqSalesPage .rqWorkspaceIdentity h3{font-size:19px;margin:0 0 5px}
+.rqSalesPage .rqWorkspaceIdentity>b{font-size:16px;line-height:1.4;display:block;overflow-wrap:anywhere}
+.rqSalesPage .rqWorkspaceIdentity small,.rqSalesPage .rqWorkspaceAmounts small{font-size:14px;line-height:1.5}
+.rqSalesPage .rqWorkspaceAmounts>b{font-size:22px;line-height:1.3}
+.rqSalesPage[data-sales-view=quotations] .rqWorkspaceAmounts small{display:none}
+@media(max-width:650px){
+ .rqSalesPage .rqWorkspaceRow{grid-template-columns:minmax(0,1fr);gap:12px;padding:18px 14px}
+ .rqSalesPage .rqWorkspaceIdentity,.rqSalesPage .rqWorkspaceAmounts,.rqSalesPage .rqWorkspaceAction{grid-column:1;grid-row:auto}
+ .rqSalesPage .rqWorkspaceAction{flex-direction:row;align-items:center;justify-content:flex-start;gap:8px;flex-wrap:wrap}
+ .rqSalesPage .rqWorkspaceAction .rqDocBadge{margin-right:auto;font-size:12px}
+ .rqSalesPage .rqWorkspaceAction .btn{font-size:15px!important;min-height:44px;padding:10px 14px}
+ .rqSalesPage .rqWorkspaceAction .danger{background:transparent;border-color:#d9d2c7;color:#62675f}
+ .rqSalesPage .rqWorkspaceAmounts{display:flex;flex-wrap:wrap;gap:4px 14px}
+ .rqSalesPage .rqWorkspaceAmounts>b{flex-basis:100%}
+}
