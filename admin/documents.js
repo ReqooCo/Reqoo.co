@@ -120,7 +120,7 @@ function showDocument(){
   $('docEdit').style.display=canEdit?'':'none';
   $('docConvert').style.display=canConvert?'':'none';
   $('docDepositInvoice').style.display=canDepositInvoice?'':'none';
-  if(canDepositInvoice)$('docDepositInvoice').textContent=(savedFor(meta.convertedOrderId,'invoice')?'Open':'Create')+' Deposit Invoice '+pct+'%';
+  if(canDepositInvoice)$('docDepositInvoice').textContent='Lihat invois';
   $('docModal').classList.add('open');$('docModal').setAttribute('aria-hidden','false');
 }
 function customerBlock(doc,meta){
@@ -183,9 +183,10 @@ async function createDepositInvoice(){
 async function convertActiveQuote(){
   if(!activeDoc||activeDoc.type!=='quotation')return;
   const quote=activeDoc,meta=quoteMeta(quote),pct=Math.max(0,Math.min(100,Number(meta.depositPercent||0))),depositText=pct>0&&pct<100?' dan terus sediakan Invoice Deposit '+pct+'%':'';
-  if(!confirm(`Convert ${quote.number} kepada order${depositText}? Harga dan item quotation akan dikunci.`))return;
-  const btn=$('docConvert'),old=btn.textContent;btn.disabled=true;btn.textContent='Converting…';
+  if(!confirm(`Pelanggan telah setuju dengan ${quote.number}? Jadikan pesanan dengan item dan harga ini.`))return;
+  const btn=$('docConvert'),old=btn.textContent;btn.disabled=true;btn.textContent='Menyimpan…';
   try{
+    if(!meta.convertedOrderId&&quote.status!=='accepted')await api('updateCustomQuotationStatus',{documentId:quote.id,status:'accepted'},'POST');
     const d=await api('convertCustomQuotationToOrder',{documentId:quote.id},'POST');
     const convertedQuote=d.document;replaceDocument(convertedQuote);
     const orderId=d.order?.id||quoteMeta(convertedQuote).convertedOrderId,ref=d.order?.order_no||orderId||'order baru';
