@@ -40,7 +40,7 @@ else if(u.pathname==='/api/admin-business'){
 }else b={ok:true,hero:{}};
 return route.fulfill({json:b})}
 const file=path.join(root,u.pathname==='/admin/'?'admin/index.html':u.pathname);if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
-if(file.endsWith('.html'))return route.fulfill({contentType:'text/html',body:fs.readFileSync(file,'utf8').replace('</head>','<link rel="stylesheet" href="/admin/admin-base.css?v=1"><link rel="stylesheet" href="/admin/admin-flow.css?v=2"><link rel="stylesheet" href="/admin/admin-theme.css?v=2"></head>').replace('</body>','<script src="/admin/admin-shell.js?v=5"></script></body>')});
+if(file.endsWith('.html'))return route.fulfill({contentType:'text/html',body:fs.readFileSync(file,'utf8').replace('</head>','<link rel="stylesheet" href="/admin/admin-base.css?v=1"><link rel="stylesheet" href="/admin/admin-flow.css?v=2"><link rel="stylesheet" href="/admin/admin-theme.css?v=2"></head>').replace('</body>','<script src="/admin/admin-shell.js?v=6"></script></body>')});
 return route.fulfill({path:file,contentType:file.endsWith('.css')?'text/css':file.endsWith('.js')?'application/javascript':'text/plain'});
 });
 const p=await context.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));p.on('dialog',d=>d.accept());
