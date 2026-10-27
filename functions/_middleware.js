@@ -79,7 +79,7 @@ export async function onRequest(context){
     if(!type.includes('text/html'))return response;
     return new HTMLRewriter()
       .on('head',{element(el){el.prepend('<link rel="stylesheet" href="/admin/admin-base.css?v=1">',{html:true});el.append('<link rel="stylesheet" href="/admin/admin-flow.css?v=2"><link rel="stylesheet" href="/admin/admin-theme.css?v=2">',{html:true})}})
-      .on('body',{element(el){el.append('<script src="/admin/admin-shell.js?v=5"></script>',{html:true})}})
+      .on('body',{element(el){el.append('<script src="/admin/admin-shell.js?v=6"></script>',{html:true})}})
       .transform(response);
   }
 

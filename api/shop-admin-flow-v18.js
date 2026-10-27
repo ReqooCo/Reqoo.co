@@ -22,6 +22,7 @@ async function ensure(env){
   let pending=ENSURE_CACHE.get(db);if(pending)return pending;
   pending=db.batch([
     db.prepare("CREATE TABLE IF NOT EXISTS reqoo_payments(id TEXT PRIMARY KEY,order_id TEXT NOT NULL,invoice_document_id TEXT,receipt_number TEXT NOT NULL UNIQUE,amount_minor INTEGER NOT NULL,payment_type TEXT NOT NULL CHECK(payment_type IN ('deposit','partial','final','full')),method TEXT NOT NULL,reference TEXT,note TEXT,paid_at TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'confirmed',share_token TEXT NOT NULL UNIQUE,created_at TEXT NOT NULL,updated_at TEXT NOT NULL)"),
+    db.prepare('CREATE TABLE IF NOT EXISTS reqoo_order_handoffs(order_id TEXT PRIMARY KEY,delivered_at TEXT NOT NULL,actor_name TEXT NOT NULL)'),
     db.prepare('CREATE TABLE IF NOT EXISTS reqoo_workspace_archives(order_id TEXT PRIMARY KEY,reference TEXT NOT NULL,reason TEXT NOT NULL,actor_name TEXT NOT NULL,created_at TEXT NOT NULL)'),
     db.prepare('CREATE INDEX IF NOT EXISTS idx_reqoo_payments_order ON reqoo_payments(order_id,paid_at)'),
     db.prepare('CREATE INDEX IF NOT EXISTS idx_reqoo_payments_invoice ON reqoo_payments(invoice_document_id,paid_at)'),
@@ -130,20 +131,28 @@ async function recordPayment(d,request,env){
   await ensure(env);
   const key=S(d.orderId||d.orderNo||d.orderRef);if(!key)return J({ok:false,error:'Order diperlukan.'},400);
   const o=await orderByKey(key,env);if(!o)return J({ok:false,error:'Order tidak dijumpai.'},404);
-  const invoice=await ensureInvoice(request,o,env),before=await summaryForOrder(o,env),amount=money(d.amountMinor);
+  const requestId=S(d.requestId);if(requestId&&!/^[a-f0-9-]{36}$/i.test(requestId))return J({ok:false,error:'Rujukan permintaan tidak sah.'},400);
+  const amount=money(d.amountMinor),id=requestId?'pay_req_'+o.id+'_'+requestId:ID('pay');
+  const result=async(payment)=>{const fresh=await orderByKey(o.id,env),summary=await summaryForOrder(fresh,env);return J({ok:true,payment,summary,invoice:{id:payment.invoice_document_id,number:summary.invoiceNumber,totalMinor:summary.totalMinor,paidMinor:summary.paidMinor,balanceMinor:summary.balanceMinor,paymentStatus:summary.paymentStatus}})};
+  const previous=requestId?await env.DB.prepare('SELECT * FROM reqoo_payments WHERE id=?').bind(id).first():null;
+  if(previous){if(previous.status!=='confirmed'||Number(previous.amount_minor)!==amount||S(previous.method)!==S(d.method||'bank_transfer')||S(previous.reference)!==S(d.reference))return J({ok:false,error:'Permintaan ini telah digunakan. Buka semula borang bayaran.'},409);return result(previous)}
+  if(o.fulfillment_status==='cancelled'||['cancelled','refunded'].includes(o.payment_status))return J({ok:false,error:'Pesanan ini dibatalkan.'},409);
+  const invoice=await ensureInvoice(request,o,env),before=await summaryForOrder(o,env);
   if(amount<=0)return J({ok:false,error:'Amaun bayaran mesti lebih daripada RM0.00.'},400);
   if(before.balanceMinor<=0)return J({ok:false,error:'Invoice telah selesai dibayar.'},409);
-  if(amount>before.balanceMinor)return J({ok:false,error:`Amaun melebihi baki semasa.`},409);
-  const now=NOW(),paidAt=S(d.paidAt)||now,type=normalizeType(d.paymentType,before.paidMinor,amount,before.totalMinor,before.balanceMinor),method=S(d.method||'bank_transfer').slice(0,80)||'bank_transfer',reference=S(d.reference).slice(0,160),note=S(d.note).slice(0,1000),receiptNumber=await nextReceiptNumber(env),id=ID('pay'),shareToken=`${crypto.randomUUID()}${crypto.randomUUID().replaceAll('-','')}`;
-  const paidAfter=before.paidMinor+amount,balanceAfter=Math.max(0,before.totalMinor-paidAfter),status=balanceAfter===0?'paid':'partial';
-  const stmts=[
-    env.DB.prepare('INSERT INTO reqoo_payments(id,order_id,invoice_document_id,receipt_number,amount_minor,payment_type,method,reference,note,paid_at,status,share_token,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(id,o.id,invoice.id,receiptNumber,amount,type,method,reference||null,note||null,paidAt,'confirmed',shareToken,now,now),
-    env.DB.prepare('UPDATE orders SET payment_status=?,updated_at=? WHERE id=?').bind(status,now,o.id),
-    env.DB.prepare("UPDATE reqoo_documents SET payment_status=?,status=CASE WHEN type='invoice' THEN ? ELSE status END,updated_at=? WHERE order_id=?").bind(status,status,now,o.id)
-  ];
-  await env.DB.batch(stmts);
-  const fresh=await orderByKey(o.id,env),summary=await summaryForOrder(fresh,env);
-  return J({ok:true,payment:{id,order_id:o.id,invoice_document_id:invoice.id,receipt_number:receiptNumber,amount_minor:amount,payment_type:type,method,reference,note,paid_at:paidAt,status:'confirmed',share_token:shareToken},invoice:{id:invoice.id,number:invoice.number,totalMinor:summary.totalMinor,paidMinor:summary.paidMinor,balanceMinor:summary.balanceMinor,paymentStatus:summary.paymentStatus},summary});
+  if(amount>before.balanceMinor)return J({ok:false,error:'Amaun melebihi baki semasa.'},409);
+  const now=NOW(),paidAt=S(d.paidAt)||now,type=normalizeType(d.paymentType,before.paidMinor,amount,before.totalMinor,before.balanceMinor),method=S(d.method||'bank_transfer').slice(0,80)||'bank_transfer',reference=S(d.reference).slice(0,160),note=S(d.note).slice(0,1000),receiptNumber=await nextReceiptNumber(env),shareToken=`${crypto.randomUUID()}${crypto.randomUUID().replaceAll('-','')}`;
+  // Guard the balance in the INSERT itself, inside the D1 batch. Concurrent
+  // writers cannot both spend the same outstanding balance.
+  const sum="(SELECT COALESCE(SUM(amount_minor),0) FROM reqoo_payments WHERE order_id=? AND status='confirmed')";
+  await env.DB.batch([
+    env.DB.prepare("INSERT OR IGNORE INTO reqoo_payments(id,order_id,invoice_document_id,receipt_number,amount_minor,payment_type,method,reference,note,paid_at,status,share_token,created_at,updated_at) SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,? WHERE "+sum+"+?<=? AND EXISTS(SELECT 1 FROM orders WHERE id=? AND fulfillment_status!='cancelled' AND payment_status NOT IN ('cancelled','refunded'))").bind(id,o.id,invoice.id,receiptNumber,amount,type,method,reference||null,note||null,paidAt,'confirmed',shareToken,now,now,o.id,amount,before.totalMinor,o.id),
+    env.DB.prepare("UPDATE orders SET payment_status=CASE WHEN "+sum+">=? THEN 'paid' ELSE 'partial' END,updated_at=? WHERE id=? AND EXISTS(SELECT 1 FROM reqoo_payments WHERE id=?)").bind(o.id,before.totalMinor,now,o.id,id),
+    env.DB.prepare("UPDATE reqoo_documents SET payment_status=(SELECT payment_status FROM orders WHERE id=?),status=CASE WHEN type='invoice' THEN (SELECT payment_status FROM orders WHERE id=?) ELSE status END,updated_at=? WHERE order_id=? AND EXISTS(SELECT 1 FROM reqoo_payments WHERE id=?)").bind(o.id,o.id,now,o.id,id)
+  ]);
+  const payment=await env.DB.prepare('SELECT * FROM reqoo_payments WHERE id=?').bind(id).first();
+  if(!payment)return J({ok:false,error:'Baki berubah. Muat semula sebelum merekod bayaran.'},409);
+  return result(payment);
 }
 async function correctPayment(d,env){
   await ensure(env);
@@ -408,13 +417,15 @@ async function documentsFinanceDashboard(d,env){
   }
   return J({ok:true,filter,query:q,stats:{all:Number(stats?.all_count||0),outstandingCount:Number(stats?.outstanding_count||0),outstandingMinor:Number(stats?.outstanding_minor||0),partialCount:Number(stats?.partial_count||0),dueSoonCount:Number(stats?.due_soon_count||0),dueSoonMinor:Number(stats?.due_soon_minor||0),overdueCount:Number(stats?.overdue_count||0),overdueMinor:Number(stats?.overdue_minor||0),paidCount:Number(stats?.paid_count||0)},invoices,invoiceTotal,invoiceOffset:offset,invoiceLimit:limit,invoicesHasMore,summaries,payments,paymentOffset,paymentLimit,paymentsHasMore});
 }
-const WORKSPACES_CTE="WITH doc_rollup AS (SELECT order_id,COUNT(*) doc_count,MAX(customer_name) customer_name,MAX(customer_phone) customer_phone,MAX(created_at) latest_document,MAX(CASE WHEN type='quotation' THEN number END) quote_number,MAX(CASE WHEN type='quotation' THEN total_minor END) quote_total,MAX(CASE WHEN type='invoice' THEN number END) invoice_number,MAX(CASE WHEN type='invoice' THEN total_minor END) invoice_total,SUM(CASE WHEN type='quotation' THEN 1 ELSE 0 END) quotation_count,SUM(CASE WHEN type='invoice' THEN 1 ELSE 0 END) invoice_count,SUM(CASE WHEN type='delivery_order' THEN 1 ELSE 0 END) delivery_count,SUM(CASE WHEN type='receipt' AND NOT EXISTS(SELECT 1 FROM reqoo_payments p WHERE p.status='confirmed' AND p.receipt_number=reqoo_documents.number) THEN 1 ELSE 0 END) legacy_receipt_count FROM reqoo_documents GROUP BY order_id), pay_rollup AS (SELECT order_id,SUM(amount_minor) paid_minor,COUNT(*) receipt_count,MAX(created_at) latest_payment FROM reqoo_payments WHERE status='confirmed' GROUP BY order_id), keys AS (SELECT id order_id FROM orders UNION SELECT order_id FROM reqoo_documents UNION SELECT order_id FROM reqoo_payments WHERE status='confirmed'), grouped AS (SELECT k.order_id,COALESCE(o.order_no,d.quote_number,d.invoice_number,k.order_id) reference,COALESCE(c.name,d.customer_name,'Pelanggan') customer_name,COALESCE(c.phone,d.customer_phone,'') customer_phone,o.fulfillment_status,COALESCE(d.quotation_count,0) quotation_count,COALESCE(d.invoice_count,0) invoice_count,COALESCE(d.delivery_count,0) delivery_count,COALESCE(d.legacy_receipt_count,0)+COALESCE(p.receipt_count,0) receipt_count,COALESCE(d.invoice_total,d.quote_total,o.total_minor,0) total_minor,COALESCE(p.paid_minor,CASE WHEN o.payment_status='paid' THEN COALESCE(d.invoice_total,o.total_minor,0) ELSE 0 END) raw_paid_minor,MAX(COALESCE(o.updated_at,''),COALESCE(d.latest_document,''),COALESCE(p.latest_payment,'')) updated_at FROM keys k LEFT JOIN orders o ON o.id=k.order_id LEFT JOIN customers c ON c.id=o.customer_id LEFT JOIN doc_rollup d ON d.order_id=k.order_id LEFT JOIN pay_rollup p ON p.order_id=k.order_id), workspaces AS (SELECT *,MIN(total_minor,raw_paid_minor) paid_minor,MAX(0,total_minor-raw_paid_minor) balance_minor,CASE WHEN fulfillment_status='cancelled' THEN 'cancelled' WHEN invoice_count>0 AND total_minor>0 AND raw_paid_minor>=total_minor THEN 'paid' WHEN raw_paid_minor>0 THEN 'partial' WHEN invoice_count>0 THEN 'invoice' WHEN quotation_count>0 THEN 'quotation' ELSE 'order' END stage FROM grouped) ";
+const WORKSPACES_CTE="WITH doc_rollup AS (SELECT order_id,COUNT(*) doc_count,MAX(customer_name) customer_name,MAX(customer_phone) customer_phone,MAX(created_at) latest_document,MAX(CASE WHEN type='quotation' THEN number END) quote_number,MAX(CASE WHEN type='quotation' THEN total_minor END) quote_total,MAX(CASE WHEN type='invoice' THEN number END) invoice_number,MAX(CASE WHEN type='invoice' THEN total_minor END) invoice_total,SUM(CASE WHEN type='quotation' THEN 1 ELSE 0 END) quotation_count,SUM(CASE WHEN type='invoice' THEN 1 ELSE 0 END) invoice_count,SUM(CASE WHEN type='delivery_order' THEN 1 ELSE 0 END) delivery_count,SUM(CASE WHEN type='receipt' AND NOT EXISTS(SELECT 1 FROM reqoo_payments p WHERE p.status='confirmed' AND p.receipt_number=reqoo_documents.number) THEN 1 ELSE 0 END) legacy_receipt_count FROM reqoo_documents GROUP BY order_id), pay_rollup AS (SELECT order_id,SUM(amount_minor) paid_minor,COUNT(*) receipt_count,MAX(created_at) latest_payment FROM reqoo_payments WHERE status='confirmed' GROUP BY order_id), keys AS (SELECT id order_id FROM orders UNION SELECT order_id FROM reqoo_documents UNION SELECT order_id FROM reqoo_payments WHERE status='confirmed'), grouped AS (SELECT k.order_id,COALESCE(o.order_no,d.quote_number,d.invoice_number,k.order_id) reference,COALESCE(c.name,d.customer_name,'Pelanggan') customer_name,COALESCE(c.phone,d.customer_phone,'') customer_phone,o.fulfillment_status,o.source,CASE WHEN o.fulfillment_status='fulfilled' THEN h.delivered_at END delivered_at,COALESCE(d.quotation_count,0) quotation_count,COALESCE(d.invoice_count,0) invoice_count,COALESCE(d.delivery_count,0) delivery_count,COALESCE(d.legacy_receipt_count,0)+COALESCE(p.receipt_count,0) receipt_count,COALESCE(d.invoice_total,d.quote_total,o.total_minor,0) total_minor,COALESCE(p.paid_minor,CASE WHEN o.payment_status='paid' THEN COALESCE(d.invoice_total,o.total_minor,0) ELSE 0 END) raw_paid_minor,MAX(COALESCE(o.updated_at,''),COALESCE(d.latest_document,''),COALESCE(p.latest_payment,'')) updated_at FROM keys k LEFT JOIN orders o ON o.id=k.order_id LEFT JOIN customers c ON c.id=o.customer_id LEFT JOIN doc_rollup d ON d.order_id=k.order_id LEFT JOIN pay_rollup p ON p.order_id=k.order_id LEFT JOIN reqoo_order_handoffs h ON h.order_id=k.order_id), workspaces AS (SELECT *,MIN(total_minor,raw_paid_minor) paid_minor,MAX(0,total_minor-raw_paid_minor) balance_minor,CASE WHEN fulfillment_status='cancelled' THEN 'cancelled' WHEN invoice_count>0 AND total_minor>0 AND raw_paid_minor>=total_minor THEN 'paid' WHEN raw_paid_minor>0 THEN 'partial' WHEN invoice_count>0 THEN 'invoice' WHEN quotation_count>0 THEN 'quotation' ELSE 'order' END stage FROM grouped) ";
 async function documentWorkspaces(d,env){
  await ensure(env);
  const number=(v,f,max)=>Number.isFinite(Number(v))?Math.min(max,Math.max(0,Math.floor(Number(v)))):f;
- const limit=Math.max(1,number(d.limit??40,40,100)),offset=number(d.offset??0,0,1000000),q=S(d.q).slice(0,160),where=['NOT EXISTS(SELECT 1 FROM reqoo_workspace_archives a WHERE a.order_id=w.order_id)'],args=[];
+ const limit=Math.max(1,number(d.limit??40,40,100)),offset=number(d.offset??0,0,1000000),q=S(d.q).slice(0,160),where=[S(d.scope)==='orders'?"(NOT EXISTS(SELECT 1 FROM reqoo_workspace_archives a WHERE a.order_id=w.order_id) OR (balance_minor>0 AND fulfillment_status!='cancelled'))":'NOT EXISTS(SELECT 1 FROM reqoo_workspace_archives a WHERE a.order_id=w.order_id)'],args=[];
  if(q){where.push("(instr(lower(w.reference),lower(?))>0 OR instr(lower(w.customer_name),lower(?))>0 OR instr(w.customer_phone,?)>0 OR instr(lower(w.order_id),lower(?))>0 OR EXISTS(SELECT 1 FROM reqoo_documents d WHERE d.order_id=w.order_id AND instr(lower(d.number),lower(?))>0) OR EXISTS(SELECT 1 FROM reqoo_payments p WHERE p.order_id=w.order_id AND p.status='confirmed' AND instr(lower(p.receipt_number),lower(?))>0))");args.push(q,q,q,q,q,q)}
- const filter=S(d.filter);if(filter==='quotation')where.push("stage='quotation'");if(filter==='paid')where.push("stage='paid'");if(filter==='outstanding')where.push("stage IN ('invoice','partial') AND balance_minor>0");
+ const scope=S(d.scope);if(scope==='orders')where.push("EXISTS(SELECT 1 FROM orders o WHERE o.id=w.order_id)");if(scope==='quotations')where.push("NOT EXISTS(SELECT 1 FROM orders o WHERE o.id=w.order_id) AND quotation_count>0");
+ if(scope==='orders'){if(S(d.filter)==='working')where.push("fulfillment_status IN ('pending','processing')");if(S(d.filter)==='ready')where.push("fulfillment_status='fulfilled' AND delivered_at IS NULL");if(S(d.filter)==='complete')where.push("delivered_at IS NOT NULL AND balance_minor=0");if(S(d.filter)==='active')where.push("fulfillment_status!='cancelled' AND (delivered_at IS NULL OR balance_minor>0)");}
+ const filter=S(d.filter);if(filter==='quotation')where.push("stage='quotation'");if(filter==='paid')where.push("stage='paid'");if(filter==='outstanding')where.push(scope==='orders'?"balance_minor>0 AND fulfillment_status!='cancelled'":"stage IN ('invoice','partial') AND balance_minor>0");
  const clause=where.join(' AND '),[rows,count]=await Promise.all([env.DB.prepare(WORKSPACES_CTE+'SELECT w.* FROM workspaces w WHERE '+clause+' ORDER BY datetime(updated_at) DESC,order_id DESC LIMIT ? OFFSET ?').bind(...args,limit,offset).all(),env.DB.prepare(WORKSPACES_CTE+'SELECT COUNT(*) total FROM workspaces w WHERE '+clause).bind(...args).first()]);
  const workspaces=rows.results||[],total=Number(count?.total||0);return J({ok:true,workspaces,total,offset,limit,hasMore:offset+workspaces.length<total});
 }
@@ -454,7 +465,8 @@ async function documentFlow(d,env){
   await syncLegacyPaidPayments(env,order.id);
   const payments=(await env.DB.prepare("SELECT p.*,o.order_no,c.name customer_name,c.phone customer_phone,c.email customer_email,rd.number invoice_number FROM reqoo_payments p JOIN orders o ON o.id=p.order_id LEFT JOIN customers c ON c.id=o.customer_id LEFT JOIN reqoo_documents rd ON rd.id=p.invoice_document_id WHERE p.order_id=? AND p.status='confirmed' ORDER BY p.paid_at,p.created_at,p.id").bind(order.id).all()).results||[];
   const summary=await summaryForOrder(order,env);
-  return J({ok:true,selectedDocument,selectedPayment,documents,payments,summary,order});
+  const handoff=order.fulfillment_status==='fulfilled'?await env.DB.prepare('SELECT delivered_at,actor_name FROM reqoo_order_handoffs WHERE order_id=?').bind(order.id).first():null;
+  return J({ok:true,selectedDocument,selectedPayment,documents,payments,summary,order,handoff});
 }
 async function canonicalDocuments(d,request,env){
   await ensure(env);
@@ -487,13 +499,38 @@ async function documentIntegrityAudit(env){
   return J({ok:true,audit:{receiptNumberCollisions:collisions.length,invoiceOrderTotalMismatches:mismatches.length,overpaidInvoices:overpaid.length,collisions,mismatches,overpaid}});
 }
 
+
+async function setWorkStatus(d,request,env){
+ if(request.method!=='POST')return J({ok:false,error:'Gunakan POST.'},405);
+ await ensure(env);
+ const order=await orderByKey(S(d.orderId),env),next=S(d.status);
+ if(!order)return J({ok:false,error:'Pesanan tidak dijumpai.'},404);
+ if(!['processing','fulfilled','delivered'].includes(next))return J({ok:false,error:'Status tidak sah.'},400);
+ if(order.fulfillment_status==='cancelled'||['cancelled','refunded'].includes(order.payment_status))return J({ok:false,error:'Pesanan ini dibatalkan.'},409);
+ if(S(d.expectedStatus)!==order.fulfillment_status)return J({ok:false,error:'Status berubah. Buka semula pesanan.'},409);
+ if(next==='delivered'){
+  if(order.fulfillment_status!=='fulfilled')return J({ok:false,error:'Tandakan siap dahulu.'},409);
+  await env.DB.prepare("INSERT OR IGNORE INTO reqoo_order_handoffs(order_id,delivered_at,actor_name) SELECT id,?,? FROM orders WHERE id=? AND fulfillment_status='fulfilled'").bind(NOW(),env.ADMIN_ACTOR?.name||'Owner',order.id).run();
+ }else{
+  if(next==='fulfilled'&&order.fulfillment_status!=='processing')return J({ok:false,error:'Mulakan kerja dahulu.'},409);
+  // Work state never confirms or changes a payment. Owner may work on credit.
+  if(env.ADMIN_ACTOR?.role==='production'&&!['paid','partial'].includes(order.payment_status))return J({ok:false,error:'Owner perlu mulakan kerja tanpa deposit.'},409);
+  const t=NOW();
+  await env.DB.batch([
+   env.DB.prepare('UPDATE orders SET fulfillment_status=?,updated_at=? WHERE id=? AND fulfillment_status=?').bind(next,t,order.id,S(d.expectedStatus)),
+   env.DB.prepare('DELETE FROM reqoo_order_handoffs WHERE order_id=? AND EXISTS(SELECT 1 FROM orders WHERE id=? AND fulfillment_status=? AND updated_at=?)').bind(order.id,order.id,next,t)
+  ]);
+ }
+ const fresh=await orderByKey(order.id,env);return J({ok:true,order:fresh});
+}
 export async function onRequest({request,env}){
   if(request.method==='OPTIONS')return new Response(null,{status:204,headers:C});
   if(!env.DB)return J({ok:false,error:'D1 binding DB tidak dijumpai'},503);
   try{
     const d=await data(request),action=S(d.action);
-    if(['recordPayment','correctPayment','listPayments','paymentSummary','getPaymentReceipt','listDocuments','documentIntegrityAudit','customerDashboard','customerDetail','customerRecords','ordersDashboard','financeDashboard','financeTransactions','documentsFinanceDashboard','documentsMonthlySummary','documentWorkspaces','createOrderQuotation','documentFlow'].includes(action)){
+    if(['setWorkStatus','recordPayment','correctPayment','listPayments','paymentSummary','getPaymentReceipt','listDocuments','documentIntegrityAudit','customerDashboard','customerDetail','customerRecords','ordersDashboard','financeDashboard','financeTransactions','documentsFinanceDashboard','documentsMonthlySummary','documentWorkspaces','createOrderQuotation','documentFlow'].includes(action)){
       if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);
+      if(action==='setWorkStatus')return await setWorkStatus(d,request,env);
       if(action==='recordPayment')return await recordPayment(d,request,env);
       if(action==='correctPayment')return await correctPayment(d,env);
       if(action==='listPayments')return await listPayments(d,env);

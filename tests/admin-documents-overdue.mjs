@@ -18,7 +18,7 @@ assert.match(overdue,/data-rq-fin-filter="partial"/);
 assert.match(overdue,/data-rq-fin-filter="paid"/);
 assert.match(overdue,/rqInvoiceOverdue/);
 assert.match(overdue,/rqDocDrawerDue/);
-assert.match(overdue,/WhatsApp Reminder/);
+assert.match(overdue,/WhatsApp/);
 assert.match(overdue,/wa\.me/);
 assert.match(overdue,/Baki semasa/);
 

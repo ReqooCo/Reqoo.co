@@ -11,5 +11,5 @@ assert.match(js,/LIFETIME COLLECTED/);assert.match(js,/OUTSTANDING/);assert.matc
 assert.match(js,/Recent Customer Timeline/);assert.match(js,/setTimeout\(load,260\)/);assert.match(js,/detail dimuat bila dibuka/);assert.match(js,/initialCustomer/);assert.match(js,/initialCustomerQuery/);assert.match(js,/\/admin\/orders\.html\?order=/);assert.match(js,/\/admin\/documents\.html\?q=/);assert.doesNotMatch(js,/X-Admin-Token/);assert.doesNotMatch(js,/localStorage\.getItem/);
 assert.match(css,/\.rqCrmTabs/);assert.match(css,/\.rqCrmEvent/);assert.match(css,/\.rqCustomerBadge\.owes/);assert.match(css,/\.rqCrmDetailSearch/);assert.match(css,/\.rqCrmMore/);assert.match(css,/@media\(max-width:700px\)/);
 assert.match(shell,/Customers/);assert.match(shell,/\/admin\/customers\.html/);
-assert.match(worker,/settings\|documents\|customers/);assert.match(worker,/admin-shell\.js\?v=5/);
+assert.match(worker,/settings\|documents\|customers/);assert.match(worker,/admin-shell\.js\?v=6/);
 console.log('PASS: Customers CRM uses an aggregate list, full profile summary and paged lazy detail tabs with server-side search.');
