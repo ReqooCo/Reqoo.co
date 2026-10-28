@@ -39,6 +39,16 @@ const root=path.resolve(__dirname,'..'),out=process.env.REQOO_TEST_OUTPUT||path.
    assert.ok(await page.locator('.rqAppBrand').isVisible(),'mobile Overview header visible');
    assert.ok(await page.locator('.rqAppNav a').first().isVisible(),'new Overview navigation visible');
    assert.equal(await page.locator('.rqAdminMoreTrigger').count(),0,'legacy mobile navigation absent');
+   await page.waitForFunction(()=>getComputedStyle(document.querySelector('.rqAction.primary')).backgroundColor==='rgb(20, 87, 68)');
+   assert.ok((await page.locator('.rqAppBrand').boundingBox()).height<=100,'compact brand header');
+   assert.equal(await page.locator('.rqAppNav a').first().evaluate(e=>getComputedStyle(e).color),'rgb(255, 255, 255)','nav text wins over global gold links');
+   assert.equal(await page.locator('.rqAction.primary').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(20, 87, 68)','quotation action stays emerald');
+   assert.equal(await page.locator('.rqAction.primary b').evaluate(e=>getComputedStyle(e).color),'rgb(255, 255, 255)');
+   const actions=await page.locator('.rqAction').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return{x:r.x,y:r.y,w:r.width,h:r.height}}));
+   assert.equal(actions.length,5);assert.ok(actions[0].w>actions[1].w*1.9,'primary action spans both columns');
+   assert.ok(Math.abs(actions[1].y-actions[2].y)<1&&Math.abs(actions[3].y-actions[4].y)<1,'four destinations form a balanced grid');
+   assert.ok(actions.every(a=>a.h>=44),'all actions retain touch targets');
+   assert.equal(await page.locator('.rqBrandAccount svg').count(),1,'account uses a consistent vector icon');
   }else{
    await page.locator('.rqAdminMoreTrigger').click();
    await page.waitForSelector('.rqAdminMoreBackdrop.open');
