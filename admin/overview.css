@@ -194,11 +194,3 @@
  #rqOverviewV2 .rqDashFoot{order:5!important}
 }
 
-/* Production override: keep the Overview mobile brand independent of legacy Admin header rules. */
-@media(max-width:680px){
- body header.rqAppBrand{display:flex!important;align-items:center!important;background:#145744!important;background-image:linear-gradient(120deg,#103d31 0%,#145744 72%,#1a6650 100%)!important;color:#fff!important;border-bottom:5px solid #C5A36A!important;box-shadow:0 10px 26px rgba(16,61,49,.19)!important}
- body header.rqAppBrand .rqBrandText strong{color:#fff!important}
- body header.rqAppBrand .rqBrandText span{color:#E9F2EC!important;opacity:1!important}
- body header.rqAppBrand .rqBrandMark{color:#C5A36A!important}
- body header.rqAppBrand .rqBrandAccount{color:#fff!important}
-}
