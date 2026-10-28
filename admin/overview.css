@@ -127,9 +127,8 @@
  #rqOverviewV2 .rqActionGrid { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 
-/* Mobile overview: bounded attention preview with full queue available on the linked workspace. */
+/* Mobile overview: preserve every actionable reminder until a verified full-queue destination exists. */
 @media (max-width:680px) {
- #rqOverviewV2 .rqFollowupList > .rqFollowupRow:nth-child(n+4) { display:none; }
  #rqOverviewV2 .rqFollowupPanel { min-width:0; }
  #rqOverviewV2 .rqDashHead .rqDashRefresh { flex:none; }
  #rqOverviewV2 .rqDashFoot { overflow-wrap:anywhere; }
