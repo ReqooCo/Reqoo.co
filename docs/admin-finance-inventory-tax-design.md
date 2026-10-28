@@ -51,3 +51,17 @@ All monetary values integer sen, no floating point; stock quantities decimal wit
 - https://www.hasil.gov.my/en/e-invois/pelaksanaan-e-invois-di-malaysia/garis-masa-pelaksanaan-e-invois/ (updated 30 Aug 2026; turnover under RM3m stated exempt, subject to current guidelines)
 - https://www.hasil.gov.my/e-invois/rujukan-pelaksanaan-e-invois/ (guidelines)
 - https://www.hasil.gov.my/individu/soalan-lazim-individu/ (taxpayer reporting duties)
+
+
+## Compact navigation and scroll policy (iPhone-first)
+- Do not create one long dashboard with every module stacked. Each screen starts with a concise summary and one clear primary action. Details live in subtabs, drill-down screens or expandable panels.
+- Finance top-level tabs: Ringkasan | Pembelian | Stok | Untung Rugi | Cukai; Aset appears as a subtab within Stok or a contextual list, not another primary navigation item.
+- Mobile subtabs are horizontally scrollable with a visible active state and preserved position; never squeeze five labels into unreadably small text. Desktop can show all tabs.
+- Finance Ringkasan: maximum four primary KPI cards visible first, then 'Lihat semua' for secondary metrics. One prioritized task list with maximum five items and 'Lihat lagi'.
+- Purchase form uses 3 steps: Maklumat → Barang → Semak & Simpan, with persistent draft and Back/Next sticky bottom action bar above iOS safe area. Never lose input on tab change.
+- Inventory detail uses subtabs Stok | Pergerakan | Kos; order detail uses Ringkasan | Kerja | Bayaran | Kos | Dokumen. The order's current next action remains prominent.
+- Tax detail uses Pendapatan | Pelarasan | Pelepasan | Anggaran; do not overwhelm users with all tax fields on one screen.
+- Long lists use search, status filter and pagination/load-more; no infinite page of 100 rows. Keep current scroll position on return.
+- Use bottom navigation for the five primary areas on mobile only if it fits without hiding content; otherwise existing navigation with clear section tabs. Avoid nested tab depth >2.
+- Mobile tap targets >=44px; body font >=14px, key figures >=20px; sticky controls respect env(safe-area-inset-bottom). Do not use horizontal page overflow, only tab strip may scroll horizontally.
+- Validate at 375x812 and 390x844 with realistic data: keyboard open, long customer names, long currency amounts, 100+ orders, accessibility zoom at 200%, loading/error/empty states.
