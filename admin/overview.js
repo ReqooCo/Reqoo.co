@@ -74,7 +74,7 @@ function render(){
 }
 async function load(force=false){
  ensure();if(busy)return;if(!force&&data&&Date.now()-lastLoad<FRESH_MS){render();return}busy=true;$('#rqDashRefresh').disabled=true;$('#rqDashFoot').textContent='Loading dashboard…';
- try{const r=await fetch(`${API}?action=dashboardSummary`,{cache:'no-store'}),j=await r.json().catch(()=>({}));if(!r.ok||!j.ok)throw Error(j.error||'Unable to load dashboard');data=j;lastLoad=Date.now();render()}catch(e){$('#rqDashFoot').textContent=e.message||'Dashboard could not be loaded.'}finally{busy=false;$('#rqDashRefresh').disabled=false}
+ try{const r=await fetch(`${API}?action=dashboardSummary`,{cache:'no-store'}),j=await r.json().catch(()=>({}));if(r.status===401||r.status===403){data=null;const gate=document.getElementById('loginGate');if(gate){gate.style.display='grid';const msg=document.getElementById('loginMsg');if(msg)msg.textContent='Your admin session has expired. Sign in to continue.';}throw Error('Sign in to view your business dashboard.')}if(!r.ok||!j.ok)throw Error(j.error||'Unable to load dashboard');data=j;lastLoad=Date.now();render()}catch(e){$('#rqDashFoot').textContent=e.message||'Dashboard could not be loaded.'}finally{busy=false;$('#rqDashRefresh').disabled=false}
 }
 function boot(){ensure()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
