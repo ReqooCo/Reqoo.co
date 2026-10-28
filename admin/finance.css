@@ -78,3 +78,20 @@ body.rq-admin-shell.rqFinancePage .rqFinanceApp select{font-size:16px!important}
  .rqPayLine{grid-template-columns:102px minmax(0,1fr) 26px}
 }
 @media(max-width:360px){.rqFinanceRow{grid-template-columns:minmax(0,1fr)}.rqFinanceAmount{justify-self:start}.rqFinanceStats strong{letter-spacing:-.7px}}
+/* Finance has one focused section at a time. */
+.rqFinanceApp [role=tabpanel][hidden],.rqFinanceApp [hidden]{display:none!important}
+body.rq-admin-shell.rqFinancePage .rqFinanceTabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:0 0 16px;padding:4px;background:#edf2ed!important;border:1px solid #e1e7e1!important;border-radius:12px;box-shadow:none!important;backdrop-filter:none!important}
+body.rq-admin-shell.rqFinancePage .rqFinanceTabs button{min-height:44px;border:0!important;border-radius:9px!important;font-size:13px!important;font-weight:650!important;color:#5c7063!important;background:transparent!important;box-shadow:none!important}
+body.rq-admin-shell.rqFinancePage .rqFinanceTabs button[aria-selected=true]{color:#fff!important;background:#145744!important}
+.rqFinanceProducts summary{min-height:44px;display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:650;cursor:pointer;color:#233e32;list-style:none}
+.rqFinanceProducts summary:after{content:'+';font-size:20px;font-weight:400;color:#64756b}.rqFinanceProducts[open] summary:after{content:'−'}.rqFinanceProducts summary::-webkit-details-marker{display:none}.rqFinanceProducts[open] summary{margin-bottom:12px}
+body.rq-admin-shell.rqFinancePage .rqFinanceApp .rqFinanceCosts{margin:0;padding:14px;background:#fff;border:1px solid #e1e7e1;border-radius:14px;box-shadow:none}
+body.rq-admin-shell.rqFinancePage .rqFinanceApp .rqFinanceCosts>h2{font-size:16px!important;line-height:1.4;margin:0;color:#233e32}
+.rqFinanceCostInfo{margin:4px 0 8px}.rqFinanceCostInfo summary{min-height:44px;display:flex;align-items:center;font-size:12px;color:#64756b;cursor:pointer}.rqFinanceCostInfo p{font-size:12px;line-height:1.5;margin:0 0 12px;color:#64756b}
+.rqFinanceCosts .rqBusinessToolbar{gap:8px;margin:0 0 12px}.rqFinanceCosts .rqBusinessToolbar input{min-width:0;flex:1;font-size:16px!important}
+.rqFinanceCosts .rqTaskRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:12px 0}
+.rqFinanceCosts .rqTaskRow>div{min-width:0;overflow-wrap:anywhere}
+body.rq-admin-shell.rqFinancePage .rqFinanceCosts .rqTaskRow b{font-size:12px;line-height:1.4;font-weight:650}
+body.rq-admin-shell.rqFinancePage .rqFinanceCosts .rqTaskRow :is(small,span){display:block;font-size:11px;line-height:1.5;color:#64756b}
+body.rq-admin-shell.rqFinancePage .rqFinanceApp .rqFinanceCosts .btn{font-size:12px!important;white-space:normal}
+@media(max-width:360px){.rqFinanceCosts .rqTaskRow{grid-template-columns:1fr}.rqFinanceCosts .rqTaskRow .btn{justify-self:start}}

@@ -220,8 +220,8 @@ function financeOrderCte(range){
     " final AS (SELECT *,MIN(billing_total_minor,raw_paid_minor) paid_minor,MAX(0,billing_total_minor-raw_paid_minor) balance_minor FROM normalized)";
 }
 async function financeTransactionData(d,env){
-  const range=S(d.range||'30').toLowerCase(),limit=Math.min(100,Math.max(10,Number(d.limit||20))),offset=Math.max(0,Math.min(1000000,Number(d.offset||0))),payRange=financeRangeSql(range,"COALESCE(p.paid_at,p.created_at)");
-  const rows=(await env.DB.prepare("SELECT p.*,o.order_no,c.name customer_name FROM reqoo_payments p JOIN orders o ON o.id=p.order_id LEFT JOIN customers c ON c.id=o.customer_id WHERE p.status='confirmed' AND "+payRange+" ORDER BY COALESCE(p.paid_at,p.created_at) DESC,p.id DESC LIMIT ? OFFSET ?").bind(limit+1,offset).all()).results||[];
+  const range=S(d.range||'30').toLowerCase(),limit=Math.min(100,Math.max(5,Number(d.limit||20))),offset=Math.max(0,Math.min(1000000,Number(d.offset||0))),payRange=financeRangeSql(range,"COALESCE(p.paid_at,p.created_at)");
+  const rows=(await env.DB.prepare("SELECT p.*,o.order_no,c.name customer_name FROM reqoo_payments p JOIN orders o ON o.id=p.order_id LEFT JOIN customers c ON c.id=o.customer_id WHERE p.status='confirmed' AND NOT EXISTS(SELECT 1 FROM reqoo_workspace_archives a WHERE a.order_id=p.order_id) AND "+payRange+" ORDER BY COALESCE(p.paid_at,p.created_at) DESC,p.id DESC LIMIT ? OFFSET ?").bind(limit+1,offset).all()).results||[];
   return{transactions:rows.slice(0,limit),offset,limit,hasMore:rows.length>limit};
 }
 async function financeTransactions(d,env){
@@ -236,7 +236,7 @@ async function financeDashboard(d,env){
     env.DB.prepare(cte+" SELECT COUNT(*) valid_orders,COALESCE(SUM(balance_minor),0) outstanding_minor,COALESCE(SUM(CASE WHEN balance_minor>0 THEN 1 ELSE 0 END),0) outstanding_orders,COALESCE(SUM(CASE WHEN paid_minor>0 THEN 1 ELSE 0 END),0) orders_with_payment,COALESCE(SUM(CASE WHEN balance_minor=0 AND billing_total_minor>0 THEN 1 ELSE 0 END),0) paid_full,COALESCE(SUM(CASE WHEN paid_minor>0 AND balance_minor>0 THEN 1 ELSE 0 END),0) partial,COALESCE(SUM(CASE WHEN paid_minor=0 THEN 1 ELSE 0 END),0) unpaid FROM final").first(),
     env.DB.prepare("SELECT * FROM (SELECT strftime('%Y-%m',COALESCE(p.paid_at,p.created_at)) month,COALESCE(SUM(p.amount_minor),0) collected_minor FROM reqoo_payments p WHERE p.status='confirmed' AND "+payRange+" GROUP BY month ORDER BY month DESC LIMIT 12) ORDER BY month ASC").all(),
     env.DB.prepare(cte+" SELECT COALESCE(NULLIF(oi.product_id,''),oi.product_name_snapshot) product_key,MAX(oi.product_name_snapshot) product_name,COALESCE(SUM(oi.quantity),0) units_sold,COUNT(DISTINCT oi.order_id) orders,CAST(ROUND(COALESCE(SUM(oi.line_total_minor*CASE WHEN f.billing_total_minor>0 THEN MIN(1.0,f.raw_paid_minor*1.0/f.billing_total_minor) ELSE 0 END),0)) AS INTEGER) collected_minor FROM order_items oi JOIN final f ON f.id=oi.order_id WHERE f.paid_minor>0 GROUP BY product_key ORDER BY collected_minor DESC LIMIT 6").all(),
-    financeTransactionData({range,limit:12,offset:0},env)
+    financeTransactionData({range,limit:5,offset:0},env)
   ]);
   const trend=trendResult?.results||[],products=productsResult?.results||[],collected=Number(collection?.collected_minor||0),paidOrders=Number(collection?.paid_orders||0),validOrders=Number(state?.valid_orders||0),withPayment=Number(state?.orders_with_payment||0);
   return J({ok:true,range,summary:{collectedMinor:collected,paidOrders,outstandingMinor:Number(state?.outstanding_minor||0),outstandingOrders:Number(state?.outstanding_orders||0),averageCollectedMinor:paidOrders?Math.round(collected/paidOrders):0,ordersWithPaymentRate:validOrders?Math.round(withPayment/validOrders*100):0,validOrders},breakdown:{paid:Number(state?.paid_full||0),partial:Number(state?.partial||0),pending:Number(state?.unpaid||0)},trend,products,transactions:tx.transactions,transactionsHasMore:tx.hasMore});

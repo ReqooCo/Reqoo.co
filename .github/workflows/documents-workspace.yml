@@ -24,6 +24,7 @@ on:
       - 'api/worker.js'
       - 'migrations/0011_admin_business.sql'
       - 'tests/admin-business*'
+      - 'tests/admin-finance*'
       - 'scripts/build-documents-workspace.mjs'
       - 'tests/admin-documents*'
       - '.github/workflows/documents-workspace.yml'
@@ -52,6 +53,8 @@ jobs:
           node tests/admin-documents-workspace.mjs
           node tests/admin-orders-documents-scalability.mjs
           node tests/admin-payment-ledger-consistency.mjs
+          node tests/admin-finance-dashboard.mjs
+          node tests/admin-finance-scalability.mjs
           node tests/admin-business-workflows.mjs
           node tests/admin-sales-workspace.mjs
       - name: Install browser test dependencies
