@@ -45,7 +45,7 @@ return route.fulfill({path:file,contentType:file.endsWith('.css')?'text/css':fil
 });
 const p=await context.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));p.on('dialog',d=>d.accept());
 await p.goto('https://reqoo.test/admin/documents.html');await p.waitForSelector('[data-archive-workspace]');
-await p.locator('#rqGlobalQuery').fill('RQ-TEST');await p.getByRole('region',{name:'Hasil carian'}).getByRole('link').waitFor();
+await p.locator('#rqGlobalQuery').fill('RQ-TEST');await p.getByRole('region',{name:/Hasil carian|Search results/i}).getByRole('link').waitFor();
 await p.locator('#rqGlobalQuery').press('Escape');assert.equal(await p.locator('#rqGlobalResults').isVisible(),false);
 searchFail=true;await p.locator('#rqGlobalQuery').fill('error');await p.getByText('Fixture search unavailable').waitFor();searchFail=false;await p.locator('#rqGlobalQuery').press('Escape');
 await p.locator('[data-archive-workspace]').click();assert.equal(await p.locator('dialog input[name=confirmReference]').count(),0);await p.getByRole('button',{name:'Sahkan',exact:true}).click();await p.waitForFunction(()=>document.querySelectorAll('[data-open-workspace]').length===0);

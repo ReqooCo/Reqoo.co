@@ -1,87 +1,87 @@
 <!doctype html>
-<html lang="ms">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-store">
-<title>REQOO.CO — Dokumen</title>
+<title>REQOO.CO — Documents</title>
 <link rel="stylesheet" href="/admin/documents-workspace.css?v=5">
 </head>
 <body class="rqDocsPage">
 <main class="wrap rqDocsApp">
   <section class="rqDocsHead">
     <div>
-      <div class="rqDocsEyebrow">PENGURUSAN PERNIAGAAN</div>
-      <h1>Dokumen</h1>
-      <p>Sebut harga, invois, resit rasmi dan nota penghantaran dalam satu ruang kerja.</p>
+      <div class="rqDocsEyebrow">BUSINESS MANAGEMENT</div>
+      <h1>Documents</h1>
+      <p>Quotations, invoices, official receipts and delivery orders in one workspace.</p>
     </div>
-    <div class="rqDocsTopActions"><button class="btn" id="toggleSettings" type="button">Tetapan dokumen</button><button class="btn" id="refreshDocs" type="button">Muat semula</button></div>
+    <div class="rqDocsTopActions"><button class="btn" id="toggleSettings" type="button">Document settings</button><button class="btn" id="refreshDocs" type="button">Refresh</button></div>
   </section>
 
   <section class="rqDocsPanel rqDocsSettings" id="docsSettings">
-    <div class="rqDocsPanelHead"><div><h2>Tetapan dokumen</h2><p>Maklumat ini disalin pada dokumen baharu. <a href="/admin/settings.html">Buka tetapan</a> untuk tetapan Admin.</p></div></div>
+    <div class="rqDocsPanelHead"><div><h2>Document settings</h2><p>This information is copied to new documents. <a href="/admin/settings.html">Open settings</a> untuk tetapan Admin.</p></div></div>
     <div class="rqDocsSettingsGrid">
       <div class="rqDocsField"><label>NAMA SYARIKAT / JENAMA</label><input id="sCompany" placeholder="REQOO.CO"></div>
       <div class="rqDocsField"><label>NO. PENDAFTARAN SSM</label><input id="sReg" placeholder="201903337879 (003053605-X)"></div>
-      <div class="rqDocsField full"><label>ALAMAT</label><textarea id="sAddress" placeholder="Alamat perniagaan"></textarea></div>
+      <div class="rqDocsField full"><label>ALAMAT</label><textarea id="sAddress" placeholder="Business address"></textarea></div>
       <div class="rqDocsField"><label>TELEFON</label><input id="sPhone" placeholder="0123456789"></div>
       <div class="rqDocsField"><label>E-MEL</label><input id="sEmail" type="email" placeholder="hello@reqoo.co"></div>
-      <div class="rqDocsField full"><label>MAKLUMAT BANK / BAYARAN</label><textarea id="sBank" placeholder="Nama bank, nama akaun, nombor akaun atau arahan bayaran"></textarea></div>
+      <div class="rqDocsField full"><label>MAKLUMAT BANK / BAYARAN</label><textarea id="sBank" placeholder="Bank name, account name, account number or payment instructions"></textarea></div>
       <div class="rqDocsField"><label>TEMPOH SAH SEBUT HARGA (HARI)</label><input id="sQuoteDays" type="number" min="0" max="365" value="7"></div>
       <div class="rqDocsField"><label>TEMPOH BAYARAN INVOIS (HARI)</label><input id="sInvoiceDays" type="number" min="0" max="365" value="14"></div>
     </div>
-    <div class="rqDocsSettingsActions"><button class="btn primary" id="saveSettings" type="button">Simpan tetapan dokumen</button></div>
+    <div class="rqDocsSettingsActions"><button class="btn primary" id="saveSettings" type="button">Save document settings</button></div>
   </section>
 
   <section class="rqDocsStats" id="rqDocsFinanceStats" aria-label="Ringkasan semua rekod">
-    <article class="rqDocsStat"><span>QUOTATION</span><strong id="docQuoteCount">—</strong><small>Semua sebut harga</small></article>
-    <article class="rqDocsStat"><span>INVOICE</span><strong id="docInvoiceCount">—</strong><small>Semua invois</small></article>
-    <article class="rqDocsStat"><span>BAKI</span><strong id="rqOutstandingAmount">—</strong><small id="rqOutstandingCount">Memuatkan ringkasan…</small></article>
-    <article class="rqDocsStat"><span>INVOIS SELESAI DIBAYAR</span><strong id="rqFinPaidSummary">—</strong><small>Rekod bayaran terperinci di <a href="/admin/finance.html">Kewangan</a></small></article>
+    <article class="rqDocsStat"><span>QUOTATION</span><strong id="docQuoteCount">—</strong><small>All quotations</small></article>
+    <article class="rqDocsStat"><span>INVOICE</span><strong id="docInvoiceCount">—</strong><small>All invoices</small></article>
+    <article class="rqDocsStat"><span>BAKI</span><strong id="rqOutstandingAmount">—</strong><small id="rqOutstandingCount">Loading ringkasan…</small></article>
+    <article class="rqDocsStat"><span>INVOIS SELESAI DIBAYAR</span><strong id="rqFinPaidSummary">—</strong><small>Rekod payments terperinci di <a href="/admin/finance.html">Kewangan</a></small></article>
   </section>
   <div hidden><span id="docSaved"></span><span id="docReceiptCount"></span><span id="docOrders"></span><span id="docPaid"></span></div>
 
   <section class="rqDocsPanel rqMonthly" id="rqMonthlyPanel" aria-labelledby="rqMonthlyTitle" hidden>
-    <div class="rqDocsPanelHead"><div><div class="rqDocsEyebrow">PRESTASI BULANAN</div><h2 id="rqMonthlyTitle">Gambaran perniagaan</h2><p>Trend dokumen dan bayaran sepanjang tahun.</p></div><div class="rqMonthlyControls"><label for="rqMonthlyYear">Tahun</label><select id="rqMonthlyYear"></select><button class="btn" id="rqMonthlyRefresh" type="button">Muat semula carta</button></div></div>
-    <div id="rqMonthlyState" class="rqDocsState" role="status" aria-live="polite">Memuatkan carta…</div>
+    <div class="rqDocsPanelHead"><div><div class="rqDocsEyebrow">PRESTASI BULANAN</div><h2 id="rqMonthlyTitle">Gambaran perniagaan</h2><p>Trend documents dan payments sepanjang tahun.</p></div><div class="rqMonthlyControls"><label for="rqMonthlyYear">Tahun</label><select id="rqMonthlyYear"></select><button class="btn" id="rqMonthlyRefresh" type="button">Refresh carta</button></div></div>
+    <div id="rqMonthlyState" class="rqDocsState" role="status" aria-live="polite">Loading carta…</div>
     <div id="rqMonthlyContent" hidden></div>
   </section>
 
   <section class="rqDocsPanel rqOrderWorkspaces" id="rqOrderWorkspaces" aria-labelledby="rqWorkspaceTitle">
-    <div class="rqDocsPanelHead"><div><h2 id="rqWorkspaceTitle">Pesanan</h2><p>Satu order, satu ruang. Semua sebut harga, invoice, resit dan delivery order di dalamnya.</p></div><div class="rqDocsUnifiedActions"><button class="btn primary" id="toggleQuoteBuilder" type="button" aria-expanded="false">+ Sebut Harga Baharu</button>
-        <button class="btn" id="toggleOrderDrawer" type="button" aria-expanded="false">Cari pesanan</button></div></div>
-    <div class="rqWorkspaceToolbar"><input id="rqWorkspaceSearch" type="search" aria-label="Cari pesanan dan dokumen" placeholder="Cari pesanan, pelanggan atau nombor dokumen"><select id="rqWorkspaceFilter" aria-label="Status pesanan"><option value="all">Semua</option><option value="quotation">Sebut harga</option><option value="outstanding">Belum lunas</option><option value="paid">Lunas</option></select><button class="btn" id="showDocumentArchive" type="button">Semua dokumen</button></div>
-    <div id="rqWorkspaceState" class="rqDocsState" role="status" aria-live="polite">Memuatkan pesanan…</div><div id="rqWorkspaceList"></div><div class="rqDocsOrderMore"><button class="btn" id="rqWorkspaceMore" type="button" hidden>Muat lagi</button></div>
+    <div class="rqDocsPanelHead"><div><h2 id="rqWorkspaceTitle">Orders</h2><p>Satu order, satu ruang. All quotations, invoice, resit dan delivery order di dalamnya.</p></div><div class="rqDocsUnifiedActions"><button class="btn primary" id="toggleQuoteBuilder" type="button" aria-expanded="false">+ Quotation New</button>
+        <button class="btn" id="toggleOrderDrawer" type="button" aria-expanded="false">Find orders</button></div></div>
+    <div class="rqWorkspaceToolbar"><input id="rqWorkspaceSearch" type="search" aria-label="Find orders dan documents" placeholder="Find orders, customer atau nombor documents"><select id="rqWorkspaceFilter" aria-label="Status orders"><option value="all">All</option><option value="quotation">Quotation</option><option value="outstanding">Outstanding</option><option value="paid">Paid</option></select><button class="btn" id="showDocumentArchive" type="button">All documents</button></div>
+    <div id="rqWorkspaceState" class="rqDocsState" role="status" aria-live="polite">Loading orders…</div><div id="rqWorkspaceList"></div><div class="rqDocsOrderMore"><button class="btn" id="rqWorkspaceMore" type="button" hidden>Load more</button></div>
   </section>
 
   <section class="rqDocsPanel rqDocsUnifiedPanel" id="rqDocumentArchive" hidden>
     <div class="rqDocsPanelHead">
-      <div><h2>Senarai dokumen</h2><p>Sebut harga → Kelulusan pelanggan → Pesanan → Invois → Bayaran → Resit → Penghantaran.</p></div>
+      <div><h2>Document list</h2><p>Quotation → Kelulusan customer → Orders → Invoice → Bayaran → Resit → Penghantaran.</p></div>
       <div class="rqDocsUnifiedActions">
-        <button class="btn" id="returnToOrderWorkspaces" type="button">Kembali ke pesanan</button>
+        <button class="btn" id="returnToOrderWorkspaces" type="button">Back to orders</button>
       </div>
     </div>
     <div class="rqDocsUnifiedToolbar">
-      <div class="rqDocTabs" role="tablist" aria-label="Jenis dokumen">
-        <button class="rqDocTab active" type="button" data-doc-filter="all" role="tab" aria-selected="true">Semua <em>0</em></button>
+      <div class="rqDocTabs" role="tablist" aria-label="Document type">
+        <button class="rqDocTab active" type="button" data-doc-filter="all" role="tab" aria-selected="true">All <em>0</em></button>
         <button class="rqDocTab" type="button" data-doc-filter="quotation" role="tab" aria-selected="false">Quotation <em>0</em></button>
         <button class="rqDocTab" type="button" data-doc-filter="invoice" role="tab" aria-selected="false">Invoice <em>0</em></button>
         <button class="rqDocTab" type="button" data-doc-filter="receipt" role="tab" aria-selected="false">Receipt <em>0</em></button>
         <button class="rqDocTab" type="button" data-doc-filter="delivery_order" role="tab" aria-selected="false">Delivery Order <em>0</em></button>
       </div>
-      <input id="docUnifiedSearch" type="search" aria-label="Cari semua dokumen" class="rqDocsUnifiedSearch" placeholder="Cari dokumen, customer atau nombor order">
+      <input id="docUnifiedSearch" type="search" aria-label="Cari semua documents" class="rqDocsUnifiedSearch" placeholder="Search documents, customers or order numbers">
     </div>
-    <div class="rqDocsTableHead rqUnifiedTableHead" aria-hidden="true"><span>Dokumen</span><span>Tarikh</span><span>Pelanggan</span><span>Status</span><span>Tindakan</span></div>
+    <div class="rqDocsTableHead rqUnifiedTableHead" aria-hidden="true"><span>Documents</span><span>Date</span><span>Customer</span><span>Status</span><span>Actions</span></div>
     <div id="docResultsState" class="rqDocsState" role="status" aria-live="polite"></div>
     <div id="docHistory" class="rqDocsHistoryList" aria-busy="true"></div>
-    <div class="rqDocsOrderMore" id="documentPager"><button class="btn" id="loadMoreDocuments" type="button" hidden>Muat lagi dokumen</button></div>
-    <div id="docUnifiedEmpty" hidden>Tiada dokumen untuk paparan ini.</div>
+    <div class="rqDocsOrderMore" id="documentPager"><button class="btn" id="loadMoreDocuments" type="button" hidden>Load more documents</button></div>
+    <div id="docUnifiedEmpty" hidden>Tiada documents untuk paparan ini.</div>
   </section>
 
   <section class="rqDocsPanel rqDocsSecondaryPanel rqQuoteBuilder" id="rqQuoteComposer">
-    <div class="rqDocsPanelHead"><div><div class="rqDocsEyebrow">QUOTATION BAHARU</div><h2>Quotation baharu</h2><p>Isi pelanggan, item dan harga kemudian preview sebelum dihantar.</p></div></div>
+    <div class="rqDocsPanelHead"><div><div class="rqDocsEyebrow">NEW QUOTATION</div><h2>New quotation</h2><p>Isi customer, item dan harga kemudian preview sebelum dihantar.</p></div></div>
     <div class="rqQuoteBuilderBody" id="quoteBuilderBody">
-      <div class="rqQuoteSectionTitle">1. Pelanggan</div>
+      <div class="rqQuoteSectionTitle">1. Customer</div>
       <div class="rqDocsSettingsGrid rqQuoteCustomerGrid">
         <div class="rqDocsField"><label>NAMA / SYARIKAT *</label><input id="qCustomer" placeholder="Contoh: ABC Engineering Sdn Bhd"></div>
         <div class="rqDocsField"><label>WHATSAPP</label><input id="qPhone" inputmode="tel" placeholder="0123456789"></div>
@@ -108,26 +108,26 @@
           <div class="rqQuoteCalc grand"><span>Total</span><b id="qTotal">RM0.00</b></div>
         </div>
       </div>
-      <div class="rqQuoteActions"><button class="btn" id="qReset" type="button">Reset</button><button class="btn primary" id="qCreate" type="button">Simpan dan pratonton quotation</button></div>
+      <div class="rqQuoteActions"><button class="btn" id="qReset" type="button">Reset</button><button class="btn primary" id="qCreate" type="button">Save dan pratonton quotation</button></div>
     </div>
   </section>
 
   <section class="rqDocsPanel rqDocsSecondaryPanel rqDocsOrdersPanel" id="rqOrderSourcePanel">
     <div class="rqDocsPanelHead">
-      <div><div class="rqDocsEyebrow">ORDER SEDIA ADA</div><h2>Dokumen daripada order</h2><p>Pilih order untuk jana Invoice atau Delivery Order. Bayaran direkod melalui Invoice.</p></div>
-      <div class="rqDocsUnifiedActions"><input id="docSearch" class="rqDocsSearch" placeholder="Cari order, nama atau WhatsApp"><button class="btn rqDocsSecondaryClose" id="closeOrderDrawer" type="button">Tutup</button></div>
+      <div><div class="rqDocsEyebrow">ORDER SEDIA ADA</div><h2>Documents daripada order</h2><p>Pilih order untuk jana Invoice atau Delivery Order. Bayaran direkod melalui Invoice.</p></div>
+      <div class="rqDocsUnifiedActions"><input id="docSearch" class="rqDocsSearch" placeholder="Cari order, nama atau WhatsApp"><button class="btn rqDocsSecondaryClose" id="closeOrderDrawer" type="button">Close</button></div>
     </div>
-    <div class="rqDocsTableHead rqOrderTableHead" aria-hidden="true"><span>Order / Date</span><span>Pelanggan</span><span>Amount</span><span>Status</span><span>Tindakan</span></div>
-    <div id="docState" class="rqDocsState">Memuatkan pesanan…</div>
+    <div class="rqDocsTableHead rqOrderTableHead" aria-hidden="true"><span>Order / Date</span><span>Customer</span><span>Amount</span><span>Status</span><span>Actions</span></div>
+    <div id="docState" class="rqDocsState">Loading orders…</div>
     <div id="docList" class="rqDocsList"></div><div class="rqDocsOrderMore"><button class="btn" id="loadMoreDocOrders" type="button" hidden>Load More</button></div>
   </section>
 </main>
 
 <div class="rqDocsModal" id="docModal" role="dialog" aria-modal="true" aria-labelledby="docModalTitle" aria-hidden="true">
   <div class="rqDocsModalBox">
-    <div class="rqDocsModalHead"><div><div class="rqDocsEyebrow">OFFICIAL DOCUMENT</div><h2 id="docModalTitle">Dokumen</h2></div><button id="docClose" class="rqDocsClose" type="button" aria-label="Tutup">×</button></div>
+    <div class="rqDocsModalHead"><div><div class="rqDocsEyebrow">OFFICIAL DOCUMENT</div><h2 id="docModalTitle">Documents</h2></div><button id="docClose" class="rqDocsClose" type="button" aria-label="Close">×</button></div>
     <div id="docPreview" class="rqDocsPreview"></div>
-    <div class="rqDocsActions"><button id="docEdit" class="btn" type="button" style="display:none">Ubah quotation</button><button id="docConvert" class="btn" type="button" style="display:none">Jadikan pesanan</button><button id="docDepositInvoice" class="btn primary" type="button" style="display:none">Lihat invois</button><button id="docWhatsapp" class="btn whatsapp" type="button">WhatsApp</button><button id="docPrint" class="btn" type="button">Cetak / PDF</button><button id="docCloseBottom" class="btn" type="button">Tutup</button></div>
+    <div class="rqDocsActions"><button id="docEdit" class="btn" type="button" style="display:none">Ubah quotation</button><button id="docConvert" class="btn" type="button" style="display:none">Jadikan orders</button><button id="docDepositInvoice" class="btn primary" type="button" style="display:none">Lihat invois</button><button id="docWhatsapp" class="btn whatsapp" type="button">WhatsApp</button><button id="docPrint" class="btn" type="button">Cetak / PDF</button><button id="docCloseBottom" class="btn" type="button">Close</button></div>
   </div>
 </div>
 <div role="status" aria-live="polite" id="docsToast" class="rqDocsToast"></div>

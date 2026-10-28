@@ -53,9 +53,9 @@ assert.match(v18,/Nombor receipt unik gagal dijana/);
 assert.match(v18,/Invoice telah selesai dibayar/);
 assert.match(v18,/Amaun melebihi baki semasa/);
 
-assert.match(html,/Quotation baharu/);
+assert.match(html,/New quotation/);
 assert.match(html,/id="docEdit"/);assert.match(html,/id="docConvert"/);assert.match(html,/id="docDepositInvoice"/);
-assert.match(html,/NO. PENDAFTARAN SSM/);
+assert.match(html,/REGISTRATION NUMBER|NO. PENDAFTARAN SSM/);
 assert.match(html,/id="qDeposit"[^>]*value="50"/);
 assert.match(html,/documents\.js\?v=\d+/);
 assert.match(html,/documents-workspace\.css\?v=\d+/);

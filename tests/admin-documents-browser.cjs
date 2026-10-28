@@ -86,7 +86,7 @@ await page.locator('[data-doc-filter="quotation"]').click();await page.waitForFu
 await page.locator('[data-doc-filter="all"]').click();await page.waitForFunction(()=>document.querySelectorAll('#docHistory .rqHistRow').length===80);
 await page.locator('[data-document-id="doc0"] .rqHistNo').click();await page.locator('#workspace-tab-all').click();await page.waitForSelector('.rqActivityTimeline');
 assert.equal(await page.locator('.rqActivityTimeline li').count(),4,'timeline includes quotation, order, invoice and canonical payment once');
-assert.deepEqual(await page.locator('.rqActivityTimeline li b').allTextContents(),['Sebut harga dikeluarkan','Pesanan dicipta','Invois dikeluarkan','Deposit disahkan']);
+assert.deepEqual(await page.locator('.rqActivityTimeline li b').allTextContents(),['Quotation issued','Order created','Invoice issued','Deposit confirmed']);
 assert.equal(await page.locator('.rqActivityTimeline [data-drawer-open-payment="fixture-pay"]').count(),1);
 await page.screenshot({path:path.join(out,'documents-timeline-desktop.png'),fullPage:false});
 await page.setViewportSize({width:390,height:844});
