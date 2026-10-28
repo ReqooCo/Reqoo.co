@@ -113,7 +113,7 @@ async function createAndOpen(type,id){
 async function openSaved(id,show=true){const receipt=documents.find(d=>String(d.id)===String(id)&&d.payment_id);if(receipt){document.dispatchEvent(new CustomEvent('rq:documents-open-payment',{detail:{id:receipt.payment_id}}));return receipt}try{const d=await api('getDocument',{documentId:id});activeDoc=d.document;if(show)showDocument();return activeDoc}catch(e){toast(e.message,true);throw e}}
 function showDocument(){
   if(!activeDoc)return;
-  const meta=quoteMeta(activeDoc),isCustomQuote=activeDoc.type==='quotation'&&meta.source==='custom',canConvert=isCustomQuote&&!meta.convertedOrderId,canEdit=canConvert,pct=Math.max(0,Math.min(100,Number(meta.depositPercent||0))),canDepositInvoice=isCustomQuote&&!!meta.convertedOrderId&&pct>0&&pct<100;
+  const meta=quoteMeta(activeDoc),isCustomQuote=activeDoc.type==='quotation'&&meta.source==='custom',canConvert=isCustomQuote&&!meta.convertedOrderId&&!['rejected','expired','cancelled'].includes(String(activeDoc.status||'').toLowerCase()),canEdit=canConvert,pct=Math.max(0,Math.min(100,Number(meta.depositPercent||0))),canDepositInvoice=isCustomQuote&&!!meta.convertedOrderId&&pct>0&&pct<100;
   $('docModalTitle').textContent=typeLabel(activeDoc.type)+' · '+activeDoc.number;
   $('docPreview').innerHTML=paper(activeDoc);
   $('docWhatsapp').style.display=activeDoc.customer_phone?'':'none';
@@ -184,9 +184,10 @@ async function convertActiveQuote(){
   if(!activeDoc||activeDoc.type!=='quotation')return;
   const quote=activeDoc,meta=quoteMeta(quote),pct=Math.max(0,Math.min(100,Number(meta.depositPercent||0)));
   if(meta.convertedOrderId)return toast('This quotation has already been converted to an order.',true);
+  if(['rejected','expired','cancelled'].includes(String(quote.status||'').toLowerCase()))return toast('This quotation is closed and cannot be converted. Create a new quotation.',true);
   const itemCount=(quote.items||[]).length,total=money(quote.total_minor||0),deposit=pct>0&&pct<100?`\nDeposit ${pct}%: ${money(Math.round(Number(quote.total_minor||0)*pct/100))}`:'';
-  if(!confirm(`Confirm customer approval of quotation ${quote.number}?\n\n${itemCount} item · Jumlah ${total}${deposit}\n\nThe system will create an order using these details and prices. No payment will be recorded automatically.`))return;
-  const btn=$('docConvert'),old=btn.textContent;btn.disabled=true;btn.textContent='Menyimpan…';
+  if(!confirm(`Has the customer approved quotation ${quote.number}?\n\n${itemCount} item(s) · Total ${total}${deposit}\n\nConfirm only after receiving customer approval. This creates an order; no payment will be recorded automatically.`))return;
+  const btn=$('docConvert'),old=btn.textContent;btn.disabled=true;btn.textContent='Creating order…';
   try{
     if(!meta.convertedOrderId&&quote.status!=='accepted')await api('updateCustomQuotationStatus',{documentId:quote.id,status:'accepted'},'POST');
     const d=await api('convertCustomQuotationToOrder',{documentId:quote.id},'POST');
@@ -195,10 +196,10 @@ async function convertActiveQuote(){
     if(orderId&&pct>0&&pct<100){
       const invoiceData=await api('createDocument',{type:'invoice',orderId},'POST');
       activeDoc=invoiceData.document;replaceDocument(activeDoc);renderHistory();
-      toast(`Pesanan ${ref} dan invois deposit ${pct}% berjaya disediakan`);
+      toast(`Order ${ref} and deposit invoice (${pct}%) created`);
       await load(true);if(ordersLoaded)await loadOrders(true);showDocument();if(orderId)document.dispatchEvent(new CustomEvent('rq:documents-open-flow',{detail:{key:orderId}}));return;
     }
-    activeDoc=convertedQuote;toast(`Pesanan ${ref} berjaya dibuat`);
+    activeDoc=convertedQuote;toast(`Order ${ref} created`);
     await load(true);if(ordersLoaded)await loadOrders(true);
     const fresh=await openSaved(activeDoc.id,false);activeDoc=fresh;showDocument();if(orderId)document.dispatchEvent(new CustomEvent('rq:documents-open-flow',{detail:{key:orderId}}));
   }catch(e){toast(e.message,true)}finally{btn.disabled=false;btn.textContent=old}
