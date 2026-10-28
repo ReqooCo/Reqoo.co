@@ -39,7 +39,7 @@ function followupMeta(f){
  if(f.kind==='invoice_due')return{label:Number(f.days_to_due||0)===0?'DUE TODAY':'DUE SOON',cls:'gold',sub:Number(f.days_to_due||0)===0?`Due today · balance ${money(f.amount_minor)}`:`Due ${fmtDateLong(f.due_date)} · balance ${money(f.amount_minor)}`};
  if(f.kind==='production_overdue')return{label:'PRODUCTION OVERDUE',cls:'red',sub:`${Number(f.days_overdue||0)} days overdue${f.assigned_to?' · '+f.assigned_to:''}`};
  if(f.kind==='production_today')return{label:'PRODUCTION DUE TODAY',cls:'blue',sub:`Due today${f.assigned_to?' · '+f.assigned_to:''}`};
- if(f.kind==='payment_pending')return{label:'PAYMENT FOLLOW-UP',cls:'gold',sub:`Unpaid for ${Number(f.age_days||1)} hari · ${money(f.amount_minor)}`};
+ if(f.kind==='payment_pending')return{label:'PAYMENT FOLLOW-UP',cls:'gold',sub:`Unpaid for ${Number(f.age_days||1)} days · ${money(f.amount_minor)}`};
  return{label:'CUSTOMER FOLLOW-UP',cls:'green',sub:`No orders for ${Number(f.age_days||45)} days · lifetime ${money(f.amount_minor)}`};
 }
 function followupMessage(f){
@@ -61,12 +61,12 @@ function render(){
  ensure();if(!data)return;
  const k=data.kpis||{},cc=data.commandCenter||{},latest=Array.isArray(data.latest)?data.latest:[],trend=Array.isArray(data.trend)?data.trend:[],customers=Array.isArray(cc.recent_customers)?cc.recent_customers:[];
  $('#rqKpis').innerHTML=`
-  <a class="rqKpi ok" href="/admin/finance.html"><small>KUTIPAN HARI INI</small><b>${money(cc.today_collected_minor||0)}</b><span>${plural(cc.today_collected_count,'bayaran')} diterima</span></a>
-  <a class="rqKpi danger" href="/admin/documents.html"><small>BAKI</small><b>${money(cc.outstanding_minor||0)}</b><span>${plural(cc.outstanding_count,'invois/pesanan')} berbaki</span></a>
-  <a class="rqKpi" href="/admin/documents.html?view=orders&filter=working"><small>DALAM KERJA</small><b>${Number(k.to_produce_count??k.processing_count??0)}</b><span>${Number(k.due_today||0)} due hari ini · ${Number(k.overdue||0)} overdue</span></a>
-  <a class="rqKpi warn" href="/admin/documents.html"><small>PERLU DIKUTIP</small><b>${Number(cc.due_soon_count||0)}</b><span>${money(cc.due_soon_minor||0)} perlu dikutip</span></a>
-  <a class="rqKpi danger" href="/admin/documents.html"><small>LEWAT BAYAR</small><b>${Number(cc.overdue_invoice_count||0)}</b><span>${money(cc.overdue_invoice_minor||0)} tertunggak</span></a>
-  <a class="rqKpi ok" href="/admin/finance.html"><small>KUTIPAN · 30 HARI</small><b>${money(k.paid_revenue_30)}</b><span>${plural(k.paid_orders_30,'pesanan berbayar')}</span></a>`;
+  <a class="rqKpi ok" href="/admin/finance.html"><small>TODAY'S COLLECTIONS</small><b>${money(cc.today_collected_minor||0)}</b><span>${plural(cc.today_collected_count,'payment')} received</span></a>
+  <a class="rqKpi danger" href="/admin/documents.html"><small>OUTSTANDING</small><b>${money(cc.outstanding_minor||0)}</b><span>${plural(cc.outstanding_count,'invoice/order')} outstanding</span></a>
+  <a class="rqKpi" href="/admin/documents.html?view=orders&filter=working"><small>IN PRODUCTION</small><b>${Number(k.to_produce_count??k.processing_count??0)}</b><span>${Number(k.due_today||0)} due today · ${Number(k.overdue||0)} overdue</span></a>
+  <a class="rqKpi warn" href="/admin/documents.html"><small>TO COLLECT</small><b>${Number(cc.due_soon_count||0)}</b><span>${money(cc.due_soon_minor||0)} to collect</span></a>
+  <a class="rqKpi danger" href="/admin/documents.html"><small>OVERDUE PAYMENTS</small><b>${Number(cc.overdue_invoice_count||0)}</b><span>${money(cc.overdue_invoice_minor||0)} overdue</span></a>
+  <a class="rqKpi ok" href="/admin/finance.html"><small>COLLECTIONS · 30 DAYS</small><b>${money(k.paid_revenue_30)}</b><span>${plural(k.paid_orders_30,'paid order')}</span></a>`;
  renderFollowups(cc);renderCustomers(customers);
  const max=Math.max(1,...trend.map(x=>Number(x.revenue_minor||0)));$('#rqTrend').innerHTML=trend.length?trend.map(x=>{const d=new Date(String(x.month)+'-01T00:00:00'),v=Number(x.revenue_minor||0);return `<div class="rqTrendCol"><span>${money(v).replace('.00','')}</span><div class="rqTrendBar" style="height:${Math.max(2,Math.round(v/max*100))}px"></div><small>${d.toLocaleDateString('en-MY',{month:'short'})}</small></div>`}).join(''):'<div class="rqDashEmpty">Belum ada paid revenue.</div>';
  $('#rqLatest').innerHTML=latest.length?`<div class="rqOpsList">${latest.map(o=>{const p=String(o.payment_status||o.payment||'pending').toLowerCase(),f=String(o.fulfillment_status||o.status||'pending').toLowerCase(),lab=f==='fulfilled'?'SIAP':f==='processing'?'PROSES':p==='paid'?'PAID':p==='partial'?'DEPOSIT':'PENDING',cls=f==='fulfilled'||p==='paid'?'green':f==='processing'?'blue':p==='partial'?'gold':'';return `<a class="rqOpsRow rqOpsLink" href="/admin/documents.html?view=orders&order=${encodeURIComponent(o.id||o.orderId||o.order_no||o.orderNo||o.order_ref||'')}"><div><b>${esc(ref(o))}</b><small>${esc(customer(o))} · ${fmtDate(created(o))}</small></div><div class="rqOpsRight"><strong>${amount(o)}</strong><span class="rqBadge ${cls}">${lab}</span></div></a>`}).join('')}</div>`:'<div class="rqDashEmpty">Belum ada order.</div>';
