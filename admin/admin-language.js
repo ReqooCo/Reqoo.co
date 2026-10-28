@@ -8,6 +8,48 @@ pairs.push(...[["1. Pelanggan", "1. Customer"], ["2. Item dan harga", "2. Items 
 Object.assign(aliases,{"Simpan dan pratonton quotation": "Simpan dan pratonton sebut harga", "Quotation baharu": "Sebut harga baharu", "QUOTATION BAHARU": "Sebut harga baharu", "TEL / WHATSAPP": "Telefon / WhatsApp", "Buka Settings": "Buka tetapan", "Buka order": "Buka pesanan", "Dokumen daripada order": "Dokumen daripada pesanan", "Resit dijana selepas bayaran direkod melalui invoice.": "Resit dijana selepas bayaran direkod melalui invois.", "Isi pelanggan, item dan harga kemudian preview sebelum dihantar.": "Isi pelanggan, item dan harga kemudian pratonton sebelum dihantar.", "Sales, kutipan, production, invoice dan customer dalam satu pandangan.": "Jualan, kutipan, pengeluaran, invois dan pelanggan dalam satu paparan.", "Satu order, satu ruang. Semua quotation, invoice, resit dan delivery order di dalamnya.": "Satu pesanan, satu ruang. Semua sebut harga, invois, resit dan nota serahan di dalamnya.", "Quotation, Invoice, Official Receipt dan Delivery Order dalam satu ruang kerja.": "Sebut harga, invois, resit rasmi dan nota serahan dalam satu ruang kerja.", "Pilih order untuk jana Invoice atau Delivery Order. Bayaran direkod melalui Invoice.": "Pilih pesanan untuk menjana invois atau nota serahan. Rekod bayaran melalui invois.", "Order ini belum mempunyai dokumen. Pilih tab untuk menjana quotation atau invoice.": "Pesanan ini belum mempunyai dokumen. Pilih tab untuk menjana sebut harga atau invois.", "Sahkan quotation dan tukarkan kepada order dahulu. Gunakan Pratonton pada tab Quotation.": "Sahkan sebut harga dan jadikan pesanan dahulu. Gunakan Pratonton pada tab Sebut harga.", "Belum ada customer.": "Belum ada pelanggan.", "Belum ada order.": "Belum ada pesanan.", "Belum ada paid revenue.": "Belum ada hasil jualan diterima.", "Tiada order dijumpai.": "Tiada pesanan dijumpai.", "Invoice, payment dan production nampak terkawal.": "Invois, bayaran dan pengeluaran terkawal.", "Semak order & bayaran": "Semak pesanan dan bayaran", "Due date, PIC & priority": "Tarikh siap, petugas dan keutamaan", "History, outstanding & repeat buyer": "Sejarah, baki dan pelanggan berulang", "Revenue, pending & AOV": "Hasil jualan, baki dan purata nilai pesanan", "✓ Tiada follow-up kritikal hari ini.": "✓ Tiada tindakan kritikal hari ini.", "Perubahan akses menamatkan sesi lama staf ini. Jangan kongsi password Owner.": "Perubahan akses menamatkan sesi lama staf ini. Jangan kongsi kata laluan pemilik.", "ITEM / DESCRIPTION": "Keterangan", "Print / Save PDF": "Cetak / PDF", "TEMPOH SAH QUOTATION (HARI)": "Tempoh sah sebut harga (hari)", "TEMPOH BAYARAN INVOICE (HARI)": "Tempoh bayaran invois (hari)"});
 pairs.push(['Sebut harga dikeluarkan','Quotation issued'],['Invois dikeluarkan','Invoice issued'],['Deposit disahkan','Deposit confirmed']);Object.assign(aliases,{'Quotation dikeluarkan':'Sebut harga dikeluarkan','Invoice dikeluarkan':'Invois dikeluarkan'});
 Object.assign(aliases,{'Semua quotation':'Semua sebut harga','Semua invoice':'Semua invois','INVOICE SELESAI DIBAYAR':'Invois selesai dibayar'});
+// Dashboard strings and variable-count summaries need full bilingual coverage.
+pairs.push(
+ ["Ikuti perkembangan harian","Daily follow-up"],
+ ["Bayaran diterima hari ini","Collected today"],
+ ["Baki belum dibayar","Outstanding balance"],
+ ["Dalam pengeluaran","In production"],
+ ["Bayaran hampir tamat tempoh","Due soon"],
+ ["Bayaran tertunggak","Overdue payments"],
+ ["Kutipan 30 hari","Collected · 30 days"],
+ ["Susulan bayaran","Payment follow-up"],
+ ["Keutamaan tinggi","High priority"],
+ ["Keutamaan biasa","Normal priority"],
+ ["Keutamaan rendah","Low priority"],
+ ["Perlu tindakan susulan","Needs attention"],
+ ["Tiada bayaran lewat","No overdue payments"],
+ ["Perlu dikutip","Due soon"],
+ ["Sudah diterima","Collected"],
+ ["Bayaran","Payment"],
+ ["Pesanan berbayar","Paid orders"],
+ ["Pesanan dan invois","Orders and invoices"],
+ ["Hari lewat","Days overdue"],
+ ["Pelanggan","Customer"],
+ ["Pengeluaran lewat","Production overdue"],
+ ["Pengeluaran hari ini","Production today"],
+ ["Susulan pelanggan","Customer follow-up"],
+ ["Tugas","Tasks"],
+ ["Tindakan susulan harian","Daily follow-up"],
+ ["Tindakan pantas","Quick actions"],
+ ["Pesanan terkini","Latest orders"],
+ ["Hasil jualan","Revenue"],
+ ["Pelanggan terkini","Recent customers"],
+ ["Invois tertunggak","Overdue invoice"],
+ ["Perlu dibayar hari ini","Due today"],
+ ["Hampir tamat tempoh","Due soon"],
+ ["Pengeluaran lewat","Production overdue"],
+ ["Pengeluaran hari ini","Production today"],
+ ["Susulan bayaran","Payment follow-up"],
+ ["Susulan pelanggan","Customer follow-up"],
+ ["Tiada maklumat hubungan","No contact details"],
+ ["Belum bayar","Pending"],
+ ["Tugas hari ini","Today's tasks"]
+);
 const dict=new Map();for(const [ms,en] of pairs){if(!dict.has(ms.toLowerCase()))dict.set(ms.toLowerCase(),{ms,en});if(!dict.has(en.toLowerCase()))dict.set(en.toLowerCase(),{ms,en})}for(const [old,ms]of Object.entries(aliases)){const entry=dict.get(ms.trim().toLowerCase());if(entry)dict.set(old.toLowerCase(),entry)}
 let lang='ms';try{lang=localStorage.getItem('rq_admin_language')==='en'?'en':'ms'}catch{}
 const preserved='script,style,textarea,input,[contenteditable],.rqLangPicker,#docPaper,#docPreview,#rqReceiptPaper,.rqDocDrawerCustomer h3,#rqDocDrawerSub,.rqWorkspaceIdentity h3,.rqWorkspaceIdentity b,.rqWorkspaceIdentity small,.rqWorkItem,.rqTaskRow b,.rqTaskRow small,#rqGlobalResults b,#rqGlobalResults span,.rqCustomerName,.rqProductName,.rqHistCustomer,.rqHistNo,.rqHistDate,[data-no-translate]';
@@ -20,6 +62,21 @@ m=s.match(/^(\d+) (unit|units)$/);if(m)return m[1]+(lang==='en'?' units':' unit'
 m=s.match(/^DUE IN (\d+) DAYS$|^TEMPOH (\d+) HARI$/);if(m)return lang==='en'?'DUE IN '+(m[1]||m[2])+' DAYS':'TEMPOH '+(m[1]||m[2])+' HARI';
 m=s.match(/^(Invoice due|Tarikh akhir invois) · (.+)$/);if(m)return (lang==='en'?'Invoice due':'Tarikh akhir invois')+' · '+m[2];
 m=s.match(/^(\d+) (invoices|invois)$/);if(m)return m[1]+(lang==='en'?' invoices':' invois');
+m=s.match(/^(\d+) (payment|payments|bayaran) (diterima|received)$/i);
+if(m)return lang==='en'?m[1]+' payment'+(Number(m[1])===1?'':'s')+' received':m[1]+' bayaran diterima';
+m=s.match(/^(\d+) (invoice\/order|invoices\/orders|invois\/pesanan) (berbaki|outstanding)$/i);
+if(m)return lang==='en'?m[1]+' outstanding invoices/orders':m[1]+' invois/pesanan berbaki';
+m=s.match(/^(\d+) (due hari ini · \d+ overdue|perlu siap hari ini · \d+ lewat|due today · \d+ overdue)$/i);
+if(m){const nums=s.match(/\d+/g);return lang==='en'?nums[0]+' due today · '+nums[1]+' overdue':nums[0]+' perlu siap hari ini · '+nums[1]+' lewat'}
+m=s.match(/^(\d+) (paid orders?|pesanan berbayar)$/i);
+if(m)return lang==='en'?m[1]+' paid order'+(Number(m[1])===1?'':'s'):m[1]+' pesanan berbayar';
+m=s.match(/^(\d+) (tasks?|tugasan)$/i);
+if(m)return lang==='en'?m[1]+' task'+(Number(m[1])===1?'':'s'):m[1]+' tugasan';
+m=s.match(/^(Pending|Belum bayar) (\d+) (hari|days) · (RM[\d,.]+)$/i);
+if(m)return lang==='en'?'Pending '+m[2]+' days · '+m[4]:'Belum bayar '+m[2]+' hari · '+m[4];
+m=s.match(/^(RM[\d,.]+) (perlu dikutip|due soon|to collect|tertunggak|overdue)$/i);
+if(m)return lang==='en'?m[1]+' '+(/tertunggak|overdue/i.test(m[2])?'overdue':'to collect'):m[1]+' '+(/tertunggak|overdue/i.test(m[2])?'tertunggak':'perlu dikutip');
+
 return raw}
 const texts=new WeakMap(),attrs=new WeakMap();let busy=false;
 function apply(){if(busy)return;busy=true;observer.disconnect();document.documentElement.lang=lang;
