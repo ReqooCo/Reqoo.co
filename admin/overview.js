@@ -10,7 +10,7 @@ function ensure(){
  if($('#rqOverviewV2'))return $('#rqOverviewV2');
  const host=document.querySelector('#adminApp section');if(!host)return null;
  const n=document.createElement('section');n.id='rqOverviewV2';n.className='rqDash';
- n.innerHTML=`<div class="rqDashHead"><div><div class="label">RINGKASAN</div><h2>Hari ini</h2><p>Sales, kutipan, production, invoice dan customer dalam satu pandangan.</p></div><button class="btn rqDashRefresh" id="rqDashRefresh">Muat semula</button></div>
+ n.innerHTML=`<div class="rqDashHead"><div><div class="label">OVERVIEW</div><h2>Today</h2><p>Sales, payments, production, invoices and customers at a glance.</p></div><button class="btn rqDashRefresh" id="rqDashRefresh">Refresh</button></div>
  <div class="rqKpis" id="rqKpis"></div>
  <div class="rqDashGrid rqDashGridTop">
   <article class="rqDashPanel rqFollowupPanel"><div class="rqDashPanelHead"><div><small>TINDAKAN SUSULAN HARIAN</small><h3>Perlu tindakan <span class="rqFollowupCount" id="rqFollowupCount"></span></h3></div><a href="/admin/customers.html">Pelanggan →</a></div><div id="rqFollowups"></div></article>
