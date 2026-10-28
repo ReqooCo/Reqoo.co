@@ -17,16 +17,16 @@ async function api(action,extra={},method='GET'){
   if(method==='GET'){url.searchParams.set('action',action);Object.entries(extra).forEach(([k,v])=>{if(v!==undefined&&v!==null&&v!=='')url.searchParams.set(k,v)});}
   else{opt.headers['Content-Type']='application/json';opt.body=JSON.stringify({action,...extra});}
   const r=await fetch(url,opt);let d={};try{d=await r.json()}catch{}
-  if(r.status===401){location.href='/admin/?return='+encodeURIComponent(location.pathname+location.search);throw Error('Sesi Admin tamat.');}
-  if(!r.ok||!d.ok)throw Error(d.error||'Request gagal');return d;
+  if(r.status===401){location.href='/admin/?return='+encodeURIComponent(location.pathname+location.search);throw Error('Admin session expired.');}
+  if(!r.ok||!d.ok)throw Error(d.error||'Request failed');return d;
 }
 function orderStatus(o){return String(o.payment_status||o.paymentStatus||o.payment||'pending').toLowerCase()}
 function orderRef(o){return o.order_no||o.orderNo||o.order_ref||o.id||'—'}
 function customer(o){return o.customer_name||o.customerName||o.name||'Customer'}
 function phone(o){return o.phone||o.customer_phone||o.customerPhone||''}
 function total(o){const cents=o.total_minor??o.totalMinor??o.amount_minor??o.amountMinor;if(cents!==undefined&&cents!==null)return Number(cents||0);return Math.round(Number(o.total||o.amount||0)*100)}
-function dateFmt(v){if(!v)return'—';const d=new Date(v);return Number.isNaN(d.getTime())?String(v):d.toLocaleDateString('ms-MY',{day:'2-digit',month:'short',year:'numeric'})}
-function typeLabel(t){return t==='quotation'?'Sebut Harga':t==='invoice'?'Invois':t==='receipt'?'Resit Rasmi':'Nota Penghantaran'}
+function dateFmt(v){if(!v)return'—';const d=new Date(v);return Number.isNaN(d.getTime())?String(v):d.toLocaleDateString('en-MY',{day:'2-digit',month:'short',year:'numeric'})}
+function typeLabel(t){return t==='quotation'?'Quotation':t==='invoice'?'Invoice':t==='receipt'?'Official Receipt':'Delivery Order'}
 function typeShort(t){return t==='invoice'?'INV':t==='receipt'?'RC':'DO'}
 function quoteMeta(doc){return doc?.company&&typeof doc.company.quoteMeta==='object'?doc.company.quoteMeta:{}}
 function savedFor(orderId,type){return documents.find(d=>String(d.order_id)===String(orderId)&&d.type===type)}
