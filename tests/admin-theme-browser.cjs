@@ -39,6 +39,7 @@ const root=path.resolve(__dirname,'..'),out=process.env.REQOO_TEST_OUTPUT||path.
    assert.ok(await page.locator('.rqAppBrand').isVisible(),'mobile Overview header visible');
    assert.ok(await page.locator('.rqAppNav a').first().isVisible(),'new Overview navigation visible');
    assert.equal(await page.locator('.rqAdminMoreTrigger').count(),0,'legacy mobile navigation absent');
+   await page.waitForFunction(()=>getComputedStyle(document.querySelector('.rqAction.primary')).backgroundColor==='rgb(20, 87, 68)');
    assert.ok((await page.locator('.rqAppBrand').boundingBox()).height<=100,'compact brand header');
    assert.equal(await page.locator('.rqAppNav a').first().evaluate(e=>getComputedStyle(e).color),'rgb(255, 255, 255)','nav text wins over global gold links');
    assert.equal(await page.locator('.rqAction.primary').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(20, 87, 68)','quotation action stays emerald');
