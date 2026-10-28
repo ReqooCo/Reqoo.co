@@ -10,6 +10,7 @@ const root=path.resolve(__dirname,'..'),out=process.env.REQOO_TEST_OUTPUT||path.
  const order={id:'fixture-order',orderNo:'RQ-TEST-0001',name:'Pelanggan Ujian',phone:'0120000000',total_minor:85000,payment_status:'partial',fulfillment_status:'processing',created_at:'2026-10-15T08:00:00Z'};
  await context.route('**/*',async route=>{
   const u=new URL(route.request().url());if(u.hostname!=='reqoo.test')return route.abort();
+  if(u.pathname.startsWith('/api/')&&u.searchParams.get('action')==='financeDashboard')return route.fulfill({json:{ok:true,summary:{collectedMinor:1020100,outstandingMinor:27200,paidOrders:9,outstandingOrders:1,averageCollectedMinor:113344,ordersWithPaymentRate:88,validOrders:10},trend:[{month:'2026-10',collected_minor:1020100}],products:[{product_name:'Cut Alphabet 15mm foam board (White)',units_sold:1,orders:1,collected_minor:48000},{product_name:'Plaque with stand',units_sold:18,orders:1,collected_minor:45000}],transactions:[{id:'finance-pay',receipt_number:'RC-FIXTURE-1',order_no:'RQ-FIXTURE-1',customer_name:'Fixture Customer',paid_at:'2026-10-25T12:00:00Z',payment_type:'deposit',amount_minor:50000}],transactionsHasMore:false,breakdown:{paid:7,partial:0,pending:1}}});
   if(u.pathname.startsWith('/api/'))return route.fulfill({json:{ok:true,orders:empty?[]:[order],products:empty?[]:[{id:'fixture-product',name:'Tumbler Ujian',active:1,price:85,price_minor:8500,sku:'TEST-001',stock:12}],customers:empty?[]:[{id:'fixture-customer',name:'Pelanggan Ujian',phone:'0120000000',order_count:2,collected_minor:42500,outstanding_minor:42500}],transactions:[],items:[],total:empty?0:1,stats:{total:1,paid:1,processing:1,active:1,customers:1},counts:{processing:1},summary:{collectedMinor:42500,outstandingMinor:42500,paidOrders:1},kpis:{},commandCenter:{},trend:empty?[]:[{month:'2026-09',collected_minor:25000,revenue_minor:25000},{month:'2026-10',collected_minor:42500,revenue_minor:42500}],latest:[],breakdown:{partial:1},months:[],settings:{},content:{section:{},items:[]},licenses:[],devices:[],users:[]}});
   const file=path.join(root,u.pathname==='/admin/'?'admin/index.html':u.pathname);
   if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
@@ -54,6 +55,21 @@ const root=path.resolve(__dirname,'..'),out=process.env.REQOO_TEST_OUTPUT||path.
    await page.waitForSelector('.rqAdminMoreBackdrop.open');
    assert.ok(await page.locator('.rqAdminMoreList a').first().isVisible());
    await page.locator('.rqAdminMoreClose').click();
+  }
+  if(name==='finance'){
+   await page.waitForFunction(()=>getComputedStyle(document.querySelector('.rqFinanceStats article')).backgroundColor==='rgb(20, 87, 68)');
+   assert.equal(await page.locator('#finRevenue').innerText(),'RM10,201.00');
+   assert.equal(await page.locator('#finPending').innerText(),'RM272.00');
+   assert.equal(await page.locator('#revenueChart .rqCollectionRow').count(),1);
+   assert.ok((await page.locator('#revenueChart').boundingBox()).height<100,'single month does not create an empty tall chart');
+   assert.match(await page.locator('#revenueChart').innerText(),/Oct 2026/);
+   assert.match(await page.locator('#topProducts').innerText(),/1 paid order/);
+   assert.doesNotMatch(await page.locator('main').innerText(),/berbayar|dianalisis|Memuatkan/);
+   assert.equal(await page.locator('#financeRange').getAttribute('aria-label'),'Reporting period');
+   assert.ok(await page.locator('#refreshFinance').evaluate(e=>e.getBoundingClientRect().height>=44));
+   await page.locator('#financeState').scrollIntoViewIfNeeded();
+   assert.ok(await page.locator('#financeState').evaluate(e=>e.getBoundingClientRect().bottom<document.querySelector('.rqAdminMobile').getBoundingClientRect().top),'last finance content clears the navigation');
+   await page.evaluate(()=>scrollTo(0,0));
   }
   await page.screenshot({path:path.join(out,'theme-'+name+'-mobile.png')});
   console.log('PASS: '+name+' desktop/mobile theme, readable controls and mobile navigation');
