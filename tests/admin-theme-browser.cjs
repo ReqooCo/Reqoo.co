@@ -63,7 +63,7 @@ const root=path.resolve(__dirname,'..'),out=process.env.REQOO_TEST_OUTPUT||path.
    assert.equal(await page.locator('#revenueChart .rqCollectionRow').count(),1);
    assert.ok((await page.locator('#revenueChart').boundingBox()).height<100,'single month does not create an empty tall chart');
    assert.match(await page.locator('#revenueChart').innerText(),/Oct 2026/);
-   assert.match(await page.locator('#topProducts').innerText(),/1 paid order/);
+   assert.match(await page.locator('#topProducts').textContent(),/1 paid order/);
    assert.doesNotMatch(await page.locator('main').innerText(),/berbayar|dianalisis|Memuatkan/);
    assert.equal(await page.locator('#financeRange').getAttribute('aria-label'),'Reporting period');
    assert.ok(await page.locator('#refreshFinance').evaluate(e=>e.getBoundingClientRect().height>=44));
