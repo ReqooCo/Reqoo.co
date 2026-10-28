@@ -62,19 +62,19 @@ m=s.match(/^(\d+) (unit|units)$/);if(m)return m[1]+(lang==='en'?' units':' unit'
 m=s.match(/^DUE IN (\d+) DAYS$|^TEMPOH (\d+) HARI$/);if(m)return lang==='en'?'DUE IN '+(m[1]||m[2])+' DAYS':'TEMPOH '+(m[1]||m[2])+' HARI';
 m=s.match(/^(Invoice due|Tarikh akhir invois) · (.+)$/);if(m)return (lang==='en'?'Invoice due':'Tarikh akhir invois')+' · '+m[2];
 m=s.match(/^(\d+) (invoices|invois)$/);if(m)return m[1]+(lang==='en'?' invoices':' invois');
-m=s.match(/^(\\d+) (payment|payments|bayaran) (diterima|received)$/i);
+m=s.match(/^(\d+) (payment|payments|bayaran) (diterima|received)$/i);
 if(m)return lang==='en'?m[1]+' payment'+(Number(m[1])===1?'':'s')+' received':m[1]+' bayaran diterima';
-m=s.match(/^(\\d+) (invoice\\/order|invoices\\/orders|invois\\/pesanan) (berbaki|outstanding)$/i);
+m=s.match(/^(\d+) (invoice\/order|invoices\/orders|invois\/pesanan) (berbaki|outstanding)$/i);
 if(m)return lang==='en'?m[1]+' outstanding invoices/orders':m[1]+' invois/pesanan berbaki';
-m=s.match(/^(\\d+) (due hari ini · \\d+ overdue|perlu siap hari ini · \\d+ lewat|due today · \\d+ overdue)$/i);
-if(m){const nums=s.match(/\\d+/g);return lang==='en'?nums[0]+' due today · '+nums[1]+' overdue':nums[0]+' perlu siap hari ini · '+nums[1]+' lewat'}
-m=s.match(/^(\\d+) (paid orders?|pesanan berbayar)$/i);
+m=s.match(/^(\d+) (due hari ini · \d+ overdue|perlu siap hari ini · \d+ lewat|due today · \d+ overdue)$/i);
+if(m){const nums=s.match(/\d+/g);return lang==='en'?nums[0]+' due today · '+nums[1]+' overdue':nums[0]+' perlu siap hari ini · '+nums[1]+' lewat'}
+m=s.match(/^(\d+) (paid orders?|pesanan berbayar)$/i);
 if(m)return lang==='en'?m[1]+' paid order'+(Number(m[1])===1?'':'s'):m[1]+' pesanan berbayar';
-m=s.match(/^(\\d+) (tasks?|tugasan)$/i);
+m=s.match(/^(\d+) (tasks?|tugasan)$/i);
 if(m)return lang==='en'?m[1]+' task'+(Number(m[1])===1?'':'s'):m[1]+' tugasan';
-m=s.match(/^(Pending|Belum bayar) (\\d+) (hari|days) · (RM[\\d,.]+)$/i);
+m=s.match(/^(Pending|Belum bayar) (\d+) (hari|days) · (RM[\d,.]+)$/i);
 if(m)return lang==='en'?'Pending '+m[2]+' days · '+m[4]:'Belum bayar '+m[2]+' hari · '+m[4];
-m=s.match(/^(RM[\\d,.]+) (perlu dikutip|due soon|to collect|tertunggak|overdue)$/i);
+m=s.match(/^(RM[\d,.]+) (perlu dikutip|due soon|to collect|tertunggak|overdue)$/i);
 if(m)return lang==='en'?m[1]+' '+(/tertunggak|overdue/i.test(m[2])?'overdue':'to collect'):m[1]+' '+(/tertunggak|overdue/i.test(m[2])?'tertunggak':'perlu dikutip');
 
 return raw}
