@@ -152,3 +152,31 @@
  #rqOverviewV2 .rqDashPanelHead a { color:#245b49; }
  #rqOverviewV2 .rqDashHead h2 { color:#243b31; }
 }
+
+/* REQOO Emerald Gold mobile app shell. All figures remain API-driven. */
+.rqAppBrand,.rqAppNav{display:none}
+@media(max-width:680px){
+ body{background:#FAFBF7}
+ .rqAppBrand{display:flex;align-items:center;gap:12px;min-height:140px;padding:calc(18px + env(safe-area-inset-top)) 22px 30px;background:linear-gradient(120deg,#103d31,#145744 72%,#1a6650);border-bottom:5px solid #C5A36A;border-radius:0 0 26px 26px;color:#fff}
+ .rqBrandMark{font-size:48px;line-height:1;font-weight:950;font-style:italic;color:#C5A36A}
+ .rqBrandText{display:flex;flex-direction:column;gap:4px;min-width:0}
+ .rqBrandText strong{font-size:19px;letter-spacing:.4px}
+ .rqBrandText span{font-size:13px;color:#E9F2EC}
+ .rqBrandAccount{margin-left:auto;display:grid;place-items:center;width:42px;height:42px;border:1px solid #ffffff55;border-radius:50%;color:#fff;text-decoration:none;font-size:24px}
+ #adminApp.wrap{padding:22px 14px}
+ #rqOverviewV2 .rqDashHead{margin-bottom:3px}
+ #rqOverviewV2 .rqDashHead h2{font-size:27px}
+ #rqOverviewV2 .rqKpi{border:1px solid #dce6dc;border-radius:19px;background:linear-gradient(135deg,#fff,#E9F2EC);box-shadow:0 6px 15px #123e3012}
+ #rqOverviewV2 .rqKpi.danger{background:linear-gradient(135deg,#fff,#fbf1dd);border-color:#ecdfc2}
+ #rqOverviewV2 .rqKpi small{font-size:10px;letter-spacing:.4px;color:#42584b}
+ #rqOverviewV2 .rqKpi b{font-size:21px;color:#145744}
+ #rqOverviewV2 .rqDashGridTop>.rqDashPanel:not(.rqFollowupPanel){background:#fff;border-radius:22px}
+ #rqOverviewV2 .rqAction{border-radius:17px;min-height:100px;box-shadow:0 2px 7px #1457440c}
+ #rqOverviewV2 .rqAction.primary{background:linear-gradient(145deg,#176a51,#104435)}
+ #rqOverviewV2 .rqFollowupPanel{border:1px solid #e4e6df;border-left:4px solid #C5A36A;border-radius:20px;background:linear-gradient(90deg,#fffaf0,#fff)}
+ .rqAppNav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;bottom:0;left:0;right:0;z-index:90;padding:10px 7px calc(11px + env(safe-area-inset-bottom));border-radius:23px 23px 0 0;background:linear-gradient(115deg,#103d31,#145744);box-shadow:0 -8px 24px #123e3024}
+ .rqAppNav a{display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;color:#f5f8f4;font-size:10px;min-height:49px;justify-content:center}
+ .rqAppNav a span{font-size:25px;line-height:1}
+ .rqAppNav a.active{color:#e7bf70;font-weight:800}
+ #rqOverviewV2{padding-bottom:calc(104px + env(safe-area-inset-bottom))}
+}
