@@ -759,3 +759,42 @@ body.rq-admin-shell.rqDocsPage .rqActivityTimeline b{color:#405d47}
 body.rq-admin-shell.rqDocsPage .rqHistRow{background:#fffefb80!important;border-color:#e4e7dc!important}
 body.rq-admin-shell.rqDocsPage .rqDocsHistoryList{background:transparent!important}
 body.rq-admin-shell.rqDocsPage :is(.rqHistType,.rqDocsEyebrow){color:#63775e!important}
+
+/* Compact, readable mobile document lists. Desktop workspace and document actions remain unchanged. */
+@media(max-width:700px){
+ body.rq-admin-shell.rqDocsPage #docHistory .rqHistRow,
+ body.rq-admin-shell.rqDocsPage .rqHistRow{
+  grid-template-columns:minmax(0,1fr) auto!important;
+  gap:5px 10px!important;
+  padding:12px 14px!important;
+  min-height:0!important;
+  align-items:center!important;
+ }
+ body.rq-admin-shell.rqDocsPage .rqHistRow>div:first-child{grid-column:1!important;grid-row:1!important;min-width:0}
+ body.rq-admin-shell.rqDocsPage .rqHistNo{font-size:13px!important;line-height:1.3!important}
+ body.rq-admin-shell.rqDocsPage .rqHistType{font-size:9px!important;line-height:1.3!important}
+ body.rq-admin-shell.rqDocsPage .rqHistCustomer{
+  grid-column:1!important;grid-row:2!important;
+  font-size:12px!important;line-height:1.35!important;
+  overflow:hidden;text-overflow:ellipsis;min-width:0;
+ }
+ body.rq-admin-shell.rqDocsPage .rqHistCustomer .rqDocMeta{font-size:10px!important}
+ body.rq-admin-shell.rqDocsPage .rqHistDate{display:none!important}
+ body.rq-admin-shell.rqDocsPage .rqHistRow>div:nth-child(4){
+  grid-column:2!important;grid-row:1!important;
+  justify-self:end!important;font-size:13px!important;
+ }
+ body.rq-admin-shell.rqDocsPage .rqHistActions{
+  grid-column:2!important;grid-row:2!important;
+  justify-content:flex-end!important;gap:5px!important;
+ }
+ body.rq-admin-shell.rqDocsPage .rqHistActions .btn{
+  min-height:34px!important;padding:6px 9px!important;
+  font-size:11px!important;line-height:1.2!important;
+ }
+ body.rq-admin-shell.rqDocsPage .rqWorkspaceRow{
+  padding:12px 14px!important;gap:8px!important;
+ }
+ body.rq-admin-shell.rqDocsPage .rqDocsUnifiedToolbar{padding:10px 12px!important}
+ body.rq-admin-shell.rqDocsPage .rqDocsPanelHead{padding:12px!important}
+}
