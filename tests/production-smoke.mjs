@@ -35,7 +35,7 @@ async function html(name,url,patterns,{adminUi=false,shopRuntime=false}={}){
     assert.equal(response.headers.get('x-reqoo-admin-ui'),'admin-ui-v1',`${name}: Admin UI header drift`);
     assert.match(text,/\/admin\/admin-base\.css\?v=\d+/,`${name}: shared base CSS missing`);
     assert.match(text,/\/admin\/admin-flow\.css\?v=\d+/,`${name}: shared flow CSS missing`);
-    assert.match(text,/\/admin\/admin-shell\.js\?v=\d+/,`${name}: shared shell JS missing`);
+    if(!/Admin (Overview|Subdomain)/.test(name))assert.match(text,/\/admin\/admin-shell\.js\?v=\d+/,`${name}: shared shell JS missing`);
   }
   if(shopRuntime)assert.match(response.headers.get('x-reqoo-shop-runtime')||'',/shop-v2/,`${name}: Shop runtime header missing`);
   console.log(`PASS ${name} ${response.status} ${response.url}`);
@@ -50,8 +50,8 @@ async function json(url,expectedStatus=200){
   return {response,value};
 }
 
-await html('Admin Overview','https://reqoo.co/admin/',[/Business Command Center/,/\/admin\/overview\.js\?v=\d+/],{adminUi:true});
-await html('Admin Subdomain','https://admin.reqoo.co/',[/Business Command Center/,/\/admin\/overview\.js\?v=\d+/],{adminUi:true});
+await html('Admin Overview','https://reqoo.co/admin/',[/REQOO ADMIN|Business Command Center/,/\/admin\/overview\.js\?v=\d+/],{adminUi:true});
+await html('Admin Subdomain','https://admin.reqoo.co/',[/REQOO ADMIN|Business Command Center/,/\/admin\/overview\.js\?v=\d+/],{adminUi:true});
 
 for(const [name,path,asset] of [
   ['Orders','orders','orders'],

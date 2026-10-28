@@ -81,7 +81,7 @@ async function injectAdminUI(response){
   if(/id=["']orderModal["']/.test(body))body=body.replace('</body>','<script src="/shop/admin-whatsapp-docs-v1.js?v=2"></script><script src="/shop/admin-fulfillment-v1.js?v=2"></script><script src="/shop/admin-production-queue-safe-v1.js?v=1"></script><script src="/shop/admin-order-production-v1.js?v=1"></script></body>');
   if(isShopAdmin&&!body.includes('/shop/admin-inventory-v2.js'))body=body.replace('</body>','<script src="/shop/admin-inventory-v2.js?v=3"></script></body>');
   if(isOverview&&!body.includes('/admin/overview.js'))body=body.replace('</body>','<script src="/admin/overview.js?v=3"></script></body>');
-  if(!body.includes('/admin/admin-shell.js'))body=body.replace('</body>','<script src="/admin/admin-shell.js?v=6"></script></body>');
+  if(!isOverview&&!body.includes('/admin/admin-shell.js'))body=body.replace('</body>','<script src="/admin/admin-shell.js?v=6"></script></body>');
   if(!body.includes('/admin/admin-theme.css'))body=body.replace('</head>','<link rel="stylesheet" href="/admin/admin-theme.css?v=2"></head>');
   const headers=new Headers(response.headers);
   headers.set('cache-control','no-store, no-cache, must-revalidate, max-age=0');

@@ -14,7 +14,8 @@ const root=path.resolve(__dirname,'..'),out=process.env.REQOO_TEST_OUTPUT||path.
   const file=path.join(root,u.pathname==='/admin/'?'admin/index.html':u.pathname);
   if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
   if(file.endsWith('.html')){
-   let html=fs.readFileSync(file,'utf8').replace('</head>','<link rel="stylesheet" href="/admin/admin-base.css?v=1"><link rel="stylesheet" href="/admin/admin-flow.css?v=2"><link rel="stylesheet" href="/admin/admin-theme.css?v=1"></head>').replace('</body>','<script src="/admin/admin-shell.js?v=4"></script></body>');
+   let html=fs.readFileSync(file,'utf8').replace('</head>','<link rel="stylesheet" href="/admin/admin-base.css?v=1"><link rel="stylesheet" href="/admin/admin-flow.css?v=2"><link rel="stylesheet" href="/admin/admin-theme.css?v=1"></head>');
+   if(u.pathname!=='/admin/')html=html.replace('</body>','<script src="/admin/admin-shell.js?v=4"></script></body>');
    return route.fulfill({contentType:'text/html',body:html});
   }
   return route.fulfill({path:file,contentType:file.endsWith('.css')?'text/css':file.endsWith('.js')?'application/javascript':'text/plain'});
@@ -23,21 +24,27 @@ const root=path.resolve(__dirname,'..'),out=process.env.REQOO_TEST_OUTPUT||path.
  for(const name of ['index','orders','production','products','customers','finance','settings','shop-content','sim-v2']){
   await page.setViewportSize({width:1440,height:1000});
   await page.goto('https://reqoo.test/admin/'+(name==='index'?'':name+'.html'));
-  await page.waitForSelector('body.rq-admin-shell');await page.waitForLoadState('networkidle');
+  if(name==='index')await page.waitForSelector('.rqAppBrand',{state:'attached'});else await page.waitForSelector('body.rq-admin-shell');await page.waitForLoadState('networkidle');
   if(['orders','production','customers'].includes(name))assert.match(await page.locator('main').innerText(),/Pelanggan Ujian/,'fixture rows rendered');
   if(name==='products')assert.match(await page.locator('main').innerText(),/Tumbler Ujian/);
   assert.equal(await page.locator('link[href*="admin-flow.css"]').count(),1,'flow injected once');
   assert.equal(await page.locator('link[href*="admin-theme.css"]').count(),1,'theme injected once');
-  assert.match(await page.locator('.rqAdminSide').evaluate(e=>getComputedStyle(e).backgroundImage),/linear-gradient/);
+  if(name!=='index')assert.match(await page.locator('.rqAdminSide').evaluate(e=>getComputedStyle(e).backgroundImage),/linear-gradient/);
   const control=page.locator('.btn:visible').first();
   if(await control.count())assert.ok(await control.evaluate(e=>parseFloat(getComputedStyle(e).fontSize)>=12),'readable action');
   await page.screenshot({path:path.join(out,'theme-'+name+'-desktop.png')});
   await page.setViewportSize({width:390,height:844});
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),name+' mobile overflow');
-  await page.locator('.rqAdminMoreTrigger').click();
-  await page.waitForSelector('.rqAdminMoreBackdrop.open');
-  assert.ok(await page.locator('.rqAdminMoreList a').first().isVisible());
-  await page.locator('.rqAdminMoreClose').click();
+  if(name==='index'){
+   assert.ok(await page.locator('.rqAppBrand').isVisible(),'mobile Overview header visible');
+   assert.ok(await page.locator('.rqAppNav a').first().isVisible(),'new Overview navigation visible');
+   assert.equal(await page.locator('.rqAdminMoreTrigger').count(),0,'legacy mobile navigation absent');
+  }else{
+   await page.locator('.rqAdminMoreTrigger').click();
+   await page.waitForSelector('.rqAdminMoreBackdrop.open');
+   assert.ok(await page.locator('.rqAdminMoreList a').first().isVisible());
+   await page.locator('.rqAdminMoreClose').click();
+  }
   await page.screenshot({path:path.join(out,'theme-'+name+'-mobile.png')});
   console.log('PASS: '+name+' desktop/mobile theme, readable controls and mobile navigation');
  }
