@@ -16,6 +16,9 @@ on:
       - 'functions/_middleware.js'
       - 'tests/admin-theme-browser.cjs'
       - 'api/shop-admin-flow-v18.js'
+      - 'api/shop-admin-flow-v17.js'
+      - 'migrations/0013_quotation_revisions.sql'
+      - 'tests/admin-quotation-revisions*'
       - 'api/admin-business.js'
       - 'api/worker.js'
       - 'migrations/0011_admin_business.sql'
@@ -43,6 +46,7 @@ jobs:
           node tests/admin-documents-performance.mjs
           node tests/admin-documents-overdue.mjs
           node tests/admin-documents-finance-scalability.mjs
+          node tests/admin-quotation-revisions.mjs
           node tests/admin-documents-workspace.mjs
           node tests/admin-orders-documents-scalability.mjs
           node tests/admin-payment-ledger-consistency.mjs

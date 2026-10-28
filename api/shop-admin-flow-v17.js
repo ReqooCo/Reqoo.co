@@ -32,8 +32,13 @@ function orderNumber(){
 }
 async function ensureDocuments(env){
   await env.DB.batch([
+    env.DB.prepare("CREATE TABLE IF NOT EXISTS reqoo_quotation_revisions(document_id TEXT NOT NULL,revision INTEGER NOT NULL CHECK(revision>=0),snapshot_json TEXT NOT NULL CHECK(json_valid(snapshot_json)),version_at TEXT NOT NULL,version_actor TEXT,archived_at TEXT NOT NULL,PRIMARY KEY(document_id,revision));"),
+    env.DB.prepare("CREATE TRIGGER IF NOT EXISTS reqoo_quote_revision_immutable_update BEFORE UPDATE ON reqoo_quotation_revisions BEGIN SELECT RAISE(ABORT,'Quotation history is immutable'); END;"),
+    env.DB.prepare("CREATE TRIGGER IF NOT EXISTS reqoo_quote_revision_immutable_delete BEFORE DELETE ON reqoo_quotation_revisions BEGIN SELECT RAISE(ABORT,'Quotation history is immutable'); END;"),
+    env.DB.prepare("CREATE TRIGGER IF NOT EXISTS reqoo_quote_revision_guard BEFORE INSERT ON reqoo_quotation_revisions BEGIN\n SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM reqoo_documents d WHERE d.id=NEW.document_id AND d.type='quotation' AND d.updated_at=json_extract(NEW.snapshot_json,'$.updated_at') AND d.company_json=json_extract(NEW.snapshot_json,'$.company_json') AND d.status=json_extract(NEW.snapshot_json,'$.status') AND d.order_id=json_extract(NEW.snapshot_json,'$.order_id') AND COALESCE(json_extract(d.company_json,'$.quoteMeta.convertedOrderId'),'')='' AND COALESCE(json_extract(d.company_json,'$.quoteMeta.revision'),0)=NEW.revision) THEN RAISE(ABORT,'REQOO_QUOTE_CONFLICT') END;\nEND;"),
     env.DB.prepare("CREATE TABLE IF NOT EXISTS reqoo_document_sequences(seq_key TEXT PRIMARY KEY,next_number INTEGER NOT NULL DEFAULT 1,updated_at TEXT NOT NULL)"),
     env.DB.prepare("CREATE TABLE IF NOT EXISTS reqoo_documents(id TEXT PRIMARY KEY,type TEXT NOT NULL CHECK(type IN ('quotation','invoice','receipt','delivery_order')),number TEXT NOT NULL UNIQUE,order_id TEXT NOT NULL,status TEXT NOT NULL,currency TEXT NOT NULL DEFAULT 'MYR',subtotal_minor INTEGER NOT NULL DEFAULT 0,discount_minor INTEGER NOT NULL DEFAULT 0,shipping_minor INTEGER NOT NULL DEFAULT 0,tax_minor INTEGER NOT NULL DEFAULT 0,total_minor INTEGER NOT NULL DEFAULT 0,issued_at TEXT NOT NULL,due_at TEXT,customer_name TEXT,customer_phone TEXT,customer_email TEXT,company_json TEXT NOT NULL DEFAULT '{}',payment_status TEXT,share_token TEXT NOT NULL UNIQUE,created_at TEXT NOT NULL,updated_at TEXT NOT NULL,UNIQUE(order_id,type))"),
+    env.DB.prepare("CREATE TRIGGER IF NOT EXISTS reqoo_quote_conversion_guard BEFORE UPDATE OF order_id ON reqoo_documents WHEN OLD.type='quotation' AND OLD.order_id LIKE 'custom:%' AND NEW.order_id<>OLD.order_id BEGIN\n SELECT CASE WHEN OLD.status<>'accepted' OR COALESCE(json_extract(OLD.company_json,'$.quoteMeta.convertedOrderId'),'')<>'' OR OLD.updated_at<>COALESCE(json_extract(NEW.company_json,'$.quoteMeta.convertedFromUpdatedAt'),'') OR COALESCE(json_extract(OLD.company_json,'$.quoteMeta.revision'),0)<>COALESCE(json_extract(NEW.company_json,'$.quoteMeta.convertedFromRevision'),-1) THEN RAISE(ABORT,'REQOO_QUOTE_CONFLICT') END;\nEND;"),
     env.DB.prepare("CREATE TABLE IF NOT EXISTS reqoo_document_items(id TEXT PRIMARY KEY,document_id TEXT NOT NULL REFERENCES reqoo_documents(id) ON DELETE CASCADE,description TEXT NOT NULL,variation TEXT,quantity REAL NOT NULL DEFAULT 1,unit_price_minor INTEGER NOT NULL DEFAULT 0,line_total_minor INTEGER NOT NULL DEFAULT 0,sort_order INTEGER NOT NULL DEFAULT 0)"),
     env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_reqoo_documents_order ON reqoo_documents(order_id)"),
     env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_reqoo_documents_type_time ON reqoo_documents(type,created_at)"),
@@ -122,20 +127,44 @@ async function updateCustomQuotation(d,env){
   const doc=await customQuotation(d,env);
   if(!doc)return J({ok:false,error:'Custom quotation tidak dijumpai.'},404);
   const oldMeta=quoteMeta(doc);
+  const revision=Number(oldMeta.revision||0);
+  if(!Number.isInteger(d.expectedRevision)||d.expectedRevision!==revision||S(d.expectedUpdatedAt)!==doc.updated_at)
+    return J({ok:false,error:'Quotation changed. Reopen the latest version before saving.'},409);
   if(oldMeta.convertedOrderId)return J({ok:false,error:'Quotation yang telah menjadi order tidak boleh diedit. Edit order/invoice selepas conversion.'},409);
   const customerName=S(d.customerName).slice(0,160),customerPhone=S(d.customerPhone).slice(0,60),customerEmail=S(d.customerEmail).slice(0,160),items=normalizeQuoteItems(d.items);
   if(!customerName)return J({ok:false,error:'Nama pelanggan / syarikat diperlukan.'},400);
   if(!items.length)return J({ok:false,error:'Masukkan sekurang-kurangnya satu item quotation.'},400);
   const now=NOW(),subtotal=items.reduce((sum,item)=>sum+item.lineTotalMinor,0),discount=Math.min(subtotal,clampMoney(d.discountMinor,subtotal)),shipping=clampMoney(d.shippingMinor,100000000),tax=clampMoney(d.taxMinor,100000000),total=Math.max(0,subtotal-discount+shipping+tax);
   const validDays=clampDays(d.validDays,7),dueAt=S(d.dueAt)||plusDays(now,validDays),depositPercent=Math.max(0,Math.min(100,Number(d.depositPercent||0)));
-  const company={...(doc.company||{}),quoteMeta:{...oldMeta,source:'custom',customerAddress:S(d.customerAddress).slice(0,1000),attention:S(d.attention).slice(0,160),notes:S(d.notes).slice(0,2000),terms:S(d.terms).slice(0,3000),depositPercent:Number.isFinite(depositPercent)?Math.round(depositPercent*100)/100:0}};
+  const company={...(doc.company||{}),quoteMeta:{...oldMeta,revision:revision+1,revisedAt:now,revisedBy:S(env.ADMIN_ACTOR?.name||env.ADMIN_ACTOR?.id)||null,approvedAt:null,approvedBy:null,source:'custom',customerAddress:S(d.customerAddress).slice(0,1000),attention:S(d.attention).slice(0,160),notes:S(d.notes).slice(0,2000),terms:S(d.terms).slice(0,3000),depositPercent:Number.isFinite(depositPercent)?Math.round(depositPercent*100)/100:0}};
+  const snapshot={...doc,revision};
   const stmts=[
-    env.DB.prepare('UPDATE reqoo_documents SET subtotal_minor=?,discount_minor=?,shipping_minor=?,tax_minor=?,total_minor=?,due_at=?,customer_name=?,customer_phone=?,customer_email=?,company_json=?,updated_at=? WHERE id=?').bind(subtotal,discount,shipping,tax,total,dueAt,customerName,customerPhone,customerEmail,JSON.stringify(company),now,doc.id),
+    env.DB.prepare('INSERT INTO reqoo_quotation_revisions(document_id,revision,snapshot_json,version_at,version_actor,archived_at) VALUES(?,?,?,?,?,?)').bind(doc.id,revision,JSON.stringify(snapshot),oldMeta.revisedAt||doc.created_at,oldMeta.revisedBy||null,now),
+    env.DB.prepare('UPDATE reqoo_documents SET status=\'issued\',subtotal_minor=?,discount_minor=?,shipping_minor=?,tax_minor=?,total_minor=?,due_at=?,customer_name=?,customer_phone=?,customer_email=?,company_json=?,updated_at=? WHERE id=?').bind(subtotal,discount,shipping,tax,total,dueAt,customerName,customerPhone,customerEmail,JSON.stringify(company),now,doc.id),
     env.DB.prepare('DELETE FROM reqoo_document_items WHERE document_id=?').bind(doc.id),
     ...items.map(item=>env.DB.prepare('INSERT INTO reqoo_document_items(id,document_id,description,variation,quantity,unit_price_minor,line_total_minor,sort_order) VALUES(?,?,?,?,?,?,?,?)').bind(ID('di'),doc.id,item.description,item.variation,item.quantity,item.unitPriceMinor,item.lineTotalMinor,item.sortOrder))
   ];
-  await env.DB.batch(stmts);
+  try{await env.DB.batch(stmts)}catch(error){
+    if(/REQOO_QUOTE_CONFLICT|UNIQUE constraint failed: reqoo_quotation_revisions/.test(String(error?.message)))return J({ok:false,error:'Quotation changed. Reopen the latest version before saving.'},409);
+    throw error;
+  }
   return J({ok:true,updated:true,document:await hydrateDocument(await env.DB.prepare('SELECT * FROM reqoo_documents WHERE id=? LIMIT 1').bind(doc.id).first(),env)});
+}
+async function quotationHistory(d,env){
+  await ensureDocuments(env);
+  const key=S(d.documentId||d.id),row=await env.DB.prepare("SELECT * FROM reqoo_documents WHERE id=? AND type='quotation'").bind(key).first();
+  if(!row)return J({ok:false,error:'Quotation not found.'},404);
+  const current=await hydrateDocument(row,env),revision=Number(quoteMeta(current).revision||0);
+  if(d.revision!==undefined){
+    const requested=Number(d.revision);
+    if(!Number.isInteger(requested)||requested<0)return J({ok:false,error:'Invalid revision.'},400);
+    if(requested===revision)return J({ok:true,document:{...current,revision,readOnly:false}});
+    const archived=await env.DB.prepare('SELECT snapshot_json FROM reqoo_quotation_revisions WHERE document_id=? AND revision=?').bind(row.id,requested).first();
+    if(!archived)return J({ok:false,error:'Revision not found.'},404);
+    return J({ok:true,document:{...JSON.parse(archived.snapshot_json),revision:requested,readOnly:true}});
+  }
+  const versions=(await env.DB.prepare('SELECT revision,version_at,version_actor,archived_at FROM reqoo_quotation_revisions WHERE document_id=? ORDER BY revision DESC').bind(row.id).all()).results||[];
+  return J({ok:true,currentRevision:revision,versions:[{revision,version_at:quoteMeta(current).revisedAt||row.created_at,version_actor:quoteMeta(current).revisedBy||null,current:true},...versions]});
 }
 async function createInvoiceWithQuoteTerms(d,request,env){
   const response=await legacy({request,env});
@@ -163,7 +192,11 @@ async function updateCustomQuotationStatus(d,env){
   const doc=await customQuotation(d,env);
   if(!doc)return J({ok:false,error:'Custom quotation tidak dijumpai.'},404);
   if(quoteMeta(doc).convertedOrderId&&status!=='accepted')return J({ok:false,error:'Quotation yang telah menjadi order kekal ACCEPTED.'},409);
-  await env.DB.prepare('UPDATE reqoo_documents SET status=?,updated_at=? WHERE id=?').bind(status,NOW(),doc.id).run();
+  const meta=quoteMeta(doc);
+  if((d.expectedRevision!==undefined&&Number(d.expectedRevision)!==Number(meta.revision||0))||(d.expectedUpdatedAt!==undefined&&S(d.expectedUpdatedAt)!==doc.updated_at))return J({ok:false,error:'Quotation changed. Reopen the latest version.'},409);
+  const now=NOW(),company={...doc.company,quoteMeta:{...meta,approvedAt:status==='accepted'?now:null,approvedBy:status==='accepted'?(S(env.ADMIN_ACTOR?.name||env.ADMIN_ACTOR?.id)||null):null,approvedRevision:status==='accepted'?Number(meta.revision||0):null}};
+  const result=await env.DB.prepare('UPDATE reqoo_documents SET status=?,company_json=?,updated_at=? WHERE id=? AND updated_at=? AND company_json=? AND status=?').bind(status,JSON.stringify(company),now,doc.id,doc.updated_at,doc.company_json,doc.status).run();
+  if(!Number(result?.meta?.changes??result?.changes))return J({ok:false,error:'Quotation changed. Reopen the latest version.'},409);
   return J({ok:true,document:await hydrateDocument(await env.DB.prepare('SELECT * FROM reqoo_documents WHERE id=?').bind(doc.id).first(),env)});
 }
 async function convertCustomQuotationToOrder(d,env){
@@ -175,13 +208,14 @@ async function convertCustomQuotationToOrder(d,env){
     const order=await env.DB.prepare('SELECT * FROM orders WHERE id=? LIMIT 1').bind(meta.convertedOrderId).first();
     return J({ok:true,created:false,order,document:doc});
   }
+  if(doc.status!=='accepted')return J({ok:false,error:'Record customer approval before converting this quotation.'},409);
   if(!doc.items.length)return J({ok:false,error:'Quotation tiada item untuk dijadikan order.'},409);
 
   const now=NOW(),phone=S(doc.customer_phone).slice(0,60),email=S(doc.customer_email).slice(0,160),name=S(doc.customer_name).slice(0,160)||'Customer';
   let customer=null;
   if(phone)customer=await env.DB.prepare('SELECT * FROM customers WHERE phone=? LIMIT 1').bind(phone).first();
   if(!customer&&email)customer=await env.DB.prepare('SELECT * FROM customers WHERE email=? LIMIT 1').bind(email).first();
-  const customerId=customer?.id||ID('cus'),orderId=ID('ord'),orderNo=await nextOrderNumber(env),stmts=[];
+  const customerId=customer?.id||ID('cus'),orderId=`ord_quote_${doc.id}`,orderNo=await nextOrderNumber(env),stmts=[];
   if(customer){
     stmts.push(env.DB.prepare("UPDATE customers SET name=?,phone=COALESCE(NULLIF(?,''),phone),email=COALESCE(NULLIF(?,''),email),updated_at=? WHERE id=?").bind(name,phone,email,now,customerId));
   }else{
@@ -196,9 +230,14 @@ async function convertCustomQuotationToOrder(d,env){
   }
   stmts.push(env.DB.prepare('INSERT INTO activity_events(id,customer_id,order_id,event_type,trace_id,metadata_json,created_at) VALUES(?,?,?,?,?,?,?)')
     .bind(ID('evt'),customerId,orderId,'order.created',null,JSON.stringify({source:'admin_quotation',quotationNumber:doc.number}),now));
-  const company={...(doc.company||{}),quoteMeta:{...meta,convertedOrderId:orderId,convertedOrderNo:orderNo,convertedAt:now}};
+  const company={...(doc.company||{}),quoteMeta:{...meta,convertedOrderId:orderId,convertedOrderNo:orderNo,convertedAt:now,convertedFromUpdatedAt:doc.updated_at,convertedFromRevision:Number(meta.revision||0)}};
   stmts.push(env.DB.prepare("UPDATE reqoo_documents SET order_id=?,status='accepted',company_json=?,updated_at=? WHERE id=?").bind(orderId,JSON.stringify(company),now,doc.id));
-  await env.DB.batch(stmts);
+  try{await env.DB.batch(stmts)}catch(error){
+    const fresh=await customQuotation(d,env),existingId=quoteMeta(fresh).convertedOrderId;
+    if(existingId)return J({ok:true,created:false,order:await env.DB.prepare('SELECT * FROM orders WHERE id=?').bind(existingId).first(),document:fresh});
+    if(/REQOO_QUOTE_CONFLICT/.test(String(error?.message)))return J({ok:false,error:'Quotation changed. Reopen and approve the latest version.'},409);
+    throw error;
+  }
   const order=await env.DB.prepare('SELECT * FROM orders WHERE id=? LIMIT 1').bind(orderId).first();
   const fresh=await hydrateDocument(await env.DB.prepare('SELECT * FROM reqoo_documents WHERE id=? LIMIT 1').bind(doc.id).first(),env);
   return J({ok:true,created:true,order,document:fresh});
@@ -233,10 +272,12 @@ export async function onRequest({request,env}){
     try{return await repairProductImages(env)}catch(error){console.error('REQOO image repair:',error);return J({ok:false,error:'Gambar lama belum dapat dipulihkan'},500)}
   }
 
-  if(['createCustomQuotation','updateCustomQuotation','updateCustomQuotationStatus','convertCustomQuotationToOrder'].includes(action)){
+  if(['quotationHistory','createCustomQuotation','updateCustomQuotation','updateCustomQuotationStatus','convertCustomQuotationToOrder'].includes(action)){
     if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);
     if(!env.DB)return J({ok:false,error:'D1 binding DB tidak dijumpai'},503);
+    if(action!=='quotationHistory'&&request.method!=='POST')return J({ok:false,error:'Use POST.'},405);
     try{
+      if(action==='quotationHistory')return await quotationHistory(d,env);
       if(action==='createCustomQuotation')return await createCustomQuotation(d,env);
       if(action==='updateCustomQuotation')return await updateCustomQuotation(d,env);
       if(action==='updateCustomQuotationStatus')return await updateCustomQuotationStatus(d,env);
