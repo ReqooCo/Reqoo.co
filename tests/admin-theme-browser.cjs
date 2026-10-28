@@ -75,7 +75,7 @@ const root=path.resolve(__dirname,'..'),out=process.env.REQOO_TEST_OUTPUT||path.
    assert.equal(await page.locator('#financeTransactions').isVisible(),true);
    assert.equal(await page.locator('#financePanel-summary').isVisible(),false);
    await page.locator('#financeTab-costs').click();assert.equal(await page.locator('#financeRange').isVisible(),false);
-   await page.locator('#financeTab-summary').click();
+   await page.locator('#financeTab-summary').click();await page.waitForFunction(()=>getComputedStyle(document.querySelector('#financeTab-summary')).backgroundColor==='rgb(20, 87, 68)');
    await page.locator('#financeState').scrollIntoViewIfNeeded();
    assert.ok(await page.locator('#financeState').evaluate(e=>e.getBoundingClientRect().bottom<document.querySelector('.rqAdminMobile').getBoundingClientRect().top),'last finance content clears the navigation');
    await page.evaluate(()=>scrollTo(0,0));
