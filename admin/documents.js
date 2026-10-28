@@ -182,8 +182,10 @@ async function createDepositInvoice(){
 }
 async function convertActiveQuote(){
   if(!activeDoc||activeDoc.type!=='quotation')return;
-  const quote=activeDoc,meta=quoteMeta(quote),pct=Math.max(0,Math.min(100,Number(meta.depositPercent||0))),depositText=pct>0&&pct<100?' dan terus sediakan Invoice Deposit '+pct+'%':'';
-  if(!confirm(`Pelanggan telah setuju dengan ${quote.number}? Jadikan pesanan dengan item dan harga ini.`))return;
+  const quote=activeDoc,meta=quoteMeta(quote),pct=Math.max(0,Math.min(100,Number(meta.depositPercent||0)));
+  if(meta.convertedOrderId)return toast('Sebut harga ini sudah ditukar kepada pesanan.',true);
+  const itemCount=(quote.items||[]).length,total=money(quote.total_minor||0),deposit=pct>0&&pct<100?`\nDeposit ${pct}%: ${money(Math.round(Number(quote.total_minor||0)*pct/100))}`:'';
+  if(!confirm(`Sahkan pelanggan bersetuju dengan sebut harga ${quote.number}?\n\n${itemCount} item · Jumlah ${total}${deposit}\n\nSistem akan cipta pesanan menggunakan butiran dan harga ini. Tiada bayaran akan direkodkan secara automatik.`))return;
   const btn=$('docConvert'),old=btn.textContent;btn.disabled=true;btn.textContent='Menyimpan…';
   try{
     if(!meta.convertedOrderId&&quote.status!=='accepted')await api('updateCustomQuotationStatus',{documentId:quote.id,status:'accepted'},'POST');
@@ -193,10 +195,10 @@ async function convertActiveQuote(){
     if(orderId&&pct>0&&pct<100){
       const invoiceData=await api('createDocument',{type:'invoice',orderId},'POST');
       activeDoc=invoiceData.document;replaceDocument(activeDoc);renderHistory();
-      toast(`Order ${ref} + Invoice Deposit ${pct}% siap`);
+      toast(`Pesanan ${ref} dan invois deposit ${pct}% berjaya disediakan`);
       await load(true);if(ordersLoaded)await loadOrders(true);showDocument();if(orderId)document.dispatchEvent(new CustomEvent('rq:documents-open-flow',{detail:{key:orderId}}));return;
     }
-    activeDoc=convertedQuote;toast(`Order ${ref} berjaya dibuat`);
+    activeDoc=convertedQuote;toast(`Pesanan ${ref} berjaya dibuat`);
     await load(true);if(ordersLoaded)await loadOrders(true);
     const fresh=await openSaved(activeDoc.id,false);activeDoc=fresh;showDocument();if(orderId)document.dispatchEvent(new CustomEvent('rq:documents-open-flow',{detail:{key:orderId}}));
   }catch(e){toast(e.message,true)}finally{btn.disabled=false;btn.textContent=old}
