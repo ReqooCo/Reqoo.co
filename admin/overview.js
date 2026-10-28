@@ -73,8 +73,8 @@ function render(){
  $('#rqDashFoot').textContent=`Business date ${cc.business_date||'—'} · ${Number(cc.followup_whatsapp_count||0)} WhatsApp follow-ups available · Updated ${new Date(lastLoad).toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'})}.`;
 }
 async function load(force=false){
- ensure();if(busy)return;if(!force&&data&&Date.now()-lastLoad<FRESH_MS){render();return}busy=true;$('#rqDashRefresh').disabled=true;$('#rqDashFoot').textContent='Memuatkan command center…';
- try{const r=await fetch(`${API}?action=dashboardSummary`,{cache:'no-store'}),j=await r.json().catch(()=>({}));if(!r.ok||!j.ok)throw Error(j.error||'Gagal memuatkan dashboard');data=j;lastLoad=Date.now();render()}catch(e){$('#rqDashFoot').textContent=e.message||'Dashboard gagal dimuatkan.'}finally{busy=false;$('#rqDashRefresh').disabled=false}
+ ensure();if(busy)return;if(!force&&data&&Date.now()-lastLoad<FRESH_MS){render();return}busy=true;$('#rqDashRefresh').disabled=true;$('#rqDashFoot').textContent='Loading dashboard…';
+ try{const r=await fetch(`${API}?action=dashboardSummary`,{cache:'no-store'}),j=await r.json().catch(()=>({}));if(!r.ok||!j.ok)throw Error(j.error||'Unable to load dashboard');data=j;lastLoad=Date.now();render()}catch(e){$('#rqDashFoot').textContent=e.message||'Dashboard could not be loaded.'}finally{busy=false;$('#rqDashRefresh').disabled=false}
 }
 function boot(){ensure();load()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
