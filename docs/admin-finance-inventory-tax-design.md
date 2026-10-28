@@ -65,3 +65,17 @@ All monetary values integer sen, no floating point; stock quantities decimal wit
 - Use bottom navigation for the five primary areas on mobile only if it fits without hiding content; otherwise existing navigation with clear section tabs. Avoid nested tab depth >2.
 - Mobile tap targets >=44px; body font >=14px, key figures >=20px; sticky controls respect env(safe-area-inset-bottom). Do not use horizontal page overflow, only tab strip may scroll horizontally.
 - Validate at 375x812 and 390x844 with realistic data: keyboard open, long customer names, long currency amounts, 100+ orders, accessibility zoom at 200%, loading/error/empty states.
+
+
+## Deep research audit — 2026-10-28
+- Code audit: admin/finance.html is a *cash collection* dashboard (received payments, balances, averages), NOT an accrual profit-and-loss report. Never present cash collected as revenue or profit.
+- admin/documents.html already contains canonical order/document workflow plus settings, reports and archives. Shortening pages must preserve DOM hooks and handlers, not remove features.
+- tests/admin-premium-shell.mjs asserts the existing five navigation labels and secure session, so changing navigation needs coordinated test and runtime updates.
+- NN/g: progressive disclosure keeps frequent tasks prominent and advanced features secondary; avoid more than two disclosure levels: https://www.nngroup.com/articles/progressive-disclosure/
+- NN/g: too many horizontally hidden tabs hurt discoverability: https://www.nngroup.com/articles/tabs-used-right/
+- GOV.UK: task lists suit long, non-sequential work across sessions, not every short form: https://design-system.service.gov.uk/components/task-list/
+- Revised UX: do not force five finance subtabs on iPhone. Finance overview shows three clear destinations (Pembelian, Stok, Untung Rugi) plus Cukai in reporting. Detail views use at most three immediately visible tabs or accordions; purchases use a three-step form with autosave.
+- HASiL FAQ: individual business income resident uses Borang B; keep supporting records seven years: https://www.hasil.gov.my/individu/soalan-lazim-individu/
+- HASiL e-Invoice timeline updated 30 Aug 2026: under RM3m turnover stated exempt, subject to conditions and future revisions: https://www.hasil.gov.my/e-invois/pelaksanaan-e-invois-di-malaysia/garis-masa-pelaksanaan-e-invois/
+- Acceptance before merge: snapshot existing screens; regression on orders/quotation/receipts/auth; stock ledger and tax estimator tests; actual iPhone testing at 375px/390px, 200% text zoom, long values and keyboard; migration/backups, owner-reviewed opening inventory.
+- Never infer historical cost or tax due from existing cash collection records; mark missing information as unknown.
