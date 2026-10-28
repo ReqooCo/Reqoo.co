@@ -57,3 +57,29 @@
  .rqKpi{min-height:110px}
 }
 @media(max-width:420px){.rqActionGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+
+/* Mobile dashboard information architecture: actions first, summary second, attention third.
+   Detailed reporting remains available in Finance, Orders and Customers. */
+@media (max-width:680px) {
+  #rqOverviewV2 { display:flex; flex-direction:column; gap:14px; }
+  #rqOverviewV2 .rqDashHead { order:0; margin:0; }
+  #rqOverviewV2 .rqDashGridTop { order:1; display:flex; flex-direction:column; gap:14px; }
+  #rqOverviewV2 .rqDashGridTop > .rqDashPanel:not(.rqFollowupPanel) { order:0; }
+  #rqOverviewV2 .rqFollowupPanel { order:1; }
+  #rqOverviewV2 .rqKpis { order:2; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+  #rqOverviewV2 .rqKpis .rqKpi:nth-child(n+3) { display:none; }
+  #rqOverviewV2 .rqDashGridBottom,
+  #rqOverviewV2 .rqRevenuePanel { display:none; }
+  #rqOverviewV2 .rqDashFoot { order:3; padding:0 4px; }
+  #rqOverviewV2 .rqDashPanel { padding:14px; }
+  #rqOverviewV2 .rqActionGrid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px; }
+  #rqOverviewV2 .rqAction { min-height:88px; padding:12px 4px; gap:7px; }
+  #rqOverviewV2 .rqActionIcon { width:29px; height:29px; }
+  #rqOverviewV2 .rqAction b { font-size:13px; }
+  #rqOverviewV2 .rqKpi { min-height:95px; padding:12px; }
+  #rqOverviewV2 .rqKpi b { font-size:22px; }
+  #rqOverviewV2 .rqFollowupMain b { font-size:14px; }
+  #rqOverviewV2 .rqFollowupMain small { font-size:12px; }
+  #rqOverviewV2 .rqFollowupPriority span { font-size:11px; }
+}
