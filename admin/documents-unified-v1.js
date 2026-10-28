@@ -3,12 +3,7 @@
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 let activeFilter='all';
 function rowType(row){
- const t=(row.querySelector('.rqHistType')?.textContent||'').trim().toLowerCase();
- if(t.includes('quotation'))return'quotation';
- if(t.includes('invoice'))return'invoice';
- if(t.includes('receipt'))return'receipt';
- if(t.includes('delivery'))return'delivery_order';
- return'other';
+ return row.dataset.documentType||(window.__REQOO_DOCUMENTS__||[]).find(d=>String(d.id)===row.dataset.documentId)?.type||'other';
 }
 function rows(){return $$('#docHistory .rqHistRow')}
 function syncCounts(){

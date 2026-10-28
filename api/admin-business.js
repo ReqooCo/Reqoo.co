@@ -93,10 +93,10 @@ export async function businessApi(request,env,d){
   const rows=(await env.DB.prepare(sql).bind(kind,kind,offset).all()).results||[];return json({ok:true,tasks:rows.slice(0,40).map(t=>({...t,url:t.kind==='production'?'/admin/production.html?q='+encodeURIComponent(t.reference):'/admin/documents.html?order='+encodeURIComponent(t.order_id)})),offset,hasMore:rows.length>40});
  }
  if(action==='archiveWorkspace'||action==='restoreWorkspace'){
-  const id=S(d.orderId);if(!id||S(d.confirmReference)!==S(d.reference))return json({ok:false,error:'Taip nombor rujukan yang tepat.'},400);
+  const id=S(d.orderId);if(!id||S(d.confirmReference)!==S(d.reference))return json({ok:false,error:'Rujukan tidak sepadan. Muat semula.'},400);
   const o=await env.DB.prepare('SELECT id,order_no FROM orders WHERE id=?').bind(id).first(),doc=await env.DB.prepare("SELECT MAX(CASE WHEN type='quotation' THEN number END) quote_number,MAX(CASE WHEN type='invoice' THEN number END) invoice_number,MIN(number) other_number FROM reqoo_documents WHERE order_id=?").bind(id).first();
   const ref=o?.order_no||doc?.quote_number||doc?.invoice_number||o?.id||doc?.other_number;if(!ref)return json({ok:false,error:'Rekod tidak dijumpai.'},404);if(S(d.reference)!==ref)return json({ok:false,error:'Rujukan berubah. Muat semula.'},409);
-  if(action==='archiveWorkspace'){if(S(d.reason).length<3)return json({ok:false,error:'Nyatakan sebab pemadaman.'},400);await env.DB.prepare('INSERT INTO reqoo_workspace_archives(order_id,reference,reason,actor_name,created_at) VALUES(?,?,?,?,?) ON CONFLICT(order_id) DO NOTHING').bind(id,ref,S(d.reason).slice(0,300),actor.name,now()).run()}
+  if(action==='archiveWorkspace'){await env.DB.prepare('INSERT INTO reqoo_workspace_archives(order_id,reference,reason,actor_name,created_at) VALUES(?,?,?,?,?) ON CONFLICT(order_id) DO NOTHING').bind(id,ref,S(d.reason).slice(0,300),actor.name,now()).run()}
   else await env.DB.prepare('DELETE FROM reqoo_workspace_archives WHERE order_id=?').bind(id).run();
   return json({ok:true,archived:action==='archiveWorkspace'});
  }

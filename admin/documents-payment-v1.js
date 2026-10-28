@@ -29,7 +29,6 @@ function sumFor(orderId,doc){
 }
 function enrichInvoices(){
  $$('#docHistory .rqHistRow').forEach(row=>{
-  const type=(row.querySelector('.rqHistType')?.textContent||'').toLowerCase();if(!type.includes('invoice'))return;
   const number=row.querySelector('.rqHistNo')?.textContent?.trim(),doc=invoiceByNumber(number);if(!doc)return;
   const s=sumFor(doc.order_id,doc),target=row.querySelector('.rqHistNo')?.parentElement;
   let meta=target?.querySelector('.rqPaymentMeta');if(!meta&&target){meta=document.createElement('div');meta.className='rqPaymentMeta';target.appendChild(meta)}
