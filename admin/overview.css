@@ -194,3 +194,11 @@
  #rqOverviewV2 .rqDashFoot{order:5!important}
 }
 
+
+/* Accessible mobile contrast: white labels and icons on emerald surfaces. */
+@media(max-width:680px){
+ .rqAppNav a,.rqAppNav a:visited,.rqAppNav a.active,.rqAppNav a.active:visited{color:#fff;font-weight:750}
+ .rqAppNav a svg{stroke:currentColor}
+ #rqOverviewV2 .rqAction.primary,#rqOverviewV2 .rqAction.primary b,#rqOverviewV2 .rqAction.primary span{color:#fff}
+ #rqOverviewV2 .rqMiniAction.wa,#rqOverviewV2 .rqMiniAction.wa:visited{color:#fff}
+}
