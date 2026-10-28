@@ -24,7 +24,7 @@ const root=path.resolve(__dirname,'..'),out=process.env.REQOO_TEST_OUTPUT||path.
  for(const name of ['index','orders','production','products','customers','finance','settings','shop-content','sim-v2']){
   await page.setViewportSize({width:1440,height:1000});
   await page.goto('https://reqoo.test/admin/'+(name==='index'?'':name+'.html'));
-  if(name==='index')await page.waitForSelector('.rqAppBrand');else await page.waitForSelector('body.rq-admin-shell');await page.waitForLoadState('networkidle');
+  if(name==='index')await page.waitForSelector('.rqAppBrand',{state:'attached'});else await page.waitForSelector('body.rq-admin-shell');await page.waitForLoadState('networkidle');
   if(['orders','production','customers'].includes(name))assert.match(await page.locator('main').innerText(),/Pelanggan Ujian/,'fixture rows rendered');
   if(name==='products')assert.match(await page.locator('main').innerText(),/Tumbler Ujian/);
   assert.equal(await page.locator('link[href*="admin-flow.css"]').count(),1,'flow injected once');
@@ -36,6 +36,7 @@ const root=path.resolve(__dirname,'..'),out=process.env.REQOO_TEST_OUTPUT||path.
   await page.setViewportSize({width:390,height:844});
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),name+' mobile overflow');
   if(name==='index'){
+   assert.ok(await page.locator('.rqAppBrand').isVisible(),'mobile Overview header visible');
    assert.ok(await page.locator('.rqAppNav a').first().isVisible(),'new Overview navigation visible');
    assert.equal(await page.locator('.rqAdminMoreTrigger').count(),0,'legacy mobile navigation absent');
   }else{
