@@ -134,71 +134,60 @@
  #rqOverviewV2 .rqDashFoot { overflow-wrap:anywhere; }
 }
 
-/* REQOO mobile palette — warm ivory, sage, forest and restrained champagne. */
-@media (max-width:680px) {
- body.rqOverviewV2 #rqOverviewV2 { color:#27332f; }
- #rqOverviewV2 .rqDashPanel { background:#fffefa; border-color:#e1e7de; box-shadow:0 3px 14px rgba(37,68,52,.055); }
- #rqOverviewV2 .rqDashGridTop > .rqDashPanel:not(.rqFollowupPanel) { background:linear-gradient(145deg,#fffefa 0%,#f1f6f0 100%); }
- #rqOverviewV2 .rqAction { background:#fffefa; border-color:#dce5dc; color:#273b32; }
- #rqOverviewV2 .rqAction.primary { background:#245b49; border-color:#245b49; color:#fff; }
- #rqOverviewV2 .rqAction.primary .rqActionIcon { color:#fff; }
- #rqOverviewV2 .rqAction:not(.primary) .rqActionIcon { color:#39725b; }
- #rqOverviewV2 .rqAction:focus-visible,#rqOverviewV2 .rqKpi:focus-visible { outline:3px solid #c5a56b; outline-offset:2px; }
- #rqOverviewV2 .rqKpi { background:#fffefa; border-color:#e1e7de; border-top:3px solid #c5a56b; }
- #rqOverviewV2 .rqKpi.ok { border-top-color:#39725b; }
- #rqOverviewV2 .rqKpi.danger { border-top-color:#bd7b69; }
- #rqOverviewV2 .rqFollowupPanel { border-left:3px solid #c5a56b; }
- #rqOverviewV2 .rqDashPanelHead h3 { color:#27332f; }
- #rqOverviewV2 .rqDashPanelHead a { color:#245b49; }
- #rqOverviewV2 .rqDashHead h2 { color:#243b31; }
-}
-
-/* REQOO Emerald Gold mobile app shell. All figures remain API-driven. */
+/* Canonical mobile overview. Scope overrides here so shared Admin styles cannot
+   replace foreground colours or primary actions on this surface. */
 .rqAppBrand,.rqAppNav{display:none}
 @media(max-width:680px){
- body{background:#FAFBF7}
- .rqAppBrand{display:flex;align-items:center;gap:12px;min-height:140px;padding:calc(18px + env(safe-area-inset-top)) 22px 30px;background:linear-gradient(120deg,#103d31,#145744 72%,#1a6650);border-bottom:5px solid #C5A36A;border-radius:0 0 26px 26px;color:#fff}
- .rqBrandMark{font-size:48px;line-height:1;font-weight:950;font-style:italic;color:#C5A36A}
+ body.rqOverviewV2{background:#FAFBF7!important;color:#172c25}
+ .rqAppBrand{display:flex;align-items:center;gap:12px;min-height:88px;padding:calc(16px + env(safe-area-inset-top)) 20px 17px;background:#145744;border-bottom:1px solid #C5A36A;border-radius:0 0 20px 20px;color:#fff}
+ .rqBrandMark{font-size:34px;line-height:1;font-weight:850;font-style:italic;color:#C5A36A}
  .rqBrandText{display:flex;flex-direction:column;gap:4px;min-width:0}
- .rqBrandText strong{font-size:19px;letter-spacing:.4px}
- .rqBrandText span{font-size:13px;color:#E9F2EC}
- .rqBrandAccount{margin-left:auto;display:grid;place-items:center;width:42px;height:42px;border:1px solid #ffffff55;border-radius:50%;color:#fff;text-decoration:none;font-size:24px}
- #adminApp.wrap{padding:22px 14px}
- #rqOverviewV2 .rqDashHead{margin-bottom:3px}
- #rqOverviewV2 .rqDashHead h2{font-size:27px}
- #rqOverviewV2 .rqKpi{border:1px solid #dce6dc;border-radius:19px;background:linear-gradient(135deg,#fff,#E9F2EC);box-shadow:0 6px 15px #123e3012}
- #rqOverviewV2 .rqKpi.danger{background:linear-gradient(135deg,#fff,#fbf1dd);border-color:#ecdfc2}
- #rqOverviewV2 .rqKpi small{font-size:10px;letter-spacing:.4px;color:#42584b}
- #rqOverviewV2 .rqKpi b{font-size:21px;color:#145744}
- #rqOverviewV2 .rqDashGridTop>.rqDashPanel:not(.rqFollowupPanel){background:#fff;border-radius:22px}
- #rqOverviewV2 .rqAction{border-radius:17px;min-height:100px;box-shadow:0 2px 7px #1457440c}
- #rqOverviewV2 .rqAction.primary{background:linear-gradient(145deg,#176a51,#104435)}
- #rqOverviewV2 .rqFollowupPanel{border:1px solid #e4e6df;border-left:4px solid #C5A36A;border-radius:20px;background:linear-gradient(90deg,#fffaf0,#fff)}
- .rqAppNav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;bottom:0;left:0;right:0;z-index:90;padding:10px 7px calc(11px + env(safe-area-inset-bottom));border-radius:23px 23px 0 0;background:linear-gradient(115deg,#103d31,#145744);box-shadow:0 -8px 24px #123e3024}
- .rqAppNav a{display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;color:#f5f8f4;font-size:10px;min-height:49px;justify-content:center}
- .rqAppNav a span{font-size:25px;line-height:1}
- .rqAppNav a.active{color:#e7bf70;font-weight:800}
- #rqOverviewV2{padding-bottom:calc(104px + env(safe-area-inset-bottom))}
-}
-
-/* Single-shell mobile hierarchy: financial KPIs, actions, then attention. */
-@media(max-width:680px){
- #rqOverviewV2 .rqDashGridTop{display:flex!important;flex-direction:column!important;gap:14px!important}
- #rqOverviewV2 .rqDashGridTop>.rqDashPanel:not(.rqFollowupPanel){order:1!important}
- #rqOverviewV2 .rqDashGridTop>.rqFollowupPanel{order:2!important}
+ .rqBrandText strong{font-size:16px;letter-spacing:.7px;font-weight:750}
+ .rqBrandText span{font-size:11px;color:#d8e8e1}
+ body.rqOverviewV2 .rqBrandAccount{margin-left:auto;display:grid;place-items:center;width:40px;height:40px;border:1px solid #ffffff38;border-radius:12px;color:#fff!important;background:#ffffff0c;text-decoration:none!important;flex:none}
+ .rqBrandAccount svg{width:19px;height:19px;stroke:currentColor}
+ body.rqOverviewV2 #adminApp.wrap{padding:20px 16px}
+ body.rqOverviewV2 #rqOverviewV2{display:flex!important;flex-direction:column;gap:14px;padding-bottom:calc(88px + env(safe-area-inset-bottom));color:#172c25}
+ body.rqOverviewV2 #rqOverviewV2 .rqDashHead{order:0;margin:0 0 2px;gap:10px}
+ body.rqOverviewV2 #rqOverviewV2 .rqDashHead h2{font-size:20px;line-height:1.3;letter-spacing:-.5px;color:#172c25;font-weight:750}
+ body.rqOverviewV2 #rqOverviewV2 .rqDashRefresh{min-width:0;min-height:44px!important;font-size:12px!important;padding:8px 12px!important;border-radius:10px!important;box-shadow:none!important;color:#145744!important;border-color:#dbe4de!important;background:#fff!important}
+ body.rqOverviewV2 #rqOverviewV2 .rqKpis{order:1!important;gap:10px}
+ body.rqOverviewV2 #rqOverviewV2 .rqKpi{min-height:104px;padding:14px;border:1px solid #e1e7e1;border-radius:14px;background:#fff;box-shadow:0 2px 8px #183b2c04;text-decoration:none!important}
+ body.rqOverviewV2 #rqOverviewV2 .rqKpi:first-child{background:#145744;border-color:#145744}
+ body.rqOverviewV2 #rqOverviewV2 .rqKpi small{font-size:9px;line-height:1.4;letter-spacing:.65px;color:#52665b;font-weight:700}
+ body.rqOverviewV2 #rqOverviewV2 .rqKpi b{margin-top:10px;font-size:22px;line-height:1.2;letter-spacing:-.6px;font-weight:750;color:#173d30}
+ body.rqOverviewV2 #rqOverviewV2 .rqKpi span{margin-top:7px;font-size:11px;line-height:1.4;color:#64756b;font-weight:450}
+ body.rqOverviewV2 #rqOverviewV2 .rqKpi:first-child :is(small,b){color:#fff}
+ body.rqOverviewV2 #rqOverviewV2 .rqKpi:first-child span{color:#d2e5dc}
+ body.rqOverviewV2 #rqOverviewV2 .rqKpi.danger{border-top:2px solid #C5A36A}
+ body.rqOverviewV2 #rqOverviewV2 .rqDashGridTop{order:2!important;display:flex!important;flex-direction:column!important;gap:14px!important;margin:0}
+ body.rqOverviewV2 #rqOverviewV2 .rqDashGridTop>.rqDashPanel:not(.rqFollowupPanel){order:1!important}
+ body.rqOverviewV2 #rqOverviewV2 .rqDashPanel{padding:16px;border:1px solid #e1e7e1;border-radius:16px;background:#fff;box-shadow:0 3px 12px #183b2c04}
+ body.rqOverviewV2 #rqOverviewV2 .rqDashPanelHead{margin-bottom:14px}
+ body.rqOverviewV2 #rqOverviewV2 .rqDashPanelHead h3{font-size:16px;line-height:1.3;letter-spacing:-.3px;font-weight:750;color:#172c25}
+ body.rqOverviewV2 #rqOverviewV2 .rqActionGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ body.rqOverviewV2 #rqOverviewV2 .rqAction{display:flex;flex-direction:row;justify-content:flex-start;gap:10px;min-height:62px;padding:12px;border:1px solid #e3e9e3!important;border-radius:12px;background:#FAFBF7!important;color:#233e32!important;text-align:left;box-shadow:none!important;text-decoration:none!important}
+ body.rqOverviewV2 #rqOverviewV2 .rqAction b{font-size:12px;line-height:1.35;font-weight:650;color:inherit!important}
+ body.rqOverviewV2 #rqOverviewV2 .rqAction span{display:none}
+ body.rqOverviewV2 #rqOverviewV2 .rqActionIcon{width:23px;height:23px;color:#386d56;flex:none}
+ body.rqOverviewV2 #rqOverviewV2 .rqAction.primary{grid-column:1/-1;min-height:48px;justify-content:center;background:#145744!important;border-color:#145744!important;color:#fff!important}
+ body.rqOverviewV2 #rqOverviewV2 .rqAction.primary :is(b,span,.rqActionIcon){color:#fff!important}
+ body.rqOverviewV2 #rqOverviewV2 .rqFollowupPanel{order:2!important;border-left:1px solid #e1e7e1;background:#fff}
+ body.rqOverviewV2 #rqOverviewV2 .rqFollowupCount{padding:3px 7px;font-size:10px;font-weight:650;vertical-align:1px;background:#f3edde;color:#71572d}
+ body.rqOverviewV2 #rqOverviewV2 .rqFollowupRow{padding:12px 0;border-color:#edf0eb;row-gap:7px}
+ body.rqOverviewV2 #rqOverviewV2 .rqFollowupPriority span{min-width:0;padding:3px 7px;font-size:9px;letter-spacing:.6px;font-weight:750}
+ body.rqOverviewV2 #rqOverviewV2 .rqFollowupMain b{font-size:13px;line-height:1.4;font-weight:650;color:#233e32}
+ body.rqOverviewV2 #rqOverviewV2 .rqFollowupMain small{font-size:11px;line-height:1.45;color:#6a786f}
+ body.rqOverviewV2 #rqOverviewV2 .rqFollowupMain .rqBadge{font-size:9px;font-weight:650;letter-spacing:.2px}
+ body.rqOverviewV2 #rqOverviewV2 .rqFollowupActions>strong{font-size:13px;letter-spacing:-.2px;color:#233e32}
+ body.rqOverviewV2 #rqOverviewV2 .rqMiniAction{font-size:11px!important;min-height:44px;padding:8px 10px;border-radius:9px;border-color:#dce5dc!important;color:#145744!important;background:#fff!important;box-shadow:none!important;text-decoration:none!important}
+ body.rqOverviewV2 #rqOverviewV2 .rqMiniAction.wa{background:#145744!important;border-color:#145744!important;color:#fff!important}
+ body.rqOverviewV2 .rqAppNav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;bottom:0;left:0;right:0;z-index:90;padding:8px 8px calc(8px + env(safe-area-inset-bottom));border-top:1px solid #ffffff14;border-radius:18px 18px 0 0;background:#145744;box-shadow:0 -4px 16px #123e3012}
+ body.rqOverviewV2 .rqAppNav a{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:49px;border-radius:11px;text-decoration:none!important;color:#fff!important;font-size:9px;font-weight:550!important;line-height:1.3}
+ body.rqOverviewV2 .rqAppNav a span{display:flex;line-height:1}
+ body.rqOverviewV2 .rqAppNav a svg{width:21px;height:21px;stroke:currentColor}
+ body.rqOverviewV2 .rqAppNav a.active{background:#ffffff12;font-weight:750!important}
+ body.rqOverviewV2 .rqAppNav a.active:before{content:"";position:absolute;top:3px;width:15px;height:2px;border-radius:2px;background:#C5A36A}
  body.rqOverviewV2 .rqAdminMobile,body.rqOverviewV2 .rqAdminSide,body.rqOverviewV2 .rqAdminMoreBackdrop{display:none!important}
- #rqOverviewV2 .rqKpis{order:1!important}
- #rqOverviewV2 .rqDashGridTop{order:2!important}
- #rqOverviewV2 .rqDashGridBottom{order:3!important}
- #rqOverviewV2 .rqRevenuePanel{order:4!important}
- #rqOverviewV2 .rqDashFoot{order:5!important}
-}
-
-
-/* Accessible mobile contrast: white labels and icons on emerald surfaces. */
-@media(max-width:680px){
- .rqAppNav a,.rqAppNav a:visited,.rqAppNav a.active,.rqAppNav a.active:visited{color:#fff;font-weight:750}
- .rqAppNav a svg{stroke:currentColor}
- #rqOverviewV2 .rqAction.primary,#rqOverviewV2 .rqAction.primary b,#rqOverviewV2 .rqAction.primary span{color:#fff}
- #rqOverviewV2 .rqMiniAction.wa,#rqOverviewV2 .rqMiniAction.wa:visited{color:#fff}
+ body.rqOverviewV2 #rqOverviewV2 :is(a,button):focus-visible,body.rqOverviewV2 :is(.rqAppNav a,.rqBrandAccount):focus-visible{outline:3px solid #C5A36A;outline-offset:3px}
 }
