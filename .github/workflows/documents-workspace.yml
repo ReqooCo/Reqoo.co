@@ -11,6 +11,7 @@ on:
       - 'admin/finance.html'
       - 'migrations/0012_order_handoffs.sql'
       - 'tests/admin-sales*'
+      - 'tests/admin-language.cjs'
       - '_web_worker.js'
       - 'functions/_middleware.js'
       - 'tests/admin-theme-browser.cjs'
@@ -55,6 +56,7 @@ jobs:
         env:
           REQOO_TEST_OUTPUT: test-results/documents
         run: |
+          node tests/admin-language.cjs
           node tests/admin-documents-fast-load.cjs
           node tests/admin-documents-browser.cjs
           node tests/admin-theme-browser.cjs
