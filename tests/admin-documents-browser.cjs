@@ -29,6 +29,11 @@ if(d.action==='documentWorkspaces'){
 }else if(d.action==='documentsFinanceDashboard'){if(financeDelay)await new Promise(r=>setTimeout(r,financeDelay));body={ok:true,documents:[],payments:[],summaries:records.filter(x=>x.type==='invoice').map(x=>({orderId:x.order_id,totalMinor:30000,paidMinor:0,balanceMinor:30000,paymentStatus:'pending'})),stats:{all:43,outstandingCount:43,outstandingMinor:1290000,paidCount:0},invoices:[],invoiceTotal:0};}
 else if(d.action==='documentSettings'){settingsCalls++;body.settings={quoteValidDays:7};}
 else if(d.action==='ordersDashboard'){orderCalls++;body={ok:true,orders:[],total:0,stats:{}};}
+else if(d.action==='quotationHistory'){
+ const doc=records.find(x=>x.id===d.documentId)||createdOrderQuote,revision=Number(doc?.company?.quoteMeta?.revision||0);
+ if(d.revision!==undefined)body.document={...doc,revision:Number(d.revision),readOnly:Number(d.revision)!==revision,customer_name:Number(d.revision)!==revision?'Previous Customer':doc.customer_name};
+ else body={ok:true,currentRevision:revision,versions:[{revision,current:true,version_at:doc.created_at},...(revision?[{revision:0,version_at:doc.created_at,version_actor:'Fixture Admin'}]:[])]};
+}
 else if(d.action==='getDocument'){body.document=records.find(x=>x.id===d.documentId)||createdOrderQuote;}
 else if(d.action==='createOrderQuotation'){createdOrderQuote={...records[1],id:'order-quote-new',order_id:'empty-order',number:'QT-NEW-ORDER',company:{companyName:'REQOO.CO',quoteMeta:{source:'order',depositPercent:50}}};body={ok:true,created:true,document:createdOrderQuote};}
 else if(d.action==='getPaymentReceipt'){body.receipt={id:'fixture-pay',receipt_number:'RC-TIMELINE',order_id:'ord0',order_no:'RQ-ord0',invoice_number:records[0].number,customer_name:records[0].customer_name,paid_at:'2026-10-02T12:00:00Z',amount_minor:15000,payment_type:'deposit',method:'bank_transfer',company:{companyName:'REQOO.CO'},summary:{totalMinor:30000,paidMinor:15000,balanceMinor:15000}};}
@@ -124,6 +129,23 @@ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWid
 await page.locator('#toggleQuoteBuilder').click();await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(out,'documents-mobile.png'),fullPage:false});
 await page.locator('#showDocumentArchive').click();
 assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'list must fit mobile');
+// Revision previews preserve context and never expose historical mutations.
+records[1].company.quoteMeta={source:'custom',revision:1,depositPercent:50};
+await page.evaluate(()=>document.dispatchEvent(new CustomEvent('rq:documents-open-id',{detail:{id:'doc1'}})));
+await page.waitForSelector('#quotationRevisionHistory summary');
+await page.locator('#quotationRevisionHistory summary').click();
+await page.locator('[data-revision="0"]').click();
+await page.waitForFunction(()=>document.querySelector('#docModalTitle').textContent.includes('Historical'));
+assert.equal(await page.locator('#docEdit').isVisible(),false);
+assert.equal(await page.locator('#docConvert').isVisible(),false);
+assert.equal(await page.locator('#docWhatsapp').isVisible(),false);
+assert.match(await page.locator('#docPreview').innerText(),/Previous Customer/);
+assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'revision history fits iPhone');
+await page.screenshot({path:path.join(out,'quotation-revision-mobile.png'),fullPage:false});
+await page.locator('[data-revision="1"]').click();
+await page.waitForFunction(()=>!document.querySelector('#docModalTitle').textContent.includes('Historical'));
+assert.equal(await page.locator('#docEdit').isVisible(),true);
+await page.locator('#docClose').click();
 mode='empty';await page.locator('#refreshDocs').click();await page.waitForFunction(()=>document.querySelector('#docResultsState').textContent.startsWith('0 of 0'));assert.ok(await page.locator('#docUnifiedEmpty').isVisible());
 mode='loading';await page.locator('#refreshDocs').click();assert.equal(await page.locator('#docHistory').getAttribute('aria-busy'),'true');await page.waitForFunction(()=>document.querySelector('#docHistory').getAttribute('aria-busy')==='false');
 mode='error';await page.locator('#refreshDocs').click();await page.waitForFunction(()=>document.querySelector('#docResultsState').textContent.includes('Fixture unavailable'));

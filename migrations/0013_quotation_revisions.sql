@@ -1,0 +1,10 @@
+-- Additive only. Roll back application code without dropping this financial archive.
+CREATE TABLE IF NOT EXISTS reqoo_quotation_revisions(document_id TEXT NOT NULL,revision INTEGER NOT NULL CHECK(revision>=0),snapshot_json TEXT NOT NULL CHECK(json_valid(snapshot_json)),version_at TEXT NOT NULL,version_actor TEXT,archived_at TEXT NOT NULL,PRIMARY KEY(document_id,revision));
+CREATE TRIGGER IF NOT EXISTS reqoo_quote_revision_immutable_update BEFORE UPDATE ON reqoo_quotation_revisions BEGIN SELECT RAISE(ABORT,'Quotation history is immutable'); END;
+CREATE TRIGGER IF NOT EXISTS reqoo_quote_revision_immutable_delete BEFORE DELETE ON reqoo_quotation_revisions BEGIN SELECT RAISE(ABORT,'Quotation history is immutable'); END;
+CREATE TRIGGER IF NOT EXISTS reqoo_quote_revision_guard BEFORE INSERT ON reqoo_quotation_revisions BEGIN
+ SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM reqoo_documents d WHERE d.id=NEW.document_id AND d.type='quotation' AND d.updated_at=json_extract(NEW.snapshot_json,'$.updated_at') AND d.company_json=json_extract(NEW.snapshot_json,'$.company_json') AND d.status=json_extract(NEW.snapshot_json,'$.status') AND d.order_id=json_extract(NEW.snapshot_json,'$.order_id') AND COALESCE(json_extract(d.company_json,'$.quoteMeta.convertedOrderId'),'')='' AND COALESCE(json_extract(d.company_json,'$.quoteMeta.revision'),0)=NEW.revision) THEN RAISE(ABORT,'REQOO_QUOTE_CONFLICT') END;
+END;
+CREATE TRIGGER IF NOT EXISTS reqoo_quote_conversion_guard BEFORE UPDATE OF order_id ON reqoo_documents WHEN OLD.type='quotation' AND OLD.order_id LIKE 'custom:%' AND NEW.order_id<>OLD.order_id BEGIN
+ SELECT CASE WHEN OLD.status<>'accepted' OR COALESCE(json_extract(OLD.company_json,'$.quoteMeta.convertedOrderId'),'')<>'' OR OLD.updated_at<>COALESCE(json_extract(NEW.company_json,'$.quoteMeta.convertedFromUpdatedAt'),'') OR COALESCE(json_extract(OLD.company_json,'$.quoteMeta.revision'),0)<>COALESCE(json_extract(NEW.company_json,'$.quoteMeta.convertedFromRevision'),-1) THEN RAISE(ABORT,'REQOO_QUOTE_CONFLICT') END;
+END;

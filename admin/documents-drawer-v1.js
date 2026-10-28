@@ -38,7 +38,14 @@ function mountWorkspaceTabs(data,orderId){
  const section=$('#rqDocDrawerBody .rqDocDrawerSection'),activity=$$('#rqDocDrawerBody .rqDocDrawerSection')[1],custom=String(orderId).startsWith('custom:'),canonical=new Set(currentPayments.map(p=>String(p.receipt_number)));
  const editableQuote=custom?currentChain.find(d=>d.type==='quotation'):null;
  const docs=currentChain.filter(d=>d.type!=='receipt'||!canonical.has(String(d.number)));
- const tabs=[['all','Ringkasan'],['quotation','Quotation'],['invoice','Invoice'],['receipt','Resit'],['delivery_order','Serahan']];
+ const tabs=custom?[['all','Overview'],['quotation','Quotation']]:[['all','Ringkasan'],['quotation','Quotation'],['invoice','Invoice'],['receipt','Resit'],['delivery_order','Serahan']];
+ if(!tabs.some(([key])=>key===workspaceTab))workspaceTab='all';
+ if(custom){
+  const amounts=$('#rqDocDrawerBody .rqDocDrawerMoney');
+  if(amounts)amounts.innerHTML='<div><span>Quotation amount</span><b>'+money(editableQuote?.total_minor||0)+'</b></div>';
+  const footer=$('#rqDocDrawerBody .rqDocDrawerFooter');
+  if(footer)footer.insertAdjacentHTML('beforebegin','<p class="rqPaymentEmpty">'+(editableQuote?.status==='accepted'?'Next: Convert approved quotation to order.':'Next: Send quotation and record customer approval.')+'</p>');
+ }
  const empty=type=>{
   if(type==='receipt')return '<p class="rqPaymentEmpty">Resit dijana selepas bayaran direkod melalui invoice.</p>';
   if(custom)return '<p class="rqPaymentEmpty">Sahkan quotation dan tukarkan kepada order dahulu. Gunakan Pratonton pada tab Quotation.</p>';
