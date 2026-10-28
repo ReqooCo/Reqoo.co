@@ -1,0 +1,32 @@
+(()=>{
+'use strict';
+if(window.reqooAdminNavigation)return;
+const paths={home:'<path d="m3 10 9-7 9 7v10H15v-7H9v7H3z"/>',quotation:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M8 13h8M8 17h8"/>',orders:'<rect x="5" y="4" width="14" height="18" rx="2"/><path d="M9 4V2h6v2M9 11h6M9 15h6"/>',finance:'<rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 10h18M16 15h2"/>',manage:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',production:'<path d="M3 21V9l6 4V9l6 4V5l6 4v12z"/>',customers:'<circle cx="9" cy="8" r="3"/><path d="M3 21v-2a6 6 0 0 1 12 0v2M17 5a3 3 0 0 1 0 6M18 15a5 5 0 0 1 3 5"/>',products:'<path d="m3 7 9-4 9 4-9 4zM3 7v10l9 4 9-4V7M12 11v10"/>',settings:'<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>'};
+const icon=k=>`<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${paths[k]}</svg>`;
+const home=['overview','home','Home','/admin/'],quote=['quotations','quotation','Quotation','/admin/documents.html?view=quotations'],orders=['documents','orders','Orders','/admin/documents.html?view=orders'],finance=['finance','finance','Finance','/admin/finance.html'];
+const secondary=[['manage','manage','Manage','/admin/manage.html'],['production','production','Production','/admin/production.html'],['customers','customers','Customers','/admin/customers.html'],['products','products','Products','/admin/products.html'],['settings','settings','Settings','/admin/settings.html']];
+let role=document.body.dataset.adminRole||'owner',returnFocus=null;
+function active(){const p=location.pathname,v=new URLSearchParams(location.search).get('view');if(role==='production')return /production\.html$/.test(p)?'production':/orders\.html$/.test(p)?'orders':'overview';if(role==='sales'&&/customers\.html$/.test(p))return'customers';if(/\/admin\/?$/.test(p))return'overview';if(/documents\.html$/.test(p))return v==='quotations'?'quotations':'documents';if(/finance\.html$/.test(p))return'finance';if(/orders\.html$/.test(p))return'documents';return'manage'}
+function close(){const m=document.getElementById('rqAdminMore');if(!m)return;m.classList.remove('open');m.setAttribute('aria-hidden','true');document.querySelector('.rqAdminMoreTrigger')?.setAttribute('aria-expanded','false');if(returnFocus?.isConnected)returnFocus.focus()}
+function mount(){
+ document.querySelector('.rqUnifiedNav')?.remove();document.getElementById('rqAdminMore')?.remove();document.querySelector('.rqAppNav')?.remove();
+ const nav=document.createElement('nav');nav.className='rqAdminMobile rqUnifiedNav';nav.setAttribute('aria-label','Admin navigation');
+ const primary=role==='production'?[home,['production','production','Production','/admin/production.html'],['orders','orders','Orders','/admin/orders.html']]:role==='sales'?[home,quote,orders,secondary[2]]:[home,quote,orders,finance];
+ const current=active(),link=([key,k,label,url])=>`<a href="${url}" data-rq-admin="${key}"${key===current?' class="active" aria-current="page"':''}>${icon(k)}<span>${label}</span></a>`;
+ nav.innerHTML=primary.map(link).join('');
+ if(role!=='production')nav.insertAdjacentHTML('beforeend',`<button type="button" class="rqAdminMoreTrigger ${current==='manage'?'active':''}" data-rq-admin="manage" aria-expanded="false" aria-controls="rqAdminMore">${icon('manage')}<span>Manage</span></button>`);
+ nav.style.setProperty('--rq-nav-columns',String(primary.length+(role==='production'?0:1)));document.body.append(nav);
+ if(role==='production')return;
+ const more=document.createElement('div');more.id='rqAdminMore';more.className='rqAdminMoreBackdrop rqUnifiedMore';more.setAttribute('aria-hidden','true');
+ const items=role==='sales'?secondary.filter(x=>['manage','production','customers'].includes(x[0])):secondary;
+ more.innerHTML=`<section class="rqAdminMoreSheet" role="dialog" aria-modal="true" aria-labelledby="rqNavigationTitle"><div class="rqAdminMoreHead"><b id="rqNavigationTitle">Manage</b><button type="button" class="rqAdminMoreClose" aria-label="Close">×</button></div><nav class="rqAdminMoreList" aria-label="More admin sections">${items.map(link).join('')}</nav><button type="button" class="rqAdminLogout" data-rq-logout>Sign out</button></section>`;
+ document.body.append(more);const trigger=nav.querySelector('button');trigger.onclick=()=>{if(more.classList.contains('open'))return close();returnFocus=trigger;more.classList.add('open');more.setAttribute('aria-hidden','false');trigger.setAttribute('aria-expanded','true');more.querySelector('.rqAdminMoreClose').focus()};more.querySelector('.rqAdminMoreClose').onclick=close;more.onclick=e=>{if(e.target===more)close()};
+}
+async function logout(){for(const key of Object.keys(localStorage))if(key.startsWith('rq_quoteDraft_v1'))localStorage.removeItem(key);try{await fetch('/api/admin-session',{method:'DELETE',cache:'no-store'})}catch{}for(const key of ['reqoo_admin_token','REQOO_ADMIN_TOKEN','reqoo_shop_admin_token'])localStorage.removeItem(key);document.cookie='reqoo_admin_token=; Domain=.reqoo.co; Path=/; Max-Age=0; Secure; SameSite=Lax';document.cookie='reqoo_admin_token=; Path=/; Max-Age=0; Secure; SameSite=Lax';sessionStorage.removeItem('reqoo_admin_return');location.replace('/admin/')}
+window.reqooAdminNavigation={mount,close,logout};
+document.addEventListener('click',e=>{if(e.target.closest('[data-rq-logout]'))logout()});
+document.addEventListener('rq:identity',e=>{const next=e.detail?.role||'owner';if(next!==role){role=next;mount()}});
+document.addEventListener('keydown',e=>{const more=document.querySelector('.rqUnifiedMore.open');if(!more)return;if(e.key==='Escape'){e.preventDefault();close()}if(e.key==='Tab'){const items=[...more.querySelectorAll('a,button')].filter(x=>!x.hidden),first=items[0],last=items.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}});
+const style=document.querySelector('link[data-rq-navigation]')||document.createElement('link');if(!style.href){style.rel='stylesheet';style.href='/admin/admin-chrome.css?v=1';style.dataset.rqNavigation='1';document.head.append(style)}
+if(style.sheet)mount();else{style.addEventListener('load',mount,{once:true});style.addEventListener('error',mount,{once:true})}
+})();

@@ -134,9 +134,9 @@
  #rqOverviewV2 .rqDashFoot { overflow-wrap:anywhere; }
 }
 
+.rqAppBrand{display:none}
 /* Canonical mobile overview. Scope overrides here so shared Admin styles cannot
    replace foreground colours or primary actions on this surface. */
-.rqAppBrand,.rqAppNav{display:none}
 @media(max-width:680px){
  body.rqOverviewV2{background:#FAFBF7!important;color:#172c25}
  .rqAppBrand{display:flex;align-items:center;gap:12px;min-height:88px;padding:calc(16px + env(safe-area-inset-top)) 20px 17px;background:#145744;border-bottom:1px solid #C5A36A;border-radius:0 0 20px 20px;color:#fff}
@@ -182,12 +182,5 @@
  body.rqOverviewV2 #rqOverviewV2 .rqFollowupActions>strong{font-size:13px;letter-spacing:-.2px;color:#233e32}
  body.rqOverviewV2 #rqOverviewV2 .rqMiniAction{font-size:11px!important;min-height:44px;padding:8px 10px;border-radius:9px;border-color:#dce5dc!important;color:#145744!important;background:#fff!important;box-shadow:none!important;text-decoration:none!important}
  body.rqOverviewV2 #rqOverviewV2 .rqMiniAction.wa{background:#145744!important;border-color:#145744!important;color:#fff!important}
- body.rqOverviewV2 .rqAppNav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;bottom:0;left:0;right:0;z-index:90;padding:8px 8px calc(8px + env(safe-area-inset-bottom));border-top:1px solid #ffffff14;border-radius:18px 18px 0 0;background:#145744;box-shadow:0 -4px 16px #123e3012}
- body.rqOverviewV2 .rqAppNav a{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:49px;border-radius:11px;text-decoration:none!important;color:#fff!important;font-size:9px;font-weight:550!important;line-height:1.3}
- body.rqOverviewV2 .rqAppNav a span{display:flex;line-height:1}
- body.rqOverviewV2 .rqAppNav a svg{width:21px;height:21px;stroke:currentColor}
- body.rqOverviewV2 .rqAppNav a.active{background:#ffffff12;font-weight:750!important}
- body.rqOverviewV2 .rqAppNav a.active:before{content:"";position:absolute;top:3px;width:15px;height:2px;border-radius:2px;background:#C5A36A}
- body.rqOverviewV2 .rqAdminMobile,body.rqOverviewV2 .rqAdminSide,body.rqOverviewV2 .rqAdminMoreBackdrop{display:none!important}
- body.rqOverviewV2 #rqOverviewV2 :is(a,button):focus-visible,body.rqOverviewV2 :is(.rqAppNav a,.rqBrandAccount):focus-visible{outline:3px solid #C5A36A;outline-offset:3px}
+ body.rqOverviewV2 .rqAdminSide{display:none!important}
 }

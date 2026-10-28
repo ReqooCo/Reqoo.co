@@ -22,9 +22,9 @@ const root=path.resolve(__dirname,'..'),out=process.env.REQOO_TEST_OUTPUT||path.
   return route.fulfill({path:file,contentType:file.endsWith('.css')?'text/css':file.endsWith('.js')?'application/javascript':'text/plain'});
  });
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
- for(const name of ['index','orders','production','products','customers','finance','settings','shop-content','sim-v2']){
+ for(const name of ['index','quotations','sales-orders','orders','production','products','customers','finance','manage','settings','shop-content','sim-v2']){
   await page.setViewportSize({width:1440,height:1000});
-  await page.goto('https://reqoo.test/admin/'+(name==='index'?'':name+'.html'));
+  const route=name==='index'?'':name==='quotations'?'documents.html?view=quotations':name==='sales-orders'?'documents.html?view=orders':name+'.html';await page.goto('https://reqoo.test/admin/'+route);
   if(name==='index')await page.waitForSelector('.rqAppBrand',{state:'attached'});else await page.waitForSelector('body.rq-admin-shell');await page.waitForLoadState('networkidle');
   if(['orders','production','customers'].includes(name))assert.match(await page.locator('main').innerText(),/Pelanggan Ujian/,'fixture rows rendered');
   if(name==='products')assert.match(await page.locator('main').innerText(),/Tumbler Ujian/);
@@ -38,11 +38,11 @@ const root=path.resolve(__dirname,'..'),out=process.env.REQOO_TEST_OUTPUT||path.
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),name+' mobile overflow');
   if(name==='index'){
    assert.ok(await page.locator('.rqAppBrand').isVisible(),'mobile Overview header visible');
-   assert.ok(await page.locator('.rqAppNav a').first().isVisible(),'new Overview navigation visible');
-   assert.equal(await page.locator('.rqAdminMoreTrigger').count(),0,'legacy mobile navigation absent');
+   assert.ok(await page.locator('.rqUnifiedNav a').first().isVisible(),'new Overview navigation visible');
+   assert.equal(await page.locator('.rqUnifiedNav').count(),1,'one shared navigation');
    await page.waitForFunction(()=>getComputedStyle(document.querySelector('.rqAction.primary')).backgroundColor==='rgb(20, 87, 68)');
    assert.ok((await page.locator('.rqAppBrand').boundingBox()).height<=100,'compact brand header');
-   assert.equal(await page.locator('.rqAppNav a').first().evaluate(e=>getComputedStyle(e).color),'rgb(255, 255, 255)','nav text wins over global gold links');
+   assert.equal(await page.locator('.rqUnifiedNav a').first().evaluate(e=>getComputedStyle(e).color),'rgb(255, 255, 255)','nav text wins over global gold links');
    assert.equal(await page.locator('.rqAction.primary').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(20, 87, 68)','quotation action stays emerald');
    assert.equal(await page.locator('.rqAction.primary b').evaluate(e=>getComputedStyle(e).color),'rgb(255, 255, 255)');
    const actions=await page.locator('.rqAction').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return{x:r.x,y:r.y,w:r.width,h:r.height}}));
@@ -50,12 +50,20 @@ const root=path.resolve(__dirname,'..'),out=process.env.REQOO_TEST_OUTPUT||path.
    assert.ok(Math.abs(actions[1].y-actions[2].y)<1&&Math.abs(actions[3].y-actions[4].y)<1,'four destinations form a balanced grid');
    assert.ok(actions.every(a=>a.h>=44),'all actions retain touch targets');
    assert.equal(await page.locator('.rqBrandAccount svg').count(),1,'account uses a consistent vector icon');
-  }else{
+  }
+  {
    await page.locator('.rqAdminMoreTrigger').click();
    await page.waitForSelector('.rqAdminMoreBackdrop.open');
    assert.ok(await page.locator('.rqAdminMoreList a').first().isVisible());
    await page.locator('.rqAdminMoreClose').click();
   }
+  const dock=page.locator('.rqUnifiedNav');
+  assert.deepEqual(await dock.locator('span').allTextContents(),['Home','Quotation','Orders','Finance','Manage'],'same destinations and order on every page');
+  assert.equal(await dock.locator('svg').count(),5,'one consistent SVG icon set');
+  assert.equal(await dock.evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(20, 87, 68)');
+  assert.ok(await dock.locator('a,button').evaluateAll(nodes=>nodes.every(e=>getComputedStyle(e).color==='rgb(255, 255, 255)'&&e.getBoundingClientRect().height>=44)));
+  assert.equal(await page.locator('.rqAppNav').count(),0,'legacy homepage navigation removed');
+  if(['index','quotations','sales-orders','finance','manage'].includes(name)){const expected={index:'overview',quotations:'quotations','sales-orders':'documents',finance:'finance',manage:'manage'}[name];assert.equal(await dock.locator('.active').getAttribute('data-rq-admin'),expected,'correct active destination');}
   if(name==='finance'){
    await page.waitForFunction(()=>getComputedStyle(document.querySelector('.rqFinanceStats article')).backgroundColor==='rgb(20, 87, 68)');
    assert.equal(await page.locator('#finRevenue').innerText(),'RM10,201.00');
