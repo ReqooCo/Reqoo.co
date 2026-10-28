@@ -10,7 +10,7 @@ function active(){const p=location.pathname,v=new URLSearchParams(location.searc
 function close(){const m=document.getElementById('rqAdminMore');if(!m)return;m.classList.remove('open');m.setAttribute('aria-hidden','true');document.querySelector('.rqAdminMoreTrigger')?.setAttribute('aria-expanded','false');if(returnFocus?.isConnected)returnFocus.focus()}
 function mount(){
  document.querySelector('.rqUnifiedNav')?.remove();document.getElementById('rqAdminMore')?.remove();document.querySelector('.rqAppNav')?.remove();
- const nav=document.createElement('nav');nav.className='rqAdminMobile rqUnifiedNav';nav.setAttribute('aria-label','Admin navigation');
+ const nav=document.createElement('nav');nav.id='rqAdminNavigation';nav.className='rqAdminMobile rqUnifiedNav';nav.setAttribute('aria-label','Admin navigation');
  const primary=role==='production'?[home,['production','production','Production','/admin/production.html'],['orders','orders','Orders','/admin/orders.html']]:role==='sales'?[home,quote,orders,secondary[2]]:[home,quote,orders,finance];
  const current=active(),link=([key,k,label,url])=>`<a href="${url}" data-rq-admin="${key}"${key===current?' class="active" aria-current="page"':''}>${icon(k)}<span>${label}</span></a>`;
  nav.innerHTML=primary.map(link).join('');

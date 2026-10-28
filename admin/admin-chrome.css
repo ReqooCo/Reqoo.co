@@ -1,26 +1,26 @@
-body .rqAdminMobile.rqUnifiedNav{display:none!important}
+body #rqAdminNavigation.rqUnifiedNav{display:none!important}
 @media(max-width:900px){
  body{--rq-mobile-clearance:calc(96px + env(safe-area-inset-bottom))}
  body.rq-admin-shell{padding-bottom:var(--rq-mobile-clearance)!important}
- body .rqAdminMobile.rqUnifiedNav{display:grid!important;grid-template-columns:repeat(var(--rq-nav-columns,5),minmax(0,1fr))!important;position:fixed!important;left:0!important;right:0!important;bottom:0!important;z-index:950;padding:8px 8px calc(8px + env(safe-area-inset-bottom))!important;border:1px solid #ffffff16!important;border-radius:18px 18px 0 0!important;background:#145744!important;box-shadow:0 -5px 22px #123e3020!important;backdrop-filter:none!important}
- body .rqAdminMobile.rqUnifiedNav :is(a,button){position:relative;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:50px!important;margin:0!important;padding:6px 2px!important;border:0!important;border-radius:11px!important;background:transparent!important;color:#fff!important;text-decoration:none!important;font-size:10px!important;line-height:1.3!important;font-weight:550!important;box-shadow:none!important;letter-spacing:0!important;transform:none!important}
- body .rqAdminMobile.rqUnifiedNav :is(a,button)[hidden]{display:none!important}
- body .rqAdminMobile.rqUnifiedNav :is(a,button).active{background:#ffffff12!important;font-weight:750!important}
- body .rqAdminMobile.rqUnifiedNav .active:before{content:"";position:absolute;top:2px;width:15px;height:2px;border-radius:2px;background:#C5A36A}
- body .rqAdminMobile.rqUnifiedNav svg{width:22px;height:22px;flex:none;stroke:currentColor}
- body .rqAdminMobile.rqUnifiedNav span{display:block;font:inherit!important;margin:0!important;color:inherit!important}
- body .rqAdminMobile.rqUnifiedNav :is(a,button):focus-visible{outline:3px solid #C5A36A!important;outline-offset:1px!important}
+ body #rqAdminNavigation.rqUnifiedNav{display:grid!important;grid-template-columns:repeat(var(--rq-nav-columns,5),minmax(0,1fr))!important;position:fixed!important;left:0!important;right:0!important;bottom:0!important;z-index:950;padding:8px 8px calc(8px + env(safe-area-inset-bottom))!important;border:1px solid #ffffff16!important;border-radius:18px 18px 0 0!important;background:#145744!important;box-shadow:0 -5px 22px #123e3020!important;backdrop-filter:none!important}
+ body #rqAdminNavigation.rqUnifiedNav :is(a,button){position:relative;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:50px!important;margin:0!important;padding:6px 2px!important;border:0!important;border-radius:11px!important;background:transparent!important;color:#fff!important;text-decoration:none!important;font-size:10px!important;line-height:1.3!important;font-weight:550!important;box-shadow:none!important;letter-spacing:0!important;transform:none!important}
+ body #rqAdminNavigation.rqUnifiedNav :is(a,button)[hidden]{display:none!important}
+ body #rqAdminNavigation.rqUnifiedNav :is(a,button).active{background:#ffffff12!important;font-weight:750!important}
+ body #rqAdminNavigation.rqUnifiedNav .active:before{content:"";position:absolute;top:2px;width:15px;height:2px;border-radius:2px;background:#C5A36A}
+ body #rqAdminNavigation.rqUnifiedNav svg{width:22px;height:22px;flex:none;stroke:currentColor}
+ body #rqAdminNavigation.rqUnifiedNav span{display:block;font:inherit!important;margin:0!important;color:inherit!important}
+ body #rqAdminNavigation.rqUnifiedNav :is(a,button):focus-visible{outline:3px solid #C5A36A!important;outline-offset:1px!important}
 }
-body .rqUnifiedMore{display:none;position:fixed;inset:0;z-index:1100;background:#163e3066!important;backdrop-filter:blur(4px)}
-body .rqUnifiedMore.open{display:flex!important;align-items:flex-end}
-body .rqUnifiedMore .rqAdminMoreSheet{width:min(540px,100%);margin:0 auto;padding:18px 16px calc(22px + env(safe-area-inset-bottom));border:1px solid #e1e7e1;border-radius:20px 20px 0 0;background:#FAFBF7!important;color:#173d30;box-shadow:0 -10px 40px #103d3122}
-body .rqUnifiedMore .rqAdminMoreHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-body .rqUnifiedMore .rqAdminMoreHead b{font-size:18px;color:#173d30}
-body .rqUnifiedMore .rqAdminMoreClose{width:44px;height:44px;background:#fff!important;color:#145744!important;border:1px solid #dce4dd;border-radius:10px!important;font-size:22px}
-body .rqUnifiedMore .rqAdminMoreList{display:grid;gap:8px;background:none!important;box-shadow:none!important;border:0!important;backdrop-filter:none!important}
-body .rqUnifiedMore .rqAdminMoreList a{display:flex;align-items:center;gap:12px;min-height:48px;padding:10px 12px;border:1px solid #e1e7e1;border-radius:11px;background:#fff!important;color:#173d30!important;text-decoration:none!important;font-size:14px}
-body .rqUnifiedMore .rqAdminMoreList svg{width:22px;height:22px;flex:none;color:#145744}
-body .rqUnifiedMore .rqAdminLogout{width:100%;margin-top:14px;min-height:44px;border:1px solid #dce4dd!important;border-radius:10px!important;background:#fff!important;color:#145744!important;font-size:13px!important}
+body #rqAdminMore.rqUnifiedMore{display:none;position:fixed;inset:0;z-index:1100;background:#163e3066!important;backdrop-filter:blur(4px)}
+body #rqAdminMore.rqUnifiedMore.open{display:flex!important;align-items:flex-end}
+body #rqAdminMore.rqUnifiedMore .rqAdminMoreSheet{width:min(540px,100%);margin:0 auto;padding:18px 16px calc(22px + env(safe-area-inset-bottom));border:1px solid #e1e7e1;border-radius:20px 20px 0 0;background:#FAFBF7!important;color:#173d30;box-shadow:0 -10px 40px #103d3122}
+body #rqAdminMore.rqUnifiedMore .rqAdminMoreHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+body #rqAdminMore.rqUnifiedMore .rqAdminMoreHead b{font-size:18px;color:#173d30}
+body #rqAdminMore.rqUnifiedMore .rqAdminMoreClose{width:44px;height:44px;background:#fff!important;color:#145744!important;border:1px solid #dce4dd;border-radius:10px!important;font-size:22px}
+body #rqAdminMore.rqUnifiedMore .rqAdminMoreList{display:grid;gap:8px;background:none!important;box-shadow:none!important;border:0!important;backdrop-filter:none!important}
+body #rqAdminMore.rqUnifiedMore .rqAdminMoreList a{display:flex;align-items:center;gap:12px;min-height:48px;padding:10px 12px;border:1px solid #e1e7e1;border-radius:11px;background:#fff!important;color:#173d30!important;text-decoration:none!important;font-size:14px}
+body #rqAdminMore.rqUnifiedMore .rqAdminMoreList svg{width:22px;height:22px;flex:none;color:#145744}
+body #rqAdminMore.rqUnifiedMore .rqAdminLogout{width:100%;margin-top:14px;min-height:44px;border:1px solid #dce4dd!important;border-radius:10px!important;background:#fff!important;color:#145744!important;font-size:13px!important}
 /* Shared card finish: a static light reflection, a thin highlight and layered depth. */
 body.rqOverviewV2 #rqOverviewV2 :is(.rqDashPanel,.rqKpi),
 body.rq-admin-shell.rqFinancePage .rqFinanceApp :is(.rqFinancePanel,.rqFinanceStats>article,.rqFinanceCosts),
