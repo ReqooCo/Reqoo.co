@@ -108,3 +108,21 @@
   #rqOverviewV2 .rqFollowupActions > strong { font-size:13px; }
   #rqOverviewV2 .rqMiniAction { min-height:44px; }
 }
+
+/* Compact, accessible attention queue for small touch screens. */
+@media (max-width:680px) {
+ #rqOverviewV2 .rqFollowupPanel .rqDashPanelHead a { font-size:13px; }
+ #rqOverviewV2 .rqFollowupRow { display:grid; grid-template-columns:minmax(0,1fr) auto; column-gap:10px; row-gap:6px; }
+ #rqOverviewV2 .rqFollowupPriority { grid-column:1 / -1; }
+ #rqOverviewV2 .rqFollowupMain { grid-column:1; }
+ #rqOverviewV2 .rqFollowupActions { grid-column:2; display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:6px; }
+ #rqOverviewV2 .rqFollowupActions > div { display:flex; flex-wrap:wrap; justify-content:flex-end; }
+ #rqOverviewV2 .rqFollowupMain .rqBadge { font-size:11px; }
+ #rqOverviewV2 .rqFollowupMain small { line-height:1.45; }
+ #rqOverviewV2 .rqFollowupActions > strong { margin:0; }
+}
+@media (max-width:360px) {
+ #rqOverviewV2 .rqFollowupRow { grid-template-columns:minmax(0,1fr); }
+ #rqOverviewV2 .rqFollowupActions { grid-column:1; flex-direction:row; justify-content:space-between; align-items:center; }
+ #rqOverviewV2 .rqActionGrid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
