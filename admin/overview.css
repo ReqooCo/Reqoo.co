@@ -83,3 +83,13 @@
   #rqOverviewV2 .rqFollowupMain small { font-size:12px; }
   #rqOverviewV2 .rqFollowupPriority span { font-size:11px; }
 }
+
+/* Override legacy display:block on the overview container to enable mobile ordering. */
+@media (max-width:680px) {
+  body.rqOverviewV2 #rqOverviewV2 { display:flex!important; }
+  #rqOverviewV2 .rqDashGridTop { margin-top:0; }
+  #rqOverviewV2 .rqDashHead p { font-size:12px; }
+  #rqOverviewV2 .rqFollowupRow { min-width:0; }
+  #rqOverviewV2 .rqFollowupMain { min-width:0; overflow-wrap:anywhere; }
+  #rqOverviewV2 .rqFollowupActions { min-width:0; }
+}
