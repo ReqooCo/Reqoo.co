@@ -3,7 +3,7 @@ const html=fs.readFileSync(new URL('../admin/finance.html',import.meta.url),'utf
 const js=fs.readFileSync(new URL('../admin/finance.js',import.meta.url),'utf8');
 const shell=fs.readFileSync(new URL('../admin/admin-shell.js',import.meta.url),'utf8');
 const worker=fs.readFileSync(new URL('../_web_worker.js',import.meta.url),'utf8');
-assert.match(html,/KUTIPAN/);assert.match(html,/BAKI/);assert.match(html,/TREND KUTIPAN/);assert.match(html,/Produk teratas/i);assert.match(html,/\/admin\/documents\.html\?view=orders/);assert.doesNotMatch(html,/\/shop\/admin\.html#orders/);
+assert.match(html,/COLLECTED/);assert.match(html,/OUTSTANDING/);assert.match(html,/TREND COLLECTED/);assert.match(html,/Top products/i);assert.match(html,/\/admin\/documents\.html\?view=orders/);assert.doesNotMatch(html,/\/shop\/admin\.html#orders/);
 assert.match(js,/financeDashboard/);assert.match(js,/financeTransactions/);assert.match(js,/loadMoreFinance/);assert.match(js,/Deposit \/ partial/);assert.match(js,/confirmed payment ledger/);assert.doesNotMatch(js,/listOrders/);assert.doesNotMatch(js,/listPayments/);assert.doesNotMatch(js,/paymentSummary/);assert.doesNotMatch(js,/productsDashboard/);assert.doesNotMatch(js,/limit:2000/);
 assert.match(shell,/Kewangan/);assert.match(shell,/\/admin\/finance\.html/);
 assert.match(worker,/settings\|documents\|customers\|finance/);assert.match(worker,/admin-shell\.js\?v=6/);

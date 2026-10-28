@@ -51,8 +51,8 @@ pairs.push(
  ["Tugas hari ini","Today's tasks"]
 );
 const dict=new Map();for(const [ms,en] of pairs){if(!dict.has(ms.toLowerCase()))dict.set(ms.toLowerCase(),{ms,en});if(!dict.has(en.toLowerCase()))dict.set(en.toLowerCase(),{ms,en})}for(const [old,ms]of Object.entries(aliases)){const entry=dict.get(ms.trim().toLowerCase());if(entry)dict.set(old.toLowerCase(),entry)}
-let lang='ms';try{lang=localStorage.getItem('rq_admin_language')==='en'?'en':'ms'}catch{}
-const preserved='script,style,textarea,input,[contenteditable],.rqLangPicker,#docPaper,#docPreview,#rqReceiptPaper,.rqDocDrawerCustomer h3,#rqDocDrawerSub,.rqWorkspaceIdentity h3,.rqWorkspaceIdentity b,.rqWorkspaceIdentity small,.rqWorkItem,.rqTaskRow b,.rqTaskRow small,#rqGlobalResults b,#rqGlobalResults span,.rqCustomerName,.rqProductName,.rqHistCustomer,.rqHistNo,.rqHistDate,[data-no-translate]';
+let lang='en';try{localStorage.setItem('rq_admin_language','en')}catch{}
+const preserved='script,style,textarea,input,[contenteditable],.rqLangPicker,.rqDocDrawerCustomer h3,#rqDocDrawerSub,.rqWorkspaceIdentity h3,.rqWorkspaceIdentity b,.rqWorkspaceIdentity small,.rqWorkItem,.rqTaskRow b,.rqTaskRow small,#rqGlobalResults b,#rqGlobalResults span,.rqCustomerName,.rqProductName,.rqHistCustomer,.rqHistNo,.rqHistDate,[data-no-translate]';
 function translate(value){const raw=String(value),s=raw.trim(),entry=dict.get(s.toLowerCase());if(entry){let out=entry[lang];if(s===s.toUpperCase()&&/[A-Z]/.test(s))out=out.toUpperCase();return raw.replace(s,out)}
 const arrow=s.match(/^(.*?)(\s*→)$/);if(arrow){const t=translate(arrow[1]);return t+arrow[2]}
 let m=s.match(/^(\d+) daripada (\d+) rekod$|^(\d+) of (\d+) records$/);if(m){const a=m[1]||m[3],b=m[2]||m[4];return lang==='en'?`${a} of ${b} records`:`${a} daripada ${b} rekod`}
@@ -85,8 +85,8 @@ for(const el of document.querySelectorAll('[placeholder],[aria-label],[title]'))
 for(const b of document.querySelectorAll('[data-admin-language]'))b.setAttribute('aria-pressed',String(b.dataset.adminLanguage===lang));
 observer.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['placeholder','aria-label','title']});busy=false}
 let pending=false;const observer=new MutationObserver(()=>{if(pending)return;pending=true;queueMicrotask(()=>{pending=false;apply()})});
-window.reqooLanguage={get language(){return lang},text:translate,set(value){lang=value==='en'?'en':'ms';try{localStorage.setItem('rq_admin_language',lang)}catch{}apply();document.dispatchEvent(new CustomEvent('rq:language-changed',{detail:{language:lang}}))}};
+window.reqooLanguage={get language(){return lang},text:translate,set(value){lang='en';try{localStorage.setItem('rq_admin_language','en')}catch{}apply();document.dispatchEvent(new CustomEvent('rq:language-changed',{detail:{language:lang}}))}};
 for(const name of ['alert','confirm']){const original=window[name].bind(window);window[name]=message=>original(translate(message))}
-function start(){if(!document.querySelector('.rqLangPicker')){const bar=document.createElement('div');bar.className='rqLangPicker';bar.setAttribute('role','group');bar.setAttribute('aria-label','Bahasa / Language');bar.innerHTML='<button type="button" data-admin-language="ms" lang="ms">Bahasa Melayu</button><button type="button" data-admin-language="en" lang="en">English</button>';const main=document.querySelector('main')||document.body;main.prepend(bar);bar.addEventListener('click',e=>{const b=e.target.closest('[data-admin-language]');if(b)window.reqooLanguage.set(b.dataset.adminLanguage)})}apply()}
+function start(){if(false&&!document.querySelector('.rqLangPicker')){const bar=document.createElement('div');bar.className='rqLangPicker';bar.setAttribute('role','group');bar.setAttribute('aria-label','Bahasa / Language');bar.innerHTML='<button type="button" data-admin-language="ms" lang="ms">Bahasa Melayu</button><button type="button" data-admin-language="en" lang="en">English</button>';const main=document.querySelector('main')||document.body;main.prepend(bar);bar.addEventListener('click',e=>{const b=e.target.closest('[data-admin-language]');if(b)window.reqooLanguage.set(b.dataset.adminLanguage)})}apply()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();

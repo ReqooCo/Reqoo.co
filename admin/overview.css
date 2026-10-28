@@ -33,3 +33,27 @@
  .rqOpsRight strong{font-size:13px}
  .rqFollowupActions{flex-wrap:wrap;gap:8px}
 }
+
+/* Mobile-first icon dashboard: familiar government-app clarity, REQOO visual identity. */
+.rqActionGrid{grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.rqAction{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:9px;min-height:112px;padding:15px 8px;background:#fff;border-radius:16px;border:1px solid #e2e6e1}
+.rqAction.primary{background:#e7f1eb;color:#194c3c;border-color:#c7dfd0}
+.rqActionIcon{width:35px;height:35px;color:#245943;flex:none}
+.rqAction b{font-size:14px;line-height:1.25}
+.rqAction span{font-size:11px;line-height:1.3;margin:0;color:#6c7771}
+.rqAction.primary span{color:#356a55}
+.rqDashPanel{background:#fff;border-color:#e4e8e3}
+.rqKpi{background:#fff;border-color:#e3e8e3}
+.rqAction:focus-visible{outline:3px solid #2d7457;outline-offset:3px}
+@media(max-width:900px){.rqActionGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:680px){
+ .rqActionGrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+ .rqAction{min-height:104px;padding:12px 5px;gap:8px}
+ .rqActionIcon{width:31px;height:31px}
+ .rqAction b{font-size:12.5px}
+ .rqAction span{display:none}
+ .rqDashPanelHead h3{font-size:18px}
+ .rqDash{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+ .rqKpi{min-height:110px}
+}
+@media(max-width:420px){.rqActionGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}

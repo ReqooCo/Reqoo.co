@@ -5,7 +5,7 @@ const js=fs.readFileSync(new URL('../admin/product-option-matrix.js',import.meta
 const css=fs.readFileSync(new URL('../admin/product-options.css',import.meta.url),'utf8');
 assert.match(html,/product-option-matrix\.js\?v=2/,'Products editor must load latest options-first helper');
 assert.match(html,/product-options\.css\?v=1/,'Products editor must load latest options-first styling');
-assert.match(html,/<h3>Pilihan produk<\/h3>/,'Product card should use seller-facing options language');
+assert.match(html,/<h3>Product options<\/h3>/,'Product card should use seller-facing options language');
 assert.match(js,/Ada pilihan/,'Options UI must have a simple enable switch');
 assert.match(js,/Saiz & harga/,'Primary option should clearly be size with price');
 assert.match(js,/Tambah saiz/,'Size values should be added individually');
