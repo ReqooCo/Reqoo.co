@@ -27,6 +27,9 @@ pairs.push(
  ["Sudah diterima","Collected"],
  ["Bayaran","Payment"],
  ["Pesanan berbayar","Paid orders"],
+ ["Hasil jualan, baki dan purata pesanan","Sales, balances and average order value"],
+ ["Jualan, kutipan, pengeluaran, invois dan pelanggan dalam satu paparan.","Sales, collections, production, invoices and customers at a glance."],
+ ["Pelanggan terkini","Recent customers"],
  ["Pesanan dan invois","Orders and invoices"],
  ["Hari lewat","Days overdue"],
  ["Pelanggan","Customer"],
@@ -64,18 +67,22 @@ m=s.match(/^(Invoice due|Tarikh akhir invois) · (.+)$/);if(m)return (lang==='en
 m=s.match(/^(\d+) (invoices|invois)$/);if(m)return m[1]+(lang==='en'?' invoices':' invois');
 m=s.match(/^(\d+) (payment|payments|bayaran) (diterima|received)$/i);
 if(m)return lang==='en'?m[1]+' payment'+(Number(m[1])===1?'':'s')+' received':m[1]+' bayaran diterima';
-m=s.match(/^(\d+) (invoice\/order|invoices\/orders|invois\/pesanan) (berbaki|outstanding)$/i);
+m=s.match(/^(\d+) (invoice\/order|invoices\/orders|invois\/pesanans?|invois\/pesanan) (berbaki|outstanding)$/i);
 if(m)return lang==='en'?m[1]+' outstanding invoices/orders':m[1]+' invois/pesanan berbaki';
 m=s.match(/^(\d+) (due hari ini · \d+ overdue|perlu siap hari ini · \d+ lewat|due today · \d+ overdue)$/i);
 if(m){const nums=s.match(/\d+/g);return lang==='en'?nums[0]+' due today · '+nums[1]+' overdue':nums[0]+' perlu siap hari ini · '+nums[1]+' lewat'}
-m=s.match(/^(\d+) (paid orders?|pesanan berbayar)$/i);
+m=s.match(/^(\d+) (paid orders?|pesanan berbayars?)$/i);
 if(m)return lang==='en'?m[1]+' paid order'+(Number(m[1])===1?'':'s'):m[1]+' pesanan berbayar';
-m=s.match(/^(\d+) (tasks?|tugasan)$/i);
+m=s.match(/^(\d+) (tasks?|tugasans?)$/i);
 if(m)return lang==='en'?m[1]+' task'+(Number(m[1])===1?'':'s'):m[1]+' tugasan';
 m=s.match(/^(Pending|Belum bayar) (\d+) (hari|days) · (RM[\d,.]+)$/i);
 if(m)return lang==='en'?'Pending '+m[2]+' days · '+m[4]:'Belum bayar '+m[2]+' hari · '+m[4];
 m=s.match(/^(RM[\d,.]+) (perlu dikutip|due soon|to collect|tertunggak|overdue)$/i);
 if(m)return lang==='en'?m[1]+' '+(/tertunggak|overdue/i.test(m[2])?'overdue':'to collect'):m[1]+' '+(/tertunggak|overdue/i.test(m[2])?'tertunggak':'perlu dikutip');
+
+m=s.match(/^(\d+) (orders?|pesanan) (?:· )?$/i);if(m)return m[1]+' '+(lang==='en'?(Number(m[1])===1?'order':'orders'):'pesanan');
+m=s.match(/^(Due|Tarikh akhir) (\d{2} [A-Za-z]+ \d{4}) · (?:baki|balance) (RM[\d,.]+)$/i);if(m)return lang==='en'?'Due '+m[2]+' · balance '+m[3]:'Tarikh akhir '+m[2]+' · baki '+m[3];
+m=s.match(/^(\d+) hari lewat · baki (RM[\d,.]+)$/i);if(m)return lang==='en'?m[1]+' days overdue · balance '+m[2]:m[1]+' hari lewat · baki '+m[2];
 
 return raw}
 const texts=new WeakMap(),attrs=new WeakMap();let busy=false;
