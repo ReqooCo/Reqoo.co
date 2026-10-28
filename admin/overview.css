@@ -126,3 +126,11 @@
  #rqOverviewV2 .rqFollowupActions { grid-column:1; flex-direction:row; justify-content:space-between; align-items:center; }
  #rqOverviewV2 .rqActionGrid { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
+
+/* Mobile overview: bounded attention preview with full queue available on the linked workspace. */
+@media (max-width:680px) {
+ #rqOverviewV2 .rqFollowupList > .rqFollowupRow:nth-child(n+4) { display:none; }
+ #rqOverviewV2 .rqFollowupPanel { min-width:0; }
+ #rqOverviewV2 .rqDashHead .rqDashRefresh { flex:none; }
+ #rqOverviewV2 .rqDashFoot { overflow-wrap:anywhere; }
+}
