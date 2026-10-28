@@ -14,7 +14,7 @@ const root=path.resolve(__dirname,'..'),out=process.env.REQOO_TEST_OUTPUT||path.
   const file=path.join(root,u.pathname==='/admin/'?'admin/index.html':u.pathname);
   if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
   if(file.endsWith('.html')){
-   let html=fs.readFileSync(file,'utf8').replace('</head>','<link rel="stylesheet" href="/admin/admin-base.css?v=1"><link rel="stylesheet" href="/admin/admin-flow.css?v=2"><link rel="stylesheet" href="/admin/admin-theme.css?v=1"></head>')+(u.pathname==='/admin/'?'': '<script src="/admin/admin-shell.js?v=4"></script>')+'</body>');
+   let html=fs.readFileSync(file,'utf8').replace('</head>','<link rel="stylesheet" href="/admin/admin-base.css?v=1"><link rel="stylesheet" href="/admin/admin-flow.css?v=2"><link rel="stylesheet" href="/admin/admin-theme.css?v=1"></head>')+(u.pathname==='/admin/'?'': '<script src="/admin/admin-shell.js?v=4"></script>')+'</body>';
    return route.fulfill({contentType:'text/html',body:html});
   }
   return route.fulfill({path:file,contentType:file.endsWith('.css')?'text/css':file.endsWith('.js')?'application/javascript':'text/plain'});
