@@ -58,7 +58,16 @@ function mountWorkspaceTabs(data,orderId){
  else if(!content)content=empty(type);
  return '<section role="tabpanel" id="workspace-panel-'+type+'" aria-labelledby="workspace-tab-'+type+'">'+content+'</section>';
  }).join('');
- if(editableQuote){const edit=document.createElement('button');edit.type='button';edit.className='btn primary rqQuoteEdit';edit.textContent='Ubah quotation';edit.onclick=()=>document.dispatchEvent(new CustomEvent('rq:documents-edit-id',{detail:{id:editableQuote.id}}));section.prepend(edit)}
+ if(editableQuote){
+  let company=editableQuote.company;try{company=company||JSON.parse(editableQuote.company_json||'{}')}catch{}
+  const meta=company?.quoteMeta||{},actions=document.createElement('div');actions.className='rqQuoteActions';
+  actions.innerHTML='<span class="rqQuoteRevision">Rev '+Number(meta.revision||0)+' · '+esc(String(editableQuote.status||'issued').toUpperCase())+'</span>';
+  if(!meta.convertedOrderId&&!['rejected','expired','cancelled'].includes(String(editableQuote.status||'').toLowerCase())){
+   const convert=document.createElement('button');convert.type='button';convert.id='rqDrawerConvertQuote';convert.className='btn primary';convert.textContent='Convert to order';
+   convert.onclick=()=>document.dispatchEvent(new CustomEvent('rq:documents-convert-id',{detail:{id:editableQuote.id}}));actions.append(convert);
+  }
+  const edit=document.createElement('button');edit.type='button';edit.className='btn rqQuoteEdit';edit.textContent='Edit quotation';edit.onclick=()=>document.dispatchEvent(new CustomEvent('rq:documents-edit-id',{detail:{id:editableQuote.id}}));actions.append(edit);section.prepend(actions);
+ }
  const select=type=>{workspaceTab=type;tabs.forEach(([key])=>{const b=$('#workspace-tab-'+key),on=type===key;b.setAttribute('aria-selected',String(on));b.tabIndex=on?0:-1;$('#workspace-panel-'+key).hidden=!on});if(activity)activity.hidden=type!=='all'};
  $$('[data-workspace-tab]').forEach((b,i)=>{b.onclick=()=>select(b.dataset.workspaceTab);b.onkeydown=e=>{let n=i;if(e.key==='ArrowRight')n=(i+1)%tabs.length;else if(e.key==='ArrowLeft')n=(i+tabs.length-1)%tabs.length;else if(e.key==='Home')n=0;else if(e.key==='End')n=tabs.length-1;else return;e.preventDefault();select(tabs[n][0]);$('#workspace-tab-'+tabs[n][0]).focus()}});select(workspaceTab);
  $$('[data-workspace-create]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{const type=b.dataset.workspaceCreate,r=await fetch(API,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:type==='quotation'?'createOrderQuotation':'createDocument',type,orderId})}),d=await r.json();if(r.status===401){location.href='/admin/?return='+encodeURIComponent(location.pathname);return}if(!r.ok||!d.ok)throw Error(d.error||'Gagal menjana dokumen.');document.getElementById('refreshDocs')?.click();document.dispatchEvent(new CustomEvent('rq:documents-open-id',{detail:{id:d.document.id}}))}catch(e){b.disabled=false;const message=document.createElement('p');message.className='rqPaymentEmpty';message.setAttribute('role','alert');message.textContent=e.message;b.after(message)}});
