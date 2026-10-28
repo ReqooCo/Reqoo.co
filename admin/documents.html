@@ -90,7 +90,7 @@
         <div class="rqDocsField full"><label>ALAMAT</label><textarea id="qAddress" placeholder="Alamat customer / syarikat"></textarea></div>
       </div>
       <div class="rqQuoteSectionHead"><div><div class="rqQuoteSectionTitle">2. Item dan harga</div><div class="rqQuoteHint">Boleh tambah item bebas. Harga dimasukkan dalam RM.</div></div><button class="btn" id="qAddItem" type="button">+ Tambah item</button></div>
-      <div class="rqQuoteItemHeader"><span>Description</span><span>Variation / Size</span><span>Qty</span><span>Unit Price (RM)</span><span>Amount</span><span></span></div>
+      <div class="rqQuoteItemHeader"><span>Description</span><span>Variation / Size</span><span>Qty</span><span>Unit Price (RM)</span><span>Jumlah</span><span></span></div>
       <div id="quoteItems" class="rqQuoteItems"></div>
       <div class="rqQuoteBottomGrid">
         <div class="rqQuoteNotes">
@@ -114,20 +114,20 @@
 
   <section class="rqDocsPanel rqDocsSecondaryPanel rqDocsOrdersPanel" id="rqOrderSourcePanel">
     <div class="rqDocsPanelHead">
-      <div><div class="rqDocsEyebrow">ORDER SEDIA ADA</div><h2>Dokumen daripada order</h2><p>Pilih order untuk jana Invoice atau Delivery Order. Bayaran direkod melalui Invoice.</p></div>
-      <div class="rqDocsUnifiedActions"><input id="docSearch" class="rqDocsSearch" placeholder="Cari order, nama atau WhatsApp"><button class="btn rqDocsSecondaryClose" id="closeOrderDrawer" type="button">Tutup</button></div>
+      <div><div class="rqDocsEyebrow">PESANAN SEDIA ADA</div><h2>Dokumen daripada pesanan</h2><p>Pilih pesanan untuk menjana invois atau nota penghantaran. Bayaran direkod melalui invois.</p></div>
+      <div class="rqDocsUnifiedActions"><input id="docSearch" class="rqDocsSearch" placeholder="Cari pesanan, nama atau WhatsApp"><button class="btn rqDocsSecondaryClose" id="closeOrderDrawer" type="button">Tutup</button></div>
     </div>
-    <div class="rqDocsTableHead rqOrderTableHead" aria-hidden="true"><span>Order / Date</span><span>Pelanggan</span><span>Amount</span><span>Status</span><span>Tindakan</span></div>
+    <div class="rqDocsTableHead rqOrderTableHead" aria-hidden="true"><span>Pesanan / Tarikh</span><span>Pelanggan</span><span>Jumlah</span><span>Status</span><span>Tindakan</span></div>
     <div id="docState" class="rqDocsState">Memuatkan pesanan…</div>
-    <div id="docList" class="rqDocsList"></div><div class="rqDocsOrderMore"><button class="btn" id="loadMoreDocOrders" type="button" hidden>Load More</button></div>
+    <div id="docList" class="rqDocsList"></div><div class="rqDocsOrderMore"><button class="btn" id="loadMoreDocOrders" type="button" hidden>Muat lagi</button></div>
   </section>
 </main>
 
 <div class="rqDocsModal" id="docModal" role="dialog" aria-modal="true" aria-labelledby="docModalTitle" aria-hidden="true">
   <div class="rqDocsModalBox">
-    <div class="rqDocsModalHead"><div><div class="rqDocsEyebrow">OFFICIAL DOCUMENT</div><h2 id="docModalTitle">Dokumen</h2></div><button id="docClose" class="rqDocsClose" type="button" aria-label="Tutup">×</button></div>
+    <div class="rqDocsModalHead"><div><div class="rqDocsEyebrow">DOKUMEN RASMI</div><h2 id="docModalTitle">Dokumen</h2></div><button id="docClose" class="rqDocsClose" type="button" aria-label="Tutup">×</button></div>
     <div id="docPreview" class="rqDocsPreview"></div>
-    <div class="rqDocsActions"><button id="docEdit" class="btn" type="button" style="display:none">Ubah quotation</button><button id="docConvert" class="btn" type="button" style="display:none">Jadikan pesanan</button><button id="docDepositInvoice" class="btn primary" type="button" style="display:none">Lihat invois</button><button id="docWhatsapp" class="btn whatsapp" type="button">WhatsApp</button><button id="docPrint" class="btn" type="button">Cetak / PDF</button><button id="docCloseBottom" class="btn" type="button">Tutup</button></div>
+    <div class="rqDocsActions"><button id="docEdit" class="btn" type="button" style="display:none">Pinda sebut harga</button><button id="docConvert" class="btn" type="button" style="display:none">Jadikan pesanan</button><button id="docDepositInvoice" class="btn primary" type="button" style="display:none">Lihat invois</button><button id="docWhatsapp" class="btn whatsapp" type="button">WhatsApp</button><button id="docPrint" class="btn" type="button">Cetak / PDF</button><button id="docCloseBottom" class="btn" type="button">Tutup</button></div>
   </div>
 </div>
 <div role="status" aria-live="polite" id="docsToast" class="rqDocsToast"></div>
