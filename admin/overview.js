@@ -76,8 +76,8 @@ async function load(force=false){
  ensure();if(busy)return;if(!force&&data&&Date.now()-lastLoad<FRESH_MS){render();return}busy=true;$('#rqDashRefresh').disabled=true;$('#rqDashFoot').textContent='Loading dashboard…';
  try{const r=await fetch(`${API}?action=dashboardSummary`,{cache:'no-store'}),j=await r.json().catch(()=>({}));if(!r.ok||!j.ok)throw Error(j.error||'Unable to load dashboard');data=j;lastLoad=Date.now();render()}catch(e){$('#rqDashFoot').textContent=e.message||'Dashboard could not be loaded.'}finally{busy=false;$('#rqDashRefresh').disabled=false}
 }
-function boot(){ensure();load()}
+function boot(){ensure()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-window.addEventListener('focus',()=>{if(Date.now()-lastLoad>=FRESH_MS)load()});
+window.addEventListener('focus',()=>{if(data&&Date.now()-lastLoad>=FRESH_MS)load()});
 window.addEventListener('reqoo:admin-ready',()=>load(true));
 })();
