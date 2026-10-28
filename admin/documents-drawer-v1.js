@@ -59,7 +59,8 @@ function mountWorkspaceTabs(data,orderId){
  return '<section role="tabpanel" id="workspace-panel-'+type+'" aria-labelledby="workspace-tab-'+type+'">'+content+'</section>';
  }).join('');
  if(editableQuote){
-  const meta=editableQuote.company?.quoteMeta||{},actions=document.createElement('div');actions.className='rqQuoteActions';
+  let company=editableQuote.company;try{company=company||JSON.parse(editableQuote.company_json||'{}')}catch{}
+  const meta=company?.quoteMeta||{},actions=document.createElement('div');actions.className='rqQuoteActions';
   actions.innerHTML='<span class="rqQuoteRevision">Rev '+Number(meta.revision||0)+' · '+esc(String(editableQuote.status||'issued').toUpperCase())+'</span>';
   if(!meta.convertedOrderId&&!['rejected','expired','cancelled'].includes(String(editableQuote.status||'').toLowerCase())){
    const convert=document.createElement('button');convert.type='button';convert.id='rqDrawerConvertQuote';convert.className='btn primary';convert.textContent='Convert to order';
