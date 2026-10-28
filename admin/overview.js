@@ -17,7 +17,7 @@ function ensure(){
   <article class="rqDashPanel"><div class="rqDashPanelHead"><div><small>TINDAKAN PANTAS</small><h3>Tindakan</h3></div></div><div class="rqActionGrid"><a class="rqAction primary" href="/admin/documents.html?view=quotations&new=1"><b>+ Sebut harga</b></a><a class="rqAction" href="/admin/documents.html?view=orders"><b>Pesanan</b><span>Semak pesanan dan bayaran</span></a><a class="rqAction" href="/admin/documents.html?view=orders&filter=working"><b>Dalam kerja</b><span>Tarikh siap, petugas dan keutamaan</span></a><a class="rqAction" href="/admin/customers.html"><b>Pelanggan</b><span>Sejarah, baki dan pelanggan berulang</span></a><a class="rqAction" href="/admin/finance.html"><b>Kewangan</b><span>Hasil jualan, baki dan purata pesanan</span></a></div></article>
  </div>
  <div class="rqDashGrid rqDashGridBottom">
-  <article class="rqDashPanel"><div class="rqDashPanelHead"><div><small>PELANGGAN</small><h3>Pelanggan terkini</h3></div><a href="/admin/customers.html">Pelanggan →</a></div><div id="rqCustomers"></div></article>
+  <article class="rqDashPanel"><div class="rqDashPanelHead"><div><small>PELANGGAN</small><h3>Customer terbaru</h3></div><a href="/admin/customers.html">Pelanggan →</a></div><div id="rqCustomers"></div></article>
   <article class="rqDashPanel"><div class="rqDashPanelHead"><div><small>PESANAN TERKINI</small><h3>Pesanan terkini</h3></div><a href="/admin/documents.html?view=orders">Pesanan →</a></div><div id="rqLatest"></div></article>
  </div>
  <article class="rqDashPanel rqRevenuePanel"><div class="rqDashPanelHead"><div><small>HASIL JUALAN</small><h3>Kutipan · 6 bulan</h3></div><a href="/admin/finance.html">Kewangan →</a></div><div class="rqTrend" id="rqTrend"></div></article>
