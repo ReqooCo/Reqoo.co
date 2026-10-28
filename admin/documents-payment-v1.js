@@ -37,7 +37,7 @@ function enrichInvoices(){
   const acts=row.querySelector('.rqHistActions');if(!acts)return;let btn=acts.querySelector('.rqRecordPaymentBtn');
   const preview=acts.querySelector('[data-open-doc]');if(preview)preview.classList.toggle('primary',s.balanceMinor<=0);
   if(s.balanceMinor>0){if(!btn){btn=document.createElement('button');btn.type='button';btn.className='btn primary rqRecordPaymentBtn';btn.textContent='Rekod bayaran';acts.prepend(btn)}btn.onclick=()=>openPayment(doc,s)}else if(btn)btn.remove();
-  let fix=acts.querySelector('.rqCorrectPaymentBtn');if(s.paymentStatus==='paid'){if(!fix){fix=document.createElement('button');fix.type='button';fix.className='btn rqCorrectPaymentBtn';fix.textContent='Betulkan / Undo Paid';(acts.querySelector('.rqDocumentMenu')||acts).append(fix)}fix.onclick=()=>correctPaid(doc,s)}else if(fix)fix.remove()
+  let fix=acts.querySelector('.rqCorrectPaymentBtn');if(s.paymentStatus==='paid'){if(!fix){fix=document.createElement('button');fix.type='button';fix.className='btn rqCorrectPaymentBtn';fix.textContent='Betulkan bayaran';(acts.querySelector('.rqDocumentMenu')||acts).append(fix)}fix.onclick=()=>correctPaid(doc,s)}else if(fix)fix.remove()
  })
 }
 function updatePaymentPreview(){
