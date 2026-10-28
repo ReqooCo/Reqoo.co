@@ -180,3 +180,16 @@
  .rqAppNav a.active{color:#e7bf70;font-weight:800}
  #rqOverviewV2{padding-bottom:calc(104px + env(safe-area-inset-bottom))}
 }
+
+/* Single-shell mobile hierarchy: financial KPIs, actions, then attention. */
+@media(max-width:680px){
+ #rqOverviewV2 .rqDashGridTop{display:flex!important;flex-direction:column!important;gap:14px!important}
+ #rqOverviewV2 .rqDashGridTop>.rqDashPanel:not(.rqFollowupPanel){order:1!important}
+ #rqOverviewV2 .rqDashGridTop>.rqFollowupPanel{order:2!important}
+ body.rqOverviewV2 .rqAdminMobile,body.rqOverviewV2 .rqAdminSide,body.rqOverviewV2 .rqAdminMoreBackdrop{display:none!important}
+ #rqOverviewV2 .rqKpis{order:1!important}
+ #rqOverviewV2 .rqDashGridTop{order:2!important}
+ #rqOverviewV2 .rqDashGridBottom{order:3!important}
+ #rqOverviewV2 .rqRevenuePanel{order:4!important}
+ #rqOverviewV2 .rqDashFoot{order:5!important}
+}
