@@ -34,6 +34,20 @@ pairs.push(
  ["Pengeluaran hari ini","Production today"],
  ["Susulan pelanggan","Customer follow-up"],
  ["Tugas","Tasks"],
+ ["Tindakan susulan harian","Daily follow-up"],
+ ["Tindakan pantas","Quick actions"],
+ ["Pesanan terkini","Latest orders"],
+ ["Hasil jualan","Revenue"],
+ ["Pelanggan terkini","Recent customers"],
+ ["Invois tertunggak","Overdue invoice"],
+ ["Perlu dibayar hari ini","Due today"],
+ ["Hampir tamat tempoh","Due soon"],
+ ["Pengeluaran lewat","Production overdue"],
+ ["Pengeluaran hari ini","Production today"],
+ ["Susulan bayaran","Payment follow-up"],
+ ["Susulan pelanggan","Customer follow-up"],
+ ["Tiada maklumat hubungan","No contact details"],
+ ["Belum bayar","Pending"],
  ["Tugas hari ini","Today's tasks"]
 );
 const dict=new Map();for(const [ms,en] of pairs){if(!dict.has(ms.toLowerCase()))dict.set(ms.toLowerCase(),{ms,en});if(!dict.has(en.toLowerCase()))dict.set(en.toLowerCase(),{ms,en})}for(const [old,ms]of Object.entries(aliases)){const entry=dict.get(ms.trim().toLowerCase());if(entry)dict.set(old.toLowerCase(),entry)}
