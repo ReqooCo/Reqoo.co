@@ -50,15 +50,15 @@ assert.equal(dash.products[0].product_name,'Scalable Product');
 assert.equal(Number(dash.products[0].orders),1500);
 assert.equal(Number(dash.products[0].units_sold),1500);
 assert.equal(Number(dash.products[0].collected_minor),1250000);
-assert.equal(dash.transactions.length,12);
+assert.equal(dash.transactions.length,5);
 assert.equal(dash.transactionsHasMore,true);
 assert.ok(dash.trend.length>=1&&dash.trend.length<=12);
 
-const next=await call('financeTransactions',{range:'30',limit:25,offset:12});
+const next=await call('financeTransactions',{range:'30',limit:25,offset:5});
 assert.equal(next.ok,true);
 assert.equal(next.transactions.length,25);
 assert.equal(next.hasMore,true);
-assert.equal(new Set([...dash.transactions,...next.transactions].map(x=>x.id)).size,37,'transaction pages must not overlap');
+assert.equal(new Set([...dash.transactions,...next.transactions].map(x=>x.id)).size,30,'transaction pages must not overlap');
 
 const all=await call('financeDashboard',{range:'all'});
 assert.equal(all.summary.validOrders,2001);
@@ -67,6 +67,14 @@ assert.equal(all.summary.outstandingMinor,750000);
 assert.equal(all.products.length,2);
 assert.equal(all.products.reduce((s,x)=>s+Number(x.collected_minor||0),0),1252000);
 
+const hidden=dash.transactions[0];
+sqlite.prepare('INSERT INTO reqoo_workspace_archives(order_id,reference,reason,actor_name,created_at) VALUES(?,?,?,?,?)').run(hidden.order_id,'Fixture hidden','fixture','Fixture Admin',new Date().toISOString());
+const hiddenView=await call('financeDashboard',{range:'30'});
+assert.ok(!hiddenView.transactions.some(p=>p.order_id===hidden.order_id),'hidden order is absent from visible transactions');
+assert.equal(hiddenView.summary.collectedMinor,dash.summary.collectedMinor,'hiding does not erase confirmed collections');
+assert.equal(hiddenView.summary.outstandingMinor,dash.summary.outstandingMinor,'financial balances remain truthful');
+assert.ok(sqlite.prepare('SELECT id FROM reqoo_payments WHERE id=?').get(hidden.id),'payment record retained');
+const hiddenPage=await call('financeTransactions',{range:'30',limit:25,offset:0});assert.ok(!hiddenPage.transactions.some(p=>p.order_id===hidden.order_id));
 const ui=fs.readFileSync(new URL('../admin/finance.js',import.meta.url),'utf8');
 assert.match(ui,/financeDashboard/);
 assert.match(ui,/financeTransactions/);

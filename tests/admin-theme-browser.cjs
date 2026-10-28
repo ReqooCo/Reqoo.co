@@ -67,6 +67,15 @@ const root=path.resolve(__dirname,'..'),out=process.env.REQOO_TEST_OUTPUT||path.
    assert.doesNotMatch(await page.locator('main').innerText(),/berbayar|dianalisis|Memuatkan/);
    assert.equal(await page.locator('#financeRange').getAttribute('aria-label'),'Reporting period');
    assert.ok(await page.locator('#refreshFinance').evaluate(e=>e.getBoundingClientRect().height>=44));
+   assert.equal(await page.locator('#financePanel-summary').isVisible(),true);
+   assert.equal(await page.locator('#financePanel-payments').isVisible(),false);
+   assert.equal(await page.locator('#financePanel-costs').isVisible(),false);
+   assert.equal(await page.locator('.rqFinanceProducts').getAttribute('open'),null,'secondary product detail starts collapsed');
+   await page.locator('#financeTab-payments').click();
+   assert.equal(await page.locator('#financeTransactions').isVisible(),true);
+   assert.equal(await page.locator('#financePanel-summary').isVisible(),false);
+   await page.locator('#financeTab-costs').click();assert.equal(await page.locator('#financeRange').isVisible(),false);
+   await page.locator('#financeTab-summary').click();
    await page.locator('#financeState').scrollIntoViewIfNeeded();
    assert.ok(await page.locator('#financeState').evaluate(e=>e.getBoundingClientRect().bottom<document.querySelector('.rqAdminMobile').getBoundingClientRect().top),'last finance content clears the navigation');
    await page.evaluate(()=>scrollTo(0,0));

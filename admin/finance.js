@@ -16,6 +16,17 @@ function render(d){const s=d.summary||{},trend=Array.isArray(d.trend)?d.trend:[]
  const cats=[['Paid in full',Number(breakdown.paid||0)],['Deposit / partial',Number(breakdown.partial||0)],['Unpaid',Number(breakdown.pending||0)]],mx=Math.max(1,...cats.map(x=>x[1]));$('paymentBreakdown').innerHTML=cats.map(([n,v])=>`<div class="rqPayLine"><b>${n}</b><div class="rqPayTrack"><div class="rqPayFill" style="width:${Math.round(v/mx*100)}%"></div></div><div class="rqPayValue">${v}</div></div>`).join('');
  transactions=Array.isArray(d.transactions)?d.transactions:[];txOffset=transactions.length;txHasMore=!!d.transactionsHasMore;renderTransactions();$('financeState').textContent=`${Number(s.validOrders||0)} orders · collections from the confirmed payment ledger.`}
 async function load(){const seq=++loadSeq;try{$('financeState').textContent='Loading finance data…';const d=await api('financeDashboard',{range:$('financeRange').value});if(seq!==loadSeq)return;render(d)}catch(e){if(seq!==loadSeq)return;$('financeState').textContent=e.message;toast(e.message,true)}}
-async function loadMore(){const b=$('loadMoreFinance');if(b){b.disabled=true;b.textContent='Loading…'}try{const d=await api('financeTransactions',{range:$('financeRange').value,limit:25,offset:txOffset}),seen=new Set(transactions.map(x=>String(x.id)));for(const p of d.transactions||[])if(!seen.has(String(p.id))){transactions.push(p);seen.add(String(p.id))}txOffset=Number(d.offset||0)+(d.transactions||[]).length;txHasMore=!!d.hasMore;renderTransactions()}catch(e){toast(e.message,true)}finally{if(b){b.disabled=false;b.textContent='Load more'}}}
-$('refreshFinance').addEventListener('click',load);$('financeRange').addEventListener('change',load);$('loadMoreFinance')?.addEventListener('click',loadMore);load();
+async function loadMore(){const b=$('loadMoreFinance');if(b){b.disabled=true;b.textContent='Loading…'}try{const d=await api('financeTransactions',{range:$('financeRange').value,limit:5,offset:txOffset}),seen=new Set(transactions.map(x=>String(x.id)));for(const p of d.transactions||[])if(!seen.has(String(p.id))){transactions.push(p);seen.add(String(p.id))}txOffset=Number(d.offset||0)+(d.transactions||[]).length;txHasMore=!!d.hasMore;renderTransactions()}catch(e){toast(e.message,true)}finally{if(b){b.disabled=false;b.textContent='Load more'}}}
+let activeTab='summary';
+function selectTab(tab,focus=false){
+ if(!['summary','payments','costs'].includes(tab))tab='summary';activeTab=tab;
+ document.querySelectorAll('[data-finance-tab]').forEach(b=>{const selected=b.dataset.financeTab===tab;b.setAttribute('aria-selected',String(selected));b.tabIndex=selected?0:-1;document.getElementById('financePanel-'+b.dataset.financeTab).hidden=!selected;if(selected&&focus)b.focus()});
+ $('financeRange').hidden=tab==='costs';
+ history.replaceState(null,'',location.pathname+location.search+(tab==='summary'?'':'#'+tab));
+ document.dispatchEvent(new CustomEvent('rq:finance-tab-changed',{detail:{tab}}));
+}
+const tabButtons=[...document.querySelectorAll('[data-finance-tab]')];
+tabButtons.forEach((b,i)=>{b.onclick=()=>selectTab(b.dataset.financeTab);b.onkeydown=e=>{let next=i;if(e.key==='ArrowRight')next=(i+1)%tabButtons.length;else if(e.key==='ArrowLeft')next=(i+tabButtons.length-1)%tabButtons.length;else if(e.key==='Home')next=0;else if(e.key==='End')next=tabButtons.length-1;else return;e.preventDefault();selectTab(tabButtons[next].dataset.financeTab,true)}});
+$('refreshFinance').addEventListener('click',()=>{if(activeTab==='costs')document.dispatchEvent(new Event('rq:finance-costs-refresh'));else load()});
+$('financeRange').addEventListener('change',load);$('loadMoreFinance')?.addEventListener('click',loadMore);selectTab(location.hash.slice(1));load();
 })();

@@ -40,8 +40,11 @@ const archive={orderId:'order0',reference:'RQ-TEST-0',confirmReference:'RQ-TEST-
 assert.equal((await post('archiveWorkspace',{...archive,confirmReference:'wrong'})).status,400);
 assert.equal((await post('archiveWorkspace',archive)).status,200);
 let work=await request('/api/shop-admin?action=documentWorkspaces&q=RQ-TEST-0',null,{owner:true});assert.equal(work.body.total,0);
+assert.equal((await get('marginReport',{q:'RQ-TEST-0'})).body.items.length,0,'hidden orders do not reappear in costs');
+assert.equal((await get('marginReport',{limit:5})).body.items.length,5,'cost report supports compact pages');
 assert.equal(sql.prepare('SELECT amount_minor FROM reqoo_payments WHERE id=?').get('pay0').amount_minor,5000,'archive preserves payment');assert.ok(sql.prepare('SELECT id FROM orders WHERE id=?').get('order0'));
 assert.equal((await get('archives')).body.items.length,1);assert.equal((await post('restoreWorkspace',archive)).status,200);assert.equal((await request('/api/shop-admin?action=documentWorkspaces&q=RQ-TEST-0',null,{owner:true})).body.total,1);
+assert.equal((await get('marginReport',{q:'RQ-TEST-0'})).body.items.length,1,'restoring makes costs visible again');
 for(const role of ['sales','production']){
  assert.equal((await post('saveStaff',{username:'test-'+role,name:'Test '+role,role,password:'fixture-password-'+role})).status,200);
  const login=await request('/api/admin-session',{username:'test-'+role,token:'fixture-password-'+role});assert.equal(login.status,200);assert.ok(login.headers.getSetCookie().some(x=>x.includes('HttpOnly')));
