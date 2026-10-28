@@ -5,7 +5,7 @@ if(!document.querySelector('link[href*="/admin/admin-theme.css"]')){const l=docu
 if(!document.querySelector('script[src*="/admin/admin-business.js"]')){const s=document.createElement('script');s.src='/admin/admin-business.js?v=3';document.body.appendChild(s)}
 const language=document.createElement('script');language.src='/admin/admin-language.js?v=1';document.body.appendChild(language);
 const helper=document.createElement('script');helper.src='/admin/admin-simple.js?v=1';document.body.appendChild(helper);
-const simpleStyle=document.createElement('link');simpleStyle.rel='stylesheet';simpleStyle.href='/admin/admin-simple.css?v=3';document.head.appendChild(simpleStyle);
+const simpleStyle=document.createElement('link');simpleStyle.rel='stylesheet';simpleStyle.href='/admin/admin-simple.css?v=4';document.head.appendChild(simpleStyle);
 const path=location.pathname,hash=location.hash;
 const isShop=/\/shop\/admin\.html$/i.test(path),isOverview=/\/admin\/?$/i.test(path),isOrders=/\/admin\/orders\.html$/i.test(path),isProduction=/\/admin\/production\.html$/i.test(path),isProducts=/\/admin\/products\.html$/i.test(path),isDocuments=/\/admin\/documents\.html$/i.test(path),isCustomers=/\/admin\/customers\.html$/i.test(path),isFinance=/\/admin\/finance\.html$/i.test(path);
 document.body.classList.add('rq-admin-shell');
