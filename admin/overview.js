@@ -51,19 +51,7 @@ function followupMessage(f){
 }
 function waLink(f){const n=waPhone(f.phone);return n?`https://wa.me/${n}?text=${encodeURIComponent(followupMessage(f))}`:''}
 function renderFollowups(cc){
- const all=Array.isArray(cc.followups)?cc.followups:[];
- // Avoid duplicate dashboard reminders for the same invoice/order obligation.
- // Preserve the full source list in the backend; deduplicate display only.
- const seen=new Set();
- const list=all.filter(f=>{
-   const kind=String(f.kind||'');
-   const financial=/^(invoice_due|invoice_overdue|payment_pending)$/.test(kind);
-   const entity=String(f.order_id||f.order_no||f.order_ref||f.invoice_order_id||f.reference||'').trim().toLowerCase();
-   const key=financial&&entity?'financial:'+entity:kind+':'+String(f.reference||f.id||'');
-   if(seen.has(key))return false;
-   seen.add(key);return true;
- });
- const count=$('#rqFollowupCount');if(count)count.textContent=list.length?`${list.length} tasks`:'';
+ const list=Array.isArray(cc.followups)?cc.followups:[];const count=$('#rqFollowupCount');if(count)count.textContent=list.length?`${list.length} tasks`:'';
  $('#rqFollowups').innerHTML=list.length?`<div class="rqFollowupList">${list.map(f=>{const m=followupMeta(f),wa=f.contactable===false?'':waLink(f),priority=String(f.priority||'normal').toUpperCase(),open=f.action_url||'/admin/';return `<div class="rqFollowupRow ${esc(f.priority||'normal')}"><div class="rqFollowupPriority"><span>${priority}</span></div><div class="rqFollowupMain"><b>${esc(f.customer_name||'Customer')} · ${esc(f.reference||'')}</b><small>${esc(m.sub)}</small><span class="rqBadge ${m.cls}">${esc(m.label)}</span></div><div class="rqFollowupActions">${f.amount_minor?`<strong>${money(f.amount_minor)}</strong>`:''}<div>${wa?`<a class="rqMiniAction wa" href="${wa}" target="_blank" rel="noopener">WhatsApp</a>`:''}<a class="rqMiniAction" href="${esc(open)}">Open</a></div></div></div>`}).join('')}</div>`:'<div class="rqDashEmpty rqAllClear"><b>✓ No critical follow-ups today.</b><span>Invoices, payments and production appear on track.</span></div>';
 }
 function renderCustomers(list){
