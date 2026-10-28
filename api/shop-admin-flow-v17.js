@@ -104,7 +104,7 @@ async function createCustomQuotation(d,env){
   const base=await documentSettings(env),now=NOW(),id=ID('doc'),number=await nextQuoteNumber(env),shareToken=`${crypto.randomUUID()}${crypto.randomUUID().replaceAll('-','')}`;
   const subtotal=items.reduce((sum,item)=>sum+item.lineTotalMinor,0),discount=Math.min(subtotal,clampMoney(d.discountMinor,subtotal)),shipping=clampMoney(d.shippingMinor,100000000),tax=clampMoney(d.taxMinor,100000000),total=Math.max(0,subtotal-discount+shipping+tax);
   const validDays=clampDays(d.validDays,base.quoteValidDays),dueAt=S(d.dueAt)||plusDays(now,validDays),depositPercent=Math.max(0,Math.min(100,Number(d.depositPercent||0)));
-  const company={...base,quoteMeta:{source:'custom',customerAddress:S(d.customerAddress).slice(0,1000),attention:S(d.attention).slice(0,160),notes:S(d.notes).slice(0,2000),terms:S(d.terms).slice(0,3000),depositPercent:Number.isFinite(depositPercent)?Math.round(depositPercent*100)/100:0}};
+  const company={...base,quoteMeta:{source:'custom',revision:0,createdBy:S(env.ADMIN_ACTOR?.name||env.ADMIN_ACTOR?.id)||'Owner',customerAddress:S(d.customerAddress).slice(0,1000),attention:S(d.attention).slice(0,160),notes:S(d.notes).slice(0,2000),terms:S(d.terms).slice(0,3000),depositPercent:Number.isFinite(depositPercent)?Math.round(depositPercent*100)/100:0}};
   const orderId=`custom:${id}`;
   const header=env.DB.prepare('INSERT INTO reqoo_documents(id,type,number,order_id,status,currency,subtotal_minor,discount_minor,shipping_minor,tax_minor,total_minor,issued_at,due_at,customer_name,customer_phone,customer_email,company_json,payment_status,share_token,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
     .bind(id,'quotation',number,orderId,'issued','MYR',subtotal,discount,shipping,tax,total,now,dueAt,customerName,customerPhone,customerEmail,JSON.stringify(company),'',shareToken,now,now);
@@ -136,10 +136,10 @@ async function updateCustomQuotation(d,env){
   if(!items.length)return J({ok:false,error:'Masukkan sekurang-kurangnya satu item quotation.'},400);
   const now=NOW(),subtotal=items.reduce((sum,item)=>sum+item.lineTotalMinor,0),discount=Math.min(subtotal,clampMoney(d.discountMinor,subtotal)),shipping=clampMoney(d.shippingMinor,100000000),tax=clampMoney(d.taxMinor,100000000),total=Math.max(0,subtotal-discount+shipping+tax);
   const validDays=clampDays(d.validDays,7),dueAt=S(d.dueAt)||plusDays(now,validDays),depositPercent=Math.max(0,Math.min(100,Number(d.depositPercent||0)));
-  const company={...(doc.company||{}),quoteMeta:{...oldMeta,revision:revision+1,revisedAt:now,revisedBy:S(env.ADMIN_ACTOR?.name||env.ADMIN_ACTOR?.id)||null,approvedAt:null,approvedBy:null,source:'custom',customerAddress:S(d.customerAddress).slice(0,1000),attention:S(d.attention).slice(0,160),notes:S(d.notes).slice(0,2000),terms:S(d.terms).slice(0,3000),depositPercent:Number.isFinite(depositPercent)?Math.round(depositPercent*100)/100:0}};
+  const company={...(doc.company||{}),quoteMeta:{...oldMeta,revision:revision+1,revisedAt:now,revisedBy:S(env.ADMIN_ACTOR?.name||env.ADMIN_ACTOR?.id)||'Owner',approvedAt:null,approvedBy:null,source:'custom',customerAddress:S(d.customerAddress).slice(0,1000),attention:S(d.attention).slice(0,160),notes:S(d.notes).slice(0,2000),terms:S(d.terms).slice(0,3000),depositPercent:Number.isFinite(depositPercent)?Math.round(depositPercent*100)/100:0}};
   const snapshot={...doc,revision};
   const stmts=[
-    env.DB.prepare('INSERT INTO reqoo_quotation_revisions(document_id,revision,snapshot_json,version_at,version_actor,archived_at) VALUES(?,?,?,?,?,?)').bind(doc.id,revision,JSON.stringify(snapshot),oldMeta.revisedAt||doc.created_at,oldMeta.revisedBy||null,now),
+    env.DB.prepare('INSERT INTO reqoo_quotation_revisions(document_id,revision,snapshot_json,version_at,version_actor,archived_at) VALUES(?,?,?,?,?,?)').bind(doc.id,revision,JSON.stringify(snapshot),oldMeta.revisedAt||doc.created_at,oldMeta.revisedBy||oldMeta.createdBy||null,now),
     env.DB.prepare('UPDATE reqoo_documents SET status=\'issued\',subtotal_minor=?,discount_minor=?,shipping_minor=?,tax_minor=?,total_minor=?,due_at=?,customer_name=?,customer_phone=?,customer_email=?,company_json=?,updated_at=? WHERE id=?').bind(subtotal,discount,shipping,tax,total,dueAt,customerName,customerPhone,customerEmail,JSON.stringify(company),now,doc.id),
     env.DB.prepare('DELETE FROM reqoo_document_items WHERE document_id=?').bind(doc.id),
     ...items.map(item=>env.DB.prepare('INSERT INTO reqoo_document_items(id,document_id,description,variation,quantity,unit_price_minor,line_total_minor,sort_order) VALUES(?,?,?,?,?,?,?,?)').bind(ID('di'),doc.id,item.description,item.variation,item.quantity,item.unitPriceMinor,item.lineTotalMinor,item.sortOrder))
@@ -164,7 +164,7 @@ async function quotationHistory(d,env){
     return J({ok:true,document:{...JSON.parse(archived.snapshot_json),revision:requested,readOnly:true}});
   }
   const versions=(await env.DB.prepare('SELECT revision,version_at,version_actor,archived_at FROM reqoo_quotation_revisions WHERE document_id=? ORDER BY revision DESC').bind(row.id).all()).results||[];
-  return J({ok:true,currentRevision:revision,versions:[{revision,version_at:quoteMeta(current).revisedAt||row.created_at,version_actor:quoteMeta(current).revisedBy||null,current:true},...versions]});
+  return J({ok:true,currentRevision:revision,versions:[{revision,version_at:quoteMeta(current).revisedAt||row.created_at,version_actor:quoteMeta(current).revisedBy||quoteMeta(current).createdBy||null,current:true},...versions]});
 }
 async function createInvoiceWithQuoteTerms(d,request,env){
   const response=await legacy({request,env});
