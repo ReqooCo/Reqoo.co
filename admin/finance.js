@@ -21,7 +21,7 @@ let activeTab='summary';
 function selectTab(tab,focus=false){
  if(!['summary','payments','costs'].includes(tab))tab='summary';activeTab=tab;
  document.querySelectorAll('[data-finance-tab]').forEach(b=>{const selected=b.dataset.financeTab===tab;b.setAttribute('aria-selected',String(selected));b.tabIndex=selected?0:-1;document.getElementById('financePanel-'+b.dataset.financeTab).hidden=!selected;if(selected&&focus)b.focus()});
- $('financeRange').hidden=tab==='costs';
+ $('financeRange').hidden=tab==='costs';document.querySelector('.rqFinanceActions').hidden=tab==='costs';
  history.replaceState(null,'',location.pathname+location.search+(tab==='summary'?'':'#'+tab));
  document.dispatchEvent(new CustomEvent('rq:finance-tab-changed',{detail:{tab}}));
 }
