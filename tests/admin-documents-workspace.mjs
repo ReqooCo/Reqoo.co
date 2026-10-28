@@ -26,12 +26,20 @@ assert.equal((await call('convertCustomQuotationToOrder',{documentId:quote.id}))
 const inv=await call('createDocument',{orderId,type:'invoice'});
 assert.equal(inv.ok,true,JSON.stringify(inv));
 assert.equal(inv.document.total_minor,30000);
+assert.equal(inv.document.financials.amountDueNowMinor,15000);
+assert.equal(inv.document.financials.paidMinor,0);
 assert.equal((await call('createDocument',{orderId,type:'receipt'})).statusCode,409);
 const numbers=new Set([quote.number,inv.document.number]);
 for(const [amount,paymentType,balance] of [[15000,'deposit',15000],[5000,'partial',10000],[10000,'final',0]]){
  const result=await call('recordPayment',{orderId,amountMinor:amount,paymentType,method:'bank_transfer'});
  assert.equal(result.ok,true,JSON.stringify(result));
  assert.equal(result.summary.balanceMinor,balance);
+ const preview=(await call('getDocument',{documentId:inv.document.id})).document;
+ assert.equal(preview.financials.paidMinor,30000-balance);
+ assert.equal(preview.financials.balanceMinor,balance);
+ assert.equal(preview.financials.amountDueNowMinor,balance);
+ const shared=(await call('publicDocument',{shareToken:inv.document.share_token},false)).document;
+ assert.deepEqual(shared.financials,preview.financials,'public invoice uses the same ledger amounts');
  assert.ok(!numbers.has(result.payment.receipt_number));numbers.add(result.payment.receipt_number);
  const receipt=await call('getPaymentReceipt',{paymentId:result.payment.id});
  assert.equal(receipt.receipt.amount_minor,amount);

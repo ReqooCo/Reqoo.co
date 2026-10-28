@@ -19,6 +19,7 @@ on:
       - 'api/shop-admin-flow-v17.js'
       - 'migrations/0013_quotation_revisions.sql'
       - 'tests/admin-quotation-revisions*'
+      - 'tests/admin-invoice-balances.mjs'
       - 'api/admin-business.js'
       - 'api/worker.js'
       - 'migrations/0011_admin_business.sql'
@@ -46,6 +47,7 @@ jobs:
           node tests/admin-documents-performance.mjs
           node tests/admin-documents-overdue.mjs
           node tests/admin-documents-finance-scalability.mjs
+          node tests/admin-invoice-balances.mjs
           node tests/admin-quotation-revisions.mjs
           node tests/admin-documents-workspace.mjs
           node tests/admin-orders-documents-scalability.mjs
