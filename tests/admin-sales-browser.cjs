@@ -15,6 +15,9 @@ await p.waitForFunction(()=>document.documentElement.lang==='en'&&document.query
 await p.locator('[data-open-workspace]').click();await p.setViewportSize({width:390,height:844});
 assert.ok(await p.locator('.rqDocChainText b').first().evaluate(e=>parseFloat(getComputedStyle(e).fontSize)>=14&&parseFloat(getComputedStyle(e).fontSize)<=15));
 assert.ok(await p.locator('.rqDocDrawerMoney b').first().evaluate(e=>parseFloat(getComputedStyle(e).fontSize)===18));
+await p.waitForFunction(()=>Math.abs(document.querySelector('#rqDocDrawer').getBoundingClientRect().left)<1);
+assert.ok(await p.locator('#rqDrawerConvertQuote').evaluate(e=>e.getBoundingClientRect().right<=innerWidth),'conversion fits inside the viewport after animation');
+assert.ok(await p.locator('.rqQuotationNextActions').evaluate(e=>getComputedStyle(e).flexDirection!=='column-reverse'),'drawer actions do not inherit composer action ordering');
 assert.equal(await p.locator('#rqDrawerConvertQuote').isVisible(),true);
 assert.ok(await p.locator('#rqDrawerConvertQuote').evaluate(e=>e.getBoundingClientRect().bottom<innerHeight),'conversion is visible without opening preview');
 assert.ok(await p.locator('#rqDrawerConvertQuote').evaluate(e=>e.getBoundingClientRect().height>=44),'compact text keeps a large touch target');
