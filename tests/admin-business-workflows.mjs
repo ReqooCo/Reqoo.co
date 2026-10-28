@@ -36,7 +36,7 @@ assert.equal((await post('saveOrderCosts',{orderId:'order0',materialsMinor:2000,
 assert.equal((await post('saveOrderCosts',{orderId:'order0',materialsMinor:-1,revision:1})).status,400);
 assert.equal((await post('saveOrderCosts',{orderId:'order0',materialsMinor:20000,revision:1})).status,200);
 assert.equal((await get('marginReport',{q:'RQ-TEST-0'})).body.items[0].profit_minor,-10000,'negative margin preserved');
-const archive={orderId:'order0',reference:'RQ-TEST-0',confirmReference:'RQ-TEST-0',reason:'Fixture dummy order'};
+const archive={orderId:'order0',reference:'RQ-TEST-0',confirmReference:'RQ-TEST-0',reason:''};
 assert.equal((await post('archiveWorkspace',{...archive,confirmReference:'wrong'})).status,400);
 assert.equal((await post('archiveWorkspace',archive)).status,200);
 let work=await request('/api/shop-admin?action=documentWorkspaces&q=RQ-TEST-0',null,{owner:true});assert.equal(work.body.total,0);
