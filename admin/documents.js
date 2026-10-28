@@ -171,10 +171,10 @@ function shareWhatsApp(){
   const n=waPhone(activeDoc.customer_phone);if(!n)return toast('Customer WhatsApp number is missing.',true);
   const link=location.origin.replace('admin.','')+'/d/'+encodeURIComponent(activeDoc.share_token),meta=quoteMeta(activeDoc),pct=Math.max(0,Math.min(100,Number(meta.depositPercent||0))),depositInvoice=activeDoc.type==='invoice'&&pct>0&&pct<100&&String(activeDoc.payment_status||'pending').toLowerCase()!=='paid',dueNow=activeDoc.type==='invoice'&&activeDoc.financials?Number(activeDoc.financials.amountDueNowMinor):depositInvoice?(String(activeDoc.payment_status||'pending').toLowerCase()==='partial'?Math.max(0,Number(activeDoc.total_minor||0)-Math.round(Number(activeDoc.total_minor||0)*pct/100)):Math.round(Number(activeDoc.total_minor||0)*pct/100)):Number(activeDoc.total_minor||0);
   const amount=activeDoc.type==='delivery_order'?'':money(dueNow),kind=typeLabel(activeDoc.type),amountLabel=depositInvoice?'Amount Due Now':'Amount';
-  const text=`Salam ${activeDoc.customer_name||''},\n\nREQOO.CO telah mengeluarkan ${kind} ${activeDoc.number}.${amount?'\n'+amountLabel+': '+amount:''}\n\nPautan rasmi REQOO.CO untuk semak dokumen:\n${link}\n\nPautan ini menggunakan domain rasmi reqoo.co. Boleh tekan untuk lihat dokumen penuh atau simpan PDF.`;
+  const text=`Hello ${activeDoc.customer_name||''},\n\nREQOO.CO has issued ${kind} ${activeDoc.number}.${activeDoc.type==='quotation'?' · Rev '+Number(meta.revision||0):''}${amount?'\n'+amountLabel+': '+amount:''}\n\nView your official document or save a PDF:\n${link}`;
   window.open('https://wa.me/'+n+'?text='+encodeURIComponent(text),'_blank','noopener');
   if(activeDoc.type==='quotation'&&meta.source==='custom'&&String(activeDoc.status||'issued').toLowerCase()==='issued'){
-    api('updateCustomQuotationStatus',{documentId:activeDoc.id,status:'sent'},'POST').then(d=>{activeDoc=d.document;replaceDocument(activeDoc);renderHistory();if($('docModal').classList.contains('open'))showDocument()}).catch(()=>{});
+    api('updateCustomQuotationStatus',{documentId:activeDoc.id,status:'sent',expectedRevision:Number(meta.revision||0),expectedUpdatedAt:activeDoc.updated_at},'POST').then(d=>{activeDoc=d.document;replaceDocument(activeDoc);renderHistory();if($('docModal').classList.contains('open'))showDocument()}).catch(()=>{});
   }
 }
 function quoteDays(doc){const a=new Date(doc?.issued_at||''),b=new Date(doc?.due_at||'');if(!Number.isNaN(a.getTime())&&!Number.isNaN(b.getTime()))return Math.max(0,Math.round((b-a)/86400000));return Number(docSettings.quoteValidDays||7)}
