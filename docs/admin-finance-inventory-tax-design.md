@@ -79,3 +79,14 @@ All monetary values integer sen, no floating point; stock quantities decimal wit
 - HASiL e-Invoice timeline updated 30 Aug 2026: under RM3m turnover stated exempt, subject to conditions and future revisions: https://www.hasil.gov.my/e-invois/pelaksanaan-e-invois-di-malaysia/garis-masa-pelaksanaan-e-invois/
 - Acceptance before merge: snapshot existing screens; regression on orders/quotation/receipts/auth; stock ledger and tax estimator tests; actual iPhone testing at 375px/390px, 200% text zoom, long values and keyboard; migration/backups, owner-reviewed opening inventory.
 - Never infer historical cost or tax due from existing cash collection records; mark missing information as unknown.
+
+
+## Product north star: one-person operation with low cognitive load
+Primary user is the owner's spouse, who should be able to run day-to-day Reqoo without an accountant, sales clerk, and production coordinator. Success is NOT feature count or visual polish alone: one operator can see what needs attention and complete the next task confidently.
+- Home page first: Kerja Hari Ini (awaiting quote response, payment follow-up, due production, ready for delivery), prioritized by due date/urgency with clear reason. Avoid alarming red for ordinary pending items. Never manufacture deadlines or counts.
+- Each order: one next-action button, with secondary actions in a clearly named menu. Quote revision keeps history and one-click conversion; deposit produces receipt; work and payment statuses remain independent; web and manual orders converge.
+- Minimize typing: reuse customer/product records, defaults, auto IDs, copy WhatsApp messages; ask for confirmation on irreversible actions; preserve unsaved work.
+- Calm visual system: restrained graphite/cream/gold palette, ample whitespace, consistent card hierarchy, no excessive shadows, flashing badges, dense tables or tiny text. Meaningful color only for exceptions. Respect reduced-motion settings.
+- Never show an operator a tax adjustment or inventory valuation step during ordinary order handling. Keep financial complexity in owner-only views; contextual warnings only when action is required.
+- Measure task success in usability tests: new quote <=2 minutes for existing customer, record deposit <=30 seconds, locate overdue order <=15 seconds, purchase entry <=90 seconds (targets, not observed results). Test with realistic sample orders and actual operator feedback.
+- Release only after demonstrating no regressions in order conversion, payment receipt, stock balance, access controls, and mobile layout.
