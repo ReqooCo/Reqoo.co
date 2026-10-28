@@ -32,8 +32,8 @@ function enrichInvoices(){
   const number=row.querySelector('.rqHistNo')?.textContent?.trim(),doc=invoiceByNumber(number);if(!doc)return;
   const s=sumFor(doc.order_id,doc),target=row.querySelector('.rqHistNo')?.parentElement;
   let meta=target?.querySelector('.rqPaymentMeta');if(!meta&&target){meta=document.createElement('div');meta.className='rqPaymentMeta';target.appendChild(meta)}
-  const metaHtml=`<span>Total <b>${money(s.totalMinor)}</b></span><span>Paid <b class="${s.balanceMinor===0?'settled':''}">${money(s.paidMinor)}</b></span><span>Balance <b class="${s.balanceMinor===0?'settled':'balance'}">${money(s.balanceMinor)}</b></span>`;if(meta&&meta.innerHTML!==metaHtml)meta.innerHTML=metaHtml;
-  const badge=row.querySelector('.rqDocBadge');if(badge&&s.paymentStatus){const label=s.paymentStatus==='partial'?'PARTIAL':s.paymentStatus==='paid'?'PAID':badge.textContent;if(badge.textContent!==label)badge.textContent=label;badge.classList.toggle('paid',s.paymentStatus==='paid');badge.classList.toggle('pending',s.paymentStatus!=='paid')}
+  const metaHtml=`<span>Jumlah <b>${money(s.totalMinor)}</b></span><span>Dibayar <b class="${s.balanceMinor===0?'settled':''}">${money(s.paidMinor)}</b></span><span>Baki <b class="${s.balanceMinor===0?'settled':'balance'}">${money(s.balanceMinor)}</b></span>`;if(meta&&meta.innerHTML!==metaHtml)meta.innerHTML=metaHtml;
+  const badge=row.querySelector('.rqDocBadge');if(badge&&s.paymentStatus){const label=s.paymentStatus==='partial'?'SEPARA':s.paymentStatus==='paid'?'LUNAS':badge.textContent;if(badge.textContent!==label)badge.textContent=label;badge.classList.toggle('paid',s.paymentStatus==='paid');badge.classList.toggle('pending',s.paymentStatus!=='paid')}
   const acts=row.querySelector('.rqHistActions');if(!acts)return;let btn=acts.querySelector('.rqRecordPaymentBtn');
   const preview=acts.querySelector('[data-open-doc]');if(preview)preview.classList.toggle('primary',s.balanceMinor<=0);
   if(s.balanceMinor>0){if(!btn){btn=document.createElement('button');btn.type='button';btn.className='btn primary rqRecordPaymentBtn';btn.textContent='Rekod bayaran';acts.prepend(btn)}btn.onclick=()=>openPayment(doc,s)}else if(btn)btn.remove();
@@ -60,7 +60,7 @@ async function correctPaid(doc,s){
   const suggested=(summary.totalMinor/2/100).toFixed(2),raw=prompt('Berapa bayaran sebenar yang sudah diterima?\n\nMasukkan 0 jika BELUM TERIMA BAYARAN.\nContoh deposit 50%: '+suggested,suggested);
   if(raw===null)return;const actual=Math.round(Number(raw||0)*100);
   if(!Number.isFinite(actual)||actual<0||actual>=summary.totalMinor){alert('Masukkan RM0.00 atau amaun yang kurang daripada jumlah invoice.');return}
-  const reset=actual===0,balance=summary.totalMinor-actual,next=reset?'BELUM BAYAR':'PARTIAL';
+  const reset=actual===0,balance=summary.totalMinor-actual,next=reset?'BELUM BAYAR':'SEPARA';
   if(!confirm('Tukar status daripada PAID kepada '+next+'?\n\nPaid sebenar: '+money(actual)+'\nBalance: '+money(balance)))return;
   await api('correctPayment',{orderId:doc.order_id,actualPaidMinor:actual,paymentType:'deposit',reason:reset?'Admin correction: full paid tersalah tekan; bayaran belum diterima':'Admin correction: full paid tersalah tekan; bayaran sebenar deposit/partial'},'POST');
   await refreshData();document.getElementById('refreshDocs')?.click();alert(reset?'Status dipulihkan kepada BELUM BAYAR.':'Status dibetulkan kepada PARTIAL.')
