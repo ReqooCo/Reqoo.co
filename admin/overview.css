@@ -93,3 +93,18 @@
   #rqOverviewV2 .rqFollowupMain { min-width:0; overflow-wrap:anywhere; }
   #rqOverviewV2 .rqFollowupActions { min-width:0; }
 }
+
+/* Home scan order: business status, frequent tasks, then follow-up queue. */
+@media (max-width:680px) {
+  #rqOverviewV2 .rqKpis { order:1; }
+  #rqOverviewV2 .rqDashGridTop { order:2; }
+  #rqOverviewV2 .rqDashFoot { order:3; }
+  #rqOverviewV2 .rqDashHead .label { display:none; }
+  #rqOverviewV2 .rqDashHead h2 { font-size:22px; }
+  #rqOverviewV2 .rqDashHead p { display:none; }
+  #rqOverviewV2 .rqDashPanelHead small { display:none; }
+  #rqOverviewV2 .rqFollowupRow { padding:10px 0; }
+  #rqOverviewV2 .rqFollowupPriority { margin-bottom:0; }
+  #rqOverviewV2 .rqFollowupActions > strong { font-size:13px; }
+  #rqOverviewV2 .rqMiniAction { min-height:44px; }
+}
