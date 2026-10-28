@@ -19,38 +19,38 @@
   </section>
 
   <section class="rqDocsPanel rqDocsSettings" id="docsSettings">
-    <div class="rqDocsPanelHead"><div><h2>Document settings</h2><p>This information is copied to new documents. <a href="/admin/settings.html">Open settings</a> untuk tetapan Admin.</p></div></div>
+    <div class="rqDocsPanelHead"><div><h2>Document settings</h2><p>This information is copied to new documents. <a href="/admin/settings.html">Open settings</a> for admin preferences.</p></div></div>
     <div class="rqDocsSettingsGrid">
-      <div class="rqDocsField"><label>NAMA SYARIKAT / JENAMA</label><input id="sCompany" placeholder="REQOO.CO"></div>
-      <div class="rqDocsField"><label>NO. PENDAFTARAN SSM</label><input id="sReg" placeholder="201903337879 (003053605-X)"></div>
-      <div class="rqDocsField full"><label>ALAMAT</label><textarea id="sAddress" placeholder="Business address"></textarea></div>
-      <div class="rqDocsField"><label>TELEFON</label><input id="sPhone" placeholder="0123456789"></div>
-      <div class="rqDocsField"><label>E-MEL</label><input id="sEmail" type="email" placeholder="hello@reqoo.co"></div>
-      <div class="rqDocsField full"><label>MAKLUMAT BANK / BAYARAN</label><textarea id="sBank" placeholder="Bank name, account name, account number or payment instructions"></textarea></div>
-      <div class="rqDocsField"><label>TEMPOH SAH SEBUT HARGA (HARI)</label><input id="sQuoteDays" type="number" min="0" max="365" value="7"></div>
-      <div class="rqDocsField"><label>TEMPOH BAYARAN INVOIS (HARI)</label><input id="sInvoiceDays" type="number" min="0" max="365" value="14"></div>
+      <div class="rqDocsField"><label>COMPANY / BRAND NAME</label><input id="sCompany" placeholder="REQOO.CO"></div>
+      <div class="rqDocsField"><label>SSM REGISTRATION NUMBER</label><input id="sReg" placeholder="201903337879 (003053605-X)"></div>
+      <div class="rqDocsField full"><label>ADDRESS</label><textarea id="sAddress" placeholder="Business address"></textarea></div>
+      <div class="rqDocsField"><label>PHONE</label><input id="sPhone" placeholder="0123456789"></div>
+      <div class="rqDocsField"><label>EMAIL</label><input id="sEmail" type="email" placeholder="hello@reqoo.co"></div>
+      <div class="rqDocsField full"><label>BANK / PAYMENT DETAILS</label><textarea id="sBank" placeholder="Bank name, account name, account number or payment instructions"></textarea></div>
+      <div class="rqDocsField"><label>QUOTATION VALIDITY (DAYS)</label><input id="sQuoteDays" type="number" min="0" max="365" value="7"></div>
+      <div class="rqDocsField"><label>INVOICE PAYMENT TERMS (DAYS)</label><input id="sInvoiceDays" type="number" min="0" max="365" value="14"></div>
     </div>
     <div class="rqDocsSettingsActions"><button class="btn primary" id="saveSettings" type="button">Save document settings</button></div>
   </section>
 
-  <section class="rqDocsStats" id="rqDocsFinanceStats" aria-label="Ringkasan semua rekod">
+  <section class="rqDocsStats" id="rqDocsFinanceStats" aria-label="All document summaries">
     <article class="rqDocsStat"><span>QUOTATION</span><strong id="docQuoteCount">—</strong><small>All quotations</small></article>
     <article class="rqDocsStat"><span>INVOICE</span><strong id="docInvoiceCount">—</strong><small>All invoices</small></article>
-    <article class="rqDocsStat"><span>BAKI</span><strong id="rqOutstandingAmount">—</strong><small id="rqOutstandingCount">Loading ringkasan…</small></article>
-    <article class="rqDocsStat"><span>INVOIS SELESAI DIBAYAR</span><strong id="rqFinPaidSummary">—</strong><small>Rekod payments terperinci di <a href="/admin/finance.html">Kewangan</a></small></article>
+    <article class="rqDocsStat"><span>OUTSTANDING</span><strong id="rqOutstandingAmount">—</strong><small id="rqOutstandingCount">Loading summary…</small></article>
+    <article class="rqDocsStat"><span>PAID INVOICES</span><strong id="rqFinPaidSummary">—</strong><small>Detailed payment records in <a href="/admin/finance.html">Finance</a></small></article>
   </section>
   <div hidden><span id="docSaved"></span><span id="docReceiptCount"></span><span id="docOrders"></span><span id="docPaid"></span></div>
 
   <section class="rqDocsPanel rqMonthly" id="rqMonthlyPanel" aria-labelledby="rqMonthlyTitle" hidden>
-    <div class="rqDocsPanelHead"><div><div class="rqDocsEyebrow">PRESTASI BULANAN</div><h2 id="rqMonthlyTitle">Gambaran perniagaan</h2><p>Trend documents dan payments sepanjang tahun.</p></div><div class="rqMonthlyControls"><label for="rqMonthlyYear">Tahun</label><select id="rqMonthlyYear"></select><button class="btn" id="rqMonthlyRefresh" type="button">Refresh carta</button></div></div>
-    <div id="rqMonthlyState" class="rqDocsState" role="status" aria-live="polite">Loading carta…</div>
+    <div class="rqDocsPanelHead"><div><div class="rqDocsEyebrow">MONTHLY PERFORMANCE</div><h2 id="rqMonthlyTitle">Business overview</h2><p>Document and payment trends throughout the year.</p></div><div class="rqMonthlyControls"><label for="rqMonthlyYear">Year</label><select id="rqMonthlyYear"></select><button class="btn" id="rqMonthlyRefresh" type="button">Refresh chart</button></div></div>
+    <div id="rqMonthlyState" class="rqDocsState" role="status" aria-live="polite">Loading chart…</div>
     <div id="rqMonthlyContent" hidden></div>
   </section>
 
   <section class="rqDocsPanel rqOrderWorkspaces" id="rqOrderWorkspaces" aria-labelledby="rqWorkspaceTitle">
-    <div class="rqDocsPanelHead"><div><h2 id="rqWorkspaceTitle">Orders</h2><p>Satu order, satu ruang. All quotations, invoice, resit dan delivery order di dalamnya.</p></div><div class="rqDocsUnifiedActions"><button class="btn primary" id="toggleQuoteBuilder" type="button" aria-expanded="false">+ Quotation New</button>
+    <div class="rqDocsPanelHead"><div><h2 id="rqWorkspaceTitle">Orders</h2><p>One order, one workspace. Quotations, invoices, receipts and delivery orders stay together.</p></div><div class="rqDocsUnifiedActions"><button class="btn primary" id="toggleQuoteBuilder" type="button" aria-expanded="false">+ New quotation</button>
         <button class="btn" id="toggleOrderDrawer" type="button" aria-expanded="false">Find orders</button></div></div>
-    <div class="rqWorkspaceToolbar"><input id="rqWorkspaceSearch" type="search" aria-label="Find orders dan documents" placeholder="Find orders, customer atau nombor documents"><select id="rqWorkspaceFilter" aria-label="Status orders"><option value="all">All</option><option value="quotation">Quotation</option><option value="outstanding">Outstanding</option><option value="paid">Paid</option></select><button class="btn" id="showDocumentArchive" type="button">All documents</button></div>
+    <div class="rqWorkspaceToolbar"><input id="rqWorkspaceSearch" type="search" aria-label="Find orders and documents" placeholder="Find orders, customers or document numbers"><select id="rqWorkspaceFilter" aria-label="Order status"><option value="all">All</option><option value="quotation">Quotation</option><option value="outstanding">Outstanding</option><option value="paid">Paid</option></select><button class="btn" id="showDocumentArchive" type="button">All documents</button></div>
     <div id="rqWorkspaceState" class="rqDocsState" role="status" aria-live="polite">Loading orders…</div><div id="rqWorkspaceList"></div><div class="rqDocsOrderMore"><button class="btn" id="rqWorkspaceMore" type="button" hidden>Load more</button></div>
   </section>
 
@@ -85,9 +85,9 @@
       <div class="rqDocsSettingsGrid rqQuoteCustomerGrid">
         <div class="rqDocsField"><label>NAMA / SYARIKAT *</label><input id="qCustomer" placeholder="Contoh: ABC Engineering Sdn Bhd"></div>
         <div class="rqDocsField"><label>WHATSAPP</label><input id="qPhone" inputmode="tel" placeholder="0123456789"></div>
-        <div class="rqDocsField"><label>E-MEL</label><input id="qEmail" type="email" placeholder="customer@email.com"></div>
+        <div class="rqDocsField"><label>EMAIL</label><input id="qEmail" type="email" placeholder="customer@email.com"></div>
         <div class="rqDocsField"><label>UNTUK PERHATIAN</label><input id="qAttention" placeholder="Nama PIC / bahagian"></div>
-        <div class="rqDocsField full"><label>ALAMAT</label><textarea id="qAddress" placeholder="Alamat customer / syarikat"></textarea></div>
+        <div class="rqDocsField full"><label>ADDRESS</label><textarea id="qAddress" placeholder="Alamat customer / syarikat"></textarea></div>
       </div>
       <div class="rqQuoteSectionHead"><div><div class="rqQuoteSectionTitle">2. Item dan harga</div><div class="rqQuoteHint">Boleh tambah item bebas. Harga dimasukkan dalam RM.</div></div><button class="btn" id="qAddItem" type="button">+ Tambah item</button></div>
       <div class="rqQuoteItemHeader"><span>Description</span><span>Variation / Size</span><span>Qty</span><span>Unit Price (RM)</span><span>Amount</span><span></span></div>
