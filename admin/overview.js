@@ -37,10 +37,10 @@ function waPhone(v){let n=String(v||'').replace(/\D/g,'');if(n.startsWith('0'))n
 function followupMeta(f){
  if(f.kind==='invoice_overdue')return{label:'OVERDUE INVOICE',cls:'red',sub:`${Number(f.days_overdue||0)} days overdue · balance ${money(f.amount_minor)}`};
  if(f.kind==='invoice_due')return{label:Number(f.days_to_due||0)===0?'DUE TODAY':'DUE SOON',cls:'gold',sub:Number(f.days_to_due||0)===0?`Due today · balance ${money(f.amount_minor)}`:`Due ${fmtDateLong(f.due_date)} · balance ${money(f.amount_minor)}`};
- if(f.kind==='production_overdue')return{label:'PENGELUARAN LEWAT',cls:'red',sub:`${Number(f.days_overdue||0)} hari lewat${f.assigned_to?' · '+f.assigned_to:''}`};
- if(f.kind==='production_today')return{label:'PENGELUARAN HARI INI',cls:'blue',sub:`Siap hari ini${f.assigned_to?' · '+f.assigned_to:''}`};
- if(f.kind==='payment_pending')return{label:'SUSULAN BAYARAN',cls:'gold',sub:`Belum bayar ${Number(f.age_days||1)} hari · ${money(f.amount_minor)}`};
- return{label:'SUSULAN PELANGGAN',cls:'green',sub:`Tiada order ${Number(f.age_days||45)} hari · lifetime ${money(f.amount_minor)}`};
+ if(f.kind==='production_overdue')return{label:'PRODUCTION OVERDUE',cls:'red',sub:`${Number(f.days_overdue||0)} days overdue${f.assigned_to?' · '+f.assigned_to:''}`};
+ if(f.kind==='production_today')return{label:'PRODUCTION DUE TODAY',cls:'blue',sub:`Due today${f.assigned_to?' · '+f.assigned_to:''}`};
+ if(f.kind==='payment_pending')return{label:'PAYMENT FOLLOW-UP',cls:'gold',sub:`Unpaid for ${Number(f.age_days||1)} hari · ${money(f.amount_minor)}`};
+ return{label:'CUSTOMER FOLLOW-UP',cls:'green',sub:`No orders for ${Number(f.age_days||45)} days · lifetime ${money(f.amount_minor)}`};
 }
 function followupMessage(f){
  const name=f.customer_name||'Tuan/Puan',reference=f.reference||f.order_no||'';
@@ -51,11 +51,11 @@ function followupMessage(f){
 }
 function waLink(f){const n=waPhone(f.phone);return n?`https://wa.me/${n}?text=${encodeURIComponent(followupMessage(f))}`:''}
 function renderFollowups(cc){
- const list=Array.isArray(cc.followups)?cc.followups:[];const count=$('#rqFollowupCount');if(count)count.textContent=list.length?`${list.length} tugasan`:'';
- $('#rqFollowups').innerHTML=list.length?`<div class="rqFollowupList">${list.map(f=>{const m=followupMeta(f),wa=f.contactable===false?'':waLink(f),priority=String(f.priority||'normal').toUpperCase(),open=f.action_url||'/admin/';return `<div class="rqFollowupRow ${esc(f.priority||'normal')}"><div class="rqFollowupPriority"><span>${priority}</span></div><div class="rqFollowupMain"><b>${esc(f.customer_name||'Pelanggan')} · ${esc(f.reference||'')}</b><small>${esc(m.sub)}</small><span class="rqBadge ${m.cls}">${esc(m.label)}</span></div><div class="rqFollowupActions">${f.amount_minor?`<strong>${money(f.amount_minor)}</strong>`:''}<div>${wa?`<a class="rqMiniAction wa" href="${wa}" target="_blank" rel="noopener">WhatsApp</a>`:''}<a class="rqMiniAction" href="${esc(open)}">Open</a></div></div></div>`}).join('')}</div>`:'<div class="rqDashEmpty rqAllClear"><b>✓ Tiada follow-up kritikal hari ini.</b><span>Invoice, payment dan production nampak terkawal.</span></div>';
+ const list=Array.isArray(cc.followups)?cc.followups:[];const count=$('#rqFollowupCount');if(count)count.textContent=list.length?`${list.length} tasks`:'';
+ $('#rqFollowups').innerHTML=list.length?`<div class="rqFollowupList">${list.map(f=>{const m=followupMeta(f),wa=f.contactable===false?'':waLink(f),priority=String(f.priority||'normal').toUpperCase(),open=f.action_url||'/admin/';return `<div class="rqFollowupRow ${esc(f.priority||'normal')}"><div class="rqFollowupPriority"><span>${priority}</span></div><div class="rqFollowupMain"><b>${esc(f.customer_name||'Customer')} · ${esc(f.reference||'')}</b><small>${esc(m.sub)}</small><span class="rqBadge ${m.cls}">${esc(m.label)}</span></div><div class="rqFollowupActions">${f.amount_minor?`<strong>${money(f.amount_minor)}</strong>`:''}<div>${wa?`<a class="rqMiniAction wa" href="${wa}" target="_blank" rel="noopener">WhatsApp</a>`:''}<a class="rqMiniAction" href="${esc(open)}">Open</a></div></div></div>`}).join('')}</div>`:'<div class="rqDashEmpty rqAllClear"><b>✓ No critical follow-ups today.</b><span>Invoices, payments and production appear on track.</span></div>';
 }
 function renderCustomers(list){
- $('#rqCustomers').innerHTML=list.length?`<div class="rqOpsList">${list.map(c=>`<a class="rqOpsRow rqOpsLink" href="/admin/customers.html"><div><b>${esc(c.name||'Pelanggan')}</b><small>${esc(c.phone||c.email||'Tiada maklumat hubungan')} · ${plural(c.order_count,'order')}</small></div><div class="rqOpsRight"><strong>${money(c.paid_value_minor||0)}</strong><span class="rqBadge green">${fmtDate(c.last_order_at||c.created_at)}</span></div></a>`).join('')}</div>`:'<div class="rqDashEmpty">Belum ada customer.</div>';
+ $('#rqCustomers').innerHTML=list.length?`<div class="rqOpsList">${list.map(c=>`<a class="rqOpsRow rqOpsLink" href="/admin/customers.html"><div><b>${esc(c.name||'Customer')}</b><small>${esc(c.phone||c.email||'No contact details')} · ${plural(c.order_count,'order')}</small></div><div class="rqOpsRight"><strong>${money(c.paid_value_minor||0)}</strong><span class="rqBadge green">${fmtDate(c.last_order_at||c.created_at)}</span></div></a>`).join('')}</div>`:'<div class="rqDashEmpty">No customers yet.</div>';
 }
 function render(){
  ensure();if(!data)return;
