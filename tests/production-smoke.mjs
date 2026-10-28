@@ -4,16 +4,25 @@ const TIMEOUT_MS=20000;
 const ua='REQOO production smoke/1.0';
 
 async function request(url){
-  const controller=new AbortController();
-  const timer=setTimeout(()=>controller.abort(),TIMEOUT_MS);
-  try{
-    const response=await fetch(url,{redirect:'follow',headers:{'user-agent':ua,'cache-control':'no-cache'},signal:controller.signal});
-    const text=await response.text();
-    return {response,text};
-  }catch(error){
-    throw new Error(`Request failed for ${url}: ${error?.message||error}`);
-  }finally{
-    clearTimeout(timer);
+  const attempts=3;
+  for(let attempt=1;attempt<=attempts;attempt++){
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),TIMEOUT_MS);
+    try{
+      const response=await fetch(url,{redirect:'follow',headers:{'user-agent':ua,'cache-control':'no-cache'},signal:controller.signal});
+      const text=await response.text();
+      if([502,503,504].includes(response.status)&&attempt<attempts){
+        console.warn(`Transient HTTP ${response.status} for ${url} (attempt ${attempt}/${attempts})`);
+      }else{
+        return {response,text};
+      }
+    }catch(error){
+      if(attempt===attempts)throw new Error(`Request failed for ${url} after ${attempts} attempts: ${error?.message||error}`);
+      console.warn(`Transient request failure for ${url} (attempt ${attempt}/${attempts}): ${error?.message||error}`);
+    }finally{
+      clearTimeout(timer);
+    }
+    await new Promise(resolve=>setTimeout(resolve,attempt*1000));
   }
 }
 
