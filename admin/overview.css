@@ -133,3 +133,22 @@
  #rqOverviewV2 .rqDashHead .rqDashRefresh { flex:none; }
  #rqOverviewV2 .rqDashFoot { overflow-wrap:anywhere; }
 }
+
+/* REQOO mobile palette — warm ivory, sage, forest and restrained champagne. */
+@media (max-width:680px) {
+ body.rqOverviewV2 #rqOverviewV2 { color:#27332f; }
+ #rqOverviewV2 .rqDashPanel { background:#fffefa; border-color:#e1e7de; box-shadow:0 3px 14px rgba(37,68,52,.055); }
+ #rqOverviewV2 .rqDashGridTop > .rqDashPanel:not(.rqFollowupPanel) { background:linear-gradient(145deg,#fffefa 0%,#f1f6f0 100%); }
+ #rqOverviewV2 .rqAction { background:#fffefa; border-color:#dce5dc; color:#273b32; }
+ #rqOverviewV2 .rqAction.primary { background:#245b49; border-color:#245b49; color:#fff; }
+ #rqOverviewV2 .rqAction.primary .rqActionIcon { color:#fff; }
+ #rqOverviewV2 .rqAction:not(.primary) .rqActionIcon { color:#39725b; }
+ #rqOverviewV2 .rqAction:focus-visible,#rqOverviewV2 .rqKpi:focus-visible { outline:3px solid #c5a56b; outline-offset:2px; }
+ #rqOverviewV2 .rqKpi { background:#fffefa; border-color:#e1e7de; border-top:3px solid #c5a56b; }
+ #rqOverviewV2 .rqKpi.ok { border-top-color:#39725b; }
+ #rqOverviewV2 .rqKpi.danger { border-top-color:#bd7b69; }
+ #rqOverviewV2 .rqFollowupPanel { border-left:3px solid #c5a56b; }
+ #rqOverviewV2 .rqDashPanelHead h3 { color:#27332f; }
+ #rqOverviewV2 .rqDashPanelHead a { color:#245b49; }
+ #rqOverviewV2 .rqDashHead h2 { color:#243b31; }
+}
