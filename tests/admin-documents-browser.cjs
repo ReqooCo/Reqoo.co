@@ -124,7 +124,7 @@ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWid
 await page.locator('#toggleQuoteBuilder').click();await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(out,'documents-mobile.png'),fullPage:false});
 await page.locator('#showDocumentArchive').click();
 assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'list must fit mobile');
-mode='empty';await page.locator('#refreshDocs').click();await page.waitForFunction(()=>document.querySelector('#docResultsState').textContent.startsWith('0 daripada 0'));assert.ok(await page.locator('#docUnifiedEmpty').isVisible());
+mode='empty';await page.locator('#refreshDocs').click();await page.waitForFunction(()=>document.querySelector('#docResultsState').textContent.startsWith('0 of 0'));assert.ok(await page.locator('#docUnifiedEmpty').isVisible());
 mode='loading';await page.locator('#refreshDocs').click();assert.equal(await page.locator('#docHistory').getAttribute('aria-busy'),'true');await page.waitForFunction(()=>document.querySelector('#docHistory').getAttribute('aria-busy')==='false');
 mode='error';await page.locator('#refreshDocs').click();await page.waitForFunction(()=>document.querySelector('#docResultsState').textContent.includes('Fixture unavailable'));
 mode='normal';await page.locator('#refreshDocs').click();await page.waitForSelector('#docHistory .rqHistRow');
