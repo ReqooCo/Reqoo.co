@@ -57,3 +57,126 @@
  .rqKpi{min-height:110px}
 }
 @media(max-width:420px){.rqActionGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+
+/* Mobile dashboard information architecture: actions first, summary second, attention third.
+   Detailed reporting remains available in Finance, Orders and Customers. */
+@media (max-width:680px) {
+  #rqOverviewV2 { display:flex; flex-direction:column; gap:14px; }
+  #rqOverviewV2 .rqDashHead { order:0; margin:0; }
+  #rqOverviewV2 .rqDashGridTop { order:1; display:flex; flex-direction:column; gap:14px; }
+  #rqOverviewV2 .rqDashGridTop > .rqDashPanel:not(.rqFollowupPanel) { order:0; }
+  #rqOverviewV2 .rqFollowupPanel { order:1; }
+  #rqOverviewV2 .rqKpis { order:2; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+  #rqOverviewV2 .rqKpis .rqKpi:nth-child(n+3) { display:none; }
+  #rqOverviewV2 .rqDashGridBottom,
+  #rqOverviewV2 .rqRevenuePanel { display:none; }
+  #rqOverviewV2 .rqDashFoot { order:3; padding:0 4px; }
+  #rqOverviewV2 .rqDashPanel { padding:14px; }
+  #rqOverviewV2 .rqActionGrid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px; }
+  #rqOverviewV2 .rqAction { min-height:88px; padding:12px 4px; gap:7px; }
+  #rqOverviewV2 .rqActionIcon { width:29px; height:29px; }
+  #rqOverviewV2 .rqAction b { font-size:13px; }
+  #rqOverviewV2 .rqKpi { min-height:95px; padding:12px; }
+  #rqOverviewV2 .rqKpi b { font-size:22px; }
+  #rqOverviewV2 .rqFollowupMain b { font-size:14px; }
+  #rqOverviewV2 .rqFollowupMain small { font-size:12px; }
+  #rqOverviewV2 .rqFollowupPriority span { font-size:11px; }
+}
+
+/* Override legacy display:block on the overview container to enable mobile ordering. */
+@media (max-width:680px) {
+  body.rqOverviewV2 #rqOverviewV2 { display:flex!important; }
+  #rqOverviewV2 .rqDashGridTop { margin-top:0; }
+  #rqOverviewV2 .rqDashHead p { font-size:12px; }
+  #rqOverviewV2 .rqFollowupRow { min-width:0; }
+  #rqOverviewV2 .rqFollowupMain { min-width:0; overflow-wrap:anywhere; }
+  #rqOverviewV2 .rqFollowupActions { min-width:0; }
+}
+
+/* Home scan order: business status, frequent tasks, then follow-up queue. */
+@media (max-width:680px) {
+  #rqOverviewV2 .rqKpis { order:1; }
+  #rqOverviewV2 .rqDashGridTop { order:2; }
+  #rqOverviewV2 .rqDashFoot { order:3; }
+  #rqOverviewV2 .rqDashHead .label { display:none; }
+  #rqOverviewV2 .rqDashHead h2 { font-size:22px; }
+  #rqOverviewV2 .rqDashHead p { display:none; }
+  #rqOverviewV2 .rqDashPanelHead small { display:none; }
+  #rqOverviewV2 .rqFollowupRow { padding:10px 0; }
+  #rqOverviewV2 .rqFollowupPriority { margin-bottom:0; }
+  #rqOverviewV2 .rqFollowupActions > strong { font-size:13px; }
+  #rqOverviewV2 .rqMiniAction { min-height:44px; }
+}
+
+/* Compact, accessible attention queue for small touch screens. */
+@media (max-width:680px) {
+ #rqOverviewV2 .rqFollowupPanel .rqDashPanelHead a { font-size:13px; }
+ #rqOverviewV2 .rqFollowupRow { display:grid; grid-template-columns:minmax(0,1fr) auto; column-gap:10px; row-gap:6px; }
+ #rqOverviewV2 .rqFollowupPriority { grid-column:1 / -1; }
+ #rqOverviewV2 .rqFollowupMain { grid-column:1; }
+ #rqOverviewV2 .rqFollowupActions { grid-column:2; display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:6px; }
+ #rqOverviewV2 .rqFollowupActions > div { display:flex; flex-wrap:wrap; justify-content:flex-end; }
+ #rqOverviewV2 .rqFollowupMain .rqBadge { font-size:11px; }
+ #rqOverviewV2 .rqFollowupMain small { line-height:1.45; }
+ #rqOverviewV2 .rqFollowupActions > strong { margin:0; }
+}
+@media (max-width:360px) {
+ #rqOverviewV2 .rqFollowupRow { grid-template-columns:minmax(0,1fr); }
+ #rqOverviewV2 .rqFollowupActions { grid-column:1; flex-direction:row; justify-content:space-between; align-items:center; }
+ #rqOverviewV2 .rqActionGrid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+
+/* Mobile overview: preserve every actionable reminder until a verified full-queue destination exists. */
+@media (max-width:680px) {
+ #rqOverviewV2 .rqFollowupPanel { min-width:0; }
+ #rqOverviewV2 .rqDashHead .rqDashRefresh { flex:none; }
+ #rqOverviewV2 .rqDashFoot { overflow-wrap:anywhere; }
+}
+
+/* REQOO mobile palette — warm ivory, sage, forest and restrained champagne. */
+@media (max-width:680px) {
+ body.rqOverviewV2 #rqOverviewV2 { color:#27332f; }
+ #rqOverviewV2 .rqDashPanel { background:#fffefa; border-color:#e1e7de; box-shadow:0 3px 14px rgba(37,68,52,.055); }
+ #rqOverviewV2 .rqDashGridTop > .rqDashPanel:not(.rqFollowupPanel) { background:linear-gradient(145deg,#fffefa 0%,#f1f6f0 100%); }
+ #rqOverviewV2 .rqAction { background:#fffefa; border-color:#dce5dc; color:#273b32; }
+ #rqOverviewV2 .rqAction.primary { background:#245b49; border-color:#245b49; color:#fff; }
+ #rqOverviewV2 .rqAction.primary .rqActionIcon { color:#fff; }
+ #rqOverviewV2 .rqAction:not(.primary) .rqActionIcon { color:#39725b; }
+ #rqOverviewV2 .rqAction:focus-visible,#rqOverviewV2 .rqKpi:focus-visible { outline:3px solid #c5a56b; outline-offset:2px; }
+ #rqOverviewV2 .rqKpi { background:#fffefa; border-color:#e1e7de; border-top:3px solid #c5a56b; }
+ #rqOverviewV2 .rqKpi.ok { border-top-color:#39725b; }
+ #rqOverviewV2 .rqKpi.danger { border-top-color:#bd7b69; }
+ #rqOverviewV2 .rqFollowupPanel { border-left:3px solid #c5a56b; }
+ #rqOverviewV2 .rqDashPanelHead h3 { color:#27332f; }
+ #rqOverviewV2 .rqDashPanelHead a { color:#245b49; }
+ #rqOverviewV2 .rqDashHead h2 { color:#243b31; }
+}
+
+/* REQOO Emerald Gold mobile app shell. All figures remain API-driven. */
+.rqAppBrand,.rqAppNav{display:none}
+@media(max-width:680px){
+ body{background:#FAFBF7}
+ .rqAppBrand{display:flex;align-items:center;gap:12px;min-height:140px;padding:calc(18px + env(safe-area-inset-top)) 22px 30px;background:linear-gradient(120deg,#103d31,#145744 72%,#1a6650);border-bottom:5px solid #C5A36A;border-radius:0 0 26px 26px;color:#fff}
+ .rqBrandMark{font-size:48px;line-height:1;font-weight:950;font-style:italic;color:#C5A36A}
+ .rqBrandText{display:flex;flex-direction:column;gap:4px;min-width:0}
+ .rqBrandText strong{font-size:19px;letter-spacing:.4px}
+ .rqBrandText span{font-size:13px;color:#E9F2EC}
+ .rqBrandAccount{margin-left:auto;display:grid;place-items:center;width:42px;height:42px;border:1px solid #ffffff55;border-radius:50%;color:#fff;text-decoration:none;font-size:24px}
+ #adminApp.wrap{padding:22px 14px}
+ #rqOverviewV2 .rqDashHead{margin-bottom:3px}
+ #rqOverviewV2 .rqDashHead h2{font-size:27px}
+ #rqOverviewV2 .rqKpi{border:1px solid #dce6dc;border-radius:19px;background:linear-gradient(135deg,#fff,#E9F2EC);box-shadow:0 6px 15px #123e3012}
+ #rqOverviewV2 .rqKpi.danger{background:linear-gradient(135deg,#fff,#fbf1dd);border-color:#ecdfc2}
+ #rqOverviewV2 .rqKpi small{font-size:10px;letter-spacing:.4px;color:#42584b}
+ #rqOverviewV2 .rqKpi b{font-size:21px;color:#145744}
+ #rqOverviewV2 .rqDashGridTop>.rqDashPanel:not(.rqFollowupPanel){background:#fff;border-radius:22px}
+ #rqOverviewV2 .rqAction{border-radius:17px;min-height:100px;box-shadow:0 2px 7px #1457440c}
+ #rqOverviewV2 .rqAction.primary{background:linear-gradient(145deg,#176a51,#104435)}
+ #rqOverviewV2 .rqFollowupPanel{border:1px solid #e4e6df;border-left:4px solid #C5A36A;border-radius:20px;background:linear-gradient(90deg,#fffaf0,#fff)}
+ .rqAppNav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;bottom:0;left:0;right:0;z-index:90;padding:10px 7px calc(11px + env(safe-area-inset-bottom));border-radius:23px 23px 0 0;background:linear-gradient(115deg,#103d31,#145744);box-shadow:0 -8px 24px #123e3024}
+ .rqAppNav a{display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;color:#f5f8f4;font-size:10px;min-height:49px;justify-content:center}
+ .rqAppNav a span{font-size:25px;line-height:1}
+ .rqAppNav a.active{color:#e7bf70;font-weight:800}
+ #rqOverviewV2{padding-bottom:calc(104px + env(safe-area-inset-bottom))}
+}
