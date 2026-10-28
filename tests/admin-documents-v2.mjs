@@ -80,7 +80,7 @@ assert.match(ui,/quoteMeta/);assert.match(ui,/function paymentTerms/);assert.mat
 assert.match(ui,/AB ART TRADING/);
 assert.match(ui,/201903337879 \(003053605-X\)/);
 
-assert.match(paymentJs,/Rekod bayaran/);assert.match(paymentJs,/Betulkan \/ Undo Paid/);assert.match(paymentJs,/correctPayment/);assert.match(paymentJs,/<option value="deposit">Deposit/);
+assert.match(paymentJs,/Rekod bayaran/);assert.match(paymentJs,/Betulkan bayaran/);assert.match(paymentJs,/correctPayment/);assert.match(paymentJs,/<option value="deposit">Deposit/);
 assert.match(paymentJs,/Simpan bayaran/);
 assert.match(paymentJs,/documentsFinanceDashboard/);assert.doesNotMatch(paymentJs,/listPayments/);assert.match(paymentJs,/api\('paymentSummary',\{orderId:doc.order_id\}/,'correction must read exact order summary');
 assert.match(drawerJs,/PESANAN/);

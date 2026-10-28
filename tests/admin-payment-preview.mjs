@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const js=fs.readFileSync(new URL('../admin/documents-payment-v1.js',import.meta.url),'utf8');
+assert.match(js,/function updatePaymentPreview\(/);
+assert.match(js,/remaining-amount/);
+assert.match(js,/amount>0&&amount<=remaining/);
+assert.match(js,/addEventListener\('input',updatePaymentPreview\)/);
+assert.match(js,/requestId:crypto\.randomUUID\(\)/);
+assert.match(js,/requestId:activeInvoice\.requestId/);
+assert.match(js,/await openReceipt\(d\.payment\.id\)/);
+assert.match(js,/id="rqPayType" disabled/);
+assert.match(js,/id="rqPayAfter"/);
+console.log('PASS: Payment UI previews remaining balance and retains receipt/idempotency flow.');

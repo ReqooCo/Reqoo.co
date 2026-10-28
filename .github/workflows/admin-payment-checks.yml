@@ -1,0 +1,24 @@
+name: Admin payment regression checks
+on:
+  pull_request:
+    paths:
+      - 'admin/**'
+      - 'tests/admin-*.mjs'
+      - '.github/workflows/admin-payment-checks.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  admin-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check payment script syntax
+        run: node --check admin/documents-payment-v1.js
+      - name: Check deposit preview and receipt wiring
+        run: node tests/admin-payment-preview.mjs
+      - name: Check finance dashboard
+        run: node tests/admin-finance-dashboard.mjs
