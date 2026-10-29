@@ -16,6 +16,8 @@ on:
       - 'admin/overview.css'
       - 'admin/finance*'
       - 'api/admin-expenses.js'
+      - 'api/quotation-order-costs.js'
+      - 'tests/admin-quotation-order-costs.mjs'
       - 'migrations/0015_operating_expenses.sql'
       - 'tests/admin-operating-expenses.mjs'
       - 'migrations/0012_order_handoffs.sql'
@@ -60,6 +62,7 @@ jobs:
           node tests/admin-invoice-balances.mjs
           node tests/admin-quotation-revisions.mjs
           node tests/admin-quotation-costs.mjs
+          node tests/admin-quotation-order-costs.mjs
           node tests/admin-operating-expenses.mjs
           node tests/admin-documents-workspace.mjs
           node tests/admin-orders-documents-scalability.mjs

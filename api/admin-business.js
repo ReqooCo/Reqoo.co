@@ -1,3 +1,4 @@
+import {quotationOrderEstimate} from './quotation-order-costs.js';
 import {expenseApi} from './admin-expenses.js';
 /* Business workspace APIs. Owner auth is bridged by worker.js; staff permissions
    are checked server-side before any legacy handler receives an owner token. */
@@ -107,10 +108,10 @@ export async function businessApi(request,env,d){
   const id=S(d.orderId),order=await env.DB.prepare('SELECT id,total_minor,payment_status,fulfillment_status FROM orders WHERE id=?').bind(id).first();if(!order)return json({ok:false,error:'Order tidak dijumpai.'},404);
   if(action==='saveOrderCosts'){
    const vals=['materialsMinor','labourMinor','shippingMinor','otherMinor'].map(k=>amount(d[k])),revision=Number(d.revision||0);
-   if(revision===0){const exists=await env.DB.prepare('SELECT revision FROM reqoo_order_costs WHERE order_id=?').bind(id).first();if(exists)return json({ok:false,error:'Kos telah dikemas kini. Muat semula sebelum simpan.'},409);await env.DB.prepare('INSERT INTO reqoo_order_costs(order_id,materials_minor,labour_minor,shipping_minor,other_minor,note,revision,updated_at,updated_by) VALUES(?,?,?,?,?,?,1,?,?)').bind(id,...vals,S(d.note).slice(0,500),now(),actor.name).run()}
+   if(revision===0){const exists=await env.DB.prepare('SELECT revision FROM reqoo_order_costs WHERE order_id=?').bind(id).first();if(exists)return json({ok:false,error:'Kos telah dikemas kini. Muat semula sebelum simpan.'},409);const inserted=await env.DB.prepare('INSERT OR IGNORE INTO reqoo_order_costs(order_id,materials_minor,labour_minor,shipping_minor,other_minor,note,revision,updated_at,updated_by) VALUES(?,?,?,?,?,?,1,?,?)').bind(id,...vals,S(d.note).slice(0,500),now(),actor.name).run();if(Number(inserted.meta?.changes??inserted.changes??0)!==1)return json({ok:false,error:'Costs changed. Reload before saving.'},409)}
    else{const r=await env.DB.prepare('UPDATE reqoo_order_costs SET materials_minor=?,labour_minor=?,shipping_minor=?,other_minor=?,note=?,revision=revision+1,updated_at=?,updated_by=? WHERE order_id=? AND revision=?').bind(...vals,S(d.note).slice(0,500),now(),actor.name,id,revision).run();if(Number(r.meta?.changes??r.changes??0)!==1)return json({ok:false,error:'Kos berubah dalam sesi lain. Muat semula.'},409)}
   }
-  const cost=await env.DB.prepare('SELECT * FROM reqoo_order_costs WHERE order_id=?').bind(id).first();return json({ok:true,order,cost:cost||null});
+  const cost=await env.DB.prepare('SELECT * FROM reqoo_order_costs WHERE order_id=?').bind(id).first();const quotationEstimate=await quotationOrderEstimate(env,id);return json({ok:true,order,cost:cost||null,quotationEstimate});
  }
  if(action==='marginReport'){
   const q=S(d.q).slice(0,100),offset=page(d),limit=Math.min(40,Math.max(5,Math.floor(Number(d.limit)||40))),rows=(await env.DB.prepare("SELECT o.id,o.order_no,o.total_minor,o.payment_status,o.fulfillment_status,c.name customer_name,k.materials_minor,k.labour_minor,k.shipping_minor,k.other_minor,k.revision,k.updated_at FROM orders o LEFT JOIN customers c ON c.id=o.customer_id LEFT JOIN reqoo_order_costs k ON k.order_id=o.id WHERE instr(lower(COALESCE(o.order_no,o.id)||' '||COALESCE(c.name,'')),lower(?))>0 AND NOT EXISTS(SELECT 1 FROM reqoo_workspace_archives a WHERE a.order_id=o.id) AND o.fulfillment_status!='cancelled' AND o.payment_status NOT IN ('cancelled','failed','refunded') ORDER BY o.created_at DESC,o.id DESC LIMIT ? OFFSET ?").bind(q,limit+1,offset).all()).results||[];
