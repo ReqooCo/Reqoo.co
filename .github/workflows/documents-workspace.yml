@@ -3,6 +3,10 @@ on:
   pull_request:
     paths:
       - 'admin/documents*'
+      - 'admin/cost-calculator*'
+      - 'admin/quotation-costs.css'
+      - 'migrations/0014_quotation_costs.sql'
+      - 'tests/admin-quotation-costs.mjs'
       - 'admin/document-*'
       - 'admin/admin-*'
       - 'admin/sales-workspace.js'
@@ -52,6 +56,7 @@ jobs:
           node tests/admin-documents-finance-scalability.mjs
           node tests/admin-invoice-balances.mjs
           node tests/admin-quotation-revisions.mjs
+          node tests/admin-quotation-costs.mjs
           node tests/admin-documents-workspace.mjs
           node tests/admin-orders-documents-scalability.mjs
           node tests/admin-payment-ledger-consistency.mjs
