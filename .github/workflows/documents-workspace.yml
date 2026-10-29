@@ -16,6 +16,9 @@ on:
       - 'admin/overview.css'
       - 'admin/finance*'
       - 'api/admin-expenses.js'
+      - 'api/admin-recurring-expenses.js'
+      - 'migrations/0016_recurring_expenses.sql'
+      - 'tests/admin-recurring-expenses.mjs'
       - 'api/quotation-order-costs.js'
       - 'tests/admin-quotation-order-costs.mjs'
       - 'migrations/0015_operating_expenses.sql'
@@ -64,6 +67,7 @@ jobs:
           node tests/admin-quotation-costs.mjs
           node tests/admin-quotation-order-costs.mjs
           node tests/admin-operating-expenses.mjs
+          node tests/admin-recurring-expenses.mjs
           node tests/admin-documents-workspace.mjs
           node tests/admin-orders-documents-scalability.mjs
           node tests/admin-payment-ledger-consistency.mjs

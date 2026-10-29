@@ -1,3 +1,4 @@
+import {recurringExpenseApi} from './admin-recurring-expenses.js';
 import {quotationOrderEstimate} from './quotation-order-costs.js';
 import {expenseApi} from './admin-expenses.js';
 /* Business workspace APIs. Owner auth is bridged by worker.js; staff permissions
@@ -62,6 +63,7 @@ export async function businessApi(request,env,d){
  if(!owner&&!staffAllowed(actor.role,'/api/admin-business',request.method,d))return json({ok:false,error:'Akses ini hanya untuk Owner.'},403);
  const writes=['archiveWorkspace','restoreWorkspace','saveOrderCosts','saveStaff'];if(writes.includes(action)&&!post)return json({ok:false,error:'Gunakan POST untuk perubahan.'},405);
  try{
+ if(['recurringExpenses','saveRecurringExpense','recordRecurringExpense'].includes(action))return await recurringExpenseApi(request,env,d,actor);
  if(['recordOperatingExpense','voidOperatingExpense','operatingExpenses','monthlyOperatingSummary'].includes(action))return await expenseApi(request,env,d,actor);
  if(action==='identity')return json({ok:true,identity:actor});
  if(action==='globalSearch'){
