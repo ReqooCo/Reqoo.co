@@ -19,9 +19,9 @@ async function load(){const seq=++loadSeq;try{$('financeState').textContent='Loa
 async function loadMore(){const b=$('loadMoreFinance');if(b){b.disabled=true;b.textContent='Loading…'}try{const d=await api('financeTransactions',{range:$('financeRange').value,limit:5,offset:txOffset}),seen=new Set(transactions.map(x=>String(x.id)));for(const p of d.transactions||[])if(!seen.has(String(p.id))){transactions.push(p);seen.add(String(p.id))}txOffset=Number(d.offset||0)+(d.transactions||[]).length;txHasMore=!!d.hasMore;renderTransactions()}catch(e){toast(e.message,true)}finally{if(b){b.disabled=false;b.textContent='Load more'}}}
 let activeTab='summary';
 function selectTab(tab,focus=false){
- if(!['summary','payments','costs'].includes(tab))tab='summary';activeTab=tab;
+ if(!['summary','payments','costs','expenses'].includes(tab))tab='summary';activeTab=tab;
  document.querySelectorAll('[data-finance-tab]').forEach(b=>{const selected=b.dataset.financeTab===tab;b.setAttribute('aria-selected',String(selected));b.tabIndex=selected?0:-1;document.getElementById('financePanel-'+b.dataset.financeTab).hidden=!selected;if(selected&&focus)b.focus()});
- $('financeRange').hidden=tab==='costs';document.querySelector('.rqFinanceActions').hidden=tab==='costs';
+ $('financeRange').hidden=['costs','expenses'].includes(tab);document.querySelector('.rqFinanceActions').hidden=['costs','expenses'].includes(tab);
  history.replaceState(null,'',location.pathname+location.search+(tab==='summary'?'':'#'+tab));
  document.dispatchEvent(new CustomEvent('rq:finance-tab-changed',{detail:{tab}}));
 }
