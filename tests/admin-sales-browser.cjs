@@ -29,7 +29,9 @@ assert.equal(await p.locator('.rqInternalItemCost').isVisible(),false,'price onl
 await p.locator('#qPricingMode').selectOption('cost');
 await p.locator('.rqInternalItemCost summary').click();
 await p.locator('[data-cost-item]').click();await p.locator('#rqCostCalculator').waitFor();
-await p.locator('#rqCostCalculator [name=mode]').selectOption('count');await p.locator('#rqCostCalculator [name=price]').fill('200');await p.locator('#rqCostCalculator [name=yieldCount]').fill('20');await p.locator('#rqCostCalculator [name=parts]').fill('2');
+assert.equal(await p.locator('#rqCostCalculator [data-sheet]').inputValue(),'1219.2,2438.4');assert.equal(await p.locator('[data-sheet-dimensions]').isVisible(),false);
+await p.locator('[data-sheet]').selectOption('custom');await p.locator('[name=sheetWidth]').fill('600');await p.locator('[name=sheetHeight]').fill('400');await p.locator('[data-piece]').selectOption('custom');await p.locator('[name=pieceWidth]').fill('200');await p.locator('[name=pieceHeight]').fill('200');await p.locator('[name=price]').fill('200');assert.match(await p.locator('[data-preview]').innerText(),/6 pieces/);
+await p.locator('[data-sheet]').selectOption('1219.2,2438.4');await p.locator('#rqCostCalculator [name=mode]').selectOption('count');await p.locator('#rqCostCalculator [name=price]').fill('200');await p.locator('#rqCostCalculator [name=yieldCount]').fill('20');await p.locator('#rqCostCalculator [name=parts]').fill('2');
 assert.match(await p.locator('.rqCostResult').innerText(),/RM20.00/);
 assert.ok(await p.evaluate(()=>document.querySelector('#rqCostCalculator').scrollWidth<=document.querySelector('#rqCostCalculator').clientWidth+1),'calculator fits iPhone');
 await p.screenshot({path:path.join(out,'material-calculator-mobile.png')});
