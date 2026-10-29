@@ -569,10 +569,11 @@ export async function onRequest({request,env}){
     const response=await legacy({request,env});
     if(!response.ok||!['getDocument','publicDocument','createDocument'].includes(action))return response;
     const out=await response.clone().json(),doc=out.document;
-    if(!doc||doc.type!=='invoice')return response;
+    if(!doc||doc.type==='quotation')return response;
     await ensure(env);
     const order=await orderByKey(doc.order_id,env);
-    if(!order)return response;
+    if(order)doc.order_no=order.order_no||null;
+    if(!order||doc.type!=='invoice')return J(out);
     const summary=await summaryForOrder(order,env),pct=Math.max(0,Math.min(100,Number(doc.company?.quoteMeta?.depositPercent||0))),deposit=Math.round(summary.totalMinor*pct/100);
     doc.financials={totalMinor:summary.totalMinor,paidMinor:summary.paidMinor,balanceMinor:summary.balanceMinor,amountDueNowMinor:summary.paidMinor===0&&pct>0&&pct<100?Math.min(deposit,summary.balanceMinor):summary.balanceMinor,paymentStatus:summary.paymentStatus};
     doc.payment_status=summary.paymentStatus;
