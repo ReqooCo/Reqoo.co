@@ -96,7 +96,7 @@ async function costMaterials(action,d,env){
     return J({ok:true,materials:rows.slice(0,100).map(r=>({...r,preset:JSON.parse(r.preset_json),preset_json:undefined})),hasMore:rows.length>100});
   }
   const name=S(d.name).slice(0,80),p=d.preset||{},price=Number(p.price),width=Number(p.sheetWidth),height=Number(p.sheetHeight);
-  if(!name||!['Acrylic','Wood','Frame','Other'].includes(p.material)||!['size','unit'].includes(p.mode)||!Number.isFinite(price)||price<=0||price>10000000||!Number.isFinite(width)||width<=0||width>100000||!Number.isFinite(height)||height<=0||height>100000)return J({ok:false,error:'Enter a material name, price and valid sheet dimensions.'},400);
+  if(!name||!['Acrylic','Wood','Frame','Other'].includes(p.material)||!['size','unit'].includes(p.mode)||!Number.isFinite(price)||Math.round(price*100)<1||price>10000000||!Number.isFinite(width)||width<=0||width>100000||!Number.isFinite(height)||height<=0||height>100000)return J({ok:false,error:'Enter a material name, price and valid sheet dimensions.'},400);
   const preset=JSON.stringify({material:p.material,mode:p.mode,price:price.toFixed(2),sheetWidth:String(width),sheetHeight:String(height)}),id=S(d.id)||ID('mat'),now=NOW();
   try{
     if(d.id){

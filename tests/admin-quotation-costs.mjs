@@ -20,6 +20,7 @@ assert.equal(estimate({mode:'count',price:200,yieldCount:20,parts:4}).unitMinor,
 assert.equal(estimate({mode:'size',price:100,sheetWidth:600,sheetHeight:400,pieceWidth:200,pieceHeight:200,parts:1}).yieldCount,6);
 assert.equal(estimate({mode:'size',price:100,sheetWidth:300,sheetHeight:200,pieceWidth:200,pieceHeight:300,parts:1}).yieldCount,1);
 assert.throws(()=>estimate({mode:'size',price:100,sheetWidth:100,sheetHeight:100,pieceWidth:200,pieceHeight:200,parts:1}),/does not fit/);
+assert.throws(()=>estimate({price:0.001,yieldCount:1,parts:1}),/Check/);
 for(const yieldCount of [0,-1,1.5,Infinity])assert.throws(()=>estimate({price:200,yieldCount,parts:1}));
 assert.equal(estimate({mode:'count',price:1,yieldCount:3,parts:3}).unitMinor,100,'do not round each tiny piece before multiplication');
 assert.equal(estimate({mode:'unit',price:15,parts:2}).unitMinor,3000);

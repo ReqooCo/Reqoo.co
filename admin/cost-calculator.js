@@ -14,6 +14,7 @@ function estimate(v){
  }else yieldCount=positive(v.yieldCount,'pieces per sheet',true);
  if(!Number.isSafeInteger(yieldCount)||yieldCount>1e9)throw Error('Check the cutting dimensions.');
  const sheetMinor=Math.round(price*100),pieceMinor=sheetMinor/yieldCount;
+ if(sheetMinor<1||pieceMinor*parts>1000000000)throw Error('Check the material price and quantity.');
  return {yieldCount,sheetMinor,pieceMinor,unitMinor:pieceMinor*parts,parts,isUnit:v.mode==='unit'};
 }
 if(typeof module==='object'&&module.exports){module.exports={estimate};return}
