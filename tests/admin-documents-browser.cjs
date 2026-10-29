@@ -8,7 +8,7 @@ try{
 const context=await browser.newContext({viewport:{width:1440,height:1000}});
 await context.addInitScript(()=>{window.print=()=>{};Element.prototype.scrollIntoView=function(){};});
 const records=Array.from({length:85},(_,i)=>({id:'doc'+i,type:i%2?'quotation':'invoice',number:(i%2?'QT':'INV')+'-TEST-'+i,order_id:'ord'+i,customer_name:i===84?'Historical Customer':'Test Customer '+i,customer_phone:'0123456789',total_minor:30000,payment_status:'pending',status:'issued',created_at:'2026-10-01T12:00:00Z',issued_at:'2026-10-01T12:00:00Z',due_at:'2026-10-31',company:{companyName:'REQOO.CO',quoteMeta:{depositPercent:50}},items:Array.from({length:50},(_,j)=>({description:'Item '+j+' — Custom packaging with approved artwork',variation:'Standard',quantity:1,unit_price_minor:600,line_total_minor:600}))}));
-let mode='normal',settingsCalls=0,orderCalls=0,financeDelay=0,chartFail=false,createdOrderQuote=null;const actions=[];
+let mode='normal',settingsCalls=0,orderCalls=0,financeDelay=0,chartFail=false,createdOrderQuote=null;const actions=[],conversionRequests=[],approvalRequests=[];
 await context.route('**/*',async route=>{
 const u=new URL(route.request().url());if(u.hostname!=='reqoo.test'){await route.abort();return}
 if(u.pathname==='/api/shop-admin'){
@@ -29,6 +29,12 @@ if(d.action==='documentWorkspaces'){
 }else if(d.action==='documentsFinanceDashboard'){if(financeDelay)await new Promise(r=>setTimeout(r,financeDelay));body={ok:true,documents:[],payments:[],summaries:records.filter(x=>x.type==='invoice').map(x=>({orderId:x.order_id,totalMinor:30000,paidMinor:0,balanceMinor:30000,paymentStatus:'pending'})),stats:{all:43,outstandingCount:43,outstandingMinor:1290000,paidCount:0},invoices:[],invoiceTotal:0};}
 else if(d.action==='documentSettings'){settingsCalls++;body.settings={quoteValidDays:7};}
 else if(d.action==='ordersDashboard'){orderCalls++;body={ok:true,orders:[],total:0,stats:{}};}
+else if(d.action==='updateCustomQuotationStatus'){
+ approvalRequests.push(d);const doc=records.find(x=>x.id===d.documentId);body.document={...doc,status:'accepted',updated_at:'2026-10-29T01:00:00Z'};
+}
+else if(d.action==='convertCustomQuotationToOrder'){
+ conversionRequests.push(d);await route.fulfill({status:409,json:{ok:false,error:'Fixture conversion conflict'}});return;
+}
 else if(d.action==='quotationHistory'){
  const doc=records.find(x=>x.id===d.documentId)||createdOrderQuote,revision=Number(doc?.company?.quoteMeta?.revision||0);
  if(d.revision!==undefined)body.document={...doc,revision:Number(d.revision),readOnly:Number(d.revision)!==revision,customer_name:Number(d.revision)!==revision?'Previous Customer':doc.customer_name};
@@ -145,6 +151,17 @@ await page.screenshot({path:path.join(out,'quotation-revision-mobile.png'),fullP
 await page.locator('[data-revision="1"]').click();
 await page.waitForFunction(()=>!document.querySelector('#docModalTitle').textContent.includes('Historical'));
 assert.equal(await page.locator('#docEdit').isVisible(),true);
+page.on('dialog',dialog=>dialog.accept());
+await page.locator('#docConvert').click();
+await page.waitForFunction(()=>!document.querySelector('#docConvert').disabled);
+assert.equal(approvalRequests.length,1);assert.equal(conversionRequests.length,1);
+assert.equal(conversionRequests[0].expectedRevision,1);
+assert.equal(conversionRequests[0].expectedUpdatedAt,'2026-10-29T01:00:00Z','conversion uses returned approval timestamp');
+await page.locator('#docConvert').click();
+await page.waitForFunction(()=>!document.querySelector('#docConvert').disabled);
+assert.equal(approvalRequests.length,1,'retry does not approve an already accepted quotation again');
+assert.equal(conversionRequests.length,2);
+assert.equal(conversionRequests[1].expectedUpdatedAt,conversionRequests[0].expectedUpdatedAt);
 await page.locator('#docClose').click();
 mode='empty';await page.locator('#refreshDocs').click();await page.waitForFunction(()=>document.querySelector('#docResultsState').textContent.startsWith('0 of 0'));assert.ok(await page.locator('#docUnifiedEmpty').isVisible());
 mode='loading';await page.locator('#refreshDocs').click();assert.equal(await page.locator('#docHistory').getAttribute('aria-busy'),'true');await page.waitForFunction(()=>document.querySelector('#docHistory').getAttribute('aria-busy')==='false');

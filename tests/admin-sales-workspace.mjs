@@ -12,8 +12,8 @@ const quote=(await call('createCustomQuotation',{customerName:'Fixture Buyer',it
 assert.ok(quote);
 assert.equal((await call('documentWorkspaces',{scope:'quotations'})).total,1);
 assert.equal((await call('documentWorkspaces',{scope:'orders'})).total,0);
-await call('updateCustomQuotationStatus',{documentId:quote.id,status:'accepted'},true);
-const order=(await call('convertCustomQuotationToOrder',{documentId:quote.id},true)).order;
+const accepted=(await call('updateCustomQuotationStatus',{documentId:quote.id,status:'accepted'},true)).document;
+const order=(await call('convertCustomQuotationToOrder',{documentId:quote.id,expectedRevision:0,expectedUpdatedAt:accepted.updated_at},true)).order;
 assert.ok(order);
 assert.equal((await call('convertCustomQuotationToOrder',{documentId:quote.id},true)).order.id,order.id);
 assert.equal((await call('documentWorkspaces',{scope:'quotations'})).total,0);

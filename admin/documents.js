@@ -203,8 +203,12 @@ async function convertActiveQuote(){
   if(!confirm(`Has the customer approved quotation ${quote.number}?\n\n${itemCount} item(s) · Total ${total}${deposit}\n\nConfirm only after receiving customer approval. This creates an order; no payment will be recorded automatically.`))return;
   const btn=$('docConvert'),old=btn.textContent;btn.disabled=true;btn.textContent='Creating order…';
   try{
-    if(!meta.convertedOrderId&&quote.status!=='accepted')await api('updateCustomQuotationStatus',{documentId:quote.id,status:'accepted',expectedRevision:Number(meta.revision||0),expectedUpdatedAt:quote.updated_at},'POST');
-    const d=await api('convertCustomQuotationToOrder',{documentId:quote.id},'POST');
+    let approvedQuote=quote;
+    if(quote.status!=='accepted'){
+      const approval=await api('updateCustomQuotationStatus',{documentId:quote.id,status:'accepted',expectedRevision:Number(meta.revision||0),expectedUpdatedAt:quote.updated_at},'POST');
+      approvedQuote=approval.document;activeDoc=approvedQuote;replaceDocument(approvedQuote);
+    }
+    const d=await api('convertCustomQuotationToOrder',{documentId:quote.id,expectedRevision:Number(quoteMeta(approvedQuote).revision||0),expectedUpdatedAt:approvedQuote.updated_at},'POST');
     const convertedQuote=d.document;replaceDocument(convertedQuote);
     const orderId=d.order?.id||quoteMeta(convertedQuote).convertedOrderId,ref=d.order?.order_no||orderId||'order baru';
     if(orderId&&pct>0&&pct<100){
