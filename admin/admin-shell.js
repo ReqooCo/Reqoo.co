@@ -2,7 +2,7 @@
 'use strict';
 if(!document.querySelector('link[href*="/admin/admin-flow.css"]')){const l=document.createElement('link');l.rel='stylesheet';l.href='/admin/admin-flow.css?v=2';document.head.appendChild(l)}
 if(!document.querySelector('link[href*="/admin/admin-theme.css"]')){const l=document.createElement('link');l.rel='stylesheet';l.href='/admin/admin-theme.css?v=2';document.head.appendChild(l)}
-if(!document.querySelector('script[src*="/admin/admin-business.js"]')){const s=document.createElement('script');s.src='/admin/admin-business.js?v=5';document.body.appendChild(s)}
+if(!document.querySelector('script[src*="/admin/admin-business.js"]')){const s=document.createElement('script');s.src='/admin/admin-business.js?v=6';document.body.appendChild(s)}
 const language=document.createElement('script');language.src='/admin/admin-language.js?v=1';document.body.appendChild(language);
 const helper=document.createElement('script');helper.src='/admin/admin-simple.js?v=1';document.body.appendChild(helper);
 const simpleStyle=document.createElement('link');simpleStyle.rel='stylesheet';simpleStyle.href='/admin/admin-simple.css?v=5';document.head.appendChild(simpleStyle);
