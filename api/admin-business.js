@@ -1,3 +1,4 @@
+import {expenseApi} from './admin-expenses.js';
 /* Business workspace APIs. Owner auth is bridged by worker.js; staff permissions
    are checked server-side before any legacy handler receives an owner token. */
 const S=v=>String(v??'').trim(),now=()=>new Date().toISOString(),uid=p=>p+'_'+crypto.randomUUID();
@@ -60,6 +61,7 @@ export async function businessApi(request,env,d){
  if(!owner&&!staffAllowed(actor.role,'/api/admin-business',request.method,d))return json({ok:false,error:'Akses ini hanya untuk Owner.'},403);
  const writes=['archiveWorkspace','restoreWorkspace','saveOrderCosts','saveStaff'];if(writes.includes(action)&&!post)return json({ok:false,error:'Gunakan POST untuk perubahan.'},405);
  try{
+ if(['recordOperatingExpense','voidOperatingExpense','operatingExpenses','monthlyOperatingSummary'].includes(action))return await expenseApi(request,env,d,actor);
  if(action==='identity')return json({ok:true,identity:actor});
  if(action==='globalSearch'){
   const q=S(d.q).slice(0,160);if(q.length<2)return json({ok:true,results:[]});
