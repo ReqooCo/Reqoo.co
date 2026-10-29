@@ -49,4 +49,5 @@ for(let i=0;i<7;i++)await post('recordOperatingExpense',{...entry,requestId:'fix
 const page1=(await get('operatingExpenses',{month:'2026-10'})).body,page2=(await get('operatingExpenses',{month:'2026-10',offset:5})).body;
 assert.equal(page1.expenses.length,5);assert.equal(page1.hasMore,true);assert.equal(page2.expenses.length,4);assert.equal(page2.hasMore,false);
 sql.exec(fs.readFileSync(new URL('../migrations/0015_operating_expenses.sql',import.meta.url),'utf8'));
+const exported=await get('exportOperatingMonth',{month:'2026-10'});assert.equal(exported.status,200);assert.equal(exported.body.expenses.length,9,'export includes all pages and retained voided rows');assert.equal(exported.body.summary.overheadMinor,720000);assert.equal((await get('exportOperatingMonth',{month:'2026-10'},{})).status,401);
 console.log('PASS: owner auth, immutable expense amounts, idempotent saves/voids, monthly paging, Malaysia month boundaries, delivered sales without tax, confirmed collections and incomplete job-cost safeguards.');sql.close();

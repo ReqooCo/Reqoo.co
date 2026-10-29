@@ -35,5 +35,11 @@ export async function expenseApi(request,env,d,actor){
   env.DB.prepare("SELECT COALESCE(SUM(amount_minor),0) amount_minor FROM reqoo_payments WHERE status='confirmed' AND datetime(paid_at)>=datetime(?) AND datetime(paid_at)<datetime(?)").bind(utcStart,utcEnd).first()
  ]);
  const missing=Number(sales?.missing_costs||0),revenue=Number(sales?.sales_minor||0),cost=Number(sales?.cost_minor||0),expenses=Number(overhead?.amount_minor||0);
- return J({ok:true,month,summary:{deliveredSalesMinor:revenue,recordedJobCostsMinor:cost,missingCostOrders:missing,deliveredOrders:Number(sales?.order_count||0),overheadMinor:expenses,expenseCount:Number(overhead?.count||0),collectionsMinor:Number(collected?.amount_minor||0),estimatedOperatingResultMinor:missing?null:revenue-cost-expenses}});
+ const summary={deliveredSalesMinor:revenue,recordedJobCostsMinor:cost,missingCostOrders:missing,deliveredOrders:Number(sales?.order_count||0),overheadMinor:expenses,expenseCount:Number(overhead?.count||0),collectionsMinor:Number(collected?.amount_minor||0),estimatedOperatingResultMinor:missing?null:revenue-cost-expenses};
+ if(action==='exportOperatingMonth'){
+  const entries=(await env.DB.prepare('SELECT expense_date,category,description,amount_minor,status,void_reason FROM reqoo_operating_expenses WHERE expense_date>=? AND expense_date<? ORDER BY expense_date,id LIMIT 10001').bind(start,end).all()).results||[];
+  if(entries.length>10000)return J({ok:false,error:'This month exceeds the export limit of 10,000 expense records.'},413);
+  return J({ok:true,month,summary,expenses:entries});
+ }
+ return J({ok:true,month,summary});
 }
