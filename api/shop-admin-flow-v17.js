@@ -209,7 +209,9 @@ async function convertCustomQuotationToOrder(d,env){
     return J({ok:true,created:false,order,document:doc});
   }
   if(doc.status!=='accepted')return J({ok:false,error:'Record customer approval before converting this quotation.'},409);
-  if(!doc.items.length)return J({ok:false,error:'Quotation tiada item untuk dijadikan order.'},409);
+  if(!Number.isInteger(d.expectedRevision)||d.expectedRevision!==Number(meta.revision||0)||S(d.expectedUpdatedAt)!==doc.updated_at)
+    return J({ok:false,error:'Quotation changed. Reopen the latest version and confirm customer approval before converting.'},409);
+  if(!doc.items.length)return J({ok:false,error:'Add at least one quotation item before converting to an order.'},409);
 
   const now=NOW(),phone=S(doc.customer_phone).slice(0,60),email=S(doc.customer_email).slice(0,160),name=S(doc.customer_name).slice(0,160)||'Customer';
   let customer=null;

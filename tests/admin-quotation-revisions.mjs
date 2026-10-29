@@ -16,6 +16,7 @@ const payload={customerName:'Original Customer',customerPhone:'0123456789',custo
 const create=async()=>{const r=await call('createCustomQuotation',payload);assert.equal(r.ok,true,JSON.stringify(r));return r.document};
 const edit=(doc,changes={})=>call('updateCustomQuotation',{...payload,documentId:doc.id,expectedRevision:Number(doc.company.quoteMeta.revision||0),expectedUpdatedAt:doc.updated_at,...changes});
 const get=id=>call('quotationHistory',{documentId:id});
+const convertVersion=doc=>call('convertCustomQuotationToOrder',{documentId:doc.id,expectedRevision:Number(doc.company.quoteMeta.revision||0),expectedUpdatedAt:doc.updated_at});
 assert.equal((await call('quotationHistory',{},false)).http,401);
 assert.equal((await call('updateCustomQuotation',{},true,'GET')).http,405);
 const original=await create();
@@ -43,9 +44,9 @@ beforeBatch=async ss=>{if(ss[0].query.startsWith('INSERT INTO reqoo_quotation_re
 const results=await Promise.all([edit(concurrent,{notes:'Editor A'}),edit(concurrent,{notes:'Editor B'})]);beforeBatch=null;
 assert.deepEqual(results.map(r=>r.http).sort(),[200,409]);assert.equal((await get(concurrent.id)).versions.length,2);
 // A conversion committed after the editor read must roll back its snapshot and replacement items.
-const racing=await create();await call('updateCustomQuotationStatus',{documentId:racing.id,status:'accepted'});
+const racing=await create();const racingApproved=(await call('updateCustomQuotationStatus',{documentId:racing.id,status:'accepted'})).document;
 let conversion;
-beforeBatch=async ss=>{if(ss[0].query.startsWith('INSERT INTO reqoo_quotation_revisions')){beforeBatch=null;conversion=await call('convertCustomQuotationToOrder',{documentId:racing.id});}};
+beforeBatch=async ss=>{if(ss[0].query.startsWith('INSERT INTO reqoo_quotation_revisions')){beforeBatch=null;conversion=await convertVersion(racingApproved);}};
 const current=(await call('quotationHistory',{documentId:racing.id,revision:0})).document;
 assert.equal((await edit(current)).http,409);assert.equal(conversion.ok,true);assert.equal((await get(racing.id)).versions.length,1);
 // Failure after snapshot creation is atomic: no archive or item loss.
@@ -55,14 +56,26 @@ assert.equal((await edit(failing,{items:[{description:'FAIL',quantity:1,unitPric
 assert.equal((await get(failing.id)).currentRevision,0);assert.equal((await get(failing.id)).versions.length,1);
 assert.equal(sql.prepare('SELECT description FROM reqoo_document_items WHERE document_id=?').get(failing.id).description,'Original item');
 // Competing conversion requests produce exactly one linked order.
-const convert=await create();await call('updateCustomQuotationStatus',{documentId:convert.id,status:'accepted'});
+const convert=await create();const convertApproved=(await call('updateCustomQuotationStatus',{documentId:convert.id,status:'accepted'})).document;
 arrived=0;let unlock;const both=new Promise(r=>unlock=r);
 beforeBatch=async ss=>{if(ss.some(s=>s.query.startsWith('INSERT INTO orders'))){if(++arrived===2)unlock();await both}};
-const converted=await Promise.all([call('convertCustomQuotationToOrder',{documentId:convert.id}),call('convertCustomQuotationToOrder',{documentId:convert.id})]);beforeBatch=null;
+const converted=await Promise.all([convertVersion(convertApproved),convertVersion(convertApproved)]);beforeBatch=null;
 assert.ok(converted.every(r=>r.ok),JSON.stringify(converted));assert.equal(converted[0].order.id,converted[1].order.id);
 assert.equal(sql.prepare('SELECT COUNT(*) n FROM orders WHERE id=?').get(converted[0].order.id).n,1);
 assert.equal((await edit(convert)).http,409);
 assert.equal((await call('quotationHistory',{documentId:original.id,revision:999})).http,404);
+// A stale accepted tab cannot convert a newer revision that another user approved.
+const staleQuote=await create();
+const staleApproved=(await call('updateCustomQuotationStatus',{documentId:staleQuote.id,status:'accepted'})).document;
+const newer=(await edit(staleApproved,{items:[{description:'Revised price',quantity:1,unitPriceMinor:22200}]})).document;
+const newerApproved=(await call('updateCustomQuotationStatus',{documentId:newer.id,status:'accepted'})).document;
+assert.equal((await convertVersion(staleApproved)).http,409,'old approval must not convert newer revision');
+assert.equal((await call('convertCustomQuotationToOrder',{documentId:newer.id})).http,409,'missing version must not convert');
+assert.equal((await call('convertCustomQuotationToOrder',{documentId:newer.id,expectedRevision:1,expectedUpdatedAt:'stale'})).http,409,'stale timestamp must not convert');
+assert.equal(sql.prepare('SELECT COUNT(*) n FROM orders WHERE id=?').get('ord_quote_'+newer.id).n,0);
+const latestConverted=await convertVersion(newerApproved);
+assert.equal(latestConverted.http,200);assert.equal(latestConverted.order.total_minor,newerApproved.total_minor);
+assert.equal((await convertVersion(staleApproved)).order.id,latestConverted.order.id,'retry reuses existing order');
 // Migration is idempotent and retained archives survive an application rollback.
 sql.exec(fs.readFileSync(new URL('../migrations/0013_quotation_revisions.sql',import.meta.url),'utf8'));
 assert.equal((await get(original.id)).currentRevision,2);
