@@ -64,7 +64,7 @@ export async function businessApi(request,env,d){
  const writes=['archiveWorkspace','restoreWorkspace','saveOrderCosts','saveStaff'];if(writes.includes(action)&&!post)return json({ok:false,error:'Gunakan POST untuk perubahan.'},405);
  try{
  if(['recurringExpenses','saveRecurringExpense','recordRecurringExpense'].includes(action))return await recurringExpenseApi(request,env,d,actor);
- if(['recordOperatingExpense','voidOperatingExpense','operatingExpenses','monthlyOperatingSummary'].includes(action))return await expenseApi(request,env,d,actor);
+ if(['recordOperatingExpense','voidOperatingExpense','operatingExpenses','monthlyOperatingSummary','exportOperatingMonth'].includes(action))return await expenseApi(request,env,d,actor);
  if(action==='identity')return json({ok:true,identity:actor});
  if(action==='globalSearch'){
   const q=S(d.q).slice(0,160);if(q.length<2)return json({ok:true,results:[]});
