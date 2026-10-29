@@ -27,6 +27,9 @@ assert.equal((await call('convertCustomQuotationToOrder',{documentId:quote.id}))
 const inv=await call('createDocument',{orderId,type:'invoice'});
 assert.equal(inv.ok,true,JSON.stringify(inv));
 assert.equal(inv.document.total_minor,30000);
+assert.equal(inv.document.order_no,converted.order.order_no);
+assert.equal((await call('getDocument',{documentId:inv.document.id})).document.order_no,converted.order.order_no);
+assert.equal((await call('publicDocument',{shareToken:inv.document.share_token},false)).document.order_no,converted.order.order_no);
 assert.equal(inv.document.financials.amountDueNowMinor,15000);
 assert.equal(inv.document.financials.paidMinor,0);
 assert.equal((await call('createDocument',{orderId,type:'receipt'})).statusCode,409);
