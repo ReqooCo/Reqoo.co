@@ -24,8 +24,8 @@ export async function staffLogin(request,env,secret,d){
  res.headers.append('set-cookie',staffCookie(payload+'.'+await sign(secret,'staff:'+payload),28800));res.headers.append('set-cookie','rq_admin_session=; Path=/api/; Max-Age=0; HttpOnly; Secure; SameSite=Strict');return res;
 }
 const commonReads=['ordersDashboard','getOrder','productionDashboard','getProductionMeta','listProductionMeta','getOrderArtwork','paymentSummary'];
-const salesReads=['quotationHistory','listDocuments','getDocument','documentFlow','documentWorkspaces','documentSettings','documentLinks','paymentSummary','listPayments','getPaymentReceipt','documentsFinanceDashboard','documentsMonthlySummary','customerDashboard','customerDetail','customerRecords'];
-const salesWrites=['createCustomQuotation','updateCustomQuotation','updateCustomQuotationStatus','convertCustomQuotationToOrder','createOrderQuotation','createDocument'];
+const salesReads=['listCostMaterials','quotationHistory','listDocuments','getDocument','documentFlow','documentWorkspaces','documentSettings','documentLinks','paymentSummary','listPayments','getPaymentReceipt','documentsFinanceDashboard','documentsMonthlySummary','customerDashboard','customerDetail','customerRecords'];
+const salesWrites=['saveCostMaterial','createCustomQuotation','updateCustomQuotation','updateCustomQuotationStatus','convertCustomQuotationToOrder','createOrderQuotation','createDocument'];
 export function staffAllowed(role,path,method,d){
  const action=S(d.action),read=method==='GET';
  if(path==='/api/admin-session')return true;

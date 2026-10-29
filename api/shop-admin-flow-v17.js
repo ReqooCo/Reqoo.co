@@ -32,6 +32,10 @@ function orderNumber(){
 }
 async function ensureDocuments(env){
   await env.DB.batch([
+    env.DB.prepare("CREATE TABLE IF NOT EXISTS reqoo_cost_materials(id TEXT PRIMARY KEY,name TEXT NOT NULL COLLATE NOCASE UNIQUE,preset_json TEXT NOT NULL CHECK(json_valid(preset_json)),revision INTEGER NOT NULL DEFAULT 0,updated_at TEXT NOT NULL)"),
+    env.DB.prepare("CREATE TABLE IF NOT EXISTS reqoo_quotation_costs(document_id TEXT NOT NULL,revision INTEGER NOT NULL CHECK(revision>=0),cost_json TEXT NOT NULL CHECK(json_valid(cost_json)),PRIMARY KEY(document_id,revision))"),
+    env.DB.prepare("CREATE TRIGGER IF NOT EXISTS reqoo_quotation_costs_immutable_update BEFORE UPDATE ON reqoo_quotation_costs BEGIN SELECT RAISE(ABORT,'Quotation costs are immutable'); END"),
+    env.DB.prepare("CREATE TRIGGER IF NOT EXISTS reqoo_quotation_costs_immutable_delete BEFORE DELETE ON reqoo_quotation_costs BEGIN SELECT RAISE(ABORT,'Quotation costs are immutable'); END"),
     env.DB.prepare("CREATE TABLE IF NOT EXISTS reqoo_quotation_revisions(document_id TEXT NOT NULL,revision INTEGER NOT NULL CHECK(revision>=0),snapshot_json TEXT NOT NULL CHECK(json_valid(snapshot_json)),version_at TEXT NOT NULL,version_actor TEXT,archived_at TEXT NOT NULL,PRIMARY KEY(document_id,revision));"),
     env.DB.prepare("CREATE TRIGGER IF NOT EXISTS reqoo_quote_revision_immutable_update BEFORE UPDATE ON reqoo_quotation_revisions BEGIN SELECT RAISE(ABORT,'Quotation history is immutable'); END;"),
     env.DB.prepare("CREATE TRIGGER IF NOT EXISTS reqoo_quote_revision_immutable_delete BEFORE DELETE ON reqoo_quotation_revisions BEGIN SELECT RAISE(ABORT,'Quotation history is immutable'); END;"),
@@ -85,6 +89,39 @@ async function hydrateDocument(row,env){
   let company={};try{company=JSON.parse(row.company_json||'{}')}catch{}
   return {...row,company,items};
 }
+async function costMaterials(action,d,env){
+  await ensureDocuments(env);
+  if(action==='listCostMaterials'){
+    const q='%'+S(d.q).slice(0,80)+'%',rows=(await env.DB.prepare('SELECT * FROM reqoo_cost_materials WHERE name LIKE ? ORDER BY name LIMIT 101').bind(q).all()).results||[];
+    return J({ok:true,materials:rows.slice(0,100).map(r=>({...r,preset:JSON.parse(r.preset_json),preset_json:undefined})),hasMore:rows.length>100});
+  }
+  const name=S(d.name).slice(0,80),p=d.preset||{},price=Number(p.price),width=Number(p.sheetWidth),height=Number(p.sheetHeight);
+  if(!name||!['Acrylic','Wood','Frame','Other'].includes(p.material)||!['size','unit'].includes(p.mode)||!Number.isFinite(price)||Math.round(price*100)<1||price>10000000||!Number.isFinite(width)||width<=0||width>100000||!Number.isFinite(height)||height<=0||height>100000)return J({ok:false,error:'Enter a material name, price and valid sheet dimensions.'},400);
+  const preset=JSON.stringify({material:p.material,mode:p.mode,price:price.toFixed(2),sheetWidth:String(width),sheetHeight:String(height)}),id=S(d.id)||ID('mat'),now=NOW();
+  try{
+    if(d.id){
+      if(!Number.isInteger(d.expectedRevision))return J({ok:false,error:'Reload this material before saving.'},409);
+      const r=await env.DB.prepare('UPDATE reqoo_cost_materials SET name=?,preset_json=?,revision=revision+1,updated_at=? WHERE id=? AND revision=?').bind(name,preset,now,id,d.expectedRevision).run();
+      if(!Number(r?.meta?.changes??r?.changes))return J({ok:false,error:'Material changed. Reload it before saving.'},409);
+    }else await env.DB.prepare('INSERT INTO reqoo_cost_materials(id,name,preset_json,revision,updated_at) VALUES(?,?,?,0,?)').bind(id,name,preset,now).run();
+  }catch(error){if(/UNIQUE/.test(String(error?.message)))return J({ok:false,error:'That material name already exists. Select it to update its price.'},409);throw error}
+  const row=await env.DB.prepare('SELECT * FROM reqoo_cost_materials WHERE id=?').bind(id).first();return J({ok:true,material:{...row,preset:JSON.parse(row.preset_json),preset_json:undefined}});
+}
+async function privateCost(doc,env){
+  if(doc?.type!=='quotation')return doc;
+  const row=await env.DB.prepare('SELECT cost_json FROM reqoo_quotation_costs WHERE document_id=? AND revision=?').bind(doc.id,Number(quoteMeta(doc).revision||0)).first();
+  return {...doc,internalCosts:row?JSON.parse(row.cost_json):null};
+}
+function costCalculation(raw){
+  if(!raw||typeof raw!=='object'||JSON.stringify(raw).length>30000||!Array.isArray(raw.saved)||raw.saved.length>30||!raw.draft||typeof raw.draft!=='object')throw Object.assign(Error('Invalid material calculation.'),{status:400});
+  return JSON.parse(JSON.stringify(raw));
+}
+function normalizeCosts(raw,count){
+  if(raw==null)return null;
+  if(!Array.isArray(raw.items)||raw.items.length!==count)throw Object.assign(Error('Cost details must match quotation items.'),{status:400});
+  const amount=v=>{if(v===null||v==='')return null;if(!Number.isSafeInteger(v)||v<0||v>1000000000)throw Object.assign(Error('Enter valid internal costs.'),{status:400});return v};
+  return {enabled:raw.enabled!==false,items:raw.items.map(item=>({...Object.fromEntries(['materialsMinor','labourMinor','packagingMinor','outsourcingMinor','otherMinor','overheadMinor'].map(k=>[k,amount(item?.[k]??null)])),...(item?.calculation?{calculation:costCalculation(item.calculation)}:{})})),orderOtherMinor:amount(raw.orderOtherMinor??0)};
+}
 function quoteMeta(doc){return doc?.company&&typeof doc.company.quoteMeta==='object'?doc.company.quoteMeta:{}}
 function normalizeQuoteItems(raw){
   if(!Array.isArray(raw))return [];
@@ -101,6 +138,7 @@ async function createCustomQuotation(d,env){
   if(!customerName)return J({ok:false,error:'Nama pelanggan / syarikat diperlukan.'},400);
   if(!items.length)return J({ok:false,error:'Masukkan sekurang-kurangnya satu item quotation.'},400);
 
+  const internalCosts=normalizeCosts(d.internalCosts,items.length);
   const base=await documentSettings(env),now=NOW(),id=ID('doc'),number=await nextQuoteNumber(env),shareToken=`${crypto.randomUUID()}${crypto.randomUUID().replaceAll('-','')}`;
   const subtotal=items.reduce((sum,item)=>sum+item.lineTotalMinor,0),discount=Math.min(subtotal,clampMoney(d.discountMinor,subtotal)),shipping=clampMoney(d.shippingMinor,100000000),tax=clampMoney(d.taxMinor,100000000),total=Math.max(0,subtotal-discount+shipping+tax);
   const validDays=clampDays(d.validDays,base.quoteValidDays),dueAt=S(d.dueAt)||plusDays(now,validDays),depositPercent=Math.max(0,Math.min(100,Number(d.depositPercent||0)));
@@ -110,9 +148,9 @@ async function createCustomQuotation(d,env){
     .bind(id,'quotation',number,orderId,'issued','MYR',subtotal,discount,shipping,tax,total,now,dueAt,customerName,customerPhone,customerEmail,JSON.stringify(company),'',shareToken,now,now);
   const rows=items.map(item=>env.DB.prepare('INSERT INTO reqoo_document_items(id,document_id,description,variation,quantity,unit_price_minor,line_total_minor,sort_order) VALUES(?,?,?,?,?,?,?,?)')
     .bind(ID('di'),id,item.description,item.variation,item.quantity,item.unitPriceMinor,item.lineTotalMinor,item.sortOrder));
-  await env.DB.batch([header,...rows]);
+  await env.DB.batch([header,...rows,...(internalCosts?[env.DB.prepare('INSERT INTO reqoo_quotation_costs(document_id,revision,cost_json) VALUES(?,?,?)').bind(id,0,JSON.stringify(internalCosts))]:[])]);
   const row=await env.DB.prepare('SELECT * FROM reqoo_documents WHERE id=? LIMIT 1').bind(id).first();
-  return J({ok:true,created:true,document:await hydrateDocument(row,env)});
+  return J({ok:true,created:true,document:await privateCost(await hydrateDocument(row,env),env)});
 }
 async function customQuotation(d,env){
   const key=S(d.documentId||d.id||d.number);
@@ -120,7 +158,7 @@ async function customQuotation(d,env){
   const row=await env.DB.prepare("SELECT * FROM reqoo_documents WHERE (id=? OR number=?) AND type='quotation' LIMIT 1").bind(key,key).first();
   if(!row)return null;
   const doc=await hydrateDocument(row,env),meta=quoteMeta(doc);
-  return meta.source==='custom'?doc:null;
+  return meta.source==='custom'?await privateCost(doc,env):null;
 }
 async function updateCustomQuotation(d,env){
   await ensureDocuments(env);
@@ -134,6 +172,7 @@ async function updateCustomQuotation(d,env){
   const customerName=S(d.customerName).slice(0,160),customerPhone=S(d.customerPhone).slice(0,60),customerEmail=S(d.customerEmail).slice(0,160),items=normalizeQuoteItems(d.items);
   if(!customerName)return J({ok:false,error:'Nama pelanggan / syarikat diperlukan.'},400);
   if(!items.length)return J({ok:false,error:'Masukkan sekurang-kurangnya satu item quotation.'},400);
+  const internalCosts=normalizeCosts(d.internalCosts,items.length);
   const now=NOW(),subtotal=items.reduce((sum,item)=>sum+item.lineTotalMinor,0),discount=Math.min(subtotal,clampMoney(d.discountMinor,subtotal)),shipping=clampMoney(d.shippingMinor,100000000),tax=clampMoney(d.taxMinor,100000000),total=Math.max(0,subtotal-discount+shipping+tax);
   const validDays=clampDays(d.validDays,7),dueAt=S(d.dueAt)||plusDays(now,validDays),depositPercent=Math.max(0,Math.min(100,Number(d.depositPercent||0)));
   const company={...(doc.company||{}),quoteMeta:{...oldMeta,revision:revision+1,revisedAt:now,revisedBy:S(env.ADMIN_ACTOR?.name||env.ADMIN_ACTOR?.id)||'Owner',approvedAt:null,approvedBy:null,source:'custom',customerAddress:S(d.customerAddress).slice(0,1000),attention:S(d.attention).slice(0,160),notes:S(d.notes).slice(0,2000),terms:S(d.terms).slice(0,3000),depositPercent:Number.isFinite(depositPercent)?Math.round(depositPercent*100)/100:0}};
@@ -142,19 +181,20 @@ async function updateCustomQuotation(d,env){
     env.DB.prepare('INSERT INTO reqoo_quotation_revisions(document_id,revision,snapshot_json,version_at,version_actor,archived_at) VALUES(?,?,?,?,?,?)').bind(doc.id,revision,JSON.stringify(snapshot),oldMeta.revisedAt||doc.created_at,oldMeta.revisedBy||oldMeta.createdBy||null,now),
     env.DB.prepare('UPDATE reqoo_documents SET status=\'issued\',subtotal_minor=?,discount_minor=?,shipping_minor=?,tax_minor=?,total_minor=?,due_at=?,customer_name=?,customer_phone=?,customer_email=?,company_json=?,updated_at=? WHERE id=?').bind(subtotal,discount,shipping,tax,total,dueAt,customerName,customerPhone,customerEmail,JSON.stringify(company),now,doc.id),
     env.DB.prepare('DELETE FROM reqoo_document_items WHERE document_id=?').bind(doc.id),
+    ...(internalCosts?[env.DB.prepare('INSERT INTO reqoo_quotation_costs(document_id,revision,cost_json) VALUES(?,?,?)').bind(doc.id,revision+1,JSON.stringify(internalCosts))]:[]),
     ...items.map(item=>env.DB.prepare('INSERT INTO reqoo_document_items(id,document_id,description,variation,quantity,unit_price_minor,line_total_minor,sort_order) VALUES(?,?,?,?,?,?,?,?)').bind(ID('di'),doc.id,item.description,item.variation,item.quantity,item.unitPriceMinor,item.lineTotalMinor,item.sortOrder))
   ];
   try{await env.DB.batch(stmts)}catch(error){
     if(/REQOO_QUOTE_CONFLICT|UNIQUE constraint failed: reqoo_quotation_revisions/.test(String(error?.message)))return J({ok:false,error:'Quotation changed. Reopen the latest version before saving.'},409);
     throw error;
   }
-  return J({ok:true,updated:true,document:await hydrateDocument(await env.DB.prepare('SELECT * FROM reqoo_documents WHERE id=? LIMIT 1').bind(doc.id).first(),env)});
+  return J({ok:true,updated:true,document:await privateCost(await hydrateDocument(await env.DB.prepare('SELECT * FROM reqoo_documents WHERE id=? LIMIT 1').bind(doc.id).first(),env),env)});
 }
 async function quotationHistory(d,env){
   await ensureDocuments(env);
   const key=S(d.documentId||d.id),row=await env.DB.prepare("SELECT * FROM reqoo_documents WHERE id=? AND type='quotation'").bind(key).first();
   if(!row)return J({ok:false,error:'Quotation not found.'},404);
-  const current=await hydrateDocument(row,env),revision=Number(quoteMeta(current).revision||0);
+  const current=await privateCost(await hydrateDocument(row,env),env),revision=Number(quoteMeta(current).revision||0);
   if(d.revision!==undefined){
     const requested=Number(d.revision);
     if(!Number.isInteger(requested)||requested<0)return J({ok:false,error:'Invalid revision.'},400);
@@ -268,6 +308,19 @@ export async function onRequest({request,env}){
   if(request.method==='OPTIONS')return new Response(null,{status:204,headers:C});
   const d=await data(request),action=S(d.action);
 
+  if(['listCostMaterials','saveCostMaterial'].includes(action)){
+    if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);
+    if(action==='saveCostMaterial'&&request.method!=='POST')return J({ok:false,error:'Use POST.'},405);
+    return await costMaterials(action,d,env);
+  }
+
+  if(action==='getDocument'){
+    if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);
+    const response=await legacy({request,env});if(!response.ok)return response;
+    const out=await response.clone().json();if(out.document?.type!=='quotation')return response;
+    await ensureDocuments(env);out.document=await privateCost(out.document,env);return J(out);
+  }
+
   if(action==='repairProductImages'){
     if(!auth(request,env,d))return J({ok:false,error:'Unauthorized'},401);
     if(!env.DB||!env.MEDIA)return J({ok:false,error:'Database atau storage gambar belum tersedia'},503);
@@ -284,7 +337,7 @@ export async function onRequest({request,env}){
       if(action==='updateCustomQuotation')return await updateCustomQuotation(d,env);
       if(action==='updateCustomQuotationStatus')return await updateCustomQuotationStatus(d,env);
       return await convertCustomQuotationToOrder(d,env);
-    }catch(error){console.error('REQOO custom quotation:',error);return J({ok:false,error:error?.message||'Quotation gagal diproses'},500)}
+    }catch(error){console.error('REQOO custom quotation:',error);return J({ok:false,error:error?.message||'Quotation failed.'},error?.status||500)}
   }
 
   if(action==='createDocument'&&S(d.type).toLowerCase()==='invoice'){

@@ -7,7 +7,7 @@
 <title>REQOO.CO — Documents</title>
 <link rel="stylesheet" href="/admin/documents-workspace.css?v=6">
 <style>.rqBtnIcon{width:18px;height:18px;flex:none;vertical-align:middle;margin-right:7px}.rqDocsPage button:has(>.rqBtnIcon){display:inline-flex;align-items:center;justify-content:center;gap:3px;min-height:42px}.rqDocsPage button:has(>.rqBtnIcon):focus-visible{outline:3px solid #2c7958;outline-offset:2px}@media(max-width:680px){.rqBtnIcon{width:19px;height:19px}}</style>
-</head>
+<link rel="stylesheet" href="/admin/quotation-costs.css?v=1"></head>
 <body class="rqDocsPage">
 <main class="wrap rqDocsApp">
   <section class="rqDocsHead">
@@ -92,7 +92,7 @@
       </div>
       <div class="rqQuoteSectionHead"><div><div class="rqQuoteSectionTitle">2. Items and pricing</div><div class="rqQuoteHint">Add custom items. Enter prices in RM.</div></div><button class="btn" id="qAddItem" type="button"><svg class="rqBtnIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>+ Add item</button></div>
       <div class="rqQuoteItemHeader"><span>Description</span><span>Variation / Size</span><span>Qty</span><span>Unit Price (RM)</span><span>Amount</span><span></span></div>
-      <div id="quoteItems" class="rqQuoteItems"></div>
+      <label class="rqPricingChoice" for="qPricingMode">Pricing method<select id="qPricingMode"><option value="price">Price only</option><option value="cost">Cost & profit</option></select></label><div id="quoteItems" class="rqQuoteItems"></div>
       <div class="rqQuoteBottomGrid">
         <div class="rqQuoteNotes">
           <div class="rqDocsField"><label>NOTA</label><textarea id="qNotes" placeholder="Contoh: Artwork akan disahkan sebelum production."></textarea></div>
@@ -106,7 +106,7 @@
           <div class="rqQuoteCalc"><span>Subtotal</span><b id="qSubtotal">RM0.00</b></div>
           <div class="rqQuoteCalc"><span>Discount</span><b id="qDiscountView">- RM0.00</b></div>
           <div class="rqQuoteCalc"><span>Delivery / Other</span><b id="qShippingView">RM0.00</b></div>
-          <div class="rqQuoteCalc grand"><span>Total</span><b id="qTotal">RM0.00</b></div>
+          <div class="rqInternalSummary"><label for="qInternalOther">Other order costs (RM) · Admin only</label><input id="qInternalOther" type="number" min="0" step="0.01" inputmode="decimal" value="0"><p id="qInternalSummary" role="status" aria-live="polite"></p><small>Internal estimates stay private. Overhead allowance is for pricing, not recorded monthly expenses.</small></div><div class="rqQuoteCalc grand"><span>Total</span><b id="qTotal">RM0.00</b></div>
         </div>
       </div>
       <div class="rqQuoteActions"><button class="btn" id="qReset" type="button">Reset</button><button class="btn primary" id="qCreate" type="button">Save and preview quotation</button></div>
@@ -132,7 +132,7 @@
   </div>
 </div>
 <div role="status" aria-live="polite" id="docsToast" class="rqDocsToast"></div>
-<script src="/admin/documents.js?v=26"></script>
+<script src="/admin/documents.js?v=27"></script>
 <script src="/admin/document-deposit-note-v1.js?v=1"></script>
 <script src="/admin/documents-unified-v1.js?v=4"></script>
 <script src="/admin/documents-payment-v1.js?v=11"></script>
@@ -141,5 +141,5 @@
 <script src="/admin/documents-monthly.js?v=1"></script>
 <script src="/admin/documents-orders.js?v=2"></script>
 <script src="/admin/sales-workspace.js?v=2"></script>
-</body>
+<script src="/admin/cost-calculator.js?v=1"></script></body>
 </html>
