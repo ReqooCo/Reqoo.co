@@ -6,6 +6,8 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const money=n=>'RM'+(Number(n||0)/100).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2});
 let busy=false,lastLoad=0,data=null;
 
+const ACTION_ICONS={quotation:'<path d="M12 5v14M5 12h14"/>',orders:'<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/>',production:'<path d="M3 21V9l6 4V9l6 4V5l6 4v12z"/>',customers:'<circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 11a3 3 0 0 0 0-6M17 15a5 5 0 0 1 4 5"/>',finance:'<rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 10h18M16 15h2"/>'};
+function actionIcon(name){return '<svg class="rqActionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ACTION_ICONS[name]+'</svg>'}
 function ensure(){
  if($('#rqOverviewV2'))return $('#rqOverviewV2');
  const host=document.querySelector('#adminApp section');if(!host)return null;
@@ -14,7 +16,7 @@ function ensure(){
  <div class="rqKpis" id="rqKpis"></div>
  <div class="rqDashGrid rqDashGridTop">
   <article class="rqDashPanel rqFollowupPanel"><div class="rqDashPanelHead"><div><small>TINDAKAN SUSULAN HARIAN</small><h3>Perlu tindakan <span class="rqFollowupCount" id="rqFollowupCount"></span></h3></div><a href="/admin/customers.html">Pelanggan →</a></div><div id="rqFollowups"></div></article>
-  <article class="rqDashPanel"><div class="rqDashPanelHead"><div><small>TINDAKAN PANTAS</small><h3>Tindakan</h3></div></div><div class="rqActionGrid"><a class="rqAction primary" href="/admin/documents.html?view=quotations&new=1"><b>+ Sebut harga</b></a><a class="rqAction" href="/admin/documents.html?view=orders"><b>Pesanan</b><span>Semak pesanan dan bayaran</span></a><a class="rqAction" href="/admin/documents.html?view=orders&filter=working"><b>Dalam kerja</b><span>Tarikh siap, petugas dan keutamaan</span></a><a class="rqAction" href="/admin/customers.html"><b>Pelanggan</b><span>Sejarah, baki dan pelanggan berulang</span></a><a class="rqAction" href="/admin/finance.html"><b>Kewangan</b><span>Hasil jualan, baki dan purata pesanan</span></a></div></article>
+  <article class="rqDashPanel"><div class="rqDashPanelHead"><div><small>QUICK ACTIONS</small><h3>Manage your business</h3></div></div><div class="rqActionGrid"><a class="rqAction primary" href="/admin/documents.html?view=quotations&new=1">${actionIcon("quotation")}<b>Quotation</b></a><a class="rqAction" href="/admin/documents.html?view=orders">${actionIcon("orders")}<b>Orders</b><span>Review orders and payments</span></a><a class="rqAction" href="/admin/documents.html?view=orders&filter=working">${actionIcon("production")}<b>Production</b><span>Due dates and priorities</span></a><a class="rqAction" href="/admin/customers.html">${actionIcon("customers")}<b>Customers</b><span>History and balances</span></a><a class="rqAction" href="/admin/finance.html">${actionIcon("finance")}<b>Finance</b><span>Sales and outstanding</span></a></div></article>
  </div>
  <div class="rqDashGrid rqDashGridBottom">
   <article class="rqDashPanel"><div class="rqDashPanelHead"><div><small>PELANGGAN</small><h3>Customer terbaru</h3></div><a href="/admin/customers.html">Pelanggan →</a></div><div id="rqCustomers"></div></article>
