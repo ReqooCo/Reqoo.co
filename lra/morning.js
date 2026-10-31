@@ -154,6 +154,61 @@ const sivDefaultA='Kaedah pengiraan pengeluaran LRA Semenyih 2 :\nPengeluaran LR
 const sivDefaultB='Pihak LRA Semenyih 2 Perlu mengawal Paras Kolam Desa Putra pada 3.00m - 7.83m seperti diminta SO bagi memenuhi Demand.';
 
 const listSix=[['ops','Operasi'],['1','Format 1'],['2','Format 2'],['3','Format 3'],['4','Format 4'],['5','Format 5']];
+
+// Validate only the inputs used by the selected report; zero is a real reading.
+const reportFields={
+ ops:['pondCFlowValue','twFlowHourly','oRiver','cwt1','cwt2','dp1','dp2','dpOutHourly'],
+ 1:['production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','intakeB','wt1','sjamB','dp1','dp2','dpOutHourly','dpPressure'],
+ 2:['production','monthlyAverage','rwAbst','dp1','dp2','pondC','pondChange','pondStorage','pondTwlCapacity','criticalLevel','criticalPercent','criticalStorage','pondCFlowValue','sjamCHourly','intakeB','wt1','sjamB','sjamCActual'],
+ 3:['pondC','pondStorage','intakeB','wt1','sjamB','rwAbst','sjamCActual','criticalLevel','criticalPercent','criticalStorage','pondCFlowValue','sjamCHourly'],
+ 4:['pondC','pondStorage','pondTwlLevel','pondTwlCapacity','criticalLevel','criticalPercent','criticalStorage','pondCFlowValue','sjamCHourly'],
+ 5:['production','sivTarget']
+};
+const problemFields={pondA:'pondAProblem',oRiver:'oRiverProblem',cwt1:'oCwt1Problem',cwt2:'oCwt2Problem',dp1:'oDp1Problem',dp2:'oDp2Problem'};
+function fieldLabel(id){return document.querySelector('label[for="m_'+id+'"]')?.textContent.trim().replace(/\s+/g,' ')||id}
+function reportIssues(id){
+ const missing=[],invalid=[];
+ for(const field of reportFields[id]||[]){
+  const raw=get(field),problem=(id==='ops'||(String(id)==='1'&&field==='pondA'))&&problemFields[field]&&el(problemFields[field]).checked;
+  if(!raw){if(!problem)missing.push(field);continue}
+  const pattern=field==='pondChange'?/^[+-]?(?:\d+(?:\.\d+)?|\.\d+)$/:/^(?:\d+(?:\.\d+)?|\.\d+)$/;
+  if(!pattern.test(raw)||!Number.isFinite(Number(raw)))invalid.push(field);
+  else if(['designCapacity','pondTwlCapacity','sivTarget','pondCFlowValue',...(id==='ops'?['twFlowHourly']:[])].includes(field)&&Number(raw)<=0)invalid.push(field);
+ }
+ if(get('pondCFlowValue')&&!valid(criticalFlowMld())&&(reportFields[id]||[]).includes('pondCFlowValue')&&!invalid.includes('pondCFlowValue'))invalid.push('pondCFlowValue');
+ return {missing,invalid};
+}
+function revealField(id){
+ const target=el(id);if(!target)return;
+ let parent=target.parentElement;while(parent){if(parent.tagName==='DETAILS')parent.open=true;parent=parent.parentElement}
+ target.scrollIntoView({behavior:'smooth',block:'center'});target.focus({preventScroll:true});
+}
+function jumpMorning(id){
+ const target=document.getElementById(id);if(!target)return;
+ if(target.tagName==='DETAILS')target.open=true;
+ target.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function updateReadiness(){
+ const fields=[...new Set(Object.values(reportFields).flat())];
+ const issues=listSix.map(([id])=>reportIssues(id));
+ const missing=[...new Set(issues.flatMap(x=>x.missing))],invalid=[...new Set(issues.flatMap(x=>x.invalid))];
+ const ready=issues.filter(x=>!x.missing.length&&!x.invalid.length).length;
+ el('readiness').className='notice '+(invalid.length?'warn':'ok');
+ el('readiness').textContent=invalid.length?'Semak '+invalid.length+' bacaan tidak sah. Tekan Semak untuk pergi ke bacaan.':missing.length?ready+'/6 laporan lengkap · '+missing.length+' bacaan belum diisi.': '6/6 laporan lengkap untuk disemak sebelum hantar.';
+ for(const field of fields){if(el(field)?.getAttribute('aria-invalid')==='true'&&!invalid.includes(field)&&!missing.includes(field))el(field).removeAttribute('aria-invalid')}
+ listSix.forEach(([id],index)=>{
+  const button=document.getElementById('m_reportLink_'+id);if(!button)return;
+  const issue=issues[index],count=issue.missing.length+issue.invalid.length;
+  button.dataset.ready=String(count===0);
+  button.querySelector('small').textContent=count?count+' bacaan perlu disemak':'Lengkap · semak preview';
+ });
+}
+function selectedReportOK(id){
+ const issue=reportIssues(id);
+ if(issue.invalid.length){revealField(issue.invalid[0]);alert('Semak nombor: '+fieldLabel(issue.invalid[0])+'. Guna nombor sahaja tanpa unit atau koma.');return false}
+ return true;
+}
+
 let previousPondC=null,previousDate='',previousLoading=false,pondChangeAutoValue=null;
 function sixKey(){return 'rqS2MorningSix-'+get('date')}
 function renderChecklist(){
@@ -406,6 +461,7 @@ function render(){
  el('pondAField').classList.toggle('problemOn',problemA());
  updateChangeSignButtons();
  syncOpsPreview();
+ updateReadiness();
 }
 function storedKey(){return 'rqS2Morning0700-'+get('date')}
 function formData(){
@@ -480,6 +536,7 @@ function apply(data){
 }
 function restore(){
  expectedUpdatedAt=null;restoredMorningDraft=false;
+ document.querySelectorAll('#panel-morning [aria-invalid]').forEach(node=>node.removeAttribute('aria-invalid'));
  reset();
  try{
   const draft=JSON.parse(localStorage.getItem(storedKey())||'null');
@@ -510,6 +567,31 @@ async function retrieve(silent=false){
  }catch(e){el('onlineStatus').textContent='Tidak dapat akses database: '+e.message}
 }
 const localDate=()=>{const d=new Date();return new Date(d.valueOf()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)};
+
+const morningPanel=document.getElementById('panel-morning');
+// Short labels stay visible; extended descriptions are optional.
+morningPanel.querySelectorAll('section.card > p.small,.mSource').forEach(node=>node.classList.add('mReadingHelp'));
+el('showHelp').addEventListener('change',()=>morningPanel.classList.toggle('showMorningHelp',el('showHelp').checked));
+document.querySelectorAll('[data-m-jump]').forEach(button=>button.addEventListener('click',()=>jumpMorning(button.dataset.mJump)));
+const reportNames={ops:'Operasi 0700',1:'Pengeluaran & Kolam',2:'Pengeluaran & ORS',3:'Aliran Pond C',4:'Ringkasan ORS',5:'SIV'};
+for(const [id,label] of listSix){
+ const button=document.createElement('button');button.type='button';button.id='m_reportLink_'+id;
+ const title=document.createElement('span');title.textContent=(id==='ops'?'':label+' · ')+reportNames[id];
+ button.append(title,document.createElement('small'));
+ button.addEventListener('click',()=>jumpMorning('m_card_'+id));el('reportLinks').append(button);
+}
+el('checkReadings').addEventListener('click',()=>{
+ const issues=listSix.map(([id])=>reportIssues(id));
+ const missing=[...new Set(issues.flatMap(x=>x.missing))],invalid=[...new Set(issues.flatMap(x=>x.invalid))];
+ for(const id of [...missing,...invalid])el(id)?.setAttribute('aria-invalid','true');
+ if(invalid.length||missing.length)revealField(invalid[0]||missing[0]);else jumpMorning('m_reportHub');
+});
+el('tomorrow').addEventListener('click',()=>{
+ save();
+ const date=new Date(localDate()+'T12:00:00Z');date.setUTCDate(date.getUTCDate()+1);
+ el('date').value=date.toISOString().slice(0,10);el('date').dispatchEvent(new Event('change'));
+});
+
 let lastDate=localDate();
 el('date').value=lastDate;
 el('operator').value=localStorage.getItem('rqS2MorningOperator')||localStorage.getItem('s2_leader')||'';
@@ -576,12 +658,14 @@ el('calcPondChange').addEventListener('click',async()=>{
 });
 
 el('copyOps').addEventListener('click',async()=>{
+ if(!selectedReportOK('ops'))return;
  const issue=morningOpsIssue();
  if(issue)return alert(issue);
  try{await navigator.clipboard.writeText(morningOpsText());alert('Report Operasi 0700 disalin.')}
  catch{el('card_ops').open=true;alert('Sila salin teks dari Preview Operasi.')}
 });
 document.getElementById('m_opsShare').addEventListener('submit',event=>{
+ if(!selectedReportOK('ops')){event.preventDefault();return}
  const issue=morningOpsIssue();
  if(issue){event.preventDefault();el('card_ops').open=true;alert(issue);return}
  const code=localStorage.getItem('s2_access_key');
@@ -597,6 +681,7 @@ document.getElementById('m_opsShare').addEventListener('submit',event=>{
 
 document.querySelectorAll('.m_copy').forEach(b=>b.addEventListener('click',async()=>{
  const n=Number(b.dataset.number),txt=reportText(n);
+ if(!selectedReportOK(String(n)))return;
  if(n===5&&sivValid())return alert(sivValid());
  try{await navigator.clipboard.writeText(txt);alert('Format '+n+' sudah disalin.')}
  catch{el('card_'+n).open=true;alert('Sila salin teks melalui Preview WhatsApp.')}
@@ -616,8 +701,9 @@ document.getElementById('m_share').addEventListener('submit',event=>{
   document.getElementById('liveBoard')?.scrollIntoView({behavior:'smooth'});
   alert('Masukkan access code S2 pada Status Semasa Loji dahulu.');return
  }
- const missing=keys.filter(k=>!defaults[k]&&!get(k));
- if(no!==5&&missing.length&&!confirm('Masih ada '+missing.length+' bacaan kosong. Teruskan report dengan tanda - ?')){event.preventDefault();return}
+ if(!selectedReportOK(String(no))){event.preventDefault();return}
+ const missing=reportIssues(String(no)).missing;
+ if(no!==5&&missing.length&&!confirm('Laporan ini masih ada '+missing.length+' bacaan kosong: '+missing.map(fieldLabel).join(', ')+'. Teruskan dengan tanda - ?')){event.preventDefault();return}
  el('waRevision').value=expectedUpdatedAt;el('waKey').value=code;el('waDate').value=get('date');el('waOperator').value=get('operator')||'-';
  el('waValues').value=JSON.stringify(formData().values);el('waText').value=reportText(no);
  save();
@@ -634,7 +720,7 @@ if(params.get('tab')==='morning'){
 }
 const checkDate=()=>{
  const next=localDate();
- if(next!==lastDate&&el('date').value===lastDate){el('date').value=next;restore();retrieve(true)}
+ if(next!==lastDate&&el('date').value===lastDate){el('date').value=next;restore();retrieve(true);renderChecklist();loadPreviousLevel(true)}
  lastDate=next;
 };
 window.addEventListener('focus',checkDate);
