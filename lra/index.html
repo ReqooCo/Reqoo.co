@@ -199,7 +199,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .mMorningOptions{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:8px 0}
 .mMorningOptions label{display:flex;align-items:center;gap:6px;margin:0;font-size:11px}
 .mMorningOptions input{width:17px;height:17px;min-height:0;accent-color:#256b58}
-#panel-morning:not(.showMorningHelp) .mReadingHelp{display:none!important}
+#panel-morning:not(.showMorningHelp) .mReadingHelp:not(#m_onlineStatus):not(#m_sivTargetNote){display:none!important}
 .mReportLinks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
 .mReportLinks button small{display:block;font-size:11px;font-weight:500;margin-top:3px;color:#536b64}
 .mReportLinks button[data-ready="true"]{background:#e5f3e9;border-color:#83b797}
