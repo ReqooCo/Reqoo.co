@@ -62,6 +62,24 @@ const root=path.resolve(__dirname,'..'),out=process.env.REQOO_TEST_OUTPUT||path.
  for(const [level,storage,days] of [['12.00','3984.50','46.3'],['11.99','3978.37','46.1'],['11.98','3972.24','46.0'],['11.90','3923.20','45.2'],['11.85','3892.55','44.7'],['11.80','3861.90','44.2']]){
   await p.locator('#m_pondC').fill(level);assert.equal(await p.locator('#m_pondStorage').inputValue(),storage);assert.ok((await p.locator('#m_days').textContent()).includes(days));
  }await p.locator('#m_pondC').fill('11.99');results.push('PASS six visible official table rows at 59.64 MLD (12.00–11.80m)');
+ // Morning shortcuts preserve drafts and never reuse today's readings tomorrow.
+ const reportDate=await p.locator('#m_date').inputValue();
+ await p.locator('#m_tomorrow').click();
+ const tomorrow=await p.locator('#m_date').inputValue();assert.notEqual(tomorrow,reportDate);
+ assert.equal(await p.locator('#m_pondCFlowValue').inputValue(),'');
+ assert.equal(await p.locator('#m_sixChecklist input:checked').count(),0);
+ await p.locator('#m_date').fill(reportDate);await p.locator('#m_date').dispatchEvent('change');
+ assert.equal(await p.locator('#m_pondCFlowValue').inputValue(),'2485');
+ assert.equal(await p.locator('#m_reportLinks button').count(),6);
+ await p.locator('#m_reportLink_4').click();assert.equal(await p.locator('#m_card_4').getAttribute('open'),'');
+ await p.locator('#m_showHelp').uncheck();assert.equal(await p.locator('#m_pondCFlowStatus').isVisible(),false);
+ await p.locator('#m_showHelp').check();assert.equal(await p.locator('#m_pondCFlowStatus').isVisible(),true);
+ await p.locator('#m_showHelp').uncheck();
+ await p.locator('#m_production').fill('bad');await p.locator('#m_checkReadings').click();
+ assert.equal(await p.locator('#m_production').getAttribute('aria-invalid'),'true');
+ assert.equal(await p.evaluate(()=>document.activeElement.id),'m_production');
+ await p.locator('#m_production').fill('86.513');assert.equal(await p.locator('#m_production').getAttribute('aria-invalid'),null);
+ results.push('PASS morning date shortcut isolates drafts, six direct report links, optional help and invalid-reading focus');
  // Exercise actual submit listeners while cancelling navigation after payload construction.
  await p.evaluate(()=>{window.testShares=[];for(const id of ['m_share','m_opsShare','waForm'])document.getElementById(id).addEventListener('submit',e=>{e.preventDefault();window.testShares.push(Object.fromEntries(new FormData(e.target,e.submitter)))});});
  for(let i=1;i<=5;i++){await p.locator('#m_card_'+i).evaluate(e=>e.open=true);await p.locator('button[form=m_share][value="'+i+'"]').click()}
