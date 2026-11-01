@@ -322,6 +322,7 @@ function save(){
 }
 function changed(){editVersion++;dirty=true;render();save()}
 function apply(data){
+ dosing=freshDosing();
  const values=data?.values||data||{};
  for(const k of [...keys,...extraKeys])if(el(k)&&values[k]!==undefined)el(k).value=String(values[k]);
  // Older drafts may store the dedicated rate in MLD. Convert only that field.
@@ -369,7 +370,7 @@ async function retrieve(manual=false,hasDraft=true){
   if(!j.report){expectedUpdatedAt='';el('onlineStatus').textContent='Belum ada rekod online '+dmy()+'. Draf di telefon dikekalkan.';save();return}
   if(manual){
    if(version!==editVersion){el('onlineStatus').textContent='Bacaan sedang disunting. Tekan Rekod online semula selepas selesai.';return}
-   if(dirty&&!confirm('Gantikan draf tarikh ini dengan rekod online?'))return;
+   if((dirty||keys.some(k=>!Object.prototype.hasOwnProperty.call(defaults,k)&&get(k)))&&!confirm('Gantikan draf tarikh ini dengan rekod online?'))return;
    apply(j.report);expectedUpdatedAt=j.report.updatedAt;dirty=false;save();
   }else if(!hasDraft&&version===editVersion){apply(j.report);expectedUpdatedAt=j.report.updatedAt;save()}
   el('onlineStatus').textContent='Rekod online tersedia · '+(j.report.operator||'-')+(expectedUpdatedAt!==j.report.updatedAt?' · Draf berbeza: tekan Rekod online untuk semak.':'');
