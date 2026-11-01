@@ -19,7 +19,9 @@ const sivMonths=['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogos','Sep','Okt','N
 const sivTargetKey=()=> 'rqS2MorningSivTarget-'+get('date').slice(0,7);
 const sivTargetInitial=()=>localStorage.getItem(sivTargetKey())||(get('date').slice(0,7)==='2026-10'?'84.300':'');
 
-const get=id=>String(el(id)?.value??'').trim();
+const inactiveFlowKeys=['wt1','sjamB','sjamCActual','sjamCHourly'];
+const get=id=>{const raw=String(el(id)?.value??'').trim();return inactiveFlowKeys.includes(id)&&['','-','—'].includes(raw)?'0':raw};
+function restoreInactiveFlows(){for(const id of inactiveFlowKeys)el(id).value=get(id)}
 const n=id=>{const x=get(id);if(!x||x==='-')return null;const z=Number(x);return Number.isFinite(z)?z:null};
 const valid=x=>x!==null&&Number.isFinite(x);
 const all=(...x)=>x.every(valid);
@@ -341,7 +343,7 @@ function apply(data){
    Object.assign(dosing.meta,parsed.meta||{});
   }catch{}
  }
- renderDosingUI();render();
+ restoreInactiveFlows();renderDosingUI();render();
 }
 function restore(){
  expectedUpdatedAt=null;dirty=false;editVersion++;previous=null;previousDate='';
@@ -355,7 +357,7 @@ function restore(){
  document.querySelectorAll('#panel-morning [aria-invalid]').forEach(x=>x.removeAttribute('aria-invalid'));
  dosing=freshDosing();const draft=readJSON(storedKey(),null);
  if(draft){apply(draft);expectedUpdatedAt=typeof draft.expectedUpdatedAt==='string'?draft.expectedUpdatedAt:null}
- else{renderDosingUI();render()}
+ else{restoreInactiveFlows();renderDosingUI();render()}
  el('draft').textContent=draft?'Draf '+dmy()+' dipulihkan':'Catatan baharu · '+dmy();el('onlineStatus').textContent='';
  return !!draft;
 }
