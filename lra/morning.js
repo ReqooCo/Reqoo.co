@@ -1,290 +1,20 @@
-// Daily 0700 LRA Semenyih 2 reports: five formats, one set of readings.
+// 0700 collection workspace. Five existing ISO reports + Status Dosing.
 (function(){
 'use strict';
-let expectedUpdatedAt=null,restoredMorningDraft=false;
 const el=id=>document.getElementById('m_'+id);
 const keys=['twFlowHourly','cwt1','cwt2','production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','pondTwlLevel','criticalLevel','criticalPercent','criticalStorage','intakeB','wt1','sjamB','sjamCActual','intakeCHourly','sjamCHourly','dp1','dp2','dpOutHourly','dpPressure'];
+const extraKeys=['sivTarget','sivStatus','sivChallengeA','sivChallengeB','rwTotalizerPrevious','rwTotalizerCurrent','rwTotalizerUnit','twTotalizerPrevious','twTotalizerCurrent','twTotalizerUnit','pondCFlowValue','pondCFlowUnit','pondANote','oRwp','oTwp'];
 const defaults={designCapacity:'100',pondTwlCapacity:'3984.50',pondTwlLevel:'12.0',criticalLevel:'7.50',criticalPercent:'30.00',criticalStorage:'1226'};
-
-const POND_C_CAL={min:7.50,max:12.00,minML:1226,fullML:3984.50,mlPerM:613};
-function storageFromLevel(level){
- if(!Number.isFinite(level)||level<POND_C_CAL.min||level>POND_C_CAL.max)return null;
- return Math.round((POND_C_CAL.minML+(level-POND_C_CAL.min)*POND_C_CAL.mlPerM)*100)/100;
-}
-function storageReferenceOK(){
- return valid(n('pondTwlLevel'))&&Math.abs(n('pondTwlLevel')-12)<0.0001&&
-        valid(n('pondTwlCapacity'))&&Math.abs(n('pondTwlCapacity')-3984.50)<0.011;
-}
-function calculatePondStorage(){
- const ok=storageReferenceOK();
- const actual=ok?storageFromLevel(n('pondC')):null;
- const critical=ok?storageFromLevel(n('criticalLevel')):null;
- if(el('storageAuto').checked)el('pondStorage').value=valid(actual)?actual.toFixed(2):'';
- if(el('criticalStorageAuto').checked)el('criticalStorage').value=valid(critical)?critical.toFixed(2):'';
- if(!ok){
-  el('storageStatus').textContent='Rujukan TWL bukan 12.00m / 3984.50 ML. Pengiraan auto dihentikan; semak tetapan atau guna manual.';
- }else if(!valid(actual)||!valid(critical)){
-  el('storageStatus').textContent='Kiraan auto hanya sah untuk level 7.50m hingga 12.00m. Bacaan luar julat perlu disemak secara manual.';
- }else{
-  const balance=Math.max(0,actual-critical);
-  el('storageStatus').textContent='Model rujukan 613 ML/m: @ '+n('pondC').toFixed(2)+'m = '+actual.toFixed(2)+' ML; @ critical '+n('criticalLevel').toFixed(2)+'m = '+critical.toFixed(2)+' ML; baki = '+balance.toFixed(2)+' ML.';
- }
-}
-function legacyStorageAuto(values,field,flag,level){
- if(typeof values[flag]==='boolean')return values[flag];
- const existing=String(values[field]??'').trim();
- if(!existing)return true;
- const rawLevel=String(values[level]??'').trim();
- const expected=rawLevel?storageFromLevel(Number(rawLevel)):null;
- return valid(expected)&&Math.abs(Number(existing)-expected)<=0.02;
-}
-
+const settingKeys=Object.keys(defaults).concat(['pondANote','sivChallengeA','sivChallengeB','oRwp','oTwp']);
 const noteDefault='Bacaan level tidak tepat disebabkan SCADA intake A lost communication';
-const sivKeys=['sivTarget','sivStatus','sivChallengeA','sivChallengeB'];
-
-const totalizerKeys=['twTotalizerPrevious','twTotalizerCurrent','twTotalizerUnit','rwTotalizerPrevious','rwTotalizerCurrent','rwTotalizerUnit'];
-const criticalFlowKeys=['pondCFlowValue','pondCFlowUnit'];
-
-const opsExtraKeys=['oRwp','oTwp','oRiver','oRiverMax','oExtraNote'];
-const opsProblemKeys=["Rw","Tw","River","Cwt1","Cwt2","Dp1","Dp2"];
-const opsNoteDefaults={"Rw":"RW Inflow under maintenance / bacaan tidak tepat","Tw":"TW Outflow under maintenance / bacaan tidak tepat","River":"Paras Sg Langat tidak tepat / SCADA Lost Comm","Cwt1":"Paras CWT No.1 under maintenance / level problem","Cwt2":"Paras CWT No.2 under maintenance / sensor level problem","Dp1":"Paras Desa Putra No.1 tidak tepat / level problem","Dp2":"Paras Desa Putra No.2 tidak tepat / level problem"};
-function opsProblemOn(key){return el('o'+key+'Problem').checked}
-function opsProblemsActive(){return opsProblemKeys.filter(opsProblemOn)}
-function opsMarker(key){const n=opsProblemsActive().indexOf(key);return n<0?'':'('+('*'.repeat(n+1))+')'}
-function opsReading(value,key,unit=''){
- const val=String(value??'').trim();
- return (val&&val!=='-'?val+unit:'-')+opsMarker(key);
-}
-function morningOpsData(){
- const rwFlow=criticalFlowMld();
- const obj={
-  rwp:get('oRwp'),twp:get('oTwp'),river:get('oRiver'),riverMax:get('oRiverMax'),
-  rw:valid(rwFlow)?(rwFlow*1000/24).toFixed(2):'',
-  tw:get('twFlowHourly'),tank1:get('cwt1'),tank2:get('cwt2'),
-  pond1:get('dp1'),pond2:get('dp2'),pondOut:get('dpOutHourly'),
-  dpPressure:get('dpPressure'),note:get('oExtraNote')
- };
- for(const key of opsProblemKeys){
-  obj[key==='Cwt1'?'tank1Problem':key==='Cwt2'?'tank2Problem':key==='Dp1'?'pond1Problem':key==='Dp2'?'pond2Problem':key.toLowerCase()+'Problem']=opsProblemOn(key);
-  obj[key==='Cwt1'?'tank1Note':key==='Cwt2'?'tank2Note':key==='Dp1'?'pond1Note':key==='Dp2'?'pond2Note':key.toLowerCase()+'Note']=get('o'+key+'Note');
- }
- return obj;
-}
-function morningOpsIssue(){
- const d=morningOpsData();
- const numberOK=v=>/^(?:\d+(?:\.\d+)?|\.\d+)$/.test(String(v??'').trim());
- if(!valid(criticalFlowMld()))return 'Isi RW Flowmeter @0700 di bahagian 01.';
- if(!numberOK(d.tw)||Number(d.tw)<=0)return 'Isi TW Flowmeter @0700 di bahagian 01.';
- if(!numberOK(d.pondOut)||Number(d.pondOut)<0)return 'Isi Outflow Desa Putra sebenar di bahagian 05.';
- for(const [field,key,name] of [['river','River','Sungai Langat'],['tank1','Cwt1','CWT No.1'],['tank2','Cwt2','CWT No.2'],['pond1','Dp1','Desa Putra No.1'],['pond2','Dp2','Desa Putra No.2']]){
-  if(!numberOK(d[field])&&!opsProblemOn(key))return 'Isi bacaan '+name+' atau tandakan Problem dalam Operasi 0700.';
-  if(d[field]&&!numberOK(d[field]))return 'Semak format nombor '+name+' (kosongkan jika Problem).';
- }
- if(d.riverMax&&!numberOK(d.riverMax))return 'Semak paras maksimum Sungai Langat.';
- return '';
-}
-function morningOpsText(){
- const d=morningOpsData(),rw63=d.rwp==='63',tw50=d.twp==='50';
- const normalRW=rw63?['2200','2300']:['4200','4500'];
- const normalTW=tw50?'2200':'4200',normalPressure=tw50?'7.0':'7.6';
- const mldDP=/^(?:\d+(?:\.\d+)?|\.\d+)$/.test(d.pondOut)?(Number(d.pondOut)*24/1000).toFixed(3):'-';
- const noteParts=opsProblemsActive().map(key=>{
-  const note=get('o'+key+'Note').replace(/\*/g,'').trim()||opsNoteDefaults[key];
-  return '_'+opsMarker(key)+' '+note+'_';
- });
- const extra=get('oExtraNote').replace(/\*/g,'').trim();
- return [
- '*Status Operasi LRA Semenyih 2*','*'+dmy()+'@0700hrs*','',
- 'Paras Sg Langat : '+opsReading(d.river,'River','m')+' (paras maksima : '+(d.riverMax?d.riverMax+'m':'-')+')','',
- 'Kadar Pengepaman','RWP : '+d.rwp+'Mld','TWP : '+d.twp+'Mld','',
- 'RW Inflow : '+opsReading(d.rw,'Rw','m3/h'),
- 'Normal : '+normalRW[0]+'m3/h~'+normalRW[1]+'m3/h',
- 'Tangki Air Bersih',
- 'No.1 : '+opsReading(d.tank1,'Cwt1','m'),
- 'No.2 : '+opsReading(d.tank2,'Cwt2','m'),'',
- 'TW Outflow : '+opsReading(d.tw,'Tw','m3/h'),
- 'Normal : '+normalTW+'m3/h',
- 'Delivery Pressure (rujukan): '+normalPressure+'bar','',
- 'Kolam Desa Putra,',
- 'No.1 : '+opsReading(d.pond1,'Dp1','m'),
- 'No.2 : '+opsReading(d.pond2,'Dp2','m'),
- 'Outflow : '+(mldDP==='-'?'-':mldDP+'Mld'),
- ...(d.dpPressure?['Delivery Pressure DP (actual): '+d.dpPressure+'bar']:[]),
- ...(noteParts.length?['',...noteParts]:[]),
- ...(extra?['','*Nota:* '+extra]:[])
- ].join('\n');
-}
-function updateOpsProblemViews(){
- for(const key of opsProblemKeys)el('o'+key+'NoteWrap').hidden=!opsProblemOn(key);
-}
-
-function totalizerDelta(prefix){
- const before=get(prefix+'TotalizerPrevious'),after=get(prefix+'TotalizerCurrent');
- if(!before||!after)return null;
- const numeric=/^(?:\d+(?:\.\d+)?|\.\d+)$/;
- if(!numeric.test(before)||!numeric.test(after))return {error:'Bacaan totalizer '+prefix.toUpperCase()+' perlu nombor sah.'};
- const prior=Number(before),current=Number(after);
- if(current<prior)return {error:'Totalizer '+prefix.toUpperCase()+' semasa lebih rendah daripada sebelumnya. Semak rollover / meter.'};
- const unit=get(prefix+'TotalizerUnit');
- const delta=(current-prior)/(unit==='ML'?1:1000);
- if(!Number.isFinite(delta)||delta>1000)return {error:'Perbezaan totalizer '+prefix.toUpperCase()+' terlalu tinggi. Semak unit dan sela 24 jam.'};
- return {delta};
-}
-function showTotalizerCalculations(){
- const warnings=[];
- for(const [prefix,out,field] of [['tw','twTotalizerResult','production'],['rw','rwTotalizerResult','rwAbst']]){
-  const result=totalizerDelta(prefix);
-  el(out).textContent=result?.error?'Semak bacaan':result?' '+result.delta.toFixed(3)+' MLD':'—';
-  if(result?.error)warnings.push(result.error);
-  if(result&&!result.error&&get(field)&&/^(?:\d+(?:\.\d+)?|\.\d+)$/.test(get(field))&&Math.abs(Number(get(field))-result.delta)>0.011)
-   warnings.push((prefix==='tw'?'Total Prod':'RW Abst')+' tidak sama dengan beza totalizer ('+result.delta.toFixed(3)+' MLD). Semak sebelum hantar.');
- }
- el('meterWarning').textContent=warnings.join(' ');
-}
-function applyTotalizer(prefix,dest){
- const data=totalizerDelta(prefix);
- if(!data)return alert('Isi kedua-dua bacaan '+prefix.toUpperCase()+' Totalizer dahulu.');
- if(data.error)return alert(data.error);
- const next=data.delta.toFixed(3);
- if(get(dest)&&Math.abs(Number(get(dest))-data.delta)>0.011&&!confirm('Ganti '+get(dest)+' MLD kepada '+next+' MLD daripada Totalizer '+prefix.toUpperCase()+'?'))return;
- el(dest).value=next;render();save();
-}
-
 const sivDefaultA='Kaedah pengiraan pengeluaran LRA Semenyih 2 :\nPengeluaran LRA Semenyih 2 = Bacaan Totalizer Tw (Semasa) - Bacaan Totalizer Tw (Sebelum)';
 const sivDefaultB='Pihak LRA Semenyih 2 Perlu mengawal Paras Kolam Desa Putra pada 3.00m - 7.83m seperti diminta SO bagi memenuhi Demand.';
-
-const listSix=[['ops','Operasi'],['1','Format 1'],['2','Format 2'],['3','Format 3'],['4','Format 4'],['5','Format 5']];
-
-// Validate only the inputs used by the selected report; zero is a real reading.
-const reportFields={
- ops:['pondCFlowValue','twFlowHourly','oRiver','cwt1','cwt2','dp1','dp2','dpOutHourly'],
- 1:['production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','intakeB','wt1','sjamB','dp1','dp2','dpOutHourly','dpPressure'],
- 2:['production','monthlyAverage','rwAbst','dp1','dp2','pondC','pondChange','pondStorage','pondTwlCapacity','criticalLevel','criticalPercent','criticalStorage','pondCFlowValue','sjamCHourly','intakeB','wt1','sjamB','sjamCActual'],
- 3:['pondC','pondStorage','intakeB','wt1','sjamB','rwAbst','sjamCActual','criticalLevel','criticalPercent','criticalStorage','pondCFlowValue','sjamCHourly'],
- 4:['pondC','pondStorage','pondTwlLevel','pondTwlCapacity','criticalLevel','criticalPercent','criticalStorage','pondCFlowValue','sjamCHourly'],
- 5:['production','sivTarget']
-};
-const problemFields={pondA:'pondAProblem',oRiver:'oRiverProblem',cwt1:'oCwt1Problem',cwt2:'oCwt2Problem',dp1:'oDp1Problem',dp2:'oDp2Problem'};
-function fieldLabel(id){return document.querySelector('label[for="m_'+id+'"]')?.textContent.trim().replace(/\s+/g,' ')||id}
-function reportIssues(id){
- const missing=[],invalid=[];
- for(const field of reportFields[id]||[]){
-  const raw=get(field),problem=(id==='ops'||(String(id)==='1'&&field==='pondA'))&&problemFields[field]&&el(problemFields[field]).checked;
-  if(!raw){if(!problem)missing.push(field);continue}
-  const pattern=field==='pondChange'?/^[+-]?(?:\d+(?:\.\d+)?|\.\d+)$/:/^(?:\d+(?:\.\d+)?|\.\d+)$/;
-  if(!pattern.test(raw)||!Number.isFinite(Number(raw)))invalid.push(field);
-  else if(['designCapacity','pondTwlCapacity','sivTarget','pondCFlowValue',...(id==='ops'?['twFlowHourly']:[])].includes(field)&&Number(raw)<=0)invalid.push(field);
- }
- if(get('pondCFlowValue')&&!valid(criticalFlowMld())&&(reportFields[id]||[]).includes('pondCFlowValue')&&!invalid.includes('pondCFlowValue'))invalid.push('pondCFlowValue');
- return {missing,invalid};
-}
-function revealField(id){
- const target=el(id);if(!target)return;
- let parent=target.parentElement;while(parent){if(parent.tagName==='DETAILS')parent.open=true;parent=parent.parentElement}
- target.scrollIntoView({behavior:'smooth',block:'center'});target.focus({preventScroll:true});
-}
-function jumpMorning(id){
- const target=document.getElementById(id);if(!target)return;
- if(target.tagName==='DETAILS')target.open=true;
- target.scrollIntoView({behavior:'smooth',block:'start'});
-}
-function updateReadiness(){
- const fields=[...new Set(Object.values(reportFields).flat())];
- const issues=listSix.map(([id])=>reportIssues(id));
- const missing=[...new Set(issues.flatMap(x=>x.missing))],invalid=[...new Set(issues.flatMap(x=>x.invalid))];
- const ready=issues.filter(x=>!x.missing.length&&!x.invalid.length).length;
- el('readiness').className='notice '+(invalid.length?'warn':'ok');
- el('readiness').textContent=invalid.length?'Semak '+invalid.length+' bacaan tidak sah. Tekan Semak untuk pergi ke bacaan.':missing.length?ready+'/6 laporan lengkap · '+missing.length+' bacaan belum diisi.': '6/6 laporan lengkap untuk disemak sebelum hantar.';
- for(const field of fields){if(el(field)?.getAttribute('aria-invalid')==='true'&&!invalid.includes(field)&&!missing.includes(field))el(field).removeAttribute('aria-invalid')}
- listSix.forEach(([id],index)=>{
-  const button=document.getElementById('m_reportLink_'+id);if(!button)return;
-  const issue=issues[index],count=issue.missing.length+issue.invalid.length;
-  button.dataset.ready=String(count===0);
-  button.querySelector('small').textContent=count?count+' bacaan perlu disemak':'Lengkap · semak preview';
- });
-}
-function selectedReportOK(id){
- const issue=reportIssues(id);
- if(issue.invalid.length){revealField(issue.invalid[0]);alert('Semak nombor: '+fieldLabel(issue.invalid[0])+'. Guna nombor sahaja tanpa unit atau koma.');return false}
- return true;
-}
-
-let previousPondC=null,previousDate='',previousLoading=false,pondChangeAutoValue=null;
-function sixKey(){return 'rqS2MorningSix-'+get('date')}
-function renderChecklist(){
- let done={};try{done=JSON.parse(localStorage.getItem(sixKey())||'{}')}catch{}
- const root=el('sixChecklist');root.textContent='';
- for(const [id,label] of listSix){
-  const item=document.createElement('label'),ck=document.createElement('input');
-  ck.type='checkbox';ck.checked=done[id]===true;
-  ck.addEventListener('change',()=>{
-   let flags={};try{flags=JSON.parse(localStorage.getItem(sixKey())||'{}')}catch{}
-   flags[id]=ck.checked;localStorage.setItem(sixKey(),JSON.stringify(flags));renderChecklist();
-  });
-  item.append(ck,document.createTextNode(label));root.appendChild(item);
- }
- el('sixCount').textContent=listSix.filter(([id])=>done[id]).length+'/6 ditanda selesai oleh staf';
-}
-function syncOpsPreview(){
- const issue=morningOpsIssue();
- el('opsReady').textContent=issue?'Semak Operasi 0700: '+issue:'Operasi 0700 sedia. Bacaan dikongsi terus daripada borang pagi. Semak preview dan pilih WhatsApp.';
- el('preview_ops').textContent=morningOpsText();
- updateOpsProblemViews();
-}
-function criticalFlowMld(){
- const input=get('pondCFlowValue');
- if(!/^(?:\d+(?:\.\d+)?|\.\d+)$/.test(input))return null;
- const value=Number(input);
- if(!Number.isFinite(value)||value<=0)return null;
- const mld=get('pondCFlowUnit')==='m3h'?value*24/1000:value;
- return mld>0&&mld<=1000?mld:null;
-}
-function criticalFlowIssue(){
- if(!get('pondCFlowValue'))return 'Masukkan bacaan kadar flowmeter RW @0700 secara manual untuk kira Days to Critical. RW totalizer harian ialah nilai berasingan.';
- if(!valid(criticalFlowMld()))return 'Semak bacaan kadar RW @0700 dan unit m³/jam atau MLD.';
- if(!valid(n('sjamCHourly'))||n('sjamCHourly')<0)return 'Isi bacaan flowmeter SJAM C @0700 secara manual. Masukkan 0 jika tidak beroperasi; nilai kosong atau negatif tidak sah.';
- return '';
-}
-function updateForecastFields(){
- // Never substitute daily RW abstraction for the instantaneous Pond C critical flow.
- el('forecastAuto').checked=false;
- const flow=criticalFlowMld();
- el('intakeCHourly').value=valid(flow)?(flow*1000/24).toFixed(5):'';
- // SJAM C is a manual 0700 meter reading, including an explicit zero when stopped.
- // Keep the legacy flag for draft compatibility, but never derive this meter from daily actual.
- el('sjamForecastAuto').checked=false;
-}
-const signedChange=(a,b)=>(a-b>0?'+':'')+(a-b).toFixed(2);
-function applyPreviousChange(){
- const current=n('pondC');
- if(!valid(previousPondC)||!valid(current)||previousDate!==get('date'))return false;
- const old=get('pondChange');
- if(old&&old!==pondChangeAutoValue)return false;
- el('pondChange').value=signedChange(current,previousPondC);
- pondChangeAutoValue=get('pondChange');updateChangeSignButtons();return true;
-}
-async function loadPreviousLevel(force=false){
- const date=get('date');if(previousLoading||(!force&&previousDate===date))return;
- previousDate=date;previousPondC=null;pondChangeAutoValue=null;
- const code=localStorage.getItem('s2_access_key');
- if(!code){el('pondChangeStatus').textContent='Access code diperlukan untuk semak rekod semalam.';return}
- previousLoading=true;
- try{
-  const day=new Date(date+'T12:00:00Z');day.setUTCDate(day.getUTCDate()-1);
-  const prev=day.toISOString().slice(0,10);
-  const res=await fetch('/api/s2-morning?date='+prev,{headers:{'X-S2-Key':code},cache:'no-store'});
-  const data=await res.json();if(!res.ok||!data.ok)throw Error(data.error||'Ralat database');
-  if(get('date')!==date)return;
-  const raw=String(data.report?.values?.pondC??'').trim();
-  previousPondC=raw&&Number.isFinite(Number(raw))?Number(raw):null;
-  if(valid(previousPondC)){
-   const changed=applyPreviousChange();
-   el('pondChangeStatus').textContent='Pond C semalam: '+previousPondC.toFixed(2)+'m'+(changed?' · auto dikira':' · boleh kira semula');
-   if(changed){render();save()}
-  }else el('pondChangeStatus').textContent='Tiada rekod 0700 semalam. Isi manual.';
- }catch(e){el('pondChangeStatus').textContent='Rekod semalam belum dapat diambil: '+e.message}
- finally{previousLoading=false}
-}
+let expectedUpdatedAt=null,step='readings',dosing={},previous=null,previousDate='',editVersion=0,dirty=false,dateToken=0;
+const readJSON=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key)||'null')??fallback}catch{return fallback}};
+function putJSON(key,value){localStorage.setItem(key,JSON.stringify(value))}
+const localDate=()=>{const d=new Date();return new Date(d.valueOf()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)};
+const storedKey=()=> 'rqS2Morning0700-'+get('date');
+const previousDay=date=>{const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()-1);return d.toISOString().slice(0,10)};
 const sivMonths=['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogos','Sep','Okt','Nov','Dis'];
 const sivTargetKey=()=> 'rqS2MorningSivTarget-'+get('date').slice(0,7);
 const sivTargetInitial=()=>localStorage.getItem(sivTargetKey())||(get('date').slice(0,7)==='2026-10'?'84.300':'');
@@ -359,6 +89,7 @@ function sivValid(){
  return '';
 }
 function reportText(format){
+ if(format===6)return dosingReport();
  if(format===5)return sivReport();
  const r=metrics(),h=head(format===1||format===2);
  const percentage='*'+valueOr(r.percent,2,'%')+'*';
@@ -430,303 +161,319 @@ function reportText(format){
  }
  return l.join('\n').replace(/\n{3,}/g,'\n\n');
 }
-function render(){
- updateForecastFields();
- calculatePondStorage();
- const r=metrics(),list={
-  margin:valueOr(r.margin,3,' MLD'),percent:valueOr(r.percent,2,'%'),
-  storageShown:valueOr(n('pondStorage'),2,' ML'),usableStorage:valueOr(r.usable,2,' ML'),forecastMldView:valueOr(r.forecastWtp,3,' MLD'),
-  inflow:valueOr(r.inflow,3,' MLD'),outflow:valueOr(r.outflow,3,' MLD'),
-  net:valueOr(r.net,3,' ML/day'),days:valueOr(r.days,1,' hari')
- };
- Object.entries(list).forEach(([id,text])=>{if(el(id))el(id).textContent=text});
- const issue=criticalFlowIssue();
- const hint=el('pondCFlowStatus');
- if(issue&&get('pondCFlowValue')){
-  hint.textContent=issue;
- }else if(valid(criticalFlowMld())){
-  hint.textContent='Kadar meter RW @0700 (diisi manual): '+criticalFlowMld().toFixed(3)+' MLD = '+(criticalFlowMld()*1000/24).toFixed(2)+' m³/jam. '+(valid(r.days)?'Days to Critical: '+r.days.toFixed(1)+' hari.':'Isi SJAM C @0700 untuk kira hari kritikal.');
- }else if(!hint.dataset.imported){
-  hint.textContent='Masukkan kadar flowmeter RW @0700 secara manual (contoh Excel 2,485 m³/jam bersamaan 59.640 MLD, 46.1 hari).';
- }
-
- showTotalizerCalculations();
- for(let i=1;i<=5;i++)el('preview_'+i).textContent=reportText(i);
- const prod=n('production'),target=n('sivTarget'),diff=all(prod,target)?prod-target:null;
- el('sivDiffLabel').textContent=valid(diff)&&diff<0?'Penurunan':'Peningkatan';
- el('sivDiff').textContent=valid(diff)?Math.abs(diff).toFixed(3)+' MLD':'-';
- el('sivPercent').textContent=valid(diff)&&target>0?(Math.abs(diff)/target*100).toFixed(3)+'%':'-';
- el('sivTargetNote').textContent='Sasaran '+(sivMonths[Number(get('date').slice(5,7))-1]||'-')+' '+get('date').slice(0,4)+' — '+(get('sivTarget')||'belum diisi')+' MLD. Total Prod diambil terus daripada Bahagian 01.';
- el('pondANoteWrap').hidden=!problemA();
- el('pondAField').classList.toggle('problemOn',problemA());
- updateChangeSignButtons();
- syncOpsPreview();
- updateReadiness();
+const groupSpecs=[
+ {key:'pac',title:'PAC',header:'*PAC (current/max)*',mode:'Auto',rows:[['pac1a','Dosing Pump 1A','232','liquid'],['pac1b','Dosing Pump 1B','320','liquid'],['pac2a','Dosing Pump 2A','320','liquid'],['pac2b','Dosing Pump 2B','320','liquid']]},
+ {key:'lime',title:'Lime',header:'*Lime (current/max)*',mode:'Auto',rows:[['lime1pre','Pre Feeder','29','solid','*Silo 1*'],['lime1inter','Inter Feeder','19','solid'],['lime1post','Post Feeder','29','solid'],['lime2pre','Pre Feeder','29','solid','*Silo 2*'],['lime2inter','Inter Feeder','19','solid'],['lime2post','Post Feeder','29','solid']]},
+ {key:'fluoride',title:'Fluoride',header:'*Fluoride (current/max)*',mode:'Manual',rows:[['fl1','Metering Pump no.1','2.54','fluoride'],['fl2','Metering Pump no.2','2.40','fluoride']]},
+ {key:'chlorine',title:'Chlorine',header:'*Chlorine (current/max)*',mode:'Auto',rows:[['clPre1','Pre Chlorinator 1','12','solid'],['clPre2','Pre Chlorinator 2','12','solid'],['clInter1','Inter Chlorinator 1','12','solid'],['clInter2','Inter Chlorinator 2','12','solid'],['clPost1','Post Chlorinator 1','18','post'],['clPost2','Post Chlorinator 2','18','post']]},
+ {key:'carbon',title:'Activated Carbon',header:'*Activated Carbon*',rows:[['carbon1','Feeder 1','21','other'],['carbon2','Feeder 2','21','other']]},
+ {key:'polymer',title:'Polymer RTF',header:'*Polymer RTF (current/max)*',rows:[['poly1','Polymer Pump No. 1 (to STT)','17','other'],['poly2','Polymer Pump No. 2 (to STT)','17','other'],['poly3','Polymer Pump No. 3 (to Decanter)','280','other'],['poly4','Polymer Pump No. 4 (to Decanter)','280','other']]}
+];
+const pumpSpecs=groupSpecs.flatMap(g=>g.rows);
+const dosingMeta={scd:['SCD','ICu',true],scdRange:['Julat SCD','','text'],calibration:['Service & calibrate','DD/MM/YYYY','text'],ph:['PH (TPO)','','number'],limeNote:['Nota Lime Silo 2 Inter','','text'],batching:['Fluoride preparation','','text'],fluorideResidual:['Residual Fluoride (TPO)','mg/L','number'],chlorineResidual:['Residual Chlorine (TPO)','mg/L','number'],postMode:['Post Chlorine Dosing Mode','','mode']};
+function freshDosing(){
+ const config=readJSON('rqS2MorningDosingConfig',{}),out={rows:{},groups:{},meta:{scd:'',scdRange:'-0.40 ~ -1.80',calibration:'10/09/2026',ph:'',limeNote:'#Dose to Post',batching:'Preparation Batching',fluorideResidual:'',chlorineResidual:'',postMode:'Manual',...config.meta}};
+ for(const [id,,max] of pumpSpecs)out.rows[id]={status:config.rows?.[id]?.status==='Run'?'Run':'Standby',max:config.rows?.[id]?.max??max,rate:'',dose:'',hz:'',percent:'',other:''};
+ for(const g of groupSpecs)out.groups[g.key]={mode:config.groups?.[g.key]?.mode||g.mode||'',reviewed:false};
+ return out;
 }
-function storedKey(){return 'rqS2Morning0700-'+get('date')}
+function dosingConfiguration(){
+ return {rows:Object.fromEntries(pumpSpecs.map(([id])=>[id,{status:dosing.rows[id].status,max:dosing.rows[id].max}])),groups:Object.fromEntries(groupSpecs.map(g=>[g.key,{mode:dosing.groups[g.key].mode}])),meta:Object.fromEntries(['scdRange','calibration','limeNote','batching','postMode'].map(k=>[k,dosing.meta[k]]))};
+}
+function escapeText(x){return String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function numericInput(id,label,value='',signed=false){return '<div class="field"><label for="m_'+id+'">'+escapeText(label)+'</label><input id="m_'+id+'" inputmode="'+(signed?'text':'decimal')+'" autocomplete="off" enterkeyhint="next" value="'+escapeText(value)+'" placeholder="—"></div>'}
+function modeSelect(id,label,value){return '<div class="field"><label for="m_'+id+'">'+label+'</label><select id="m_'+id+'"><option'+(value==='Auto'?' selected':'')+'>Auto</option><option'+(value==='Manual'?' selected':'')+'>Manual</option></select></div>'}
+function renderDosingUI(){
+ const host=el('dosingGroups');host.replaceChildren();
+ for(const g of groupSpecs){
+  const card=document.createElement('section');card.className='card';card.id='m_dg_'+g.key;
+  const title=document.createElement('h3');title.textContent=g.title;card.append(title);host.append(card);
+  for(const [id,label,,kind,sub] of g.rows){
+   const row=dosing.rows[id];
+   const wrap=document.createElement('div');wrap.className='dosingRow';
+   let fields='';
+   if(kind==='fluoride')fields+=numericInput(id+'_hz','Hz',row.hz)+numericInput(id+'_percent','%',row.percent);
+   if(kind==='other')fields+= '<div class="field full"><label for="m_'+id+'_other">Bacaan semasa (ikut format asal)</label><input id="m_'+id+'_other" value="'+escapeText(row.other)+'" placeholder="Kadar@dos"></div>';
+   else fields+=numericInput(id+'_rate',kind==='liquid'?'L/hr':kind==='fluoride'?'l/hr':kind==='post'?'Kg/hr':'kg/hr',row.rate)+numericInput(id+'_dose','mg/L',row.dose);
+   wrap.innerHTML=(sub?'<p><b>'+escapeText(sub.replace(/\*/g,''))+'</b></p>':'')+'<div class="dosingHeading"><label for="m_'+id+'_status">'+escapeText(label)+'</label><select id="m_'+id+'_status"><option'+(row.status==='Standby'?' selected':'')+'>Standby</option><option'+(row.status==='Run'?' selected':'')+'>Run</option></select></div><div class="dosingValues grid" id="m_'+id+'_values"'+(row.status==='Standby'?' hidden':'')+'>'+fields+'</div><details class="dosingMax"><summary>Max '+escapeText(row.max)+'mg/L · tetapan</summary>'+numericInput(id+'_max','Max (mg/L)',row.max)+'</details>';
+   card.append(wrap);
+   for(const prop of ['status','rate','dose','hz','percent','other','max']){
+    const input=el(id+'_'+prop);if(!input)continue;
+    input.addEventListener(prop==='status'?'change':'input',()=>{
+     row[prop]=input.value.trim();dosing.groups[g.key].reviewed=false;el('review_'+g.key).checked=false;
+     el(id+'_values').hidden=row.status!=='Run';changed();
+    });
+   }
+  }
+  const metaKeys=g.key==='pac'?['scd','scdRange','calibration']:g.key==='lime'?['ph','limeNote']:g.key==='fluoride'?['batching','fluorideResidual']:g.key==='chlorine'?['chlorineResidual','postMode']:[];
+  const meta=document.createElement('div');meta.className='grid';
+  meta.innerHTML=(g.mode?modeSelect('mode_'+g.key,'Dosing Mode',dosing.groups[g.key].mode):'')+metaKeys.map(k=>{
+   const [label,unit,type]=dosingMeta[k];return type==='mode'?modeSelect('meta_'+k,label,dosing.meta[k]):type==='text'?'<div class="field full"><label for="m_meta_'+k+'">'+label+'</label><input id="m_meta_'+k+'" value="'+escapeText(dosing.meta[k])+'"></div>':numericInput('meta_'+k,label+(unit?' ('+unit+')':''),dosing.meta[k],type===true);
+  }).join('');card.append(meta);
+  if(g.mode)el('mode_'+g.key).addEventListener('change',()=>{dosing.groups[g.key].mode=el('mode_'+g.key).value;dosing.groups[g.key].reviewed=false;el('review_'+g.key).checked=false;changed()});
+  for(const k of metaKeys)el('meta_'+k).addEventListener(dosingMeta[k][2]==='mode'?'change':'input',()=>{dosing.meta[k]=el('meta_'+k).value.trim();dosing.groups[g.key].reviewed=false;el('review_'+g.key).checked=false;changed()});
+  const review=document.createElement('label');review.className='collectCheck';
+  const check=document.createElement('input');check.id='m_review_'+g.key;check.type='checkbox';check.checked=dosing.groups[g.key].reviewed===true;
+  check.addEventListener('change',()=>{dosing.groups[g.key].reviewed=check.checked;changed()});
+  review.append(check,document.createTextNode('Saya sudah semak status dan bacaan '+g.title+' hari ini'));card.append(review);host.append(card);
+ }
+}
+function dosingLine(spec){
+ const [id,label,,kind]=spec,r=dosing.rows[id];
+ const val=r.status==='Standby'?(id.startsWith('poly')?'standby':'Standby'):kind==='other'?(r.other||'-'):kind==='fluoride'?(r.hz||'-')+'Hz/'+(r.percent||'-')+'%/'+(r.rate||'-')+'l/hr@'+(r.dose||'-')+'mg/L':(r.rate||'-')+(kind==='liquid'?'L/hr':kind==='post'?'Kg/hr':'kg/hr')+'@'+(r.dose||'-')+'mg/L';
+ return label+' : '+val+'/'+(r.max||'-')+'mg/L';
+}
+function dosingReport(){
+ const L=['*Status Dosing WTP Semenyih 2*',dmy()+'@0700hrs','','Pengepaman Semasa : ','RW : '+get('oRwp')+' Mld','TW : '+get('oTwp')+' Mld','','RW Inflow : '+valueOr(criticalFlowMld(),3,'Mld'),'TW Outflow : '+valueOr(mldFromHour('twFlowHourly'),3,'Mld'),''];
+ for(const g of groupSpecs){
+  L.push(g.header);
+  if(g.key==='fluoride')L.push(dosing.meta.batching);
+  g.rows.forEach((spec,i)=>{
+   if(spec[4]){if(i)L.push('');L.push(spec[4])}
+   if(g.key==='chlorine'&&(i===2||i===4))L.push('');
+   if(g.key==='polymer'&&i===2)L.push('');
+   L.push(dosingLine(spec));
+   if(spec[0]==='lime2inter'&&dosing.meta.limeNote)L.push('_'+dosing.meta.limeNote+'_');
+   if(g.key==='chlorine'&&i===1)L.push('Dosing Mode : '+dosing.groups.chlorine.mode);
+  });
+  if(g.key==='pac')L.push('Dosing Mode : '+dosing.groups.pac.mode,'','SCD : '+(dosing.meta.scd||'-')+'ICu (range '+dosing.meta.scdRange+')(service & calibrate @ '+dosing.meta.calibration+')');
+  if(g.key==='lime')L.push('PH (TPO) : '+(dosing.meta.ph||'-'),'Dosing Mode : '+dosing.groups.lime.mode);
+  if(g.key==='fluoride')L.push('Residual Fluoride (TPO) : '+(dosing.meta.fluorideResidual||'-')+'mg/L','Dosing Mode : '+dosing.groups.fluoride.mode);
+  if(g.key==='chlorine')L.push('Residual Chlorine (TPO) : '+(dosing.meta.chlorineResidual||'-')+'mg/L','Dosing Mode : '+dosing.meta.postMode);
+  L.push('');
+ }
+ return L.join('\n').trimEnd();
+}
+function criticalFlowMld(){const value=n('pondCFlowValue');return valid(value)&&value>0&&value<=41666.6667?value*24/1000:null}
+function storageFromLevel(level){return valid(level)&&level>=7.5&&level<=12?Math.round((1226+(level-7.5)*613)*100)/100:null}
+function calculate(){
+ el('intakeCHourly').value=get('pondCFlowValue');
+ const compatible=n('pondTwlLevel')===12&&n('pondTwlCapacity')===3984.5;
+ if(el('storageAuto').checked)el('pondStorage').value=compatible&&valid(storageFromLevel(n('pondC')))?storageFromLevel(n('pondC')).toFixed(2):'';
+ if(el('criticalStorageAuto').checked)el('criticalStorage').value=compatible&&valid(storageFromLevel(n('criticalLevel')))?storageFromLevel(n('criticalLevel')).toFixed(2):'';
+ el('storageStatus').textContent='Auto storage guna'+' model rujukan 613 ML/m dalam julat 7.50–12.00m. Semak atau gunakan storage manual jika rujukan berbeza.';
+ el('pondStorage').readOnly=el('storageAuto').checked;el('criticalStorage').readOnly=el('criticalStorageAuto').checked;
+ const r=metrics();
+ const values={rwMld:valueOr(criticalFlowMld(),3,' MLD'),twMld:valueOr(mldFromHour('twFlowHourly'),3,' MLD'),margin:valueOr(r.margin,3,' MLD'),storageShown:valueOr(n('pondStorage'),2,' ML'),percent:valueOr(r.percent,2,'%'),dpMld:valueOr(r.dpMld,3,' MLD'),net:valueOr(r.net,3,' ML'),days:valueOr(r.days,1,' hari')};
+ for(const [id,text] of Object.entries(values))el(id).textContent=text;
+ el('pondANoteWrap').hidden=!problemA();el('firstDayAverage').hidden=!get('date').endsWith('-01');
+}
+const reportNames=['Pengeluaran & Status Kolam','Pengeluaran & ORS Pond C','Kiraan Aliran Pond C','Ringkasan ORS Pond C','SIV','Status Dosing'];
+const reportFields={1:['production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','intakeB','wt1','sjamB','dp1','dp2','dpOutHourly','dpPressure'],2:['production','monthlyAverage','rwAbst','dp1','dp2','pondC','pondChange','pondStorage','pondTwlCapacity','criticalLevel','criticalPercent','criticalStorage','pondCFlowValue','sjamCHourly','intakeB','wt1','sjamB','sjamCActual'],3:['pondC','pondStorage','intakeB','wt1','sjamB','rwAbst','sjamCActual','criticalLevel','criticalPercent','criticalStorage','pondCFlowValue','sjamCHourly'],4:['pondC','pondStorage','pondTwlLevel','pondTwlCapacity','criticalLevel','criticalPercent','criticalStorage','pondCFlowValue','sjamCHourly'],5:['production','sivTarget'],6:['pondCFlowValue','twFlowHourly']};
+function reportIssues(no){
+ const out=[];
+ for(const k of reportFields[no]){
+  const raw=get(k);if(k==='pondA'&&problemA()&&!raw)continue;
+  const regex=k==='pondChange'?/^[+-]?(?:\d+(?:\.\d+)?|\.\d+)$/:/^(?:\d+(?:\.\d+)?|\.\d+)$/;
+  if(!raw||!regex.test(raw)||!Number.isFinite(Number(raw))||(['designCapacity','pondTwlCapacity','sivTarget','pondCFlowValue'].includes(k)&&Number(raw)<=0))out.push(k);
+ }
+ if(reportFields[no].includes('pondCFlowValue')&&!valid(criticalFlowMld())&&!out.includes('pondCFlowValue'))out.push('pondCFlowValue');
+ if(no===6){
+  for(const g of groupSpecs){
+   for(const [id,,,kind] of g.rows){
+    const r=dosing.rows[id];
+    if(!/^(?:\d+(?:\.\d+)?|\.\d+)$/.test(r.max))out.push(id+'_max');
+    if(r.status==='Run')for(const prop of kind==='other'?['other']:kind==='fluoride'?['hz','percent','rate','dose']:['rate','dose']){
+     if(prop==='other'?!r.other:! /^(?:\d+(?:\.\d+)?|\.\d+)$/.test(r[prop]))out.push(id+'_'+prop);
+     else if(prop==='percent'&&Number(r[prop])>100)out.push(id+'_'+prop);
+    }
+   }
+   if(!dosing.groups[g.key].reviewed)out.push('review_'+g.key);
+  }
+  for(const key of ['scd','ph','fluorideResidual','chlorineResidual']){
+   if(!(key==='scd'?/^-?(?:\d+(?:\.\d+)?|\.\d+)$/:/^(?:\d+(?:\.\d+)?|\.\d+)$/).test(dosing.meta[key]))out.push('meta_'+key);
+  }
+ }
+ return out;
+}
+function fieldLabel(id){return document.querySelector('label[for="m_'+id+'"]')?.textContent.trim()||el(id)?.closest('label')?.textContent.trim()||id}
+function focusIssue(id){
+ setStep(id.startsWith('review_')||id.startsWith('meta_')||pumpSpecs.some(([p])=>id.startsWith(p+'_'))?'dosing':'readings',false);
+ const target=el(id);if(!target)return;
+ for(let parent=target.parentElement;parent;parent=parent.parentElement)if(parent.tagName==='DETAILS')parent.open=true;
+ target.setAttribute('aria-invalid','true');target.scrollIntoView({block:'center',behavior:'smooth'});target.focus({preventScroll:true});
+}
+function renderReports(){
+ const checks=readJSON('rqS2MorningSix-'+get('date'),{});let ready=0;
+ for(let no=1;no<=6;no++){
+  const issues=reportIssues(no);if(!issues.length)ready++;
+  el('preview_'+no).textContent=reportText(no);const link=el('reportLink_'+no);link.dataset.ready=String(!issues.length);
+  link.querySelector('small').textContent=checks[String(no)]===true?'✓ Ditanda sudah dihantar':issues.length?issues.length+' perkara perlu disemak':'Lengkap · semak preview';
+  el('done_'+no).checked=checks[String(no)]===true;
+ }
+ el('reportStatus').textContent=ready+'/6 laporan lengkap · '+Object.keys(checks).filter(k=>/^[1-6]$/.test(k)&&checks[k]===true).length+'/6 ditanda sudah dihantar';
+}
+function render(){calculate();renderReports()}
 function formData(){
- const values={};keys.forEach(k=>values[k]=get(k));
- sivKeys.forEach(k=>values[k]=get(k));
- totalizerKeys.forEach(k=>values[k]=get(k));
- criticalFlowKeys.forEach(k=>values[k]=get(k));
- opsExtraKeys.forEach(k=>values[k]=get(k));
- for(const key of opsProblemKeys){values['o'+key+'Problem']=opsProblemOn(key);values['o'+key+'Note']=get('o'+key+'Note');}
- values.forecastAuto=el('forecastAuto').checked;values.sjamForecastAuto=el('sjamForecastAuto').checked;
- values.pondStorageAuto=el('storageAuto').checked;values.criticalStorageAuto=el('criticalStorageAuto').checked;
- values.pondAProblem=problemA();values.pondANote=get('pondANote');
- return{values,operator:get('operator'),expectedUpdatedAt};
+ const values={};for(const k of [...keys,...extraKeys])values[k]=get(k);
+ values.forecastAuto=false;values.sjamForecastAuto=false;values.pondStorageAuto=el('storageAuto').checked;values.criticalStorageAuto=el('criticalStorageAuto').checked;
+ values.pondAProblem=problemA();values.dosingJson=JSON.stringify(dosing);
+ return {values,operator:get('operator'),expectedUpdatedAt};
 }
 function save(){
  if(!get('date'))return;
- localStorage.setItem(storedKey(),JSON.stringify(formData()));
- localStorage.setItem('rqS2MorningOperator',get('operator'));
- if(get('sivTarget')&&Number(get('sivTarget'))>0)localStorage.setItem(sivTargetKey(),get('sivTarget'));
- el('draft').textContent='Draf '+dmy()+' disimpan di telefon';
+ try{
+  putJSON(storedKey(),formData());localStorage.setItem('rqS2MorningOperator',get('operator'));
+  putJSON('rqS2MorningSettings',Object.fromEntries(settingKeys.map(k=>[k,get(k)])));
+  putJSON('rqS2MorningDosingConfig',dosingConfiguration());
+  if(n('sivTarget')>0)localStorage.setItem(sivTargetKey(),get('sivTarget'));
+  el('draft').textContent='Draf '+dmy()+' disimpan di telefon';
+ }catch{el('draft').textContent='Draf belum dapat disimpan. Semak ruang storan telefon; salin laporan sebelum tutup.'}
 }
-function reset(){
- keys.forEach(k=>el(k).value=defaults[k]||'');
- el('forecastAuto').checked=false;el('sjamForecastAuto').checked=false;
- el('storageAuto').checked=true;el('criticalStorageAuto').checked=true;
- for(const id of totalizerKeys)el(id).value=id.endsWith('Unit')?'m3':'';
- el('pondCFlowValue').value='';el('pondCFlowUnit').value='m3h';el('pondCFlowStatus').dataset.imported='';
- el('sivTarget').value=sivTargetInitial();
- el('sivStatus').value='auto';
- el('sivChallengeA').value=sivDefaultA;
- el('sivChallengeB').value=sivDefaultB;
- el('pondAProblem').checked=false;
- el('pondANote').value=noteDefault;
- for(const key of opsExtraKeys)el(key).value=key==='oRwp'?'126':key==='oTwp'?'100':key==='oRiverMax'?'10.11':'';
- for(const key of opsProblemKeys){el('o'+key+'Problem').checked=false;el('o'+key+'Note').value=opsNoteDefaults[key]}
-}
+function changed(){editVersion++;dirty=true;render();save()}
 function apply(data){
+ dosing=freshDosing();
  const values=data?.values||data||{};
- keys.forEach(k=>el(k).value=String(values[k]??defaults[k]??''));
- // Preserve a verified legacy manual flow, but do not reuse the obsolete
- // forecastAuto daily-RW calculation (source of 29.3-day errors).
- if(String(values.pondCFlowValue??'').trim()){
-  el('pondCFlowValue').value=String(values.pondCFlowValue);
-  el('pondCFlowUnit').value=values.pondCFlowUnit==='m3h'?'m3h':'MLD';
- }else if(values.forecastAuto!==true&&String(values.intakeCHourly??'').trim()){
-  const old=Number(values.intakeCHourly);
-  el('pondCFlowValue').value=Number.isFinite(old)&&old>0?(old*24/1000).toFixed(3):'';
-  el('pondCFlowUnit').value='MLD';
- }else{
-  el('pondCFlowValue').value='';el('pondCFlowUnit').value='m3h';
- }
- el('pondCFlowStatus').dataset.imported='';
-
- for(const id of totalizerKeys)el(id).value=id.endsWith('Unit')?(values[id]==='ML'?'ML':'m3'):String(values[id]??'');
- el('storageAuto').checked=legacyStorageAuto(values,'pondStorage','pondStorageAuto','pondC');
- el('criticalStorageAuto').checked=legacyStorageAuto(values,'criticalStorage','criticalStorageAuto','criticalLevel');
- el('forecastAuto').checked=false;
- el('sjamForecastAuto').checked=values.sjamForecastAuto===true;
- el('sivTarget').value=String(values.sivTarget??sivTargetInitial());
- el('sivStatus').value=['auto','not','achieved'].includes(values.sivStatus)?values.sivStatus:'auto';
- el('sivChallengeA').value=String(values.sivChallengeA??sivDefaultA);
- el('sivChallengeB').value=String(values.sivChallengeB??sivDefaultB);
- el('pondAProblem').checked=!!values.pondAProblem;
- el('pondANote').value=values.pondANote||noteDefault;
- for(const key of opsExtraKeys)el(key).value=String(values[key]??(key==='oRwp'?'126':key==='oTwp'?'100':key==='oRiverMax'?'10.11':''));
- for(const key of opsProblemKeys){
-  el('o'+key+'Problem').checked=values['o'+key+'Problem']===true;
-  el('o'+key+'Note').value=String(values['o'+key+'Note']??opsNoteDefaults[key]);
- }
+ for(const k of [...keys,...extraKeys])if(el(k)&&values[k]!==undefined)el(k).value=String(values[k]);
+ // Older drafts may store the dedicated rate in MLD. Convert only that field.
+ if(values.pondCFlowUnit==='MLD'&&String(values.pondCFlowValue||'').trim())el('pondCFlowValue').value=String(Number(values.pondCFlowValue)*1000/24);
+ el('pondCFlowUnit').value='m3h';
+ el('storageAuto').checked=values.pondStorageAuto!==false;el('criticalStorageAuto').checked=values.criticalStorageAuto!==false;
+ // Preserve legacy manual storage instead of silently overwriting it.
+ if(values.pondStorageAuto===undefined&&String(values.pondStorage||'').trim()&&Math.abs(Number(values.pondStorage)-storageFromLevel(Number(values.pondC)))>.02)el('storageAuto').checked=false;
+ el('pondAProblem').checked=values.pondAProblem===true;
  if(data?.operator)el('operator').value=data.operator;
- render();
+ if(values.dosingJson){
+  try{
+   const parsed=JSON.parse(values.dosingJson);
+   for(const [id] of pumpSpecs)if(parsed.rows?.[id])Object.assign(dosing.rows[id],parsed.rows[id]);
+   for(const g of groupSpecs)if(parsed.groups?.[g.key])Object.assign(dosing.groups[g.key],parsed.groups[g.key]);
+   Object.assign(dosing.meta,parsed.meta||{});
+  }catch{}
+ }
+ renderDosingUI();render();
 }
 function restore(){
- expectedUpdatedAt=null;restoredMorningDraft=false;
- document.querySelectorAll('#panel-morning [aria-invalid]').forEach(node=>node.removeAttribute('aria-invalid'));
- reset();
- try{
-  const draft=JSON.parse(localStorage.getItem(storedKey())||'null');
-  if(draft){restoredMorningDraft=true;apply(draft);expectedUpdatedAt=typeof draft.expectedUpdatedAt==='string'?draft.expectedUpdatedAt:null;}
-  el('draft').textContent=draft?'Draf '+dmy()+' dipulihkan':'Draf baharu · '+dmy();
- }catch(e){el('draft').textContent='Draf baharu'}
- render();
+ expectedUpdatedAt=null;dirty=false;editVersion++;previous=null;previousDate='';
+ const config=readJSON('rqS2MorningSettings',{});
+ for(const k of [...keys,...extraKeys])el(k).value=String(config[k]??defaults[k]??'');
+ el('pondCFlowUnit').value='m3h';el('rwTotalizerUnit').value='m3';el('twTotalizerUnit').value='m3';
+ el('pondANote').value=config.pondANote||noteDefault;el('sivTarget').value=sivTargetInitial();el('sivStatus').value='auto';
+ el('sivChallengeA').value=config.sivChallengeA||sivDefaultA;el('sivChallengeB').value=config.sivChallengeB||sivDefaultB;
+ el('oRwp').value=config.oRwp||'63';el('oTwp').value=config.oTwp||'50';
+ el('storageAuto').checked=true;el('criticalStorageAuto').checked=true;el('pondAProblem').checked=false;
+ document.querySelectorAll('#panel-morning [aria-invalid]').forEach(x=>x.removeAttribute('aria-invalid'));
+ dosing=freshDosing();const draft=readJSON(storedKey(),null);
+ if(draft){apply(draft);expectedUpdatedAt=typeof draft.expectedUpdatedAt==='string'?draft.expectedUpdatedAt:null}
+ else{renderDosingUI();render()}
+ el('draft').textContent=draft?'Draf '+dmy()+' dipulihkan':'Catatan baharu · '+dmy();el('onlineStatus').textContent='';
+ return !!draft;
 }
-async function retrieve(silent=false){
+async function retrieve(manual=false,hasDraft=true){
+ const code=localStorage.getItem('s2_access_key'),date=get('date'),version=editVersion;
+ if(!code){el('onlineStatus').textContent='Draf boleh diisi offline. Access code S2 diperlukan untuk simpan online dan buka WhatsApp.';return}
+ el('onlineStatus').textContent='Menyemak rekod online…';
+ try{
+  const res=await fetch('/api/s2-morning?date='+date,{headers:{'X-S2-Key':code},cache:'no-store'}),j=await res.json();
+  if(get('date')!==date)return;
+  if(!res.ok||!j.ok)throw Error(j.error||'Ralat database');
+  if(!j.report){expectedUpdatedAt='';el('onlineStatus').textContent='Belum ada rekod online '+dmy()+'. Draf di telefon dikekalkan.';save();return}
+  if(manual){
+   if(version!==editVersion){el('onlineStatus').textContent='Bacaan sedang disunting. Tekan Rekod online semula selepas selesai.';return}
+   if((dirty||keys.some(k=>!Object.prototype.hasOwnProperty.call(defaults,k)&&get(k)))&&!confirm('Gantikan draf tarikh ini dengan rekod online?'))return;
+   apply(j.report);expectedUpdatedAt=j.report.updatedAt;dirty=false;save();
+  }else if(!hasDraft&&version===editVersion){apply(j.report);expectedUpdatedAt=j.report.updatedAt;save()}
+  el('onlineStatus').textContent='Rekod online tersedia · '+(j.report.operator||'-')+(expectedUpdatedAt!==j.report.updatedAt?' · Draf berbeza: tekan Rekod online untuk semak.':'');
+ }catch(e){if(get('date')===date)el('onlineStatus').textContent='Online belum tersedia: '+e.message+'. Draf telefon dikekalkan.'}
+}
+async function loadPrevious(){
+ const date=get('date'),token=++dateToken,prior=previousDay(date),cached=readJSON('rqS2Morning0700-'+prior,null);
+ previous=cached?.values||null;previousDate=date;
  const code=localStorage.getItem('s2_access_key');
- if(!code){el('onlineStatus').textContent='Masukkan access code S2 pada panel Status Semasa Loji dahulu.';return}
- const requestedDate=get('date');
- try{
-  const response=await fetch('/api/s2-morning?date='+encodeURIComponent(requestedDate),{headers:{'X-S2-Key':code},cache:'no-store'});
-  const data=await response.json();
-  if(get('date')!==requestedDate)return;
-  if(!response.ok||!data.ok)throw Error(data.error||'Ralat database');
-  if(!data.report){expectedUpdatedAt='';save();el('onlineStatus').textContent='Belum ada rekod online bagi '+dmy();return}
-  const date=new Date(data.report.updatedAt);
-  el('onlineStatus').textContent='Rekod online: '+(Number.isFinite(date.valueOf())?date.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'})+' '+String(date.getHours()).padStart(2,'0')+String(date.getMinutes()).padStart(2,'0')+'hrs':'-')+' · '+data.report.operator;
-  if(silent){
-   const same=Object.entries(data.report.values||{}).every(([k,v])=>String(formData().values[k]??'')===String(v??''));
-   if((expectedUpdatedAt===null&&!restoredMorningDraft)||same){expectedUpdatedAt=data.report.updatedAt;save()}
-   return;
+ if(code)try{
+  const res=await fetch('/api/s2-morning?date='+prior,{headers:{'X-S2-Key':code},cache:'no-store'}),j=await res.json();
+  if(token!==dateToken||get('date')!==date)return;
+  if(res.ok&&j.ok&&j.report)previous=j.report.values;
+ }catch{}
+ if(token!==dateToken||get('date')!==date)return;
+ el('pondChangeStatus').textContent=previous?.pondC?'Pond C semalam: '+previous.pondC+'m':'Tiada rekod paras semalam. Isi perubahan secara manual.';
+ if(previous){
+  // These are yesterday's counters, not today's readings or daily totals.
+  for(const prefix of ['rw','tw'])if(!get(prefix+'TotalizerPrevious')&&previous[prefix+'TotalizerCurrent']){
+   el(prefix+'TotalizerPrevious').value=previous[prefix+'TotalizerCurrent'];el(prefix+'TotalizerUnit').value=previous[prefix+'TotalizerUnit']==='ML'?'ML':'m3';
   }
-  if(!confirm('Gantikan bacaan semasa dengan rekod online '+dmy()+'?'))return;
-  apply(data.report);expectedUpdatedAt=data.report.updatedAt;save();
- }catch(e){el('onlineStatus').textContent='Tidak dapat akses database: '+e.message}
-}
-const localDate=()=>{const d=new Date();return new Date(d.valueOf()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)};
-
-const morningPanel=document.getElementById('panel-morning');
-// Short labels stay visible; extended descriptions are optional.
-morningPanel.querySelectorAll('section.card > p.small,.mSource').forEach(node=>node.classList.add('mReadingHelp'));
-el('showHelp').addEventListener('change',()=>morningPanel.classList.toggle('showMorningHelp',el('showHelp').checked));
-document.querySelectorAll('[data-m-jump]').forEach(button=>button.addEventListener('click',()=>jumpMorning(button.dataset.mJump)));
-const reportNames={ops:'Operasi 0700',1:'Pengeluaran & Kolam',2:'Pengeluaran & ORS',3:'Aliran Pond C',4:'Ringkasan ORS',5:'SIV'};
-for(const [id,label] of listSix){
- const button=document.createElement('button');button.type='button';button.id='m_reportLink_'+id;
- const title=document.createElement('span');title.textContent=(id==='ops'?'':label+' · ')+reportNames[id];
- button.append(title,document.createElement('small'));
- button.addEventListener('click',()=>jumpMorning('m_card_'+id));el('reportLinks').append(button);
-}
-el('checkReadings').addEventListener('click',()=>{
- const issues=listSix.map(([id])=>reportIssues(id));
- const missing=[...new Set(issues.flatMap(x=>x.missing))],invalid=[...new Set(issues.flatMap(x=>x.invalid))];
- for(const id of [...missing,...invalid])el(id)?.setAttribute('aria-invalid','true');
- if(invalid.length||missing.length)revealField(invalid[0]||missing[0]);else jumpMorning('m_reportHub');
-});
-el('tomorrow').addEventListener('click',()=>{
- save();
- const date=new Date(localDate()+'T12:00:00Z');date.setUTCDate(date.getUTCDate()+1);
- el('date').value=date.toISOString().slice(0,10);el('date').dispatchEvent(new Event('change'));
-});
-
-let lastDate=localDate();
-el('date').value=lastDate;
-el('operator').value=localStorage.getItem('rqS2MorningOperator')||localStorage.getItem('s2_leader')||'';
-restore();
-el('date').addEventListener('change',()=>{restore();retrieve(true);renderChecklist();loadPreviousLevel(true)});
-keys.forEach(k=>el(k).addEventListener('input',()=>{
- if(k==='intakeCHourly'&&el('forecastAuto').checked)el('forecastAuto').checked=false;
- if(k==='pondStorage'&&el('storageAuto').checked)el('storageAuto').checked=false;
- if(k==='criticalStorage'&&el('criticalStorageAuto').checked)el('criticalStorageAuto').checked=false;
- if(k==='sjamCHourly'&&el('sjamForecastAuto').checked)el('sjamForecastAuto').checked=false;
- if(k==='pondChange'&&get('pondChange')!==pondChangeAutoValue)pondChangeAutoValue=null;
- if(k==='pondC')applyPreviousChange();
- render();save();
-}));
-for(const id of ['sjamForecastAuto','storageAuto','criticalStorageAuto'])el(id).addEventListener('change',()=>{render();save()});
-for(const field of criticalFlowKeys)el(field).addEventListener(field==='pondCFlowUnit'?'change':'input',()=>{
- el('pondCFlowStatus').dataset.imported='';
- render();save();
-});
-for(const key of opsExtraKeys)el(key).addEventListener(key==='oRwp'||key==='oTwp'?'change':'input',()=>{render();save()});
-for(const key of opsProblemKeys){
- el('o'+key+'Problem').addEventListener('change',()=>{render();save()});
- el('o'+key+'Note').addEventListener('input',()=>{render();save()});
-}
-
-for(const id of totalizerKeys)el(id).addEventListener(id.endsWith('Unit')?'change':'input',()=>{render();save()});
-el('applyTwTotalizer').addEventListener('click',()=>applyTotalizer('tw','production'));
-el('applyRwTotalizer').addEventListener('click',()=>applyTotalizer('rw','rwAbst'));
-document.querySelectorAll('#m_startGuide [data-jump]').forEach(button=>button.addEventListener('click',()=>{
- const target=document.getElementById(button.dataset.jump);target?.scrollIntoView({behavior:'smooth',block:'center'});
-}));
-function updateChangeSignButtons(){
- const current=get('pondChange');
- for(const sign of ['-','+']){
-  const id=sign==='-'?'changeMinus':'changePlus';
-  el(id).setAttribute('aria-pressed',String(current.startsWith(sign)));
+  autoChange();render();save();
  }
 }
-for(const id of ['changeMinus','changePlus']){
- el(id).addEventListener('click',()=>{
-  const sign=el(id).dataset.sign;
-  const input=el('pondChange');
-  const numericPart=input.value.replace(/^[+-]/,'');
-  input.value=sign+numericPart;
-  input.dispatchEvent(new Event('input',{bubbles:true}));
-  input.focus({preventScroll:true});
-  input.setSelectionRange(input.value.length,input.value.length);
+let changeWasAuto=false;
+function autoChange(force=false){
+ if(previousDate!==get('date')||!previous||!String(previous.pondC||'').trim()||!valid(n('pondC')))return;
+ const p=Number(previous.pondC);if(!Number.isFinite(p))return;
+ if(get('pondChange')&&!changeWasAuto&&!force)return;
+ const delta=n('pondC')-p;el('pondChange').value=(delta>0?'+':'')+delta.toFixed(2);changeWasAuto=true;
+}
+function totalizer(prefix,dest){
+ const before=get(prefix+'TotalizerPrevious'),after=get(prefix+'TotalizerCurrent'),regex=/^(?:\d+(?:\.\d+)?|\.\d+)$/;
+ if(!regex.test(before)||!regex.test(after)||Number(after)<Number(before))return alert('Semak kedua-dua totalizer. Bacaan semasa mesti sekurang-kurangnya bacaan sebelumnya.');
+ const delta=(Number(after)-Number(before))/(get(prefix+'TotalizerUnit')==='ML'?1:1000);
+ if(delta>1000)return alert('Beza totalizer terlalu tinggi. Semak unit dan tempoh 24 jam.');
+ if(get(dest)&&!confirm('Ganti '+fieldLabel(dest)+' dengan '+delta.toFixed(3)+'?'))return;
+ el(dest).value=delta.toFixed(3);changed();
+}
+function setStep(next,scroll=true){
+ step=next;
+ for(const id of ['readings','dosing','reports'])el(id).hidden=id!==step;
+ document.querySelectorAll('[data-m-step]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.mStep===step)));
+ el('previous').textContent=step==='readings'?'Bacaan':step==='dosing'?'← Bacaan':'← Dosing';
+ el('next').textContent=step==='readings'?'Dosing →':step==='dosing'?'Laporan →':'Semak bacaan';
+ renderReports();if(scroll)document.querySelector('.collectTabs').scrollIntoView({behavior:'smooth',block:'start'});
+}
+for(let no=1;no<=6;no++){
+ const link=document.createElement('button');link.type='button';link.id='m_reportLink_'+no;
+ const title=document.createElement('span');title.textContent=no+' · '+reportNames[no-1];link.append(title,document.createElement('small'));
+ link.addEventListener('click',()=>{el('card_'+no).open=true;el('card_'+no).scrollIntoView({behavior:'smooth',block:'start'})});el('reportLinks').append(link);
+ const card=document.createElement('details');card.id='m_card_'+no;card.className='more';
+ card.innerHTML='<summary>'+no+' · '+reportNames[no-1]+'</summary><div class="moreBody"><button type="button" class="mSmallBtn" id="m_check_'+no+'">Semak bacaan laporan ini</button><div class="preview" id="m_preview_'+no+'" tabindex="0"></div><div class="btns"><button type="button" class="btn light" id="m_copy_'+no+'">Salin</button><button type="submit" class="btn wa" form="m_share" name="formatNumber" value="'+no+'">WhatsApp</button></div><label class="collectCheck"><input id="m_done_'+no+'" type="checkbox">Saya sudah tekan Send dalam WhatsApp</label></div>';
+ el('reportCards').append(card);
+ el('done_'+no).addEventListener('change',()=>{const key='rqS2MorningSix-'+get('date'),done=readJSON(key,{});done[String(no)]=el('done_'+no).checked;putJSON(key,done);renderReports()});
+ el('check_'+no).addEventListener('click',()=>{const issues=reportIssues(no);if(issues.length)focusIssue(issues[0]);else alert('Bacaan laporan ini lengkap. Semak preview sebelum hantar.')});
+ el('copy_'+no).addEventListener('click',async()=>{
+  const issues=reportIssues(no);if(issues.length){focusIssue(issues[0]);alert('Semak '+fieldLabel(issues[0]));return}
+  try{await navigator.clipboard.writeText(reportText(no));el('draft').textContent='Laporan '+no+' disalin.'}catch{alert('Salin teks daripada preview laporan ini.')}
  });
 }
-el('pondChange').addEventListener('input',updateChangeSignButtons);
-
-sivKeys.forEach(k=>el(k).addEventListener(k==='sivStatus'?'change':'input',()=>{render();save()}));
+el('share').addEventListener('submit',event=>{
+ const no=Number(event.submitter?.value);if(!reportFields[no]){event.preventDefault();return}
+ const issues=reportIssues(no);if(issues.length){event.preventDefault();focusIssue(issues[0]);alert('Semak '+fieldLabel(issues[0]));return}
+ if(!get('operator')){event.preventDefault();el('operator').focus();alert('Isi nama penyedia laporan.');return}
+ const code=localStorage.getItem('s2_access_key');
+ if(!code){event.preventDefault();if(typeof showLiveAccess==='function')showLiveAccess(true);document.getElementById('liveBoard')?.scrollIntoView({behavior:'smooth'});alert('Masukkan access code S2 dahulu.');return}
+ if(expectedUpdatedAt===null){event.preventDefault();retrieve(false,true);alert('Semak rekod online dahulu. Jika draf berbeza, tekan Rekod online dan semak bacaan sebelum cuba semula.');return}
+ el('waRevision').value=expectedUpdatedAt;el('waKey').value=code;el('waDate').value=get('date');el('waOperator').value=get('operator');el('waValues').value=JSON.stringify(formData().values);el('waText').value=reportText(no);save();
+});
+document.querySelectorAll('[data-m-step]').forEach(b=>b.addEventListener('click',()=>setStep(b.dataset.mStep)));
+el('previous').addEventListener('click',()=>setStep(step==='reports'?'dosing':'readings'));
+el('next').addEventListener('click',()=>{
+ if(step==='reports'){
+  const issues=[1,2,3,4,5,6].flatMap(reportIssues);if(issues.length)focusIssue(issues[0]);else alert('Enam laporan lengkap. Semak preview dan hantar satu per satu.');
+ }else setStep(step==='readings'?'dosing':'reports');
+});
+for(const id of [...keys,...extraKeys])if(el(id).type!=='hidden')el(id).addEventListener(el(id).tagName==='SELECT'?'change':'input',()=>{
+ if(id==='pondStorage')el('storageAuto').checked=false;
+ if(id==='criticalStorage')el('criticalStorageAuto').checked=false;
+ if(id==='pondChange')changeWasAuto=false;
+ if(id==='pondC')autoChange();el(id).removeAttribute('aria-invalid');changed();
+});
+for(const id of ['storageAuto','criticalStorageAuto','pondAProblem'])el(id).addEventListener('change',changed);
 el('operator').addEventListener('input',save);
-el('pondAProblem').addEventListener('change',()=>{render();save()});
-el('pondANote').addEventListener('input',()=>{render();save()});
-el('load').addEventListener('click',()=>retrieve(false));
-
-el('calcPondChange').addEventListener('click',async()=>{
- if(previousDate!==get('date')||!valid(previousPondC))await loadPreviousLevel(true);
- if(!valid(previousPondC))return alert('Tiada bacaan Pond C 0700 semalam dalam database.');
- const level=n('pondC');if(!valid(level))return alert('Isi paras Pond C hari ini dahulu.');
- if(get('pondChange')&&get('pondChange')!==pondChangeAutoValue&&!confirm('Ganti perubahan yang telah diisi dengan beza level semalam?'))return;
- el('pondChange').value=signedChange(level,previousPondC);pondChangeAutoValue=get('pondChange');render();save();
+el('firstDayAverage').addEventListener('click',()=>{if(!get('date').endsWith('-01')||!valid(n('production')))return alert('Isi Total Prod pada hari pertama bulan dahulu.');el('monthlyAverage').value=get('production');changed()});
+for(const [id,sign] of [['changeMinus','-'],['changePlus','+']])el(id).addEventListener('click',()=>{el('pondChange').value=sign+get('pondChange').replace(/^[+-]/,'');changeWasAuto=false;changed();el('pondChange').focus({preventScroll:true})});
+el('noAux').addEventListener('click',()=>{if(['wt1','sjamB','sjamCActual','sjamCHourly'].some(k=>n(k)>0)&&!confirm('Ganti bacaan WT1, SJAM B dan SJAM C dengan 0 kerana tidak beroperasi?'))return;for(const k of ['wt1','sjamB','sjamCActual','sjamCHourly'])el(k).value='0';changed()});
+el('calcPondChange').addEventListener('click',async()=>{if(!previous)await loadPrevious();if(!previous?.pondC||!valid(n('pondC')))return alert('Isi Pond C hari ini dan pastikan rekod semalam tersedia.');if(get('pondChange')&&!confirm('Kira semula perubahan berdasarkan paras semalam?'))return;autoChange(true);changed()});
+el('applyRwTotalizer').addEventListener('click',()=>totalizer('rw','rwAbst'));el('applyTwTotalizer').addEventListener('click',()=>totalizer('tw','production'));
+el('load').addEventListener('click',()=>retrieve(true));
+el('date').addEventListener('change',()=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(get('date')))return;changeWasAuto=false;const hasDraft=restore();setStep('readings',false);retrieve(false,hasDraft);loadPrevious()});
+// Numeric keyboard Next moves between visible fields without changing any value.
+el('readings').addEventListener('keydown',event=>{
+ if(event.key!=='Enter'||event.target.tagName!=='INPUT')return;
+ event.preventDefault();const inputs=[...el('readings').querySelectorAll('input:not([type=checkbox]),select')].filter(x=>x.getClientRects().length),index=inputs.indexOf(event.target);inputs[index+1]?.focus();
 });
-
-el('copyOps').addEventListener('click',async()=>{
- if(!selectedReportOK('ops'))return;
- const issue=morningOpsIssue();
- if(issue)return alert(issue);
- try{await navigator.clipboard.writeText(morningOpsText());alert('Report Operasi 0700 disalin.')}
- catch{el('card_ops').open=true;alert('Sila salin teks dari Preview Operasi.')}
-});
-document.getElementById('m_opsShare').addEventListener('submit',event=>{
- if(!selectedReportOK('ops')){event.preventDefault();return}
- const issue=morningOpsIssue();
- if(issue){event.preventDefault();el('card_ops').open=true;alert(issue);return}
- const code=localStorage.getItem('s2_access_key');
- if(!code){event.preventDefault();if(typeof showLiveAccess==='function')showLiveAccess(true);alert('Masukkan access code S2 dahulu.');return}
- el('opsAccess').value=code;
- el('opsDate').value=get('date');
- el('opsOperator').value=get('operator')||'-';
- el('opsShift').value='MALAM (0700)';
- el('opsData').value=JSON.stringify(morningOpsData());
- el('opsText').value=morningOpsText();
- save();
-});
-
-document.querySelectorAll('.m_copy').forEach(b=>b.addEventListener('click',async()=>{
- const n=Number(b.dataset.number),txt=reportText(n);
- if(!selectedReportOK(String(n)))return;
- if(n===5&&sivValid())return alert(sivValid());
- try{await navigator.clipboard.writeText(txt);alert('Format '+n+' sudah disalin.')}
- catch{el('card_'+n).open=true;alert('Sila salin teks melalui Preview WhatsApp.')}
-}));
-document.getElementById('m_share').addEventListener('submit',event=>{
- const no=Number(event.submitter?.value||0);
- if(expectedUpdatedAt===null){event.preventDefault();retrieve(true);alert('Semak sambungan rekod online dahulu, kemudian cuba hantar semula.');return}
- if(![1,2,3,4,5].includes(no)){event.preventDefault();return}
- if(no===5&&sivValid()){event.preventDefault();alert(sivValid());return}
- if([2,3,4].includes(no)&&criticalFlowIssue()){
-  event.preventDefault();alert(criticalFlowIssue());el('pondCFlowValue').scrollIntoView({behavior:'smooth',block:'center'});return;
- }
- const code=localStorage.getItem('s2_access_key');
- if(!code){
-  event.preventDefault();
-  if(typeof showLiveAccess==='function')showLiveAccess(true);
-  document.getElementById('liveBoard')?.scrollIntoView({behavior:'smooth'});
-  alert('Masukkan access code S2 pada Status Semasa Loji dahulu.');return
- }
- if(!selectedReportOK(String(no))){event.preventDefault();return}
- const missing=reportIssues(String(no)).missing;
- if(no!==5&&missing.length&&!confirm('Laporan ini masih ada '+missing.length+' bacaan kosong: '+missing.map(fieldLabel).join(', ')+'. Teruskan dengan tanda - ?')){event.preventDefault();return}
- el('waRevision').value=expectedUpdatedAt;el('waKey').value=code;el('waDate').value=get('date');el('waOperator').value=get('operator')||'-';
- el('waValues').value=JSON.stringify(formData().values);el('waText').value=reportText(no);
- save();
-});
-window.morningTabChanged=tab=>{
- document.querySelector('.bottom')?.classList.toggle('morningHide',tab==='morning');
- if(tab==='morning'){render();renderChecklist();loadPreviousLevel(false)}
-};
+el('date').value=localDate();el('operator').value=localStorage.getItem('rqS2MorningOperator')||localStorage.getItem('s2_leader')||'';
+const initialDraft=restore();setStep('readings',false);retrieve(false,initialDraft);loadPrevious();
+let observedToday=localDate();
+function checkDate(){const today=localDate();if(today!==observedToday&&get('date')===observedToday){save();el('date').value=today;el('date').dispatchEvent(new Event('change'))}observedToday=today}
+window.addEventListener('focus',checkDate);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkDate()});
+window.morningTabChanged=tab=>document.querySelector('.bottom')?.classList.toggle('morningHide',tab==='morning');
 window.morningTabChanged(localStorage.getItem('rqLraActiveTab')||'ops');
-const params=new URLSearchParams(location.search);
-if(params.get('tab')==='morning'){
- if(typeof switchTab==='function')switchTab('morning');
- if(params.get('format')==='5')el('card_5').open=true;
-}
-const checkDate=()=>{
- const next=localDate();
- if(next!==lastDate&&el('date').value===lastDate){el('date').value=next;restore();retrieve(true);renderChecklist();loadPreviousLevel(true)}
- lastDate=next;
-};
-window.addEventListener('focus',checkDate);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkDate()});
-renderChecklist();
-loadPreviousLevel(false);
-// Operasi 0700 preview kini hanya mengikuti bacaan tab 0700, bukan tab Operasi syif.
-retrieve(true);
+if(new URLSearchParams(location.search).get('tab')==='morning'&&typeof switchTab==='function')switchTab('morning');
 })();
