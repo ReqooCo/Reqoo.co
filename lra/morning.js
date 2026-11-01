@@ -458,6 +458,16 @@ for(const id of ['storageAuto','criticalStorageAuto','pondAProblem'])el(id).addE
 el('operator').addEventListener('input',save);
 el('firstDayAverage').addEventListener('click',()=>{if(!get('date').endsWith('-01')||!valid(n('production')))return alert('Isi Total Prod pada hari pertama bulan dahulu.');el('monthlyAverage').value=get('production');changed()});
 for(const [id,sign] of [['changeMinus','-'],['changePlus','+']])el(id).addEventListener('click',()=>{el('pondChange').value=sign+get('pondChange').replace(/^[+-]/,'');changeWasAuto=false;changed();el('pondChange').focus({preventScroll:true})});
+// Explicitly mark individual inactive sources; never turn unknown readings into zero.
+for(const id of ['intakeB','wt1','sjamB','sjamCActual','sjamCHourly']){
+ const button=document.createElement('button');button.type='button';button.className='mSmallBtn';
+ button.textContent='Tidak beroperasi → 0';button.setAttribute('aria-label',fieldLabel(id)+' tidak beroperasi, isi 0');
+ button.addEventListener('click',()=>{
+  if(n(id)>0&&!confirm('Ganti '+fieldLabel(id)+' dengan 0 kerana tidak beroperasi?'))return;
+  el(id).value='0';el(id).removeAttribute('aria-invalid');changed();
+ });
+ el(id).insertAdjacentElement('afterend',button);
+}
 el('noAux').addEventListener('click',()=>{if(['wt1','sjamB','sjamCActual','sjamCHourly'].some(k=>n(k)>0)&&!confirm('Ganti bacaan WT1, SJAM B dan SJAM C dengan 0 kerana tidak beroperasi?'))return;for(const k of ['wt1','sjamB','sjamCActual','sjamCHourly'])el(k).value='0';changed()});
 el('calcPondChange').addEventListener('click',async()=>{if(!previous)await loadPrevious();if(!previous?.pondC||!valid(n('pondC')))return alert('Isi Pond C hari ini dan pastikan rekod semalam tersedia.');if(get('pondChange')&&!confirm('Kira semula perubahan berdasarkan paras semalam?'))return;autoChange(true);changed()});
 el('applyRwTotalizer').addEventListener('click',()=>totalizer('rw','rwAbst'));el('applyTwTotalizer').addEventListener('click',()=>totalizer('tw','production'));
