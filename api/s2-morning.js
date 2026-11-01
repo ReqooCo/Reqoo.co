@@ -1,6 +1,6 @@
 const HEADERS={'content-type':'application/json;charset=UTF-8','cache-control':'no-store','access-control-allow-origin':'https://reqoo.co','access-control-allow-headers':'content-type,x-s2-key','access-control-allow-methods':'GET,POST,OPTIONS','x-content-type-options':'nosniff'};
 const ACCESS_HASH='da55872021a7acbbd84f80edee8c565ec1e9e5d926a1f18a4a6d6e1ed1586331';
-const KEYS=['twFlowHourly','cwt1','cwt2','production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','pondTwlLevel','criticalLevel','criticalPercent','criticalStorage','intakeB','wt1','sjamB','sjamCActual','intakeCHourly','sjamCHourly','dp1','dp2','dpOutHourly','dpPressure','sivTarget','sivStatus','sivChallengeA','sivChallengeB','twTotalizerPrevious','twTotalizerCurrent','twTotalizerUnit','rwTotalizerPrevious','rwTotalizerCurrent','rwTotalizerUnit','pondCFlowValue','pondCFlowUnit','forecastAuto','sjamForecastAuto','pondStorageAuto','criticalStorageAuto','pondAProblem','pondANote','oRwp','oTwp','oRiver','oRiverMax','oExtraNote','oRwProblem','oRwNote','oTwProblem','oTwNote','oRiverProblem','oRiverNote','oCwt1Problem','oCwt1Note','oCwt2Problem','oCwt2Note','oDp1Problem','oDp1Note','oDp2Problem','oDp2Note'];
+const KEYS=['twFlowHourly','cwt1','cwt2','production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','pondTwlLevel','criticalLevel','criticalPercent','criticalStorage','intakeB','wt1','sjamB','sjamCActual','intakeCHourly','sjamCHourly','dp1','dp2','dpOutHourly','dpPressure','sivTarget','sivStatus','sivChallengeA','sivChallengeB','twTotalizerPrevious','twTotalizerCurrent','twTotalizerUnit','rwTotalizerPrevious','rwTotalizerCurrent','rwTotalizerUnit','pondCFlowValue','pondCFlowUnit','forecastAuto','sjamForecastAuto','pondStorageAuto','criticalStorageAuto','pondAProblem','pondANote','oRwp','oTwp','oRiver','oRiverMax','oExtraNote','oRwProblem','oRwNote','oTwProblem','oTwNote','oRiverProblem','oRiverNote','oCwt1Problem','oCwt1Note','oCwt2Problem','oCwt2Note','oDp1Problem','oDp1Note','oDp2Problem','oDp2Note','dosingJson'];
 const json=(x,status=200)=>new Response(JSON.stringify(x),{status,headers:HEADERS});
 const t=(x,n=120)=>String(x??'').trim().slice(0,n);
 const dateOK=x=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(x))return false;const d=new Date(x+'T00:00:00Z');return Number.isFinite(d.valueOf())&&d.toISOString().slice(0,10)===x};
@@ -11,6 +11,43 @@ async function ensure(db){await db.batch([
   db.prepare('CREATE TABLE IF NOT EXISTS s2_morning_history (id TEXT PRIMARY KEY, report_date TEXT NOT NULL, data_json TEXT NOT NULL, updated_at TEXT NOT NULL, updated_by TEXT NOT NULL DEFAULT \'-\', format_number INTEGER NOT NULL, report_text TEXT NOT NULL)'),
   db.prepare('CREATE INDEX IF NOT EXISTS idx_s2_morning_history_date ON s2_morning_history(report_date,updated_at DESC)')
 ])}
+const DOSING_GROUPS=['pac','lime','fluoride','chlorine','carbon','polymer'];
+const DOSING_PUMPS=['pac1a','pac1b','pac2a','pac2b','lime1pre','lime1inter','lime1post','lime2pre','lime2inter','lime2post','fl1','fl2','clPre1','clPre2','clInter1','clInter2','clPost1','clPost2','carbon1','carbon2','poly1','poly2','poly3','poly4'];
+const DOSING_META=['scd','scdRange','calibration','ph','limeNote','batching','fluorideResidual','chlorineResidual','postMode'];
+function validateDosing(raw){
+ if(raw===undefined||raw===null||raw==='')return '';
+ if(typeof raw!=='string'||raw.length>16000)throw Error('Data Dosing terlalu panjang.');
+ let value;try{value=JSON.parse(raw)}catch{throw Error('Data Dosing tidak sah.')}
+ if(!value||typeof value!=='object'||Array.isArray(value))throw Error('Data Dosing tidak sah.');
+ const out={rows:{},groups:{},meta:{}};
+ for(const id of DOSING_PUMPS){
+  const row=value.rows?.[id];if(!row||!['Run','Standby'].includes(row.status))throw Error('Status pam Dosing tidak sah: '+id);
+  out.rows[id]={status:row.status};
+  for(const k of ['max','rate','dose','hz','percent','other']){if(row[k]!==undefined&&typeof row[k]!=='string')throw Error('Bacaan Dosing tidak sah.');out.rows[id][k]=t(row[k],k==='other'?160:30).replace(/[\r\n]/g,' ')}
+ }
+ for(const id of DOSING_GROUPS){
+  const g=value.groups?.[id];if(!g||!['','Auto','Manual'].includes(g.mode))throw Error('Mod Dosing tidak sah: '+id);
+  out.groups[id]={mode:g.mode,reviewed:g.reviewed===true};
+ }
+ for(const k of DOSING_META){if(value.meta?.[k]!==undefined&&typeof value.meta[k]!=='string')throw Error('Maklumat Dosing tidak sah.');out.meta[k]=t(value.meta?.[k],200).replace(/[\r\n]/g,' ')}
+ return JSON.stringify(out);
+}
+function checkDosingReport(values){
+ if(!values.dosingJson)throw Error('Lengkapkan bacaan Dosing dahulu.');
+ const dosing=JSON.parse(values.dosingJson),numeric=x=>typeof x==='string'&&/^(?:\d+(?:\.\d+)?|\.\d+)$/.test(x)&&Number.isFinite(Number(x));
+ if(!numeric(values.twFlowHourly)||Number(values.twFlowHourly)<=0||!numeric(values.pondCFlowValue)||Number(values.pondCFlowValue)<=0)throw Error('Isi flowmeter RW/TW @0700 untuk laporan Dosing.');
+ for(const id of DOSING_GROUPS)if(!dosing.groups[id].reviewed)throw Error('Sahkan status Dosing '+id+' untuk hari ini.');
+ for(const id of DOSING_PUMPS){
+  const row=dosing.rows[id];if(!numeric(row.max))throw Error('Semak max Dosing: '+id);
+  if(row.status==='Run'){
+   const other=id.startsWith('carbon')||id.startsWith('poly'),fluoride=id==='fl1'||id==='fl2';
+   if(other){if(!row.other)throw Error('Isi bacaan pam aktif: '+id)}
+   else{for(const field of fluoride?['hz','percent','rate','dose']:['rate','dose'])if(!numeric(row[field]))throw Error('Isi bacaan pam aktif: '+id);if(fluoride&&Number(row.percent)>100)throw Error('Peratus pam tidak sah.');}
+  }
+ }
+ for(const k of ['ph','fluorideResidual','chlorineResidual'])if(!numeric(dosing.meta[k]))throw Error('Isi bacaan '+k);
+ if(!/^-?(?:\d+(?:\.\d+)?|\.\d+)$/.test(dosing.meta.scd))throw Error('Isi bacaan SCD.');
+}
 function validateValues(x){
  if(!x||typeof x!=='object'||Array.isArray(x))throw Error('Data bacaan tidak sah.');
  const o={};
@@ -30,6 +67,7 @@ function validateValues(x){
    if(key==='pondCFlowUnit'){const unit=t(x[key],10)||'MLD';if(!['MLD','m3h'].includes(unit))throw Error('Unit RW Pond C tidak sah.');o[key]=unit;continue}
    if(key==='sivStatus'){const v=t(x[key],20)||'auto';if(!['auto','not','achieved'].includes(v))throw Error('Status SIV tidak sah.');o[key]=v;continue}
    if(key==='sivChallengeA'||key==='sivChallengeB'){o[key]=t(x[key],1200);continue}
+   if(key==='dosingJson'){o[key]=validateDosing(x[key]);continue}
    const value=t(x[key],50);
    if(value&&value!=='-'&&!(key==='pondChange'?/^[+-]?(?:\d+(?:\.\d+)?|\.\d+)$/:/^-?(?:\d+(?:\.\d+)?|\.\d+)$/).test(value))throw Error('Nombor tidak sah: '+key);
    o[key]=value;
@@ -89,7 +127,7 @@ export async function onRequest({request,env}){
    const x=share?form:await request.json();
    const date=t(x.reportDate,10),number=Number(x.formatNumber),operator=t(x.operator,120)||'-';
    if(!dateOK(date))throw Error('Tarikh report tidak sah.');
-   if(![1,2,3,4,5].includes(number))throw Error('Format report tidak sah.');
+   if(![1,2,3,4,5,6].includes(number))throw Error('Format report tidak sah.');
    const input=typeof x.values==='string'?JSON.parse(x.values):x.values;
    const values=validateValues(input);
    let expectedCriticalDays=null;
@@ -109,8 +147,9 @@ export async function onRequest({request,env}){
        throw Error('Format 5 memerlukan Total Prod dan Sasaran SIV yang sah.');
      }
    }
+   if(number===6)checkDosingReport(values);
    const reportText=t(x.reportText,14000);
-   if(share&&(!reportText||(number<=2?!reportText.includes('LRA Semenyih 2'):number===5?!reportText.includes('SIV'):!reportText.includes('Pond C'))))throw Error('Preview WhatsApp tidak sah.');
+   if(share&&(!reportText||(number<=2?!reportText.includes('LRA Semenyih 2'):number===5?!reportText.includes('SIV'):number===6?!reportText.includes('Status Dosing WTP Semenyih 2'):!reportText.includes('Pond C'))))throw Error('Preview WhatsApp tidak sah.');
    if(share&&expectedCriticalDays!==null&&!reportText.includes('*'+expectedCriticalDays+'* days'))
      throw Error('Preview Days to Critical tidak selaras dengan RW flow Pond C @0700. Buka semula app dan semak bacaan.');
 

@@ -76,5 +76,20 @@ for(const [hourly,status] of [['',400],['-1',400],['0',200],['100',200]]){
 }
 console.log('PASS SJAM C API rejects blank/negative and accepts explicit zero/manual positive meter');
 
+// Dosing uses the same dated morning record and optimistic revision guard.
+const iso=JSON.parse(fs.readFileSync('tests/fixtures/lra-morning-iso.json','utf8'));
+const doseValues={...values,production:'88.683',oRwp:'63',oTwp:'50',twFlowHourly:'2297',pondCFlowValue:'2349',dosingJson:JSON.stringify(iso.dosing)};
+const doseRequest={reportDate:'2026-11-01',formatNumber:6,operator:'Basit',expectedUpdatedAt:'',values:doseValues};
+const shared=await morning({request:new Request('http://local.test/api/s2-morning-share',{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded'},body:new URLSearchParams({...doseRequest,accessKey:key,values:JSON.stringify(doseValues),reportText:iso.dosingReport})}),env});
+assert.equal(shared.status,303,await shared.clone().text());assert.equal(new URL(shared.headers.get('location')).searchParams.get('text'),iso.dosingReport);
+const doseRecord=await(await call(morning,'/api/s2-morning?date=2026-11-01')).json();assert.equal(doseRecord.report.formatNumber,6);assert.equal(JSON.parse(doseRecord.report.values.dosingJson).rows.fl2.rate,'329.8');
+for(const invalid of ['unreviewed','missingRate','badPercent','malformed']){
+ const data=structuredClone(iso.dosing);if(invalid==='unreviewed')data.groups.pac.reviewed=false;
+ if(invalid==='missingRate')data.rows.pac1b.rate='';if(invalid==='badPercent')data.rows.fl2.percent='101';
+ const bad=await call(morning,'/api/s2-morning',{...doseRequest,expectedUpdatedAt:doseRecord.report.updatedAt,values:{...doseValues,dosingJson:invalid==='malformed'?'not json':JSON.stringify(data)}});assert.equal(bad.status,400,invalid);
+}
+assert.equal((await call(morning,'/api/s2-morning',{...doseRequest,expectedUpdatedAt:'stale',values:{...doseValues,production:'90'}})).status,409);
+console.log('PASS Dosing exact 303 text, shared dated persistence, reviewed groups, active pump completeness, percent bounds, invalid JSON and stale revision');
+
 console.log('PASS database runtime:',useWorkerd?'Cloudflare local workerd D1':'SQLite adapter');
 } finally {await miniflare?.dispose()}

@@ -1,0 +1,297 @@
+{
+  "values": {
+    "date": "2026-11-01",
+    "production": "88.683",
+    "designCapacity": "100",
+    "monthlyAverage": "88.683",
+    "rwAbst": "89.603",
+    "pondA": "5.43",
+    "pondB": "5.25",
+    "pondC": "11.98",
+    "pondChange": "-0.01",
+    "pondStorage": "3972.24",
+    "pondTwlCapacity": "3984.50",
+    "pondTwlLevel": "12.0",
+    "criticalLevel": "7.50",
+    "criticalPercent": "30.00",
+    "criticalStorage": "1226",
+    "intakeB": "93.625",
+    "wt1": "0",
+    "sjamB": "0",
+    "sjamCActual": "0",
+    "intakeCHourly": "2349",
+    "sjamCHourly": "0",
+    "dp1": "7.06",
+    "dp2": "7.18",
+    "dpOutHourly": "3531",
+    "dpPressure": "2.83",
+    "sivTarget": "84.300",
+    "sivStatus": "auto",
+    "pondANote": "Bacaan level tidak tepat disebabkan SCADA intake A lost communication"
+  },
+  "reports": [
+    "*LRA Semenyih 2*\n*_01/11/2026_*\n*_0700hrs_*\n\nTotal Prod : 88.683Mld\nDesign Capacity : 100.000Mld\nMargin : -11.317Mld (-11.317%)\nAve Nov Prod : 88.683Mld\nRW Abst : 89.603Mld\n\n*Pond A*\nLevel : 5.43m*\n\n*Pond B*\nLevel : 5.25m\n\n*Pond C (ORS)*\nLevel: 11.98m (-0.01m),\nStorage: 3,972.24ML,\nPercentage: *99.69%*,\nAbstraction (from pond B) :\nIntake B : 93.625Mld,\nWT1 : 0 Mld\nSJAM B : 0 Mld\nPumped (to WTP) : 89.603Mld\n\n*Kolam Desa Putra*\nNo.1 : 7.06m\nNo.2 : 7.18m\nOutflow : 3,531m3/h @ 84.744Mld\nDelivery Pressure : 2.83bar\n\n*_Bacaan level tidak tepat disebabkan SCADA intake A lost communication_*",
+    "*LRA Semenyih 2*\n*_01/11/2026_*\n*_0700hrs_*\n\nTotal Prod : 88.683Mld\nAve Nov Prod : 88.683Mld\nRW Abst : 89.603Mld\n\nKolam Desa Putra\nNo.1 : 7.06m\nNo.2 : 7.18m\n\n*ORS Semenyih 2 (Pond C):*\nLevel: 11.98m (-0.01),\nStorage: 3,972.24ML,\nPercentage: *99.69%*\nStorage to critical level (7.50m, 30.00%): 1,226 ML,\nDays to critical storage (without Pond B abstraction) : *48.7* days.\n(Intake C : 56.376Mld)\n(SJAM C to SS Intake : 0Mld)\nAbstraction (from pond B) :\nIntake B : 93.625Mld,\nWT1 : 0 Mld\nSJAM B : 0 Mld\nPumped (to WTP) : 89.603Mld\nPumped (to SS Intake) : 0 Mld",
+    "*01/11/2026*\n*0700hrs*\n\n*_Pond C_*\n\nLevel        : 11.98m\nCapacity  : 3,972.24ML (3.97MCM)\n\nInflow from Pond B\n_i) Intake B : 93.625Mld_\n_ii) WT1       : 0 Mld_\n_iii) SJAM B : 0 Mld_\n_Total : 93.625Mld_\n\nOutflow from Pond C\n_i) Intake C to WTP           : 89.603Mld_\n_ii) SJAM C to SS Intake  : 0 Mld_\n_Total : 89.603Mld_\n\n*Total volume pumped to Pond C : 93.625Mld - 89.603Mld = 4.022ML*\n\nCritical WL : 7.50m(30.00%)\n_i) Outflow to WTP : 2,349m\u00b3/hr (56.376Mld)_\n_ii) Outflow SJAM C to SS Intake : 0m\u00b3/hr (0Mld)_\n_iii) Day to critical level : *48.7* days_",
+    "*01/11/2026*\n*0700hrs*\n\n*ORS Semenyih 2 (Pond C):*\nLevel: 11.98m (TWL 12.0m),\nStorage: 3,972.24ML,\nPercentage: *99.69%*\nStorage to critical level (7.50m, 30.00%): 1,226 ML,\nDays to critical storage (without Pond B abstraction) : *48.7* days.",
+    "*SIV Not achieved today*\n*LRA SEMENYIH 2*\n*Date : 01/11/2026*\n\n*1.Current Performance :*\nPengeluaran - 88.683MLD\nSasaran Nov 2026 - 84.300MLD\nPeningkatan - 4.383MLD (5.199%)\n\n*2. Challenges :*\na) Kaedah pengiraan pengeluaran LRA Semenyih 2 :\nPengeluaran LRA Semenyih 2 = Bacaan Totalizer Tw (Semasa) - Bacaan Totalizer Tw (Sebelum)\n\nb. Pihak LRA Semenyih 2 Perlu mengawal Paras Kolam Desa Putra pada 3.00m - 7.83m seperti diminta SO bagi memenuhi Demand.\n\nNote:\nJumlah Demand LRA Semenyih 2 : *88.683Mld* (Sasaran Nov 2026: 84.300Mld)"
+  ],
+  "dosing": {
+    "rows": {
+      "pac1a": {
+        "status": "Standby",
+        "max": "232",
+        "rate": "",
+        "dose": "",
+        "hz": "",
+        "percent": "",
+        "other": ""
+      },
+      "pac1b": {
+        "status": "Run",
+        "max": "320",
+        "rate": "130.7",
+        "dose": "56",
+        "hz": "",
+        "percent": "",
+        "other": ""
+      },
+      "pac2a": {
+        "status": "Standby",
+        "max": "320",
+        "rate": "",
+        "dose": "",
+        "hz": "",
+        "percent": "",
+        "other": ""
+      },
+      "pac2b": {
+        "status": "Standby",
+        "max": "320",
+        "rate": "",
+        "dose": "",
+        "hz": "",
+        "percent": "",
+        "other": ""
+      },
+      "lime1pre": {
+        "status": "Standby",
+        "max": "29",
+        "rate": "",
+        "dose": "",
+        "hz": "",
+        "percent": "",
+        "other": ""
+      },
+      "lime1inter": {
+        "status": "Standby",
+        "max": "19",
+        "rate": "",
+        "dose": "",
+        "hz": "",
+        "percent": "",
+        "other": ""
+      },
+      "lime1post": {
+        "status": "Standby",
+        "max": "29",
+        "rate": "",
+        "dose": "",
+        "hz": "",
+        "percent": "",
+        "other": ""
+      },
+      "lime2pre": {
+        "status": "Standby",
+        "max": "29",
+        "rate": "",
+        "dose": "",
+        "hz": "",
+        "percent": "",
+        "other": ""
+      },
+      "lime2inter": {
+        "status": "Run",
+        "max": "19",
+        "rate": "43",
+        "dose": "18.43",
+        "hz": "",
+        "percent": "",
+        "other": ""
+      },
+      "lime2post": {
+        "status": "Standby",
+        "max": "29",
+        "rate": "",
+        "dose": "",
+        "hz": "",
+        "percent": "",
+        "other": ""
+      },
+      "fl1": {
+        "status": "Standby",
+        "max": "2.54",
+        "rate": "",
+        "dose": "",
+        "hz": "",
+        "percent": "",
+        "other": ""
+      },
+      "fl2": {
+        "status": "Run",
+        "max": "2.40",
+        "rate": "329.8",
+        "dose": "0.42",
+        "hz": "19",
+        "percent": "41",
+        "other": ""
+      },
+      "clPre1": {
+        "status": "Standby",
+        "max": "12",
+        "rate": "",
+        "dose": "",
+        "hz": "",
+        "percent": "",
+        "other": ""
+      },
+      "clPre2": {
+        "status": "Run",
+        "max": "12",
+        "rate": "4.6",
+        "dose": "2.0",
+        "hz": "",
+        "percent": "",
+        "other": ""
+      },
+      "clInter1": {
+        "status": "Standby",
+        "max": "12",
+        "rate": "",
+        "dose": "",
+        "hz": "",
+        "percent": "",
+        "other": ""
+      },
+      "clInter2": {
+        "status": "Standby",
+        "max": "12",
+        "rate": "",
+        "dose": "",
+        "hz": "",
+        "percent": "",
+        "other": ""
+      },
+      "clPost1": {
+        "status": "Standby",
+        "max": "18",
+        "rate": "",
+        "dose": "",
+        "hz": "",
+        "percent": "",
+        "other": ""
+      },
+      "clPost2": {
+        "status": "Run",
+        "max": "18",
+        "rate": "25",
+        "dose": "10.7",
+        "hz": "",
+        "percent": "",
+        "other": ""
+      },
+      "carbon1": {
+        "status": "Standby",
+        "max": "21",
+        "rate": "",
+        "dose": "",
+        "hz": "",
+        "percent": "",
+        "other": ""
+      },
+      "carbon2": {
+        "status": "Standby",
+        "max": "21",
+        "rate": "",
+        "dose": "",
+        "hz": "",
+        "percent": "",
+        "other": ""
+      },
+      "poly1": {
+        "status": "Standby",
+        "max": "17",
+        "rate": "",
+        "dose": "",
+        "hz": "",
+        "percent": "",
+        "other": ""
+      },
+      "poly2": {
+        "status": "Standby",
+        "max": "17",
+        "rate": "",
+        "dose": "",
+        "hz": "",
+        "percent": "",
+        "other": ""
+      },
+      "poly3": {
+        "status": "Standby",
+        "max": "280",
+        "rate": "",
+        "dose": "",
+        "hz": "",
+        "percent": "",
+        "other": ""
+      },
+      "poly4": {
+        "status": "Standby",
+        "max": "280",
+        "rate": "",
+        "dose": "",
+        "hz": "",
+        "percent": "",
+        "other": ""
+      }
+    },
+    "groups": {
+      "pac": {
+        "mode": "Auto",
+        "reviewed": true
+      },
+      "lime": {
+        "mode": "Auto",
+        "reviewed": true
+      },
+      "fluoride": {
+        "mode": "Manual",
+        "reviewed": true
+      },
+      "chlorine": {
+        "mode": "Auto",
+        "reviewed": true
+      },
+      "carbon": {
+        "mode": "",
+        "reviewed": true
+      },
+      "polymer": {
+        "mode": "",
+        "reviewed": true
+      }
+    },
+    "meta": {
+      "scd": "-0.28",
+      "scdRange": "-0.40 ~ -1.80",
+      "calibration": "10/09/2026",
+      "ph": "6.81",
+      "limeNote": "#Dose to Post",
+      "batching": "Preparation Batching",
+      "fluorideResidual": "0.54",
+      "chlorineResidual": "2.29",
+      "postMode": "Manual"
+    }
+  },
+  "dosingReport": "*Status Dosing WTP Semenyih 2*\n01/11/2026@0700hrs\n\nPengepaman Semasa : \nRW : 63 Mld\nTW : 50 Mld\n\nRW Inflow : 56.376Mld\nTW Outflow : 55.128Mld\n\n*PAC (current/max)*\nDosing Pump 1A : Standby/232mg/L\nDosing Pump 1B : 130.7L/hr@56mg/L/320mg/L\nDosing Pump 2A : Standby/320mg/L\nDosing Pump 2B : Standby/320mg/L\nDosing Mode : Auto\n\nSCD : -0.28ICu (range -0.40 ~ -1.80)(service & calibrate @ 10/09/2026)\n\n*Lime (current/max)*\n*Silo 1*\nPre Feeder : Standby/29mg/L\nInter Feeder : Standby/19mg/L\nPost Feeder : Standby/29mg/L\n\n*Silo 2*\nPre Feeder : Standby/29mg/L\nInter Feeder : 43kg/hr@18.43mg/L/19mg/L\n_#Dose to Post_\nPost Feeder : Standby/29mg/L\nPH (TPO) : 6.81\nDosing Mode : Auto\n\n*Fluoride (current/max)*\nPreparation Batching\nMetering Pump no.1 : Standby/2.54mg/L\nMetering Pump no.2 : 19Hz/41%/329.8l/hr@0.42mg/L/2.40mg/L\nResidual Fluoride (TPO) : 0.54mg/L\nDosing Mode : Manual\n\n*Chlorine (current/max)*\nPre Chlorinator 1 : Standby/12mg/L\nPre Chlorinator 2 : 4.6kg/hr@2.0mg/L/12mg/L\nDosing Mode : Auto\n\nInter Chlorinator 1 : Standby/12mg/L\nInter Chlorinator 2 : Standby/12mg/L\n\nPost Chlorinator 1 : Standby/18mg/L\nPost Chlorinator 2 : 25Kg/hr@10.7mg/L/18mg/L\nResidual Chlorine (TPO) : 2.29mg/L\nDosing Mode : Manual\n\n*Activated Carbon*\nFeeder 1 : Standby/21mg/L\nFeeder 2 : Standby/21mg/L\n\n*Polymer RTF (current/max)*\nPolymer Pump No. 1 (to STT) : standby/17mg/L\nPolymer Pump No. 2 (to STT) : standby/17mg/L\n\nPolymer Pump No. 3 (to Decanter) : standby/280mg/L\nPolymer Pump No. 4 (to Decanter) : standby/280mg/L"
+}
