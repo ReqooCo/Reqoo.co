@@ -4,7 +4,7 @@
 const el=id=>document.getElementById('m_'+id);
 const keys=['twFlowHourly','cwt1','cwt2','production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','pondTwlLevel','criticalLevel','criticalPercent','criticalStorage','intakeB','wt1','sjamB','sjamCActual','intakeCHourly','sjamCHourly','dp1','dp2','dpOutHourly','dpPressure'];
 const extraKeys=['sivTarget','sivStatus','sivChallengeA','sivChallengeB','rwTotalizerPrevious','rwTotalizerCurrent','rwTotalizerUnit','twTotalizerPrevious','twTotalizerCurrent','twTotalizerUnit','pondCFlowValue','pondCFlowUnit','pondANote','oRwp','oTwp'];
-const defaults={designCapacity:'100',pondTwlCapacity:'3984.50',pondTwlLevel:'12.0',criticalLevel:'7.50',criticalPercent:'30.00',criticalStorage:'1226'};
+const defaults={designCapacity:'100',pondTwlCapacity:'3984.50',pondTwlLevel:'12.0',criticalLevel:'7.50',criticalPercent:'30.77',criticalStorage:'1226'};
 const settingKeys=Object.keys(defaults).concat(['pondANote','sivChallengeA','sivChallengeB']);
 const noteDefault='Bacaan level tidak tepat disebabkan SCADA intake A lost communication';
 const sivDefaultA='Kaedah pengiraan pengeluaran LRA Semenyih 2 :\nPengeluaran LRA Semenyih 2 = Bacaan Totalizer Tw (Semasa) - Bacaan Totalizer Tw (Sebelum)';
@@ -340,6 +340,12 @@ function save(){
  }catch{el('draft').textContent='Draf belum dapat disimpan. Semak ruang storan telefon; salin laporan sebelum tutup.'}
 }
 function changed(){editVersion++;dirty=true;render();save()}
+function restoreReferenceDefaults(){
+ // Empty references from legacy local/online drafts are missing settings, not daily readings.
+ for(const [key,value] of Object.entries(defaults)){
+  if(['','-','—'].includes(String(el(key).value??'').trim()))el(key).value=value;
+ }
+}
 function apply(data){
  if(data?.reportDate&&data.reportDate!==get('date'))return;
  dosing=freshDosing();
@@ -361,12 +367,13 @@ function apply(data){
    Object.assign(dosing.meta,parsed.meta||{});
   }catch{}
  }
- renderDosingUI();render();
+ restoreReferenceDefaults();renderDosingUI();render();
 }
 function restore(){
  expectedUpdatedAt=null;dirty=false;editVersion++;previous=null;previousDate='';changeWasAuto=false;
  const config=readJSON('rqS2MorningSettings',{});
  for(const k of [...keys,...extraKeys])el(k).value=String((settingKeys.includes(k)?config[k]:undefined)??defaults[k]??'');
+ restoreReferenceDefaults();
  el('pondCFlowUnit').value='m3h';el('rwTotalizerUnit').value='m3';el('twTotalizerUnit').value='m3';
  el('pondANote').value=config.pondANote||noteDefault;el('sivTarget').value=sivTargetInitial();el('sivStatus').value='auto';
  el('sivChallengeA').value=config.sivChallengeA||sivDefaultA;el('sivChallengeB').value=config.sivChallengeB||sivDefaultB;

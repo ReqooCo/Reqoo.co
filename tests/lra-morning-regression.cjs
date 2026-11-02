@@ -34,6 +34,21 @@ check('previous-day comparison respects manual correction',()=>{set('pondChange'
 check('dosing exact approved output, numbering and modes',()=>{set('date','2026-11-01');set('pondCFlowValue','2349');set('twFlowHourly','2297');set('oRwp','63');set('oTwp','50');a.calculate();assert.equal(a.reportText(6),iso.dosingReport);fill()});
 check('running completeness, standby and daily review',()=>{a.dosing.rows.pac1b.rate='';assert.ok(a.reportIssues(6).includes('pac1b_rate'));a.dosing.rows.pac1b.status='Standby';assert.ok(!a.reportIssues(6).includes('pac1b_rate'));assert.match(a.reportText(6),/Dosing Pump 1B : Standby\/320mg\/L/);a.dosing.groups.pac.reviewed=false;assert.ok(a.reportIssues(6).includes('review_pac'));fill();a.dosing.rows.fl2.percent='101';assert.ok(a.reportIssues(6).includes('fl2_percent'));fill()});
 check('pump settings distinct from actual RW/TW flows',()=>{set('oRwp','');assert.ok(a.reportIssues(6).includes('oRwp'));set('oRwp','63');assert.match(a.reportText(6),/RW : 63 Mld/);assert.match(a.reportText(6),/RW Inflow : 98.568Mld/);fill()});
+
+check('blank saved reference settings recover automatically without filling daily readings',()=>{
+ storage.set('rqS2MorningSettings',JSON.stringify({designCapacity:'',pondTwlCapacity:'',pondTwlLevel:'-',criticalLevel:'—',criticalStorage:'',criticalPercent:''}));
+ set('date','2026-11-04');a.restore();
+ for(const [id,value] of Object.entries({designCapacity:'100',pondTwlCapacity:'3984.50',pondTwlLevel:'12.0',criticalLevel:'7.50',criticalStorage:'1226.00',criticalPercent:'30.77'}))assert.equal(a.get(id),value,id);
+ assert.equal(a.get('cwt1'),'');assert.equal(a.get('pondC'),'');assert.equal(a.get('production'),'');
+});
+check('blank legacy draft references recover while valid edited references survive',()=>{
+ a.apply({values:{pondTwlCapacity:'',pondTwlLevel:'',criticalLevel:'',criticalStorage:'',criticalPercent:'',pondC:'11.96',cwt1:'4.07'}});
+ assert.equal(a.get('pondStorage'),'3959.98');assert.equal(a.get('criticalStorage'),'1226.00');assert.equal(a.get('cwt1'),'4.07');
+ a.apply({values:{designCapacity:'110',pondTwlCapacity:'4000',pondStorageAuto:false,storageOverrideDate:a.get('date'),pondStorage:'3900'}});
+ assert.equal(a.get('designCapacity'),'110');assert.equal(a.get('pondTwlCapacity'),'4000');
+ storage.delete('rqS2MorningSettings');fill();
+});
+
 (async()=>{
  let resolve;context.fetch=()=>new Promise(r=>resolve=r);storage.set('s2_access_key','test-fixture');
  const pending=a.retrieve(false,false);set('production','85');a.changed();resolve({ok:true,json:async()=>({ok:true,report:{reportDate:'2026-11-02',values:{production:'999'},updatedAt:'remote'}})});await pending;
@@ -41,9 +56,9 @@ check('pump settings distinct from actual RW/TW flows',()=>{set('oRwp','');asser
  fill();storage.set('rqS2Morning0700-2026-11-01',JSON.stringify({values:{pondC:'11.98'}}));
  const previous=a.loadPrevious();set('pondChange','-0.08');a.manualChange();a.changed();resolve({ok:true,json:async()=>({ok:true,report:{reportDate:'2026-11-01',values:{pondC:'11.99'}}})});await previous;
  check('late previous-day response preserves manual delta',()=>assert.equal(a.get('pondChange'),'-0.08'));
- const handlers={},deleted=[],cache=new Map(),pendingSW=[];const swContext={URL,self:{location:{origin:'https://reqoo.co'},registration:{scope:'https://reqoo.co/lra/'},clients:{claim:async()=>{}},skipWaiting:async()=>{},addEventListener:(k,v)=>handlers[k]=v},caches:{keys:async()=>['reqoo-lra-v55','other-app'],delete:async k=>deleted.push(k),open:async()=>({addAll:async assets=>{assert.ok(assets.includes('./morning.js?v=22'))},match:async r=>cache.get(typeof r==='string'?r:r.url)})},fetch:async()=>{throw Error('offline')}};
+ const handlers={},deleted=[],cache=new Map(),pendingSW=[];const swContext={URL,self:{location:{origin:'https://reqoo.co'},registration:{scope:'https://reqoo.co/lra/'},clients:{claim:async()=>{}},skipWaiting:async()=>{},addEventListener:(k,v)=>handlers[k]=v},caches:{keys:async()=>['reqoo-lra-v55','other-app'],delete:async k=>deleted.push(k),open:async()=>({addAll:async assets=>{assert.ok(assets.includes('./morning.js?v=23'))},match:async r=>cache.get(typeof r==='string'?r:r.url)})},fetch:async()=>{throw Error('offline')}};
  vm.runInNewContext(sw,swContext);handlers.install({waitUntil:p=>pendingSW.push(p)});handlers.activate({waitUntil:p=>pendingSW.push(p)});await Promise.all(pendingSW);
- check('PWA upgrades own namespace and precaches latest JS',()=>{assert.deepEqual(deleted,['reqoo-lra-v55']);assert.match(html,/morning.js\?v=22/);assert.match(sw,/PREFIX\+'56'/)});
+ check('PWA upgrades own namespace and precaches latest JS',()=>{assert.deepEqual(deleted,['reqoo-lra-v55']);assert.match(html,/morning.js\?v=23/);assert.match(sw,/PREFIX\+'57'/)});
  let intercepted=false;handlers.fetch({request:{url:'https://reqoo.co/api/s2-morning',method:'GET'},respondWith:()=>intercepted=true});check('PWA excludes API',()=>assert.equal(intercepted,false));
  const page={offline:true};cache.set('https://reqoo.co/lra/index.html',page);let response;handlers.fetch({request:{url:'https://reqoo.co/lra/?tab=morning',method:'GET',mode:'navigate'},respondWith:p=>response=p});assert.equal(await response,page);count++;console.log('PASS offline navigation fallback');console.log(count+' regression groups passed');
 })().catch(e=>{console.error(e);process.exitCode=1});
