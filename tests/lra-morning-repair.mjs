@@ -1,0 +1,39 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+const source=fs.readFileSync('lra/morning.js','utf8');
+new vm.Script(source);
+new vm.Script(fs.readFileSync('lra/sw.js','utf8'));
+const nodes=new Map(), saved=new Map();
+function node(id=''){if(!nodes.has(id))nodes.set(id,{value:'',checked:false,hidden:false,type:'text',tagName:'INPUT',textContent:'',dataset:{},append(){},replaceChildren(){},addEventListener(){},removeAttribute(){},setAttribute(){},querySelector(){return node(id+'-child')}});return nodes.get(id)}
+let response=null;
+const context=vm.createContext({console,Intl,Date,Number,JSON,Math,URLSearchParams,location:{search:''},document:{getElementById:node,createElement:()=>node('dynamic-'+nodes.size),createTextNode:x=>x,querySelector:()=>null,querySelectorAll:()=>[]},localStorage:{getItem:k=>saved.get(k)??null,setItem:(k,v)=>saved.set(k,v)},fetch:()=>new Promise(resolve=>{response=resolve}),confirm:()=>true});
+let prefix=source.slice(0,source.lastIndexOf('for(let no=1;no<=6;no++){'));
+vm.runInContext(prefix+`
+ globalThis.test={get,n,metrics,reportText,reportIssues,storageFromLevel,calculate,apply,restore,save,formData,autoChange,loadPrevious,retrieve,freshDosing,
+ setDosing:x=>dosing=x,getDosing:()=>dosing,setPrevious:(x,date)=>{previous=x;previousDate=date},edit:()=>editVersion++};
+})();`,context);
+const t=context.test;
+const fixture={date:'2026-11-02',production:'83.718',designCapacity:'100',monthlyAverage:'86.201',rwAbst:'84.097',pondA:'5.43',pondB:'5.01',pondC:'11.96',pondChange:'-0.02',pondTwlCapacity:'3984.50',pondTwlLevel:'12',criticalLevel:'7.5',criticalPercent:'30',intakeB:'78.750',wt1:'0',sjamB:'0',sjamCActual:'0',pondCFlowValue:'4107',sjamCHourly:'0',dp1:'7.46',dp2:'7.70',dpOutHourly:'3606',dpPressure:'2.79',sivTarget:'84.300',oRwp:'126',oTwp:'100',twFlowHourly:'3606'};
+const fill=x=>Object.entries(x).forEach(([k,v])=>node('m_'+k).value=v);
+fill(fixture);node('m_storageAuto').checked=true;node('m_criticalStorageAuto').checked=true;t.setDosing(t.freshDosing());t.calculate();
+let count=0;function check(name,fn){fn();count++;console.log('PASS '+name)}
+check('syntax and exact 02 Nov numeric regression',()=>{const r=t.metrics();assert.equal(node('m_pondStorage').value,'3959.98');assert.equal(r.percent.toFixed(2),'99.38');assert.equal(r.margin.toFixed(3),'-16.282');assert.equal(r.marginPct.toFixed(3),'-16.282');assert.equal(r.inflow.toFixed(3),'78.750');assert.equal(r.outflow.toFixed(3),'84.097');assert.equal(r.net.toFixed(3),'-5.347');assert.equal(r.forecastWtp.toFixed(3),'98.568');assert.equal(r.days.toFixed(1),'27.7');assert.equal(r.dpMld.toFixed(3),'86.544');assert.equal(node('m_criticalStorage').value,'1226.00')});
+check('six WhatsApp formats and headings',()=>{for(let i=1;i<=6;i++)assert.ok(t.reportText(i).length>100);for(let i of [1,2]){assert.ok(t.reportText(i).includes('Ave Nov Prod : 86.201Mld'));assert.ok(t.reportText(i).includes('*_0700a.m_*'));assert.ok(t.reportText(i).includes('Storage: 3,959.98ML'));}assert.ok(t.reportText(3).includes('3.96MCM'));assert.ok(t.reportText(3).includes('-5.347ML/day'));assert.ok(t.reportText(4).includes('*27.7* days'));assert.ok(t.reportText(5).includes('Sasaran Nov 2026'));});
+check('unknown flow stays unknown; confirmed zero accepted',()=>{node('m_wt1').value='';assert.equal(t.get('wt1'),'');assert.ok(t.reportIssues(1).includes('wt1'));node('m_wt1').value='0';for(let i=1;i<=5;i++)assert.equal(t.reportIssues(i).length,0)});
+check('auto update, approved range, incompatible reference',()=>{node('m_pondC').value='11.98';t.calculate();assert.equal(node('m_pondStorage').value,'3972.24');node('m_pondC').value='12.01';t.calculate();assert.equal(node('m_pondStorage').value,'');assert.ok(t.reportIssues(1).length);fill(fixture);node('m_pondTwlCapacity').value='4000';t.calculate();assert.equal(node('m_pondStorage').value,'');fill(fixture);t.calculate()});
+check('explicit manual override survives same-date draft; legacy ignored',()=>{node('m_storageAuto').checked=false;node('m_pondStorage').value='3900';const data=t.formData();t.apply(data);assert.equal(node('m_pondStorage').value,'3900');delete data.values.storageOverrideDate;t.apply(data);assert.equal(node('m_pondStorage').value,'3959.98');data.values.storageOverrideDate='2026-11-01';t.apply(data);assert.equal(node('m_pondStorage').value,'3959.98')});
+check('dosing daily confirmation and running/standby transitions',()=>{const d=t.getDosing();Object.assign(d.meta,{scd:'-0.5',ph:'7.2',fluorideResidual:'0.5',chlorineResidual:'1.2'});assert.ok(t.reportIssues(6).includes('review_pac'));for(const g of Object.values(d.groups))g.reviewed=true;assert.equal(t.reportIssues(6).length,0);d.rows.pac1a.status='Run';assert.ok(t.reportIssues(6).includes('pac1a_rate'));Object.assign(d.rows.pac1a,{rate:'100',dose:'20'});assert.equal(t.reportIssues(6).length,0);assert.ok(t.reportText(6).includes('100L/hr@20mg/L/232mg/L'));d.rows.pac1a.status='Standby';assert.ok(t.reportText(6).includes('Dosing Pump 1A : Standby/232mg/L'));for(const title of ['PAC','Lime','Fluoride','Chlorine','Activated Carbon','Polymer RTF'])assert.ok(t.reportText(6).includes(title))});
+check('daily reset preserves references, clears daily values, restores draft',()=>{t.save();node('m_date').value='2026-11-03';t.restore();assert.equal(t.get('production'),'');assert.equal(t.get('wt1'),'');assert.equal(t.get('oRwp'),'');assert.equal(t.get('designCapacity'),'100');assert.equal(t.getDosing().meta.scd,'');assert.equal(t.getDosing().groups.pac.reviewed,false);node('m_date').value='2026-11-02';t.restore();assert.equal(t.get('production'),'83.718')});
+check('previous day automatic comparison preserves manual entry',()=>{t.setPrevious({pondC:'11.98'},'2026-11-02');node('m_pondChange').value='';t.autoChange();assert.equal(t.get('pondChange'),'-0.02');node('m_pondC').value='11.97';t.autoChange();assert.equal(t.get('pondChange'),'-0.01');t.restore();node('m_pondChange').value='-0.03';t.setPrevious({pondC:'11.98'},'2026-11-02');t.autoChange();assert.equal(t.get('pondChange'),'-0.03')});
+check('invalid signed, nonfinite and missing readings rejected',()=>{node('m_production').value='-1';assert.ok(t.reportIssues(1).includes('production'));node('m_production').value='Infinity';assert.ok(t.reportIssues(1).includes('production'));fill(fixture);t.calculate()});
+saved.set('s2_access_key','test-only');
+const pending=t.retrieve(false,false);t.edit();node('m_production').value='90';
+response({ok:true,json:async()=>({ok:true,report:{values:{production:'1'},updatedAt:'old'}})});await pending;
+check('asynchronous online response cannot overwrite current edits',()=>assert.equal(t.get('production'),'90'));
+const apiSource=fs.readFileSync('api/s2-morning.js','utf8');new vm.Script(apiSource.replace('export async function','async function'));
+const ac=vm.createContext({Response,URL,TextEncoder,crypto,console});vm.runInContext(apiSource.replace('export async function','async function')+';globalThis.a={validateValues,checkDosingReport};',ac);
+check('API roundtrip preserves override marker and unknown pump settings',()=>{const v=ac.a.validateValues({...fixture,storageOverrideDate:fixture.date,pondStorageAuto:false,pondStorage:'3900',pondCFlowUnit:'m3h',oRwp:'',oTwp:''});assert.equal(v.storageOverrideDate,fixture.date);assert.equal(v.pondStorage,'3900');assert.equal(v.oRwp,'');assert.throws(()=>ac.a.checkDosingReport(v));});
+const html=fs.readFileSync('lra/index.html','utf8'),sw=fs.readFileSync('lra/sw.js','utf8');
+check('PWA script version matches precache and API excluded',()=>{const src=html.match(/morning.js\?v=\d+/)[0];assert.ok(sw.includes(src));assert.ok(sw.includes("!url.pathname.startsWith(APP_PATH)"));assert.ok(sw.includes('self.clients.claim()'));assert.ok(sw.includes('self.skipWaiting()'))});
+console.log(count+' test groups passed');

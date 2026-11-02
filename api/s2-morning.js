@@ -1,6 +1,6 @@
 const HEADERS={'content-type':'application/json;charset=UTF-8','cache-control':'no-store','access-control-allow-origin':'https://reqoo.co','access-control-allow-headers':'content-type,x-s2-key','access-control-allow-methods':'GET,POST,OPTIONS','x-content-type-options':'nosniff'};
 const ACCESS_HASH='da55872021a7acbbd84f80edee8c565ec1e9e5d926a1f18a4a6d6e1ed1586331';
-const KEYS=['twFlowHourly','cwt1','cwt2','production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','pondTwlLevel','criticalLevel','criticalPercent','criticalStorage','intakeB','wt1','sjamB','sjamCActual','intakeCHourly','sjamCHourly','dp1','dp2','dpOutHourly','dpPressure','sivTarget','sivStatus','sivChallengeA','sivChallengeB','twTotalizerPrevious','twTotalizerCurrent','twTotalizerUnit','rwTotalizerPrevious','rwTotalizerCurrent','rwTotalizerUnit','pondCFlowValue','pondCFlowUnit','forecastAuto','sjamForecastAuto','pondStorageAuto','criticalStorageAuto','pondAProblem','pondANote','oRwp','oTwp','oRiver','oRiverMax','oExtraNote','oRwProblem','oRwNote','oTwProblem','oTwNote','oRiverProblem','oRiverNote','oCwt1Problem','oCwt1Note','oCwt2Problem','oCwt2Note','oDp1Problem','oDp1Note','oDp2Problem','oDp2Note','dosingJson'];
+const KEYS=['twFlowHourly','cwt1','cwt2','production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','pondTwlLevel','criticalLevel','criticalPercent','criticalStorage','intakeB','wt1','sjamB','sjamCActual','intakeCHourly','sjamCHourly','dp1','dp2','dpOutHourly','dpPressure','sivTarget','sivStatus','sivChallengeA','sivChallengeB','twTotalizerPrevious','twTotalizerCurrent','twTotalizerUnit','rwTotalizerPrevious','rwTotalizerCurrent','rwTotalizerUnit','pondCFlowValue','pondCFlowUnit','forecastAuto','sjamForecastAuto','pondStorageAuto','criticalStorageAuto','pondAProblem','pondANote','oRwp','oTwp','oRiver','oRiverMax','oExtraNote','oRwProblem','oRwNote','oTwProblem','oTwNote','oRiverProblem','oRiverNote','oCwt1Problem','oCwt1Note','oCwt2Problem','oCwt2Note','oDp1Problem','oDp1Note','oDp2Problem','oDp2Note','dosingJson','storageOverrideDate'];
 const json=(x,status=200)=>new Response(JSON.stringify(x),{status,headers:HEADERS});
 const t=(x,n=120)=>String(x??'').trim().slice(0,n);
 const dateOK=x=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(x))return false;const d=new Date(x+'T00:00:00Z');return Number.isFinite(d.valueOf())&&d.toISOString().slice(0,10)===x};
@@ -33,6 +33,7 @@ function validateDosing(raw){
  return JSON.stringify(out);
 }
 function checkDosingReport(values){
+ if(!['63','126'].includes(values.oRwp)||!['50','100'].includes(values.oTwp))throw Error('Sahkan tetapan pam RW/TW hari ini.');
  if(!values.dosingJson)throw Error('Lengkapkan bacaan Dosing dahulu.');
  const dosing=JSON.parse(values.dosingJson),numeric=x=>typeof x==='string'&&/^(?:\d+(?:\.\d+)?|\.\d+)$/.test(x)&&Number.isFinite(Number(x));
  if(!numeric(values.twFlowHourly)||Number(values.twFlowHourly)<=0||!numeric(values.pondCFlowValue)||Number(values.pondCFlowValue)<=0)throw Error('Isi flowmeter RW/TW @0700 untuk laporan Dosing.');
@@ -53,12 +54,14 @@ function validateValues(x){
  const o={};
  for(const key of KEYS){
    if(['forecastAuto','sjamForecastAuto','pondStorageAuto','criticalStorageAuto'].includes(key)){o[key]=x[key]===true;continue}
+   if(key==='storageOverrideDate'){o[key]=dateOK(x[key])?x[key]:'';continue}
    if(key==='pondAProblem'){o[key]=x[key]===true;continue}
    if(key==='pondANote'){o[key]=t(x[key],220);continue}
    if(key.startsWith('o')&&key.endsWith('Problem')){o[key]=x[key]===true;continue}
    if(key.startsWith('o')&&(key.endsWith('Note')||key==='oExtraNote')){o[key]=t(x[key],210);continue}
    if(key==='oRwp'||key==='oTwp'){
-     const val=t(x[key],10)||(key==='oRwp'?'126':'100');
+     const val=t(x[key],10);
+     if(!val){o[key]='';continue}
      if(!(key==='oRwp'?['63','126']:['50','100']).includes(val))throw Error('Kapasiti Operasi tidak sah');
      o[key]=val;continue
    }
