@@ -306,7 +306,7 @@ function reportIssues(no){
 }
 function fieldLabel(id){return document.querySelector('label[for="m_'+id+'"]')?.textContent.trim()||el(id)?.closest('label')?.textContent.trim()||id}
 function focusIssue(id){
- setStep(id.startsWith('review_')||id.startsWith('meta_')||pumpSpecs.some(([p])=>id.startsWith(p+'_'))?'dosing':'readings',false);
+ setStep(['oRwp','oTwp'].includes(id)||id.startsWith('review_')||id.startsWith('meta_')||pumpSpecs.some(([p])=>id.startsWith(p+'_'))?'dosing':'readings',false);
  const target=el(id);if(!target)return;
  for(let parent=target.parentElement;parent;parent=parent.parentElement)if(parent.tagName==='DETAILS')parent.open=true;
  target.setAttribute('aria-invalid','true');target.scrollIntoView({block:'center',behavior:'smooth'});target.focus({preventScroll:true});
