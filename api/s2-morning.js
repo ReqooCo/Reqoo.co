@@ -33,9 +33,9 @@ function validateDosing(raw){
  return JSON.stringify(out);
 }
 function checkDosingReport(values){
- if(!['63','126'].includes(values.oRwp)||!['50','100'].includes(values.oTwp))throw Error('Sahkan tetapan pam RW/TW hari ini.');
  if(!values.dosingJson)throw Error('Lengkapkan bacaan Dosing dahulu.');
  const dosing=JSON.parse(values.dosingJson),numeric=x=>typeof x==='string'&&/^(?:\d+(?:\.\d+)?|\.\d+)$/.test(x)&&Number.isFinite(Number(x));
+ if(!['63','126'].includes(values.oRwp)||!['50','100'].includes(values.oTwp))throw Error('Sahkan kapasiti pam RW/TW hari ini.');
  if(!numeric(values.twFlowHourly)||Number(values.twFlowHourly)<=0||!numeric(values.pondCFlowValue)||Number(values.pondCFlowValue)<=0)throw Error('Isi flowmeter RW/TW @0700 untuk laporan Dosing.');
  for(const id of DOSING_GROUPS)if(!dosing.groups[id].reviewed)throw Error('Sahkan status Dosing '+id+' untuk hari ini.');
  for(const id of DOSING_PUMPS){
@@ -73,6 +73,7 @@ function validateValues(x){
    if(key==='dosingJson'){o[key]=validateDosing(x[key]);continue}
    const value=t(x[key],50);
    if(value&&value!=='-'&&!(key==='pondChange'?/^[+-]?(?:\d+(?:\.\d+)?|\.\d+)$/:/^-?(?:\d+(?:\.\d+)?|\.\d+)$/).test(value))throw Error('Nombor tidak sah: '+key);
+   if(value&&value!=='-'&&key!=='pondChange'&&Number(value)<0)throw Error('Bacaan negatif tidak sah: '+key);
    o[key]=value;
  }
  // Recompute the legacy hourly field from the new dedicated 0700 Pond C flow.
@@ -101,10 +102,29 @@ function validateValues(x){
  if(o.criticalStorageAuto){
    const v=matches?volume(o.criticalLevel):null;
    o.criticalStorage=v===null?'':v.toFixed(2);
+   o.criticalPercent=v===null||Number(o.pondTwlCapacity)<=0?'':(v/Number(o.pondTwlCapacity)*100).toFixed(2);
  }
- if(o.criticalStorage&&Number(o.pondTwlCapacity)>0)o.criticalPercent=(Number(o.criticalStorage)/Number(o.pondTwlCapacity)*100).toFixed(2);
  return o;
 }
+
+function checkShareReadings(v,no){
+ const required={
+  1:['production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','intakeB','wt1','sjamB','dp1','dp2','dpOutHourly','dpPressure'],
+  2:['production','monthlyAverage','rwAbst','dp1','dp2','pondC','pondChange','pondStorage','pondTwlCapacity','criticalLevel','criticalPercent','criticalStorage','pondCFlowValue','sjamCHourly','intakeB','wt1','sjamB','sjamCActual'],
+  3:['pondC','pondStorage','intakeB','wt1','sjamB','rwAbst','sjamCActual','criticalLevel','criticalPercent','criticalStorage','pondCFlowValue','sjamCHourly'],
+  4:['pondC','pondStorage','pondTwlLevel','pondTwlCapacity','criticalLevel','criticalPercent','criticalStorage','pondCFlowValue','sjamCHourly'],
+  5:['production','sivTarget'],6:['pondCFlowValue','twFlowHourly','oRwp','oTwp']
+ };
+ for(const key of required[no]){
+  if(key==='pondA'&&v.pondAProblem&&!v.pondA)continue;
+  if(!v[key]||!Number.isFinite(Number(v[key]))||v[key]==='-')throw Error('Lengkapkan bacaan: '+key);
+ }
+ for(const key of ['designCapacity','pondTwlCapacity','sivTarget'])if(required[no].includes(key)&&Number(v[key])<=0)throw Error('Semak '+key);
+ if(required[no].includes('pondC')&&(Number(v.pondC)<7.5||Number(v.pondC)>12))throw Error('Paras Pond C di luar model 7.50–12.00m.');
+ if(v.pondStorage&&v.pondTwlCapacity&&Number(v.pondStorage)>Number(v.pondTwlCapacity))throw Error('Storage melebihi TWL.');
+ if([2,3,4].includes(no)&&(Number(v.criticalLevel)<7.5||Number(v.criticalLevel)>12||Number(v.criticalPercent)>100))throw Error('Semak rujukan critical.');
+}
+
 export async function onRequest({request,env}){
  if(request.method==='OPTIONS')return new Response(null,{status:204,headers:HEADERS});
  const u=new URL(request.url),share=u.pathname==='/api/s2-morning-share';
@@ -134,6 +154,7 @@ export async function onRequest({request,env}){
    if(![1,2,3,4,5,6].includes(number))throw Error('Format report tidak sah.');
    const input=typeof x.values==='string'?JSON.parse(x.values):x.values;
    const values=validateValues(input);
+   if(share)checkShareReadings(values,number);
    let expectedCriticalDays=null;
    if([2,3,4].includes(number)){
      const raw=values.pondCFlowValue;
