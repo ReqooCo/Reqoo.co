@@ -35,8 +35,9 @@ const sum=(...x)=>all(...x)?x.reduce((a,b)=>a+b,0):null;
 const sub=(x,y)=>all(x,y)?x-y:null;
 const mldFromHour=id=>valid(n(id))?n(id)*24/1000:null;
 const dmy=()=>{const p=get('date').split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:'-'};
+const previousMonth=()=>{const p=get('date').split('-').map(Number);if(p.length!==3||!p[0]||!p[1])return 'Monthly';return new Intl.DateTimeFormat('en-GB',{month:'short',timeZone:'UTC'}).format(new Date(Date.UTC(p[0],p[1]-2,1)))};
 const month=()=>{const dt=new Date(get('date')+'T12:00:00Z');return Number.isFinite(dt.valueOf())?new Intl.DateTimeFormat('en-GB',{month:'short',timeZone:'UTC'}).format(dt):'Monthly'};
-const head=(plant=true)=>[].concat(plant?['*LRA Semenyih 2*']:[],[plant?'*_'+dmy()+'_*':'*'+dmy()+'*',plant?'*_0700hrs_*':'*0700hrs*','']);
+const head=(plant=true)=>[].concat(plant?['*LRA Semenyih 2*']:[],[plant?'*_'+dmy()+'_*':'*'+dmy()+'*',plant?'*_0700a.m_*':'*0700a.m*','']);
 const problemA=()=>el('pondAProblem').checked;
 const pondA=()=>metres('pondA')+(problemA()?'*':'');
 const change=(includeUnit=true)=>{const raw=get('pondChange'),x=n('pondChange');return metres('pondC')+' ('+(valid(x)?(raw.startsWith('+')?'+':'')+number(x,2)+(includeUnit?'m':''):'-')+')'};
@@ -122,7 +123,7 @@ function reportText(format){
  }else if(format===2){
   l=h.concat([
    'Total Prod : '+mld('production'),
-   'Ave '+month()+' Prod : '+mld('monthlyAverage'),'RW Abst : '+mld('rwAbst'),'',
+   'Ave '+previousMonth()+' Prod : '+mld('monthlyAverage'),'RW Abst : '+mld('rwAbst'),'',
    'Kolam Desa Putra','No.1 : '+metres('dp1'),'No.2 : '+metres('dp2'),'',
    '*ORS Semenyih 2 (Pond C):*','Level: '+change(false)+',',
    'Storage: '+storage()+',','Percentage: '+percentage,
