@@ -45,6 +45,8 @@ const iso=JSON.parse(fs.readFileSync(path.join(root,'tests/fixtures/lra-morning-
   }
   await p.locator('#m_pondCFlowValue').fill('2349');await p.locator('#m_twFlowHourly').fill('2297');await p.locator('#m_sivTarget').fill('84.300');await p.locator('#m_pondAProblem').check();
   assert.equal(await p.locator('#m_days').textContent(),'48.7 hari');assert.equal(await p.locator('#m_rwMld').textContent(),'56.376 MLD');assert.equal(await p.locator('#m_twMld').textContent(),'55.128 MLD');assert.equal(await p.locator('#m_dpMld').textContent(),'84.744 MLD');
+  await p.locator('[data-m-step=dosing]').click();
+  await p.locator('#m_oRwp').selectOption('63');await p.locator('#m_oTwp').selectOption('50');await p.locator('[data-m-step=readings]').click();
   for(let i=1;i<=5;i++)assert.equal(await p.locator('#m_preview_'+i).textContent(),iso.reports[i-1],`ISO report ${i} unchanged`);
   results.push('PASS all five ISO output templates byte-for-byte unchanged; supplied 01/11 data produces 48.7 days');
   await p.locator('#m_production').fill('90.000');assert.equal(await p.locator('#m_days').textContent(),'48.7 hari');await p.locator('#m_production').fill('88.683');
@@ -70,13 +72,39 @@ const iso=JSON.parse(fs.readFileSync(path.join(root,'tests/fixtures/lra-morning-
   const captures=await p.evaluate(()=>window.testShares);assert.equal(captures.length,6);for(let i=0;i<6;i++){assert.equal(captures[i].formatNumber,String(i+1));assert.equal(captures[i].reportText,await p.locator('#m_preview_'+(i+1)).textContent())}
   await p.locator('#m_done_6').check();assert.match(await p.locator('#m_reportLink_6 small').textContent(),/Ditanda/);
   results.push('PASS six submit payloads match previews and explicit completion; no writes or messages sent');
-  await p.reload();await p.locator('[data-m-step=dosing]').click();assert.equal(await p.locator('#m_pac1b_rate').inputValue(),'130.7');assert.equal(await p.locator('#m_review_pac').isChecked(),true);
+  await p.reload();await p.locator('#m_date').fill('2026-11-01');await p.locator('#m_date').dispatchEvent('change');await p.locator('[data-m-step=dosing]').click();assert.equal(await p.locator('#m_pac1b_rate').inputValue(),'130.7');assert.equal(await p.locator('#m_review_pac').isChecked(),true);
   await p.locator('#m_date').fill('2026-11-02');await p.locator('#m_date').dispatchEvent('change');await p.locator('[data-m-step=dosing]').click();assert.equal(await p.locator('#m_pac1b_status').inputValue(),'Run');assert.equal(await p.locator('#m_pac1b_rate').inputValue(),'');assert.equal(await p.locator('#m_review_pac').isChecked(),false);assert.equal(await p.locator('#m_pondCFlowValue').inputValue(),'');assert.equal(await p.locator('#m_sivTarget').inputValue(),'84.300');
   await p.locator('#m_date').fill('2026-12-01');await p.locator('#m_date').dispatchEvent('change');assert.equal(await p.locator('#m_sivTarget').inputValue(),'');
   await p.locator('#m_date').fill('2026-11-01');await p.locator('#m_date').dispatchEvent('change');assert.equal(await p.locator('#m_pondCFlowValue').inputValue(),'2349');
   results.push('PASS same-date drafts/reviews restore; new dates retain configuration but clear readings/reviews; targets scoped to month');
   await p.locator('#m_production').fill('88,683');await p.locator('[data-m-step=reports]').click();await p.locator('#m_reportLink_1').click();await p.locator('#m_check_1').click();assert.equal(await p.evaluate(()=>document.activeElement.id),'m_production');await p.locator('#m_production').fill('88.683');
   results.push('PASS malformed numeric entry routes back to the correct field');
+
+  await p.locator('[data-m-step=dosing]').click();
+  await p.locator('#m_pac1b_status').selectOption('Standby');
+  await p.locator('#m_pac1b_status').selectOption('Run');
+  assert.equal(await p.locator('#m_pac1b_rate').inputValue(),'');
+  assert.equal(await p.locator('#m_review_pac').isChecked(),false);
+  results.push('PASS standby/running transition clears old pump readings and review');
+  await p.locator('#m_date').fill('2026-11-02');await p.locator('#m_date').press('Tab');
+  await p.locator('[data-m-step=readings]').click();
+  for(const [id,value] of Object.entries({production:'83.718',monthlyAverage:'86.201',rwAbst:'84.097',pondA:'5.43',pondB:'5.01',pondC:'11.96',pondChange:'-0.02',intakeB:'78.750',pondCFlowValue:'4107',dp1:'7.46',dp2:'7.70',dpOutHourly:'3606',dpPressure:'2.79'}))await p.locator('#m_'+id).fill(value);
+  await p.locator('#m_noAux').click();await p.locator('#m_pondAProblem').check();
+  assert.equal(await p.locator('#m_storageShown').textContent(),'3,959.98 ML');
+  assert.equal(await p.locator('#m_percent').textContent(),'99.38%');
+  assert.equal(await p.locator('#m_net').textContent(),'-5.347 ML/day');
+  assert.equal(await p.locator('#m_days').textContent(),'27.7 hari');
+  assert.match(await p.locator('#m_preview_1').textContent(),/Margin : -16.282Mld \(-16.282%\)/);
+  assert.match(await p.locator('#m_preview_2').textContent(),/Ave Nov Prod : 86.201Mld/);
+  assert.match(await p.locator('#m_preview_3').textContent(),/3.96MCM/);
+  await p.locator('#m_settings summary').click();
+  await p.locator('#m_storageAuto').uncheck();await p.locator('#m_pondStorage').fill('3900');
+  assert.equal(await p.locator('#m_storageShown').textContent(),'3,900.00 ML');
+  await p.locator('#m_storageAuto').check();
+  assert.equal(await p.locator('#m_pondStorage').inputValue(),'3959.98');
+  await p.locator('#m_settings summary').click();
+  results.push('PASS actual 02 Nov readings, auto/manual storage, all numeric forecast and volume outputs');
+
   for(const step of ['readings','dosing','reports']){
    await p.locator('[data-m-step="'+step+'"]').click();await p.evaluate(()=>scrollTo(0,0));await p.screenshot({path:path.join(out,'morning-'+step+'-390.png'),fullPage:true});
    const axe=await new AxeBuilder({page:p}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();fs.writeFileSync(path.join(out,'morning-'+step+'-axe.json'),JSON.stringify(axe.violations,null,2));assert.deepEqual(axe.violations.map(x=>({id:x.id,nodes:x.nodes.map(n=>n.target)})),[],step+' accessibility');

@@ -1,0 +1,18 @@
+name: LRA morning report regression
+on:
+  pull_request:
+    paths: ['lra/**', 'api/s2-morning.js', 'tests/lra-morning-repair.mjs', '.github/workflows/lra-morning.yml']
+  push:
+    branches: [main, fix/pond-c-auto-storage-20261103]
+    paths: ['lra/**', 'api/s2-morning.js', 'tests/lra-morning-repair.mjs', '.github/workflows/lra-morning.yml']
+permissions:
+  contents: read
+jobs:
+  morning:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: node tests/lra-morning-repair.mjs

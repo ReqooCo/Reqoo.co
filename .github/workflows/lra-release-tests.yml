@@ -27,6 +27,7 @@ jobs:
           REQOO_BROWSER: ${{ matrix.browser }}
           REQOO_TEST_OUTPUT: /tmp/lra-results
         run: |
+          node tests/lra-morning-regression.cjs
           node tests/lra-api.mjs
           LRA_D1_RUNTIME=workerd node tests/lra-api.mjs
           node tests/app-cache-isolation.mjs

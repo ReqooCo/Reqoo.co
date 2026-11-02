@@ -5,7 +5,7 @@ const el=id=>document.getElementById('m_'+id);
 const keys=['twFlowHourly','cwt1','cwt2','production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','pondTwlLevel','criticalLevel','criticalPercent','criticalStorage','intakeB','wt1','sjamB','sjamCActual','intakeCHourly','sjamCHourly','dp1','dp2','dpOutHourly','dpPressure'];
 const extraKeys=['sivTarget','sivStatus','sivChallengeA','sivChallengeB','rwTotalizerPrevious','rwTotalizerCurrent','rwTotalizerUnit','twTotalizerPrevious','twTotalizerCurrent','twTotalizerUnit','pondCFlowValue','pondCFlowUnit','pondANote','oRwp','oTwp'];
 const defaults={designCapacity:'100',pondTwlCapacity:'3984.50',pondTwlLevel:'12.0',criticalLevel:'7.50',criticalPercent:'30.00',criticalStorage:'1226'};
-const settingKeys=Object.keys(defaults).concat(['pondANote','sivChallengeA','sivChallengeB','oRwp','oTwp']);
+const settingKeys=Object.keys(defaults).concat(['pondANote','sivChallengeA','sivChallengeB']);
 const noteDefault='Bacaan level tidak tepat disebabkan SCADA intake A lost communication';
 const sivDefaultA='Kaedah pengiraan pengeluaran LRA Semenyih 2 :\nPengeluaran LRA Semenyih 2 = Bacaan Totalizer Tw (Semasa) - Bacaan Totalizer Tw (Sebelum)';
 const sivDefaultB='Pihak LRA Semenyih 2 Perlu mengawal Paras Kolam Desa Putra pada 3.00m - 7.83m seperti diminta SO bagi memenuhi Demand.';
@@ -19,9 +19,7 @@ const sivMonths=['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogos','Sep','Okt','N
 const sivTargetKey=()=> 'rqS2MorningSivTarget-'+get('date').slice(0,7);
 const sivTargetInitial=()=>localStorage.getItem(sivTargetKey())||(get('date').slice(0,7)==='2026-10'?'84.300':'');
 
-const inactiveFlowKeys=['wt1','sjamB','sjamCActual','sjamCHourly'];
-const get=id=>{const raw=String(el(id)?.value??'').trim();return inactiveFlowKeys.includes(id)&&['','-','—'].includes(raw)?'0':raw};
-function restoreInactiveFlows(){for(const id of inactiveFlowKeys)el(id).value=get(id)}
+const get=id=>String(el(id)?.value??'').trim();
 const n=id=>{const x=get(id);if(!x||x==='-')return null;const z=Number(x);return Number.isFinite(z)?z:null};
 const valid=x=>x!==null&&Number.isFinite(x);
 const all=(...x)=>x.every(valid);
@@ -36,7 +34,7 @@ const sub=(x,y)=>all(x,y)?x-y:null;
 const mldFromHour=id=>valid(n(id))?n(id)*24/1000:null;
 const dmy=()=>{const p=get('date').split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:'-'};
 const month=()=>{const dt=new Date(get('date')+'T12:00:00Z');return Number.isFinite(dt.valueOf())?new Intl.DateTimeFormat('en-GB',{month:'short',timeZone:'UTC'}).format(dt):'Monthly'};
-const head=(plant=true)=>[].concat(plant?['*LRA Semenyih 2*']:[],[plant?'*_'+dmy()+'_*':'*'+dmy()+'*',plant?'*_0700hrs_*':'*0700hrs*','']);
+const head=(plant=true)=>[].concat(plant?['*LRA Semenyih 2*']:[],[plant?'*_'+dmy()+'_*':'*'+dmy()+'*',plant?'*_0700a.m_*':'*0700a.m*','']);
 const problemA=()=>el('pondAProblem').checked;
 const pondA=()=>metres('pondA')+(problemA()?'*':'');
 const change=(includeUnit=true)=>{const raw=get('pondChange'),x=n('pondChange');return metres('pondC')+' ('+(valid(x)?(raw.startsWith('+')?'+':'')+number(x,2)+(includeUnit?'m':''):'-')+')'};
@@ -147,7 +145,7 @@ function reportText(format){
    '_i) Intake C to WTP           : '+mld('rwAbst')+'_',
    '_ii) SJAM C to SS Intake  : '+mld('sjamCActual')+'_',
    '_Total : '+outflow+'_','',
-   '*Total volume pumped to Pond C : '+inflow+' - '+outflow+' = '+valueOr(r.net,3,'ML')+'*','',
+   '*Total volume pumped to Pond C : '+inflow+' - '+outflow+' = '+valueOr(r.net,3,'ML/day')+'*','',
    'Critical WL : '+critLevel+'('+critPct+')',
    '_i) Outflow to WTP : '+hours('intakeCHourly')+' ('+valueOr(r.forecastWtp,3,'Mld')+')_',
    '_ii) Outflow SJAM C to SS Intake : '+hours('sjamCHourly')+' ('+valueOr(r.forecastSjam,0,'Mld')+')_',
@@ -202,7 +200,9 @@ function renderDosingUI(){
    for(const prop of ['status','rate','dose','hz','percent','other','max']){
     const input=el(id+'_'+prop);if(!input)continue;
     input.addEventListener(prop==='status'?'change':'input',()=>{
-     row[prop]=input.value.trim();dosing.groups[g.key].reviewed=false;el('review_'+g.key).checked=false;
+     const previousValue=row[prop];row[prop]=input.value.trim();
+     if(prop==='status'&&previousValue!==row[prop])for(const key of ['rate','dose','hz','percent','other']){row[key]='';if(el(id+'_'+key))el(id+'_'+key).value=''}
+     dosing.groups[g.key].reviewed=false;el('review_'+g.key).checked=false;
      el(id+'_values').hidden=row.status!=='Run';changed();
     });
    }
@@ -226,7 +226,7 @@ function dosingLine(spec){
  return label+' : '+val+'/'+(r.max||'-')+'mg/L';
 }
 function dosingReport(){
- const L=['*Status Dosing WTP Semenyih 2*',dmy()+'@0700hrs','','Pengepaman Semasa : ','RW : '+get('oRwp')+' Mld','TW : '+get('oTwp')+' Mld','','RW Inflow : '+valueOr(criticalFlowMld(),3,'Mld'),'TW Outflow : '+valueOr(mldFromHour('twFlowHourly'),3,'Mld'),''];
+ const L=['*Status Dosing WTP Semenyih 2*',dmy()+'@0700a.m','','Pengepaman Semasa : ','RW : '+get('oRwp')+' Mld','TW : '+get('oTwp')+' Mld','','RW Inflow : '+valueOr(criticalFlowMld(),3,'Mld'),'TW Outflow : '+valueOr(mldFromHour('twFlowHourly'),3,'Mld'),''];
  for(const g of groupSpecs){
   L.push(g.header);
   if(g.key==='fluoride')L.push(dosing.meta.batching);
@@ -252,31 +252,47 @@ function calculate(){
  el('intakeCHourly').value=get('pondCFlowValue');
  const compatible=n('pondTwlLevel')===12&&n('pondTwlCapacity')===3984.5;
  if(el('storageAuto').checked)el('pondStorage').value=compatible&&valid(storageFromLevel(n('pondC')))?storageFromLevel(n('pondC')).toFixed(2):'';
- if(el('criticalStorageAuto').checked)el('criticalStorage').value=compatible&&valid(storageFromLevel(n('criticalLevel')))?storageFromLevel(n('criticalLevel')).toFixed(2):'';
+ if(el('criticalStorageAuto').checked){
+  el('criticalStorage').value=compatible&&valid(storageFromLevel(n('criticalLevel')))?storageFromLevel(n('criticalLevel')).toFixed(2):'';
+  el('criticalPercent').value=n('pondTwlCapacity')>0&&valid(n('criticalStorage'))?(n('criticalStorage')/n('pondTwlCapacity')*100).toFixed(2):'';
+ }
  el('storageStatus').textContent='Auto storage guna'+' model rujukan 613 ML/m dalam julat 7.50–12.00m. Semak atau gunakan storage manual jika rujukan berbeza.';
  el('pondStorage').readOnly=el('storageAuto').checked;el('criticalStorage').readOnly=el('criticalStorageAuto').checked;
  const r=metrics();
- const values={rwMld:valueOr(criticalFlowMld(),3,' MLD'),twMld:valueOr(mldFromHour('twFlowHourly'),3,' MLD'),margin:valueOr(r.margin,3,' MLD'),storageShown:valueOr(n('pondStorage'),2,' ML'),percent:valueOr(r.percent,2,'%'),dpMld:valueOr(r.dpMld,3,' MLD'),net:valueOr(r.net,3,' ML'),days:valueOr(r.days,1,' hari')};
+ const values={rwMld:valueOr(criticalFlowMld(),3,' MLD'),twMld:valueOr(mldFromHour('twFlowHourly'),3,' MLD'),margin:valueOr(r.margin,3,' MLD'),storageShown:valueOr(n('pondStorage'),2,' ML'),percent:valueOr(r.percent,2,'%'),dpMld:valueOr(r.dpMld,3,' MLD'),net:valueOr(r.net,3,' ML/day'),days:valueOr(r.days,1,' hari')};
  for(const [id,text] of Object.entries(values))el(id).textContent=text;
  el('pondANoteWrap').hidden=!problemA();el('firstDayAverage').hidden=!get('date').endsWith('-01');
 }
 const reportNames=['Pengeluaran & Status Kolam','Pengeluaran & ORS Pond C','Kiraan Aliran Pond C','Ringkasan ORS Pond C','SIV','Status Dosing'];
-const reportFields={1:['production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','intakeB','wt1','sjamB','dp1','dp2','dpOutHourly','dpPressure'],2:['production','monthlyAverage','rwAbst','dp1','dp2','pondC','pondChange','pondStorage','pondTwlCapacity','criticalLevel','criticalPercent','criticalStorage','pondCFlowValue','sjamCHourly','intakeB','wt1','sjamB','sjamCActual'],3:['pondC','pondStorage','intakeB','wt1','sjamB','rwAbst','sjamCActual','criticalLevel','criticalPercent','criticalStorage','pondCFlowValue','sjamCHourly'],4:['pondC','pondStorage','pondTwlLevel','pondTwlCapacity','criticalLevel','criticalPercent','criticalStorage','pondCFlowValue','sjamCHourly'],5:['production','sivTarget'],6:['pondCFlowValue','twFlowHourly']};
+const reportFields={1:['production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','intakeB','wt1','sjamB','dp1','dp2','dpOutHourly','dpPressure'],2:['production','monthlyAverage','rwAbst','dp1','dp2','pondC','pondChange','pondStorage','pondTwlCapacity','criticalLevel','criticalPercent','criticalStorage','pondCFlowValue','sjamCHourly','intakeB','wt1','sjamB','sjamCActual'],3:['pondC','pondStorage','intakeB','wt1','sjamB','rwAbst','sjamCActual','criticalLevel','criticalPercent','criticalStorage','pondCFlowValue','sjamCHourly'],4:['pondC','pondStorage','pondTwlLevel','pondTwlCapacity','criticalLevel','criticalPercent','criticalStorage','pondCFlowValue','sjamCHourly'],5:['production','sivTarget'],6:['pondCFlowValue','twFlowHourly','oRwp','oTwp']};
 function reportIssues(no){
  const out=[];
+ const date=get('date'),dt=new Date(date+'T00:00:00Z');
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(dt.valueOf())||dt.toISOString().slice(0,10)!==date)out.push('date');
  for(const k of reportFields[no]){
   const raw=get(k);if(k==='pondA'&&problemA()&&!raw)continue;
   const regex=k==='pondChange'?/^[+-]?(?:\d+(?:\.\d+)?|\.\d+)$/:/^(?:\d+(?:\.\d+)?|\.\d+)$/;
   if(!raw||!regex.test(raw)||!Number.isFinite(Number(raw))||(['designCapacity','pondTwlCapacity','sivTarget','pondCFlowValue'].includes(k)&&Number(raw)<=0))out.push(k);
  }
  if(reportFields[no].includes('pondCFlowValue')&&!valid(criticalFlowMld())&&!out.includes('pondCFlowValue'))out.push('pondCFlowValue');
+ if(reportFields[no].includes('pondC')){
+  if(!valid(n('pondC'))||n('pondC')<7.5||n('pondC')>12)out.push('pondC');
+  if(n('pondStorage')>n('pondTwlCapacity'))out.push('pondStorage');
+ }
+ if([2,3,4].includes(no)){
+  if(n('criticalLevel')<7.5||n('criticalLevel')>12)out.push('criticalLevel');
+  if(n('criticalStorage')>n('pondTwlCapacity'))out.push('criticalStorage');
+  if(n('criticalPercent')>100)out.push('criticalPercent');
+ }
  if(no===6){
+  if(!['63','126'].includes(get('oRwp')))out.push('oRwp');
+  if(!['50','100'].includes(get('oTwp')))out.push('oTwp');
   for(const g of groupSpecs){
    for(const [id,,,kind] of g.rows){
     const r=dosing.rows[id];
-    if(!/^(?:\d+(?:\.\d+)?|\.\d+)$/.test(r.max))out.push(id+'_max');
+    if(!/^(?:\d+(?:\.\d+)?|\.\d+)$/.test(r.max)||!Number.isFinite(Number(r.max))||Number(r.max)<=0)out.push(id+'_max');
     if(r.status==='Run')for(const prop of kind==='other'?['other']:kind==='fluoride'?['hz','percent','rate','dose']:['rate','dose']){
-     if(prop==='other'?!r.other:! /^(?:\d+(?:\.\d+)?|\.\d+)$/.test(r[prop]))out.push(id+'_'+prop);
+     if(prop==='other'?!r.other||/[\r\n]/.test(r.other):! /^(?:\d+(?:\.\d+)?|\.\d+)$/.test(r[prop])||!Number.isFinite(Number(r[prop])))out.push(id+'_'+prop);
      else if(prop==='percent'&&Number(r[prop])>100)out.push(id+'_'+prop);
     }
    }
@@ -290,7 +306,7 @@ function reportIssues(no){
 }
 function fieldLabel(id){return document.querySelector('label[for="m_'+id+'"]')?.textContent.trim()||el(id)?.closest('label')?.textContent.trim()||id}
 function focusIssue(id){
- setStep(id.startsWith('review_')||id.startsWith('meta_')||pumpSpecs.some(([p])=>id.startsWith(p+'_'))?'dosing':'readings',false);
+ setStep(['oRwp','oTwp'].includes(id)||id.startsWith('review_')||id.startsWith('meta_')||pumpSpecs.some(([p])=>id.startsWith(p+'_'))?'dosing':'readings',false);
  const target=el(id);if(!target)return;
  for(let parent=target.parentElement;parent;parent=parent.parentElement)if(parent.tagName==='DETAILS')parent.open=true;
  target.setAttribute('aria-invalid','true');target.scrollIntoView({block:'center',behavior:'smooth'});target.focus({preventScroll:true});
@@ -308,6 +324,7 @@ function renderReports(){
 function render(){calculate();renderReports()}
 function formData(){
  const values={};for(const k of [...keys,...extraKeys])values[k]=get(k);
+ values.storageOverrideDate=el('storageAuto').checked?'':get('date');
  values.forecastAuto=false;values.sjamForecastAuto=false;values.pondStorageAuto=el('storageAuto').checked;values.criticalStorageAuto=el('criticalStorageAuto').checked;
  values.pondAProblem=problemA();values.dosingJson=JSON.stringify(dosing);
  return {values,operator:get('operator'),expectedUpdatedAt};
@@ -324,15 +341,16 @@ function save(){
 }
 function changed(){editVersion++;dirty=true;render();save()}
 function apply(data){
+ if(data?.reportDate&&data.reportDate!==get('date'))return;
  dosing=freshDosing();
  const values=data?.values||data||{};
  for(const k of [...keys,...extraKeys])if(el(k)&&values[k]!==undefined)el(k).value=String(values[k]);
  // Older drafts may store the dedicated rate in MLD. Convert only that field.
  if(values.pondCFlowUnit==='MLD'&&String(values.pondCFlowValue||'').trim())el('pondCFlowValue').value=String(Number(values.pondCFlowValue)*1000/24);
  el('pondCFlowUnit').value='m3h';
- el('storageAuto').checked=values.pondStorageAuto!==false;el('criticalStorageAuto').checked=values.criticalStorageAuto!==false;
- // Preserve legacy manual storage instead of silently overwriting it.
- if(values.pondStorageAuto===undefined&&String(values.pondStorage||'').trim()&&Math.abs(Number(values.pondStorage)-storageFromLevel(Number(values.pondC)))>.02)el('storageAuto').checked=false;
+ el('storageAuto').checked=!(values.storageOverrideDate===get('date')&&values.pondStorageAuto===false);
+ el('criticalStorageAuto').checked=values.criticalStorageAuto!==false;
+ // Legacy manual storage has no explicit confirmation marker and must recalculate.
  el('pondAProblem').checked=values.pondAProblem===true;
  if(data?.operator)el('operator').value=data.operator;
  if(values.dosingJson){
@@ -343,21 +361,21 @@ function apply(data){
    Object.assign(dosing.meta,parsed.meta||{});
   }catch{}
  }
- restoreInactiveFlows();renderDosingUI();render();
+ renderDosingUI();render();
 }
 function restore(){
- expectedUpdatedAt=null;dirty=false;editVersion++;previous=null;previousDate='';
+ expectedUpdatedAt=null;dirty=false;editVersion++;previous=null;previousDate='';changeWasAuto=false;
  const config=readJSON('rqS2MorningSettings',{});
- for(const k of [...keys,...extraKeys])el(k).value=String(config[k]??defaults[k]??'');
+ for(const k of [...keys,...extraKeys])el(k).value=String((settingKeys.includes(k)?config[k]:undefined)??defaults[k]??'');
  el('pondCFlowUnit').value='m3h';el('rwTotalizerUnit').value='m3';el('twTotalizerUnit').value='m3';
  el('pondANote').value=config.pondANote||noteDefault;el('sivTarget').value=sivTargetInitial();el('sivStatus').value='auto';
  el('sivChallengeA').value=config.sivChallengeA||sivDefaultA;el('sivChallengeB').value=config.sivChallengeB||sivDefaultB;
- el('oRwp').value=config.oRwp||'63';el('oTwp').value=config.oTwp||'50';
+ el('oRwp').value='';el('oTwp').value='';
  el('storageAuto').checked=true;el('criticalStorageAuto').checked=true;el('pondAProblem').checked=false;
  document.querySelectorAll('#panel-morning [aria-invalid]').forEach(x=>x.removeAttribute('aria-invalid'));
  dosing=freshDosing();const draft=readJSON(storedKey(),null);
  if(draft){apply(draft);expectedUpdatedAt=typeof draft.expectedUpdatedAt==='string'?draft.expectedUpdatedAt:null}
- else{restoreInactiveFlows();renderDosingUI();render()}
+ else{renderDosingUI();render()}
  el('draft').textContent=draft?'Draf '+dmy()+' dipulihkan':'Catatan baharu · '+dmy();el('onlineStatus').textContent='';
  return !!draft;
 }
@@ -367,8 +385,9 @@ async function retrieve(manual=false,hasDraft=true){
  el('onlineStatus').textContent='Menyemak rekod online…';
  try{
   const res=await fetch('/api/s2-morning?date='+date,{headers:{'X-S2-Key':code},cache:'no-store'}),j=await res.json();
-  if(get('date')!==date)return;
+  if(get('date')!==date||version!==editVersion)return;
   if(!res.ok||!j.ok)throw Error(j.error||'Ralat database');
+  if(j.report?.reportDate&&j.report.reportDate!==date)throw Error('Tarikh rekod online tidak sepadan');
   if(!j.report){expectedUpdatedAt='';el('onlineStatus').textContent='Belum ada rekod online '+dmy()+'. Draf di telefon dikekalkan.';save();return}
   if(manual){
    if(version!==editVersion){el('onlineStatus').textContent='Bacaan sedang disunting. Tekan Rekod online semula selepas selesai.';return}
@@ -379,22 +398,22 @@ async function retrieve(manual=false,hasDraft=true){
  }catch(e){if(get('date')===date)el('onlineStatus').textContent='Online belum tersedia: '+e.message+'. Draf telefon dikekalkan.'}
 }
 async function loadPrevious(){
- const date=get('date'),token=++dateToken,prior=previousDay(date),cached=readJSON('rqS2Morning0700-'+prior,null);
+ const date=get('date'),token=++dateToken,version=editVersion,prior=previousDay(date),cached=readJSON('rqS2Morning0700-'+prior,null);
  previous=cached?.values||null;previousDate=date;
  const code=localStorage.getItem('s2_access_key');
  if(code)try{
   const res=await fetch('/api/s2-morning?date='+prior,{headers:{'X-S2-Key':code},cache:'no-store'}),j=await res.json();
   if(token!==dateToken||get('date')!==date)return;
-  if(res.ok&&j.ok&&j.report)previous=j.report.values;
+  if(res.ok&&j.ok&&j.report&&(!j.report.reportDate||j.report.reportDate===prior))previous=j.report.values;
  }catch{}
  if(token!==dateToken||get('date')!==date)return;
  el('pondChangeStatus').textContent=previous?.pondC?'Pond C semalam: '+previous.pondC+'m':'Tiada rekod paras semalam. Isi perubahan secara manual.';
  if(previous){
   // These are yesterday's counters, not today's readings or daily totals.
-  for(const prefix of ['rw','tw'])if(!get(prefix+'TotalizerPrevious')&&previous[prefix+'TotalizerCurrent']){
+  for(const prefix of ['rw','tw'])if(version===editVersion&&!get(prefix+'TotalizerPrevious')&&previous[prefix+'TotalizerCurrent']){
    el(prefix+'TotalizerPrevious').value=previous[prefix+'TotalizerCurrent'];el(prefix+'TotalizerUnit').value=previous[prefix+'TotalizerUnit']==='ML'?'ML':'m3';
   }
-  autoChange();render();save();
+  if(version===editVersion)autoChange();render();save();
  }
 }
 let changeWasAuto=false;
