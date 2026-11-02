@@ -115,7 +115,7 @@ function reportText(format){
   ]);
   if(problemA()){
    const note=(get('pondANote')||noteDefault).replace(/\*/g,'').trim();
-   l.push('','*_'+note+'_*');
+   l.push('','_*'+note+'_');
   }
  }else if(format===2){
   l=h.concat([
