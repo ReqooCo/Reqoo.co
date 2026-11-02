@@ -251,6 +251,8 @@ function calculate(){
  const compatible=n('pondTwlLevel')===12&&n('pondTwlCapacity')===3984.5;
  if(el('storageAuto').checked)el('pondStorage').value=compatible&&valid(storageFromLevel(n('pondC')))?storageFromLevel(n('pondC')).toFixed(2):'';
  if(el('criticalStorageAuto').checked)el('criticalStorage').value=compatible&&valid(storageFromLevel(n('criticalLevel')))?storageFromLevel(n('criticalLevel')).toFixed(2):'';
+ el('criticalPercent').value=all(n('criticalStorage'),n('pondTwlCapacity'))&&n('pondTwlCapacity')>0?(n('criticalStorage')/n('pondTwlCapacity')*100).toFixed(2):'';
+ el('criticalPercent').readOnly=true;
  el('storageStatus').textContent='Auto storage guna'+' model rujukan 613 ML/m dalam julat 7.50–12.00m. Semak atau gunakan storage manual jika rujukan berbeza.';
  el('pondStorage').readOnly=el('storageAuto').checked;el('criticalStorage').readOnly=el('criticalStorageAuto').checked;
  const r=metrics();

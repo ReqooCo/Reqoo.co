@@ -102,6 +102,7 @@ function validateValues(x){
    const v=matches?volume(o.criticalLevel):null;
    o.criticalStorage=v===null?'':v.toFixed(2);
  }
+ if(o.criticalStorage&&Number(o.pondTwlCapacity)>0)o.criticalPercent=(Number(o.criticalStorage)/Number(o.pondTwlCapacity)*100).toFixed(2);
  return o;
 }
 export async function onRequest({request,env}){
