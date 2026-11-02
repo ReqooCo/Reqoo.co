@@ -5,7 +5,7 @@ export async function sendPush(env,subscription,payload,transport=fetch){
  if(!pushConfigured(env))throw Error('Push is not configured');
  if(!validPushEndpoint(subscription.endpoint))throw Error('Invalid push service');
  const request=await buildPushPayload({data:JSON.stringify(payload),options:{ttl:3600}},subscription,{subject:'https://reqoo.co',publicKey:env.REQOO_VAPID_PUBLIC_KEY,privateKey:env.REQOO_VAPID_PRIVATE_KEY});
- return transport(subscription.endpoint,{...request,redirect:'error',signal:AbortSignal.timeout(15000)});
+ return transport(subscription.endpoint,{...request,redirect:'manual',signal:AbortSignal.timeout(15000)});
 }
 // Called only after the canonical write succeeds. Failures never undo an order/payment.
 export async function notifyAdmin(env,eventId,title,orderId){

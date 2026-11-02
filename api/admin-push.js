@@ -23,6 +23,7 @@ export async function handleAdminPush(request,env,authenticated){
  let data;try{data=JSON.parse(raw)}catch{return response({ok:false,error:'Invalid JSON'},400)}
  const endpoint=String(data?.endpoint||'');
  if(!validEndpoint(endpoint))return response({ok:false,error:'Invalid endpoint'},400);
+ let operation='storage';
  try{
  if(path==='/api/admin-push/status'){
   const row=await env.DB.prepare('SELECT last_success_at FROM admin_push_subscriptions WHERE endpoint=? AND disabled_at IS NULL').bind(endpoint).first();return response({ok:true,enabled:!!row,lastSuccessAt:row?.last_success_at||null});
@@ -33,6 +34,7 @@ export async function handleAdminPush(request,env,authenticated){
   if(!row)return response({ok:false,error:'Enable notifications on this device first'},404);
   const limit=await env.DB.prepare("UPDATE admin_push_subscriptions SET updated_at=datetime('now') WHERE id=? AND updated_at<=datetime('now','-10 seconds')").bind(row.id).run();
   if(!limit.meta?.changes)return response({ok:false,error:'Wait 10 seconds before testing again'},429);
+  operation='delivery';
   const r=await sendPush(env,{endpoint:row.endpoint,keys:{p256dh:row.p256dh,auth:row.auth_secret}},{id:crypto.randomUUID(),title:'REQOO Test',body:'Notifications are working.',url:'/admin/'});await r.body?.cancel();
   if([404,410].includes(r.status))await env.DB.prepare('DELETE FROM admin_push_subscriptions WHERE endpoint=?').bind(endpoint).run();
   return response({ok:r.ok,accepted:r.ok,...(!r.ok?{error:'Push service rejected delivery',status:r.status}:{})},r.ok?200:502);
@@ -47,5 +49,5 @@ export async function handleAdminPush(request,env,authenticated){
  const id=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(endpoint)))).map(x=>x.toString(16).padStart(2,'0')).join('');
  await env.DB.prepare("INSERT INTO admin_push_subscriptions (id,endpoint,p256dh,auth_secret) VALUES (?,?,?,?) ON CONFLICT(endpoint) DO UPDATE SET p256dh=excluded.p256dh,auth_secret=excluded.auth_secret,updated_at=datetime('now'),disabled_at=NULL").bind(id,endpoint,p256dh,auth).run();
  return response({ok:true});
- }catch{return response({ok:false,error:'Subscription storage unavailable'},503)}
+ }catch(e){console.error('Admin push operation failed',{operation,name:e?.name||'Error'});return response({ok:false,error:operation==='delivery'?'Push delivery unavailable. Try again.':'Subscription storage unavailable'},503)}
 }

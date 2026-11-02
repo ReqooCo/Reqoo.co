@@ -45,7 +45,7 @@ test('RFC8291 payload decrypts and VAPID signature verifies',async()=>{
   const ikm=await derive(shared,auth,info,256),cek=await derive(ikm,salt,Buffer.from('Content-Encoding: aes128gcm\0'),128),nonce=await derive(ikm,salt,Buffer.from('Content-Encoding: nonce\0'),96);
   const clear=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:nonce},await crypto.subtle.importKey('raw',cek,'AES-GCM',false,['decrypt']),body.slice(21+len)));
   let end=clear.length-1;while(clear[end]===0)end--;assert.equal(clear[end],2);assert.deepEqual(JSON.parse(new TextDecoder().decode(clear.slice(0,end))),{title:'REQOO Test'});
-  assert.equal(req.redirect,'error');return new Response(null,{status:201});
+  assert.equal(req.redirect,'manual');return new Response(null,{status:201});
  });
 });
 test('deduplication, concurrent claims, expiry removal and retry status',async()=>{
@@ -56,4 +56,13 @@ test('deduplication, concurrent claims, expiry removal and retry status',async()
  await Promise.all([dispatchPush(e),dispatchPush(e)]);assert.equal(count,1);
  await env.DB.prepare("INSERT INTO admin_push_events(id,payload) VALUES('expired','{}')").run();await env.DB.prepare("INSERT INTO admin_push_deliveries(event_id,subscription_id) SELECT 'expired',id FROM admin_push_subscriptions").run();await dispatchPush(e,async()=>new Response(null,{status:410}));assert.equal(sqlite.prepare('SELECT COUNT(*) n FROM admin_push_subscriptions').get().n,0);
  }finally{globalThis.fetch=original}
+});
+
+test('Cloudflare-compatible redirect handling does not follow push-service redirects',async()=>{
+ let calls=0;
+ const response=await sendPush(env,subscription,{title:'Test'},async(url,init)=>{
+  calls++;if(init.redirect==='error')throw new TypeError('Invalid redirect value at the edge');
+  assert.equal(init.redirect,'manual');return new Response(null,{status:302,headers:{location:'https://untrusted.example/'}});
+ });
+ assert.equal(response.status,302);assert.equal(response.ok,false);assert.equal(calls,1);
 });
