@@ -17,7 +17,8 @@ const DB={
   }},
   async batch(stmts){sqlite.exec('BEGIN');try{const out=[];for(const stmt of stmts)out.push(await stmt.run());sqlite.exec('COMMIT');return out}catch(e){sqlite.exec('ROLLBACK');throw e}}
 };
-const env={DB,REQOO_ADMIN_TOKEN:'test-only'};
+for(const file of ['20261102_admin_push_subscriptions.sql','20261102_admin_push_delivery.sql'])sqlite.exec(fs.readFileSync(new URL('../migrations/'+file,import.meta.url),'utf8'));
+const env={REQOO_VAPID_PUBLIC_KEY:'A'.repeat(87),REQOO_VAPID_PRIVATE_KEY:'A'.repeat(43),DB,REQOO_ADMIN_TOKEN:'test-only'};
 async function call(action,data={}){
   const response=await onRequest({env,request:new Request('https://example.test/api/shop-admin',{method:'POST',headers:{'content-type':'application/json','X-Admin-Token':'test-only'},body:JSON.stringify({action,...data})})});
   return {httpStatus:response.status,...await response.json()};
@@ -62,5 +63,16 @@ try{
   assert.equal(dashboard.commandCenter.today_collected_minor,20000,'Overview collection must include admin-verified payments without opening Finance first');
   assert.equal(dashboard.commandCenter.today_collected_count,2);
 
+  seed('push_partial',12500);
+  const start=sqlite.prepare('SELECT COUNT(*) n FROM admin_push_events').get().n;
+  for(const [amount,paymentType] of [[3000,'deposit'],[2000,'partial'],[7500,'final']]){
+    const requestId=crypto.randomUUID();
+    const input={orderId:'push_partial',amountMinor:amount,paymentType,method:'bank_transfer',requestId};
+    const recorded=await call('recordPayment',input);assert.equal(recorded.ok,true,JSON.stringify(recorded));
+    assert.equal((await call('recordPayment',input)).ok,true);
+  }
+  assert.equal(sqlite.prepare('SELECT COUNT(*) n FROM admin_push_events').get().n,start+3,'each confirmed payment creates one unique notification event');
+  assert.equal((await call('recordPayment',{orderId:'push_partial',amountMinor:1})).httpStatus,409);
+  assert.equal(sqlite.prepare('SELECT COUNT(*) n FROM admin_push_events').get().n,start+3);
   console.log('PASS: Verify Payment synchronizes the canonical ledger immediately, retries repair partial sync failures, and Overview collection is current.');
 }finally{console.error=originalError;sqlite.close()}
