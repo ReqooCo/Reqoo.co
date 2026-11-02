@@ -1,3 +1,4 @@
+import {notifyAdmin} from '../../api/admin-push-delivery.js';
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" };
 function json(data, status = 200, traceId = crypto.randomUUID()) { return new Response(JSON.stringify({ ...data, trace_id: traceId }), { status, headers: { ...JSON_HEADERS, "x-reqoo-trace-id": traceId } }); }
 function now() { return new Date().toISOString(); }
@@ -56,6 +57,7 @@ async function createOrder(request, env, traceId) {
       await env.DB.prepare(`INSERT INTO order_items (id,order_id,product_id,variation_id,product_name_snapshot,sku_snapshot,variation_snapshot_json,customization_snapshot_json,addons_snapshot_json,unit_price_minor,quantity,line_total_minor,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(id("itm_"), orderId, item.product.id, item.variation?.id || null, item.product.name, item.variation?.sku || item.product.sku || null, JSON.stringify(item.variation || {}), JSON.stringify(item.raw.customization || {}), JSON.stringify(item.raw.addons || []), item.unitPrice, item.quantity, item.lineTotal, timestamp).run();
     }
     await env.DB.prepare(`INSERT INTO activity_events (id,customer_id,order_id,event_type,trace_id,metadata_json,created_at) VALUES (?,?,?,?,?,?,?)`).bind(id("evt_"), input.customer_id || null, orderId, "order.created", traceId, JSON.stringify({ source, item_count: items.length, idempotency_key: idempotencyKey }), timestamp).run();
+    await notifyAdmin(env,'order:'+orderId,'New Order',orderId);
     return json({ ok: true, order: { id: orderId, customer_id: input.customer_id || null, source, currency, subtotal_minor: subtotal, discount_minor: discount, shipping_minor: shipping, tax_minor: tax, total_minor: total, payment_status: "pending", fulfillment_status: "pending" } }, 201, traceId);
   } catch (error) {
     await env.DB.prepare(`INSERT INTO error_events (id,customer_id,order_id,trace_id,endpoint,error_code,message,metadata_json,created_at) VALUES (?,?,?,?,?,?,?,?,?)`).bind(id("err_"), input.customer_id || null, orderId, traceId, "/api/order-v1", "ORDER_CREATE_FAILED", String(error?.message || error), JSON.stringify({ idempotency_key: idempotencyKey }), now()).run().catch(() => {});

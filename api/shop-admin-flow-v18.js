@@ -1,3 +1,4 @@
+import {notifyAdmin} from './admin-push-delivery.js';
 import { onRequest as legacy } from './shop-admin-flow-v17.js';
 import { onRequest as documentApi } from './shop-admin-flow-v12.js';
 
@@ -152,7 +153,7 @@ async function recordPayment(d,request,env){
   ]);
   const payment=await env.DB.prepare('SELECT * FROM reqoo_payments WHERE id=?').bind(id).first();
   if(!payment)return J({ok:false,error:'Baki berubah. Muat semula sebelum merekod bayaran.'},409);
-  return result(payment);
+  await notifyAdmin(env,'payment:'+id,'Payment Confirmed',o.id);return result(payment);
 }
 async function correctPayment(d,env){
   await ensure(env);
@@ -564,6 +565,8 @@ export async function onRequest({request,env}){
       if(out.ok===false)return response;
       await ensure(env);
       await syncLegacyPaidPayments(env,S(d.orderId||d.orderRef||d.orderNo));
+      const pushOrder=await orderByKey(S(d.orderId||d.orderRef||d.orderNo),env);
+      if(pushOrder){const verified=(await env.DB.prepare("SELECT id FROM payments WHERE order_id=? AND status='paid'").bind(pushOrder.id).all()).results||[];for(const p of verified)await notifyAdmin(env,'payment:'+p.id,'Payment Confirmed',pushOrder.id);}
       return response;
     }
     const response=await legacy({request,env});

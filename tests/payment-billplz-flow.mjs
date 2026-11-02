@@ -34,7 +34,9 @@ const DB={
   }
 };
 
+for(const file of ['20261102_admin_push_subscriptions.sql','20261102_admin_push_delivery.sql'])sqlite.exec(fs.readFileSync(new URL('../migrations/'+file,import.meta.url),'utf8'));
 const env={
+  REQOO_VAPID_PUBLIC_KEY:'A'.repeat(87),REQOO_VAPID_PRIVATE_KEY:'A'.repeat(43),
   DB,
   REQOO_ADMIN_TOKEN:'e2e-admin',
   BILLPLZ_API_KEY:'test-only', BILLPLZ_COLLECTION_ID:'E2ECAT', BILLPLZ_X_SIGNATURE_KEY:'e2e-secret', BILLPLZ_ENV:'production'
@@ -111,6 +113,7 @@ try{
   assert.equal(sqlite.prepare('SELECT status FROM payments WHERE order_id=?').get(created.orderId).status,'pending');
   assert.equal((await send({...payload,paid:'false',state:'due',paid_amount:'0',transaction_status:'failed'})).status,200);
   assert.equal(sqlite.prepare('SELECT status FROM payments WHERE order_id=?').get(created.orderId).status,'pending');
+  assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM admin_push_events WHERE id LIKE 'payment:%'").get().n,0);
   for(let i=0;i<3;i++)assert.equal((await send(payload)).status,200);
   assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM activity_events WHERE order_id=? AND event_type='payment.paid'").get(created.orderId).n,1);
   assert.equal((await send({...payload,paid:'false',state:'due',paid_amount:'0'})).status,200);
@@ -132,6 +135,8 @@ try{
   assert.equal(summary.summary.payments[0].reference,'E2EBILL001');
   assert.match(summary.summary.payments[0].note,/Billplz/i);
 
+  assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM admin_push_events WHERE id=?").get('order:'+created.orderId).n,1);
+  assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM admin_push_events WHERE id LIKE 'payment:%'").get().n,1);
   const duplicate=await adminCall('recordPayment',{orderId:created.orderId,amountMinor:100,method:'bank_transfer'});
   assert.equal(duplicate.httpStatus,409);
   assert.match(duplicate.error,/selesai dibayar/i);
@@ -185,6 +190,7 @@ try{
   assert.equal(rejected.ok,false);
   assert.equal(sqlite.prepare("SELECT stock_qty FROM product_variations WHERE id='var_e2e'").get().stock_qty,stockBefore);
   assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM orders WHERE payment_status='failed' AND fulfillment_status='cancelled'").get().n,1);
+  assert.equal(sqlite.prepare("SELECT COUNT(*) n FROM admin_push_events WHERE id LIKE 'order:%'").get().n,1);
   console.log('PASS: Billplz signed order -> callback -> canonical payment ledger -> Production -> invoice -> receipt -> Overview/Finance data stays consistent and duplicate payment is blocked.');
 }finally{
   globalThis.fetch=originalFetch;

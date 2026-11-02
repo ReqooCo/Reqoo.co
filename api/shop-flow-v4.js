@@ -1,3 +1,4 @@
+import {notifyAdmin} from './admin-push-delivery.js';
 import { onRequest as legacy } from './shop-flow-v3.js';
 import {callbackAmountMatches,verifyToyyibCallback} from '../functions/api/toyyibpay-core.js';
 import {verifyCallback as verifyBillplzCallback} from '../functions/api/billplz.js';
@@ -108,6 +109,7 @@ async function billplzCallback(d,env){
    env.DB.prepare('INSERT OR IGNORE INTO activity_events(id,customer_id,order_id,event_type,trace_id,metadata_json,created_at) VALUES(?,?,?,?,?,?,?)').bind(`evt_billplz_paid_${payment.id}`,payment.customer_id,payment.order_id,'payment.paid',payment.order_id,meta,t)
   ]);
  }
+ await notifyAdmin(env,'payment:'+payment.id,'Payment Confirmed',payment.order_id);
  return new Response('OK');
 }
 async function billplzRedirect(d,env){

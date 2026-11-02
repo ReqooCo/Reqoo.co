@@ -10,7 +10,8 @@ const DB={prepare(query){return {query,args:[],bind(...args){this.args=args;retu
  if(beforeBatch)await beforeBatch(statements);
  const run=queue.then(()=>{sql.exec('BEGIN');try{const result=statements.map(s=>sql.prepare(s.query).run(...s.args));sql.exec('COMMIT');return result}catch(e){sql.exec('ROLLBACK');throw e}});queue=run.catch(()=>{});return run;
 }};
-const env={DB,REQOO_ADMIN_TOKEN:'fixture',ADMIN_ACTOR:{name:'Fixture Admin'}};
+for(const file of ['20261102_admin_push_subscriptions.sql','20261102_admin_push_delivery.sql'])sql.exec(fs.readFileSync(new URL('../migrations/'+file,import.meta.url),'utf8'));
+const env={REQOO_VAPID_PUBLIC_KEY:'A'.repeat(87),REQOO_VAPID_PRIVATE_KEY:'A'.repeat(43),DB,REQOO_ADMIN_TOKEN:'fixture',ADMIN_ACTOR:{name:'Fixture Admin'}};
 async function call(action,data={},auth=true,method='POST'){const u=new URL('https://fixture/api/shop-admin');if(method==='GET')for(const [k,v] of Object.entries({action,...data}))u.searchParams.set(k,v);const response=await onRequest({env,request:new Request(u,{method,headers:{'content-type':'application/json',...(auth?{'X-Admin-Token':'fixture'}:{})},...(method==='POST'?{body:JSON.stringify({action,...data})}:{})})});return {http:response.status,...await response.json()}}
 const payload={customerName:'Original Customer',customerPhone:'0123456789',customerEmail:'fixture@example.test',customerAddress:'Original address',terms:'Original terms',notes:'Original notes',items:[{description:'Original item',variation:'Gold',quantity:2,unitPriceMinor:5000}],discountMinor:500,shippingMinor:1000,taxMinor:100,depositPercent:50};
 const create=async()=>{const r=await call('createCustomQuotation',payload);assert.equal(r.ok,true,JSON.stringify(r));return r.document};
@@ -76,6 +77,7 @@ assert.equal(sql.prepare('SELECT COUNT(*) n FROM orders WHERE id=?').get('ord_qu
 const latestConverted=await convertVersion(newerApproved);
 assert.equal(latestConverted.http,200);assert.equal(latestConverted.order.total_minor,newerApproved.total_minor);
 assert.equal((await convertVersion(staleApproved)).order.id,latestConverted.order.id,'retry reuses existing order');
+assert.equal(sql.prepare('SELECT COUNT(*) n FROM admin_push_events WHERE id=?').get('order:'+latestConverted.order.id).n,1,'quotation conversion/retry emits one event');
 // Migration is idempotent and retained archives survive an application rollback.
 sql.exec(fs.readFileSync(new URL('../migrations/0013_quotation_revisions.sql',import.meta.url),'utf8'));
 assert.equal((await get(original.id)).currentRevision,2);
