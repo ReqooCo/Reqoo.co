@@ -5,7 +5,7 @@ const el=id=>document.getElementById('m_'+id);
 const keys=['twFlowHourly','cwt1','cwt2','production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','pondTwlLevel','criticalLevel','criticalPercent','criticalStorage','intakeB','wt1','sjamB','sjamCActual','intakeCHourly','sjamCHourly','dp1','dp2','dpOutHourly','dpPressure'];
 const extraKeys=['sivTarget','sivStatus','sivChallengeA','sivChallengeB','rwTotalizerPrevious','rwTotalizerCurrent','rwTotalizerUnit','twTotalizerPrevious','twTotalizerCurrent','twTotalizerUnit','pondCFlowValue','pondCFlowUnit','pondANote','oRwp','oTwp'];
 const defaults={designCapacity:'100',pondTwlCapacity:'3984.50',pondTwlLevel:'12.0',criticalLevel:'7.50',criticalPercent:'30.00',criticalStorage:'1226'};
-const settingKeys=Object.keys(defaults).concat(['pondANote','sivChallengeA','sivChallengeB','oRwp','oTwp']);
+const settingKeys=Object.keys(defaults).concat(['pondANote','sivChallengeA','sivChallengeB']);
 const noteDefault='Bacaan level tidak tepat disebabkan SCADA intake A lost communication';
 const sivDefaultA='Kaedah pengiraan pengeluaran LRA Semenyih 2 :\nPengeluaran LRA Semenyih 2 = Bacaan Totalizer Tw (Semasa) - Bacaan Totalizer Tw (Sebelum)';
 const sivDefaultB='Pihak LRA Semenyih 2 Perlu mengawal Paras Kolam Desa Putra pada 3.00m - 7.83m seperti diminta SO bagi memenuhi Demand.';
@@ -261,7 +261,7 @@ function calculate(){
  el('pondANoteWrap').hidden=!problemA();el('firstDayAverage').hidden=!get('date').endsWith('-01');
 }
 const reportNames=['Pengeluaran & Status Kolam','Pengeluaran & ORS Pond C','Kiraan Aliran Pond C','Ringkasan ORS Pond C','SIV','Status Dosing'];
-const reportFields={1:['production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','intakeB','wt1','sjamB','dp1','dp2','dpOutHourly','dpPressure'],2:['production','monthlyAverage','rwAbst','dp1','dp2','pondC','pondChange','pondStorage','pondTwlCapacity','criticalLevel','criticalPercent','criticalStorage','pondCFlowValue','sjamCHourly','intakeB','wt1','sjamB','sjamCActual'],3:['pondC','pondStorage','intakeB','wt1','sjamB','rwAbst','sjamCActual','criticalLevel','criticalPercent','criticalStorage','pondCFlowValue','sjamCHourly'],4:['pondC','pondStorage','pondTwlLevel','pondTwlCapacity','criticalLevel','criticalPercent','criticalStorage','pondCFlowValue','sjamCHourly'],5:['production','sivTarget'],6:['pondCFlowValue','twFlowHourly']};
+const reportFields={1:['production','designCapacity','monthlyAverage','rwAbst','pondA','pondB','pondC','pondChange','pondStorage','pondTwlCapacity','intakeB','wt1','sjamB','dp1','dp2','dpOutHourly','dpPressure'],2:['production','monthlyAverage','rwAbst','dp1','dp2','pondC','pondChange','pondStorage','pondTwlCapacity','criticalLevel','criticalPercent','criticalStorage','pondCFlowValue','sjamCHourly','intakeB','wt1','sjamB','sjamCActual'],3:['pondC','pondStorage','intakeB','wt1','sjamB','rwAbst','sjamCActual','criticalLevel','criticalPercent','criticalStorage','pondCFlowValue','sjamCHourly'],4:['pondC','pondStorage','pondTwlLevel','pondTwlCapacity','criticalLevel','criticalPercent','criticalStorage','pondCFlowValue','sjamCHourly'],5:['production','sivTarget'],6:['pondCFlowValue','twFlowHourly','oRwp','oTwp']};
 function reportIssues(no){
  const out=[];
  for(const k of reportFields[no]){
@@ -352,7 +352,7 @@ function restore(){
  el('pondCFlowUnit').value='m3h';el('rwTotalizerUnit').value='m3';el('twTotalizerUnit').value='m3';
  el('pondANote').value=config.pondANote||noteDefault;el('sivTarget').value=sivTargetInitial();el('sivStatus').value='auto';
  el('sivChallengeA').value=config.sivChallengeA||sivDefaultA;el('sivChallengeB').value=config.sivChallengeB||sivDefaultB;
- el('oRwp').value=config.oRwp||'63';el('oTwp').value=config.oTwp||'50';
+ el('oRwp').value='';el('oTwp').value='';
  el('storageAuto').checked=true;el('criticalStorageAuto').checked=true;el('pondAProblem').checked=false;
  document.querySelectorAll('#panel-morning [aria-invalid]').forEach(x=>x.removeAttribute('aria-invalid'));
  dosing=freshDosing();const draft=readJSON(storedKey(),null);
