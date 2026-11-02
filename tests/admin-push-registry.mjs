@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {handleAdminPush} from '../api/admin-push.js';
+const url='https://api.reqoo.co/api/admin-push/subscribe';
+const req=(method,body,origin='https://reqoo.co')=>new Request(url,{method,headers:{origin,'content-type':'application/json'},body:JSON.stringify(body)});
+test('rejects unauthenticated registration',async()=>{const r=await handleAdminPush(req('POST',{endpoint:'https://example.com'}),{},false);assert.equal(r.status,401)});
+test('rejects cross-site registration',async()=>{const r=await handleAdminPush(req('POST',{endpoint:'https://example.com'},'https://evil.example'),{},true);assert.equal(r.status,403)});
+test('rejects malformed subscription',async()=>{const r=await handleAdminPush(req('POST',{endpoint:'http://invalid.test'}),{DB:{}},true);assert.equal(r.status,400)});
+test('does not advertise push before VAPID configuration',async()=>{const r=await handleAdminPush(new Request('https://api.reqoo.co/api/admin-push/config'),{},true);assert.equal(r.status,503)});
+test('accepts valid site origin through API proxy',async()=>{let calls=0;const DB={prepare(){return{bind(){return{async run(){calls++;return {success:true}}}}}}};const r=await handleAdminPush(req('POST',{endpoint:'https://push.example.test/subscription',keys:{p256dh:'abcdefghijklmnop',auth:'abcdefghijklmnop'}}),{DB},true);assert.equal(r.status,200);assert.equal(calls,1)});
