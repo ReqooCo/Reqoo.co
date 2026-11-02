@@ -83,6 +83,8 @@ async function injectAdminUI(response){
   if(isOverview&&!body.includes('/admin/overview.js'))body=body.replace('</body>','<script src="/admin/overview.js?v=3"></script></body>');
   if(!isOverview&&!body.includes('/admin/admin-shell.js'))body=body.replace('</body>','<script src="/admin/admin-shell.js?v=6"></script></body>');
   if(!body.includes('/admin/admin-theme.css'))body=body.replace('</head>','<link rel="stylesheet" href="/admin/admin-theme.css?v=2"></head>');
+  if(!body.includes('/admin/admin-push.js'))body=body.replace('</body>','<script src="/admin/admin-push.js?v=1"></script></body>');
+  if(!body.includes('rel="manifest"'))body=body.replace('</head>','<link rel="manifest" href="/admin/admin.webmanifest"></head>');
   const headers=new Headers(response.headers);
   headers.set('cache-control','no-store, no-cache, must-revalidate, max-age=0');
   headers.set('pragma','no-cache');

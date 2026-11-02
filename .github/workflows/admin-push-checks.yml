@@ -1,0 +1,19 @@
+name: Admin Web Push checks
+on:
+  pull_request:
+    paths: ['api/**', 'admin/**', 'functions/api/**', 'migrations/**', 'tests/*push*', 'tests/payment-billplz-flow.mjs', '.github/workflows/admin-push-checks.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --test tests/admin-push-registry.mjs
+      - run: node tests/payment-billplz-flow.mjs
+      - run: node tests/admin-quotation-revisions.mjs
+      - run: node tests/admin-payment-ledger-consistency.mjs

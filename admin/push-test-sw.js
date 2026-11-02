@@ -5,7 +5,7 @@ self.addEventListener('push',event=>{
   try {if(event.data){const parsed=event.data.json();if(parsed&&typeof parsed==='object')payload={...payload,...parsed}}}catch{}
   const title=String(payload.title||'REQOO Notification').slice(0,100);
   const body=String(payload.body||'You have a new update.').slice(0,240);
-  event.waitUntil(self.registration.showNotification(title,{body,tag:'reqoo-push',data:{url:'/admin/'}}));
+  event.waitUntil(self.registration.showNotification(title,{body,tag:String(payload.id||'reqoo-update').slice(0,180),data:{url:'/admin/'}}));
 });
 self.addEventListener('notificationclick',event=>{
   event.notification.close();

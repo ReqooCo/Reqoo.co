@@ -1,3 +1,4 @@
+import {notifyAdmin} from './admin-push-delivery.js';
 import { onRequest as legacy } from './shop-admin-flow-v16.js';
 
 const C={'access-control-allow-origin':'*','access-control-allow-methods':'GET,POST,OPTIONS','access-control-allow-headers':'Content-Type,X-Admin-Token','cache-control':'no-store'};
@@ -282,7 +283,7 @@ async function convertCustomQuotationToOrder(d,env){
   }
   const order=await env.DB.prepare('SELECT * FROM orders WHERE id=? LIMIT 1').bind(orderId).first();
   const fresh=await hydrateDocument(await env.DB.prepare('SELECT * FROM reqoo_documents WHERE id=? LIMIT 1').bind(doc.id).first(),env);
-  return J({ok:true,created:true,order,document:fresh});
+  await notifyAdmin(env,'order:'+orderId,'New Order',orderId);return J({ok:true,created:true,order,document:fresh});
 }
 
 async function repairProductImages(env){
