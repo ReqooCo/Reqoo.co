@@ -330,9 +330,9 @@ function apply(data){
  // Older drafts may store the dedicated rate in MLD. Convert only that field.
  if(values.pondCFlowUnit==='MLD'&&String(values.pondCFlowValue||'').trim())el('pondCFlowValue').value=String(Number(values.pondCFlowValue)*1000/24);
  el('pondCFlowUnit').value='m3h';
- el('storageAuto').checked=values.pondStorageAuto!==false;el('criticalStorageAuto').checked=values.criticalStorageAuto!==false;
+ el('storageAuto').checked=true;el('criticalStorageAuto').checked=values.criticalStorageAuto!==false;
  // Preserve legacy manual storage instead of silently overwriting it.
- if(values.pondStorageAuto===undefined&&String(values.pondStorage||'').trim()&&Math.abs(Number(values.pondStorage)-storageFromLevel(Number(values.pondC)))>.02)el('storageAuto').checked=false;
+ // Pond C storage always recalculates from level on load; manual override remains available via the checkbox.
  el('pondAProblem').checked=values.pondAProblem===true;
  if(data?.operator)el('operator').value=data.operator;
  if(values.dosingJson){
