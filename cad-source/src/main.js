@@ -233,7 +233,8 @@ function faceDirection(){
  const plane=sketch?basis(sketch):null;
  const midpoint=item?.bounds?.[0]?.map((v,i)=>(v+item.bounds[1][i])/2);
  const origin=new THREE.Vector3(...(face?.center||plane?.origin||midpoint||[0,0,0]));
- const normal=new THREE.Vector3(...(face?.normal||plane?.normal||[0,0,1])).normalize();
+ const rawNormal=face?.normal||plane?.normal||[0,0,1];
+ const normal=new THREE.Vector3(...(Array.isArray(rawNormal)&&rawNormal.length===3?rawNormal:[0,0,1])).normalize();
  const rect=$('stage').getBoundingClientRect(),p=origin.clone().project(camera),q=origin.clone().addScaledVector(normal,20).project(camera);
  let dx=(q.x-p.x)*rect.width/2,dy=(p.y-q.y)*rect.height/2;
  const magnitude=Math.hypot(dx,dy);
@@ -241,8 +242,10 @@ function faceDirection(){
  return {origin,normal,dx,dy,p,rect};
 }
 function updateFaceHandle(){
- const ref=selection.at(-1),direction=faceDirection();
- if(!direction||sketchMode||busy){faceHandle.hidden=true;faceDistance.hidden=true;faceDistanceRef=null;return;}
+ const ref=selection.at(-1),item=selectedItem();
+ let direction=null;try{direction=faceDirection();}catch(e){console.warn('CAD gizmo projection fallback',e);}
+ if((ref?.kind!=='face'&&ref?.kind!=='sketch')||!item||sketchMode||busy){faceHandle.hidden=true;faceDistance.hidden=true;faceDistanceRef=null;return;}
+ if(!direction){const rect=$('stage').getBoundingClientRect();direction={p:{x:0,y:0,z:0},rect,dx:0,dy:-1};}
  if(faceDistanceRef&&!sameFace(ref,faceDistanceRef)){faceDistance.hidden=true;faceDistanceRef=null;faceDistanceValue=0;}
  const {p,rect,dx,dy}=direction;
  const x=Math.max(70,Math.min(rect.width-70,(p.x+1)*rect.width/2)),y=Math.max(85,Math.min(rect.height-150,(1-p.y)*rect.height/2));
@@ -256,7 +259,7 @@ function showFaceDistance(value=0,operation='offsetFace'){
  $('faceDistanceValue').value=String(faceDistanceValue);faceDistance.hidden=false;updateFaceHandle();
 }
 faceHandle.addEventListener('pointerdown',e=>{
- if(busy)return;const d=faceDirection();if(!d)return;
+ if(busy)return;let d;try{d=faceDirection();}catch{}if(!d)d={dx:0,dy:-1};
  e.preventDefault();e.stopPropagation();faceDrag={x:e.clientX,y:e.clientY,dx:d.dx,dy:d.dy,start:faceDistance.hidden?0:Number($('faceDistanceValue').value)||0};
  faceHandle.setPointerCapture(e.pointerId);controls.enabled=false;faceHandle.classList.add('dragging');showFaceDistance(faceDrag.start,selection.at(-1)?.kind==='sketch'?'extrude':faceOperation);
 });
@@ -339,6 +342,8 @@ function updateSketchDimensions(){
 function renderContext(){const c=$('context');c.replaceChildren();const item=selectedItem();c.hidden=!item;if(!item)return;
  const picked=selection.at(-1),onFace=picked?.kind==='face'&&item.kind==='body',onEdge=picked?.kind==='edge'&&item.kind==='body';
  const commands=item.kind==='sketch'?[...(doc.features.find(f=>f.id===item.featureId)?.params.shape==='circle'?[['hole','Hole']]:[]),['extrude','Extrude'],['revolve','Revolve'],['sweep']]:item.kind==='plane'?[['rectangle','Sketch on plane']]:item.kind==='axis'?[]:onEdge?[['fillet','Fillet'],['chamfer','Chamfer']]:onFace?[['offsetFace','Pull / Offset Face'],['extrude','Extrude'],['hole','Hole'],['scale','Scale Body']]:[['move','Move'],['rotate','Rotate'],['fillet','Fillet']];
+ if(onFace){const direct=document.createElement('button');buttonLabel(direct,'offsetFace','↕ Drag face');direct.onclick=()=>{showFaceDistance(0,'offsetFace');updateFaceHandle();};c.append(direct);}
+ if(item.kind==='sketch'){const direct=document.createElement('button');buttonLabel(direct,'extrude','↕ Extrude arrow');direct.onclick=()=>{showFaceDistance(20,'extrude');updateFaceHandle();};c.append(direct);}
  if(onFace){const sketchFace=document.createElement('button');buttonLabel(sketchFace,'sketch','Sketch on face');sketchFace.onclick=()=>startTool('sketch',{shape:'circle'});c.append(sketchFace);}
  if(item.kind==='sketch'){const make=document.createElement('button');buttonLabel(make,'box','Solid tools');make.onclick=()=>setWorkspaceMode('solid');c.append(make);}
  if(item.kind==='sketch'){const edit=document.createElement('button');buttonLabel(edit,'sketch','Edit sketch');edit.onclick=()=>{setWorkspaceMode('sketch');startTool('sketch',{},item.featureId);};c.append(edit);}
