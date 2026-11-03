@@ -25,7 +25,7 @@ try{
  assert.equal(await page.evaluate(()=>window.__cad.doc.features.length),1);await page.locator('#faceDistanceApply').click();await page.waitForFunction(()=>window.__cad.doc.features.at(-1).type==='extrude');near((await body()).volume,Math.PI*400*20);checks.push('Dimensioned circle → real BREP cylinder preview → committed extrusion');
 
  // Select cylindrical side and drive its source sketch diameter without a form.
- await page.evaluate(()=>{const b=window.__cad.items.find(i=>i.kind==='body'),f=b.faceInfo.find(f=>f.type==='CYLINDER');window.__cad.select([{id:b.id,kind:'face',index:f.index}]);});
+ await page.evaluate(()=>{const b=window.__cad.items.find(i=>i.kind==='body'),f=b.faceInfo.find(f=>['CYLINDRE','CYLINDER'].includes(f.type));window.__cad.select([{id:b.id,kind:'face',index:f.index}]);});
  await page.waitForFunction(()=>window.__cad.direct.state.operation==='diameter');
  assert.equal(await page.locator('#faceDistanceValue').inputValue(),'40');
  await page.locator('#faceDistanceValue').fill('50');await page.locator('#faceDistanceValue').dispatchEvent('input');await preview();

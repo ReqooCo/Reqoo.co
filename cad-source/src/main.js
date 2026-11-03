@@ -249,7 +249,7 @@ function resetDirectPreview(){previewVersion++;if(displayItems){displayItems=nul
 // or boolean-derived cylindrical surfaces need an independent surface tool.
 function diameterTarget(ref){
  const item=items.find(i=>i.id===ref?.id),feature=doc.features.find(f=>f.id===item?.featureId);
- if(!item||!feature||ref.kind!=='face'||item.faceInfo.find(f=>f.index===ref.index)?.type!=='CYLINDER')return null;
+ if(!item||!feature||ref.kind!=='face'||!['CYLINDRE','CYLINDER'].includes(item.faceInfo.find(f=>f.index===ref.index)?.type))return null;
  if(feature.type==='cylinder')return{featureId:feature.id,diameter:2*(feature.params.radius??15)};
  if(feature.type==='extrude'&&feature.inputs.length===1){
   const sketch=doc.features.find(f=>f.id===feature.inputs[0]);
