@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
-      CAD_TEST_URL: ${{ github.ref == 'refs/heads/main' && 'https://reqoo.co/cad/' || github.ref == 'refs/heads/fix/cad-ipad-face-preview-20261104' && 'https://fix-cad-ipad-face-preview-20.reqoo-co.pages.dev/cad/' || github.ref == 'refs/heads/fix/cad-interactive-preview-ui-20261103' && 'https://fix-cad-interactive-preview.reqoo-co.pages.dev/cad/' || github.ref == 'refs/heads/fix/cad-continuous-drag-diameter-20261103' && 'https://fix-cad-continuous-drag-diam.reqoo-co.pages.dev/cad/' || 'https://feature-cad-professional-202.reqoo-co.pages.dev/cad/' }}
+      CAD_TEST_URL: ${{ github.ref == 'refs/heads/main' && 'https://reqoo.co/cad/' || github.ref == 'refs/heads/fix/cad-ipad-face-preview-20261104' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/fix/cad-interactive-preview-ui-20261103' && 'https://fix-cad-interactive-preview.reqoo-co.pages.dev/cad/' || github.ref == 'refs/heads/fix/cad-continuous-drag-diameter-20261103' && 'https://fix-cad-continuous-drag-diam.reqoo-co.pages.dev/cad/' || 'https://feature-cad-professional-202.reqoo-co.pages.dev/cad/' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -24,7 +24,7 @@ jobs:
         run: |
           npm ci
           npm run build
-      - name: Upload CAD preview independently of the Pages build queue
+      - name: Deploy isolated CAD preview using the existing Workers deployment access
         if: github.ref == 'refs/heads/fix/cad-ipad-face-preview-20261104'
         working-directory: cad-source
         env:
@@ -32,7 +32,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           node -e "const fs=require('fs');fs.mkdirSync('../cad-preview/cad',{recursive:true});fs.cpSync('dist','../cad-preview/cad',{recursive:true})"
-          npx --yes wrangler@4.129.0 pages deploy ../cad-preview --project-name=reqoo-co --branch=fix/cad-ipad-face-preview-20261104 --commit-hash="$GITHUB_SHA" --commit-dirty=true
+          npx --yes wrangler@4.129.0 deploy --config wrangler.preview.jsonc
       - name: Install Chromium
         working-directory: cad-source
         run: npx playwright install --with-deps chromium
