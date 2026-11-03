@@ -24,6 +24,8 @@ export function installCadWorkspace({group,editor,add,choose,refresh,products,ca
   const pane=document.createElement('section');pane.id='cadPane-'+key;pane.className='cadPane';pane.hidden=true;panes.set(key,pane);dock.querySelector('#cadPanelBody').append(pane);
   const b=document.createElement('button');b.type='button';b.id='cad-'+key;b.dataset.cadPane=key;b.innerHTML=icon(key)+'<span>'+label+'</span>';b.setAttribute('aria-label',titles[key]);b.setAttribute('aria-controls','cadDock');b.setAttribute('aria-expanded','false');b.onclick=()=>openPane(key,true);rail.append(b);
  }
+ // Attach the dock before moving controls so existing getElementById handlers keep their live owners.
+ bar.append(rail,dock);
  let active=null,lastFocus=null,expanded=false;
  function closePane(){active=null;document.body.classList.remove('cadDockOpen','cadSheetExpanded');dock.hidden=true;rail.querySelectorAll('button').forEach(b=>b.setAttribute('aria-expanded','false'));if(lastFocus?.isConnected)lastFocus.focus({preventScroll:true});}
  function openPane(key,toggle=false){
