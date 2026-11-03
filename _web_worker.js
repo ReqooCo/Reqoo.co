@@ -202,6 +202,18 @@ export default{
 
     if(host==='reqoo.co'&&(/^\/shop(?:\/|$)/i.test(url.pathname)))return injectBotanical(await injectShopRuntime(await env.ASSETS.fetch(assetRequest(url.pathname,request)),true));
 
+    // CAD HTML must revalidate: otherwise a cached entrypoint can keep loading an
+    // obsolete hashed JS bundle while the Pages deployment itself is current.
+    if(host==='reqoo.co'&&/^\\/cad\\/?(?:index\\.html)?$/i.test(url.pathname)){
+      const assetUrl=new URL(request.url);assetUrl.pathname='/cad/index.html';
+      const response=await env.ASSETS.fetch(new Request(assetUrl.toString(),request));
+      const headers=new Headers(response.headers);
+      headers.set('cache-control','no-store, no-cache, must-revalidate, max-age=0');
+      headers.set('pragma','no-cache');
+      headers.set('x-reqoo-cad-route','pages-cad-index');
+      return new Response(response.body,{status:response.status,statusText:response.statusText,headers});
+    }
+
     if(host==='reqoo.co'&&(url.pathname==='/'||url.pathname===''))return injectBotanical(await env.ASSETS.fetch(request));
 
     if(host==='reqoo.co'&&(/^\/tumbler\/?$/i.test(url.pathname)||/^\/sim\/pksk\/?$/i.test(url.pathname)))return injectBotanical(await env.ASSETS.fetch(request));
