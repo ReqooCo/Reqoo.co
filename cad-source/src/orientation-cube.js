@@ -27,7 +27,7 @@ export function createOrientationCube({THREE,camera,controls,root,onView}){
  graphic.addEventListener('pointerdown',e=>{
   if(drag||e.isPrimary===false||e.button!==0)return;
   e.preventDefault();e.stopPropagation();suppressClick=false;
-  drag={id:e.pointerId,x:e.clientX,y:e.clientY,moved:false,enabled:controls.enabled,
+  drag={view:e.target.closest?.('[data-cube-view]')?.dataset.cubeView,id:e.pointerId,x:e.clientX,y:e.clientY,moved:false,enabled:controls.enabled,
    offset:camera.position.clone().sub(controls.target),up:camera.up.clone(),
    right:new THREE.Vector3(1,0,0).applyQuaternion(camera.quaternion),
    vertical:new THREE.Vector3(0,1,0).applyQuaternion(camera.quaternion)};
@@ -48,9 +48,11 @@ export function createOrientationCube({THREE,camera,controls,root,onView}){
  });
  function endDrag(e){
   if(!drag||drag.id!==e.pointerId)return;
-  suppressClick=drag.moved||e.type==='pointercancel';
+  const snap=e.type==='pointerup'&&!drag.moved?drag.view:null;
+  suppressClick=true;
   controls.enabled=drag.enabled;drag=null;graphic.style.cursor='grab';
   if(graphic.hasPointerCapture(e.pointerId))graphic.releasePointerCapture(e.pointerId);
+  if(snap)onView(snap);
  }
  graphic.addEventListener('pointerup',endDrag);graphic.addEventListener('pointercancel',endDrag);graphic.addEventListener('lostpointercapture',endDrag);
 
