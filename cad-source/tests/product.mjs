@@ -105,7 +105,7 @@ try{
 
  await page.evaluate(()=>window.__cad.view('iso'));await page.evaluate(()=>window.__cad.select([]));
  const unchanged=await page.evaluate(()=>JSON.stringify(window.__cad.doc)),unchangedVolume=(await body()).volume;
- const chooseDisplay=async(mode)=>{await page.locator('#displayModeButton').click();await page.locator('[data-display-mode="'+mode+'"]').click();};
+ const chooseDisplay=async(mode)=>{if(!await page.locator('[data-display-mode="'+mode+'"]').isVisible())await page.locator('#displayModeButton').click();await page.locator('[data-display-mode="'+mode+'"]').click();};
  for(const mode of ['shaded','wireframe','shadedEdges']){
   await chooseDisplay(mode);assert.equal(await page.locator('[data-display-mode="'+mode+'"]').getAttribute('aria-checked'),'true');
   const drawing=await page.evaluate(()=>{let surfaces=0,edges=0;window.__cad.root.traverse(n=>{if(n.isMesh&&n.userData.kind==='body'&&n.material.some(m=>m.colorWrite))surfaces++;if(n.isLineSegments&&n.userData.itemKind==='body'&&n.material.colorWrite)edges++;});return{surfaces,edges};});
