@@ -19,3 +19,41 @@
 .objectGroup{margin:10px 0 16px}.objectGroup summary{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;font-weight:600;color:#6e8098;padding:8px 0;border-bottom:1px solid #e8edf3;list-style:none}.objectGroup summary svg{width:17px;height:17px}.objectGroup small{margin-left:auto;color:#9aa8b8}.objectGroup:has(.itemRow button.selected) summary{color:#176ce7}
 @media(max-width:760px){#workspaceModes{left:7px;top:13px;width:192px}#workspaceModes button{min-height:38px;font-size:12px}#workspaceModes svg{width:19px;height:19px}}
 @media(max-height:500px) and (min-width:600px){#workspaceModes{top:9px}#rail{top:61px}#rail button{min-height:32px}#menu{top:61px;max-height:calc(100% - 105px)}}
+
+
+/* Tablet-first adaptive CAD workspace: Shapr3D-inspired arrangement, Reqoo identity. */
+:root{--blue:#2679db;--border:#e3e7ed;--panel:#fffffff2;color:#253247;background:#eef1f5}
+#stage{background:radial-gradient(circle at 58% 42%,#fafbfd 0%,#f1f3f7 75%,#e9edf3 100%)}
+#top{height:58px;min-height:58px;background:#ffffffed;box-shadow:0 2px 16px #1c324008;border-bottom-color:#e7eaf0}
+.brand{font-size:19px;letter-spacing:-.8px;margin-right:8px}
+.brand span{display:inline;font-size:12px;font-weight:650;letter-spacing:0;margin-left:5px;color:#2679db}
+#rail{top:86px;left:16px;width:126px;gap:7px}
+#rail button{min-height:48px;gap:10px;border:1px solid #e8ecf1;border-radius:12px;background:#ffffffed;box-shadow:0 3px 12px #1b344b0b;font-size:12px}
+#rail button svg{width:22px;height:22px;color:#47708e}
+#rail button.active{border-color:#9fc8fa;box-shadow:0 3px 12px #1b6ac014}
+#workspaceModes{top:18px;left:50%;transform:translateX(-50%);border-radius:14px;padding:4px;box-shadow:0 5px 20px #182e4310}
+#menu{top:86px;left:154px;border-radius:16px;box-shadow:0 18px 45px #152d451c}
+#toolPanel{top:86px;left:154px;border-radius:16px;box-shadow:0 18px 45px #152d451c}
+#sidebar{border-radius:16px;box-shadow:0 12px 40px #152d4517}
+#context{left:50%;transform:translateX(-50%);bottom:68px;border-radius:15px;padding:6px;gap:5px;box-shadow:0 9px 30px #173b5c1b;max-width:min(760px,calc(100vw - 32px));overflow-x:auto}
+#context button{min-height:44px;padding:7px 12px;border-radius:10px;display:flex;flex-direction:column;gap:4px;font-size:11px}
+#context button svg{width:22px;height:22px;color:#3277c0}
+#selectionBar{bottom:12px;border-radius:12px;box-shadow:0 5px 16px #213c520d}
+#viewCube{right:22px;top:24px}
+#viewCube button{border-radius:7px}
+#toolPanel .actions button{min-height:42px}
+@media(max-width:760px){
+#top{height:calc(52px + env(safe-area-inset-top));min-height:calc(52px + env(safe-area-inset-top))}
+.brand{font-size:17px}.brand span{font-size:10px;margin-left:3px}
+#workspaceModes{top:10px;left:50%;transform:translateX(-50%);max-width:150px}
+#rail{top:82px;left:8px;width:48px;gap:7px}
+#rail button{min-height:46px;min-width:46px;border-radius:12px;padding:10px}
+#rail button svg{width:23px;height:23px}
+#menu{top:82px;left:62px;width:min(270px,calc(100vw - 72px))}
+#toolPanel{top:auto;left:8px;right:8px;bottom:54px;width:auto;border-radius:18px}
+#context{left:62px;right:8px;bottom:54px;transform:none;max-width:none;justify-content:flex-start;padding:5px}
+#context button{min-width:66px;min-height:52px;padding:5px 9px;font-size:10px}
+#context button svg{width:20px;height:20px}
+#selectionBar{bottom:7px;left:7px;right:7px}
+#viewCube{right:10px;top:16px}
+}
