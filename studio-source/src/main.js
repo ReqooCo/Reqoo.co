@@ -127,7 +127,7 @@ installToolIcons();
 installWorkflow({group,products,editor,choose,refresh,status,camera,controls});
 installAssemblyPreview({scene,group,products,editor,choose,camera,controls,status,onViewChanged:()=>theme?.updateView()});
 installProduction({group,products,editor,add,choose,refresh,status,serializeProject});
-installLamps({group,products,editor,add,choose,refresh,status,scene});
+installLamps({group,products,editor,add,choose,refresh,status,scene,camera,controls});
 installHelpHints();
 installLanguage();
 installManufacturing({group,products,editor,add,choose,refresh,status,serializeProject,renderer,scene,camera});
