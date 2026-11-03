@@ -1,13 +1,13 @@
 name: Reqoo 3D Studio cloud build
 on:
   push:
-    branches: [studio/v1.4.0]
+    branches: [studio/v1.4.1]
     paths: [studio-build/**, .github/workflows/reqoo-studio-release.yml]
   workflow_dispatch:
 permissions:
   contents: write
 concurrency:
-  group: reqoo-studio-140
+  group: reqoo-studio-141
   cancel-in-progress: true
 jobs:
   web:
@@ -44,7 +44,7 @@ jobs:
           retention-days: 7
       - uses: actions/upload-artifact@v4
         with:
-          name: Reqoo-Studio-Web-1.4.0
+          name: Reqoo-Studio-Web-1.4.1
           path: studio-source/dist
           retention-days: 7
       - name: Store editable integrated source on the branch
@@ -53,8 +53,8 @@ jobs:
           git config user.name 'Reqoo Studio Build'
           git config user.email 'actions@users.noreply.github.com'
           git add studio-source
-          git diff --cached --quiet || git commit -m 'Store integrated Reqoo 3D Studio 1.4.0 source [skip ci]'
-          git push origin HEAD:studio/v1.4.0
+          git diff --cached --quiet || git commit -m 'Store integrated Reqoo 3D Studio 1.4.1 source [skip ci]'
+          git push origin HEAD:studio/v1.4.1
   windows:
     runs-on: windows-latest
     defaults:
@@ -84,7 +84,7 @@ jobs:
         working-directory: studio-source
         shell: pwsh
         run: |
-          $env:REQOO_EXE = (Resolve-Path 'release/1.4.0/win-unpacked/Reqoo 3D Studio.exe').Path
+          $env:REQOO_EXE = (Resolve-Path 'release/1.4.1/win-unpacked/Reqoo 3D Studio.exe').Path
           node tests/combined-ui.mjs
       - name: Compile installer
         working-directory: studio-source
@@ -94,16 +94,16 @@ jobs:
           if (-not (Test-Path -LiteralPath $compiler)) { choco install innosetup --no-progress -y }
           & $compiler desktop/installer.iss
           if ($LASTEXITCODE -ne 0) { throw 'Installer failed' }
-          Get-FileHash 'release/Reqoo-3D-Studio-1.4.0-Setup-x64.exe' -Algorithm SHA256 | Format-List | Out-File 'release/SHA256.txt'
+          Get-FileHash 'release/Reqoo-3D-Studio-1.4.1-Setup-x64.exe' -Algorithm SHA256 | Format-List | Out-File 'release/SHA256.txt'
       - name: Verify installer extraction matches the tested application
         working-directory: studio-source
         shell: pwsh
         run: |
           $destination = Join-Path $env:RUNNER_TEMP 'reqoo-installer-verify'
-          $installer = (Resolve-Path 'release/Reqoo-3D-Studio-1.4.0-Setup-x64.exe').Path
+          $installer = (Resolve-Path 'release/Reqoo-3D-Studio-1.4.1-Setup-x64.exe').Path
           $process = Start-Process -FilePath $installer -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/extractonly=1',('/DIR=' + $destination)) -Wait -PassThru -WindowStyle Hidden
           if ($process.ExitCode -ne 0) { throw 'Installer extraction failed' }
-          $expected = (Get-FileHash 'release/1.4.0/win-unpacked/resources/app.asar').Hash
+          $expected = (Get-FileHash 'release/1.4.1/win-unpacked/resources/app.asar').Hash
           $actual = (Get-FileHash (Join-Path $destination 'resources/app.asar')).Hash
           if ($expected -ne $actual) { throw 'Installer content differs from tested app' }
       - uses: actions/upload-artifact@v4
@@ -114,8 +114,8 @@ jobs:
           retention-days: 7
       - uses: actions/upload-artifact@v4
         with:
-          name: Reqoo-3D-Studio-1.4.0-Installer-x64
+          name: Reqoo-3D-Studio-1.4.1-Installer-x64
           path: |
-            studio-source/release/Reqoo-3D-Studio-1.4.0-Setup-x64.exe
+            studio-source/release/Reqoo-3D-Studio-1.4.1-Setup-x64.exe
             studio-source/release/SHA256.txt
           retention-days: 14
