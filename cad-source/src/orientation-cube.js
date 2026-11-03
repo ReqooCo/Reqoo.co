@@ -8,9 +8,7 @@ export function cubeDirection(name){
 }
 export function createOrientationCube({THREE,camera,controls,root,onView}){
  const ns='http://www.w3.org/2000/svg',graphic=document.createElementNS(ns,'svg');graphic.classList.add('orientationGraphic');graphic.setAttribute('viewBox','0 0 128 112');graphic.setAttribute('aria-label','Interactive orientation cube');
- const shortcuts=document.createElement('div');shortcuts.className='cubeShortcuts';
- for(const [name,label]of [['top','Top'],['front','Front'],['right','Right'],['iso','ISO']]){const b=document.createElement('button');b.type='button';b.dataset.view=name;b.textContent=label;b.title=name==='iso'?'Isometric view':label+' view';b.setAttribute('aria-label',b.title);b.onclick=()=>onView(name);shortcuts.append(b);}
- root.replaceChildren(graphic,shortcuts);root.setAttribute('aria-label','View cube');
+ root.replaceChildren(graphic);root.setAttribute('aria-label','View cube');
  const vertices=[[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]];
  const faces=[{name:'top',n:[0,0,1],v:[4,5,6,7]},{name:'bottom',n:[0,0,-1],v:[0,3,2,1]},{name:'front',n:[0,-1,0],v:[0,1,5,4]},{name:'back',n:[0,1,0],v:[3,7,6,2]},{name:'right',n:[1,0,0],v:[1,2,6,5]},{name:'left',n:[-1,0,0],v:[0,4,7,3]}];
 
@@ -23,8 +21,40 @@ export function createOrientationCube({THREE,camera,controls,root,onView}){
  // Put all edge/corner targets above faces, with no per-frame DOM replacement.
  for(const edge of edgeNodes.values())graphic.append(edge.el);
  vertices.forEach((p,i)=>cornerNodes.set(i,node('circle',{class:'cubeCorner','data-cube-view':'corner:'+p.join(','),role:'button',tabindex:0,'aria-label':'Corner view '+p.join(' '),r:6})));
- let last='';
- function activate(e){const hit=e.target.closest?.('[data-cube-view]');if(!hit)return;if(e.type==='keydown'&&!['Enter',' '].includes(e.key))return;e.preventDefault();e.stopPropagation();onView(hit.dataset.cubeView);}
+ let last='',drag=null,suppressClick=false;
+ // Camera-local rotation also works from exact top and bottom views.
+ graphic.style.touchAction='none';graphic.style.userSelect='none';graphic.style.cursor='grab';
+ graphic.addEventListener('pointerdown',e=>{
+  if(drag||e.isPrimary===false||e.button!==0)return;
+  e.preventDefault();e.stopPropagation();suppressClick=false;
+  drag={id:e.pointerId,x:e.clientX,y:e.clientY,moved:false,enabled:controls.enabled,
+   offset:camera.position.clone().sub(controls.target),up:camera.up.clone(),
+   right:new THREE.Vector3(1,0,0).applyQuaternion(camera.quaternion),
+   vertical:new THREE.Vector3(0,1,0).applyQuaternion(camera.quaternion)};
+  controls.enabled=false;graphic.setPointerCapture(e.pointerId);graphic.style.cursor='grabbing';
+ });
+ graphic.addEventListener('pointermove',e=>{
+  if(!drag||drag.id!==e.pointerId)return;
+  const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+  if(!drag.moved&&Math.hypot(dx,dy)<4)return;
+  drag.moved=true;e.preventDefault();e.stopPropagation();
+  const scale=Math.PI/Math.max(80,graphic.getBoundingClientRect().width);
+  const yaw=new THREE.Quaternion().setFromAxisAngle(drag.vertical,-dx*scale);
+  const pitch=new THREE.Quaternion().setFromAxisAngle(drag.right,-dy*scale);
+  const rotation=pitch.multiply(yaw);
+  camera.position.copy(controls.target).add(drag.offset.clone().applyQuaternion(rotation));
+  camera.up.copy(drag.up).applyQuaternion(rotation);camera.lookAt(controls.target);
+  root.dataset.orientation='free';controls.update();update(document.documentElement.dataset.theme||'light');
+ });
+ function endDrag(e){
+  if(!drag||drag.id!==e.pointerId)return;
+  suppressClick=drag.moved||e.type==='pointercancel';
+  controls.enabled=drag.enabled;drag=null;graphic.style.cursor='grab';
+  if(graphic.hasPointerCapture(e.pointerId))graphic.releasePointerCapture(e.pointerId);
+ }
+ graphic.addEventListener('pointerup',endDrag);graphic.addEventListener('pointercancel',endDrag);graphic.addEventListener('lostpointercapture',endDrag);
+
+ function activate(e){if(e.type==='click'&&suppressClick){suppressClick=false;e.preventDefault();e.stopPropagation();return;}const hit=e.target.closest?.('[data-cube-view]');if(!hit)return;if(e.type==='keydown'&&!['Enter',' '].includes(e.key))return;e.preventDefault();e.stopPropagation();onView(hit.dataset.cubeView);}
  graphic.addEventListener('click',activate);graphic.addEventListener('keydown',activate);
  function update(theme='light'){
   const key=[...camera.quaternion.toArray(),theme,root.dataset.orientation].join(':');if(key===last)return;last=key;
