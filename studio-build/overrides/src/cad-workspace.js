@@ -16,6 +16,7 @@ export function installCadWorkspace({group,editor,add,choose,refresh,products,ca
  const $=id=>document.getElementById(id),app=$('app'),bar=$('editToolbar'),viewport=$('viewport'),original=[...bar.children];
  const legacyAside=app.querySelector(':scope>aside:not(#inspector)'),legacyShape=$('box').closest('section'),shapePopup=legacyShape.closest('.floatingToolPanel');
  const mobile=matchMedia('(max-width: 760px)'),touch=matchMedia('(pointer:coarse)');
+ const scene=group.parent,bed=scene?.getObjectByName('Reference build surface'),grid=scene?.getObjectByName('Print grid');scene?.background?.set?.('#f3f5f8');bed?.material?.color?.set('#e8edf3');grid?.material?.color?.set('#b9c5d4');
  document.body.classList.add('cadWorkspace');legacyAside.id='cadLegacyAside';legacyAside.hidden=true;$('workspaceNav').hidden=true;
  const dock=document.createElement('aside');dock.id='cadDock';dock.setAttribute('aria-label','Tetapan studio');dock.innerHTML='<header id="cadDockHeading"><button type="button" id="cadSheetHandle" aria-label="Besarkan atau kecilkan panel">'+icon('expand')+'</button><h2 id="cadPanelTitle">Mod & reka bentuk</h2><button type="button" id="cadClosePanel" aria-label="Tutup tetapan">'+icon('close')+'</button></header><div id="cadPanelBody"></div>';
  const rail=document.createElement('nav');rail.id='cadRail';rail.setAttribute('aria-label','Alat studio');
@@ -79,8 +80,16 @@ export function installCadWorkspace({group,editor,add,choose,refresh,products,ca
   fold(dims.parentElement,'Demo corak',[$('lampRestoreDemo')],'cadLampDemo');
   const views=$('lampPreviewMode')?.closest('.lampViewChoices');if(views)views.hidden=true;
   if($('lampSampleExport'))$('lampSampleExport').hidden=true;
-  const footer=$('lampGenerate').closest('footer');footer.parentElement.append(footer);
+  const lamp=$('lampDialog'),hardware=$('cadLampHardware'),appearance=fold(lamp,'Warna & susunan',[],'cadLampAppearance');
+  const take=(id,host)=>{const el=$(id);if(!el)return;const label=el.previousElementSibling;if(label?.tagName==='LABEL')host.append(label);host.append(el);};
+  take('lampSource',hardware);take('lampBaseShape',hardware);hardware.append($('lampInfo'));
+  take('lampBottomMode',$('cadLampSize'));take('lampPathPattern',$('cadLampPath'));
+  const colorGrid=$('lampBaseColor')?.closest('.propertyGrid');if(colorGrid)appearance.append(colorGrid);take('lampLayout',appearance);
+  const sections=['cadLampSize','cadLampStyle','cadLampPath','cadLampHardware','cadLampAppearance','cadLatticeSection','cadLampDemo'].map($).filter(Boolean);lamp.prepend(...sections);
+  const footer=$('lampGenerate').closest('footer');lamp.append($('lampResult'),footer);
  }
+ // Presets update the shared mode picker before applying their dimensions.
+ for(const [id,mode]of [['lampNonplanarPreset','drum'],['lampRestoreDemo','lantern']])$(id)?.addEventListener('click',()=>products.selectGenerator('lamp',mode),{capture:true});
  // Keep playback compact; technical readouts are available on demand.
  for(const panel of [$('lampNozzleControls'),$('latticePlayback')])if(panel){const readout=panel.querySelector('small');if(readout)fold(panel,'Koordinat & pelan',[readout],panel.id+'Readout');}
  function syncSelection(){const picked=editor.getSelectedMeshes();context.hidden=!picked.length;noSelection.hidden=!!picked.length;if(active==='properties')$('inspector').hidden=!picked.length;rail.querySelector('[data-cad-pane=properties]').dataset.selected=String(!!picked.length);}
