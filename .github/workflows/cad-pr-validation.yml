@@ -1,0 +1,43 @@
+name: CAD PR validation
+on:
+  push:
+    branches: [feature/cad-pencil-face-20261103]
+    paths: ['cad-source/**', '.github/workflows/cad-pr-validation.yml']
+  pull_request:
+    paths: ['cad-source/**', '.github/workflows/cad-pr-validation.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: cad-source/package-lock.json
+      - name: Install dependencies
+        working-directory: cad-source
+        run: npm ci
+      - name: Build
+        working-directory: cad-source
+        run: npm run build
+      - name: Install Chromium
+        working-directory: cad-source
+        run: npx playwright install --with-deps chromium
+      - name: Validate constraints
+        working-directory: cad-source
+        run: node tests/constraints.mjs
+      - name: Browser integration tests
+        working-directory: cad-source
+        run: node tests/cad.mjs
+      - name: Upload screenshots and QA output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cad-pr-qa
+          path: cad-source/test-results/
+          retention-days: 7
