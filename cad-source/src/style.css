@@ -221,3 +221,31 @@ html[data-theme=dark] #viewCube [data-view=iso]{border-top-color:#35485e}
 #sketchDimensions{z-index:31}
 
 #viewCube{z-index:35}
+
+/* Camera-oriented cube; SVG is a projection of world axes, not another renderer. */
+#viewCube{display:flex;flex-direction:column;gap:0;width:138px;padding:5px;right:14px;top:14px;border-radius:13px;z-index:35}
+#viewCube .orientationGraphic{display:block;width:126px;height:106px;flex:none;overflow:visible;touch-action:manipulation}
+.orientationGraphic .cubeFace{stroke:#7892af;stroke-width:1;cursor:pointer;transition:fill .12s}
+.orientationGraphic .cubeFace:hover,.orientationGraphic .cubeFace:focus{fill:#a8d1ff;outline:none}
+.orientationGraphic text{font:600 9px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#385574;text-anchor:middle;pointer-events:none}
+.orientationGraphic .cubeEdge{stroke:transparent;stroke-width:10;stroke-linecap:round;cursor:pointer;pointer-events:stroke}
+.orientationGraphic .cubeCorner{fill:transparent;cursor:pointer;pointer-events:all}
+.orientationGraphic .cubeEdge:hover,.orientationGraphic .cubeEdge:focus{stroke:#3998f699;outline:none}
+.orientationGraphic .cubeCorner:hover,.orientationGraphic .cubeCorner:focus{fill:#3998f6aa;outline:none}
+#viewCube>.cubeShortcuts{display:grid;width:100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px;border-top:1px solid #d6e2ef;padding-top:4px}
+#viewCube .cubeShortcuts [data-view]{grid-column:auto;justify-self:stretch;min-width:0;min-height:26px;padding:3px;font-size:9px;border:0;border-radius:6px}
+html[data-theme=dark] .orientationGraphic text{fill:#d3e5fa}
+html[data-theme=dark] .orientationGraphic .cubeFace{stroke:#7596b9}
+html[data-theme=dark] #viewCube>.cubeShortcuts{border-top-color:#3c526b}
+#displayPopover{position:absolute;right:14px;top:12px;width:188px;z-index:52;padding:6px;background:var(--panel);border:1px solid var(--border);border-radius:13px;box-shadow:0 8px 30px #12294024;backdrop-filter:blur(12px)}
+#displayPopover button{width:100%;display:flex;align-items:center;gap:9px;min-height:44px;padding:8px 10px;border:0;background:transparent;text-align:left;font-size:12px}
+#displayPopover button svg{width:20px;height:20px;color:#4686c7}
+#displayPopover .displayCheck{margin-left:auto;visibility:hidden}
+#displayPopover button[aria-checked=true]{background:#e2efff;color:#216fc3}
+#displayPopover button[aria-checked=true] .displayCheck{visibility:visible}
+#top #displayModeButton{border-radius:8px;min-width:34px}
+html[data-theme=dark] #displayPopover{background:#202d3eef;border-color:#3d536c}
+html[data-theme=dark] #displayPopover button{color:#c9d9eb}
+html[data-theme=dark] #displayPopover button[aria-checked=true]{background:#315174;color:#c5e0ff}
+@media(max-width:760px){#viewCube{width:116px;padding:4px;right:8px;top:10px}#viewCube .orientationGraphic{width:106px;height:88px}#viewCube .cubeShortcuts [data-view]{min-height:26px;font-size:8px}#top #displayModeButton{min-width:29px}#displayPopover{right:8px;top:10px;width:180px}}
+@media(max-width:420px){#top .brand span{display:none}}

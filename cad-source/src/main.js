@@ -6,6 +6,7 @@ import {createDirectModeling} from './direct-modeling.js';
 import {threeMF,sketchExport} from './exports.js';
 import {solveSketch} from './constraints.js';
 import {layoutDimensions} from './dimension-layout.js';
+import {createOrientationCube,cubeDirection} from './orientation-cube.js';
 import {simpleSource,immediateTransform} from './immediate-preview.js';
 import {facePrismData,updatePrismPositions} from './face-prism.js';
 
@@ -56,7 +57,7 @@ const tools={
 for(const [key,label]of [['search','Search'],['sketch','Draw'],['add','Shapes'],['construct','Construct'],['transform','Transform'],['tools','Solid tools']]){
  const b=document.createElement('button');b.id='nav-'+key;b.type='button';b.innerHTML=ico(key)+'<span>'+label+'</span>';b.onclick=()=>key==='search'?search():showMenu(key);$('rail').append(b);
 }
-const preferences=Object.assign({units:'mm',precision:3,theme:'light',snap:true},(()=>{try{return JSON.parse(localStorage.getItem('reqoo-cad-preferences')||'{}');}catch{return{};}})());
+const preferences=Object.assign({units:'mm',precision:3,theme:'light',snap:true,displayMode:'shadedEdges'},(()=>{try{return JSON.parse(localStorage.getItem('reqoo-cad-preferences')||'{}');}catch{return{};}})());
 const themeToggle=document.createElement('button');themeToggle.id='themeToggle';themeToggle.type='button';themeToggle.dataset.control='theme';themeToggle.setAttribute('aria-label','Toggle dark mode');$('settingsToggle').before(themeToggle);
 const moon='<path d="M20.5 13.5A8.5 8.5 0 0 1 10.5 3.4 8.5 8.5 0 1 0 20.5 13.5Z"/>';
 const sun='<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/>';
@@ -207,7 +208,7 @@ function renderSidebar(){
   $('cadUnits').value=preferences.units;$('cadUnits').onchange=()=>{preferences.units=$('cadUnits').value;updatePreferences();};$('cadPrecision').value=String(preferences.precision);$('cadPrecision').onchange=()=>{preferences.precision=Number($('cadPrecision').value);updatePreferences();};$('cadTheme').value=preferences.theme;$('cadTheme').onchange=()=>{preferences.theme=$('cadTheme').value;updatePreferences();};$('cadSnap').checked=preferences.snap;$('cadSnap').onchange=()=>{preferences.snap=$('cadSnap').checked;updatePreferences();};
   side.querySelector('header button').onclick=()=>side.hidden=true;$('snapSize').onchange=()=>{gridStep=Math.max(.01,Math.min(100,Number($('snapSize').value)||1));$('units').textContent='mm · grid '+gridStep+' mm';};
   $('settingsSelection').value=$('pickMode').value;$('settingsSelection').onchange=()=>$('pickMode').value=$('settingsSelection').value;
-  $('showGrid').onchange=()=>grid.visible=$('showGrid').checked;$('showEdges').onchange=()=>{showEdges=$('showEdges').checked;render();};$('sectionEnabled').onchange=()=>{sectionEnabled=$('sectionEnabled').checked;updateClip();};$('sectionHeight').onchange=()=>{sectionHeight=Number($('sectionHeight').value)||0;updateClip();};$('resetView').onclick=()=>{view('iso');fit();};
+  $('showGrid').onchange=()=>grid.visible=$('showGrid').checked;$('showEdges').onchange=()=>{setDisplayMode($('showEdges').checked?'shadedEdges':'shaded');};$('sectionEnabled').onchange=()=>{sectionEnabled=$('sectionEnabled').checked;updateClip();};$('sectionHeight').onchange=()=>{sectionHeight=Number($('sectionHeight').value)||0;updateClip();};$('resetView').onclick=()=>{view('iso');fit();};
  }
 }
 function search(){closePanels();$('searchDialog').showModal();$('commandQuery').value='';renderCommands();$('commandQuery').focus();}
@@ -224,7 +225,7 @@ const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamp
 scene.add(new THREE.HemisphereLight(0xffffff,0xb9c4d0,2.8));const lamp=new THREE.DirectionalLight(0xffffff,2.4);lamp.position.set(60,-90,150);scene.add(lamp);const fill=new THREE.DirectionalLight(0xffffff,.7);fill.position.set(-100,40,70);scene.add(fill);
 const grid=new THREE.GridHelper(1000,100,0xcbd1d9,0xe6e9ee);grid.rotation.x=Math.PI/2;grid.position.z=-.03;scene.add(grid);
 const root=new THREE.Group(),preview=new THREE.Group();const directOverlay=new THREE.Group();scene.add(root,preview,directOverlay);
-let showEdges=true,sectionEnabled=false,sectionHeight=10;
+let showEdges=preferences.displayMode!=='shaded',sectionEnabled=false,sectionHeight=10;
 function updateClip(){root.traverse(o=>{if(o.material){const mats=Array.isArray(o.material)?o.material:[o.material];for(const m of mats){m.clippingPlanes=sectionEnabled?[new THREE.Plane(new THREE.Vector3(0,0,-1),sectionHeight)]:[];m.needsUpdate=true;}}});}
 function clear(g){for(const o of [...g.children]){g.remove(o);o.traverse(n=>{n.geometry?.dispose();for(const m of Array.isArray(n.material)?n.material:[n.material])m?.dispose();});}}
 function render(previewOnly=false){
@@ -235,10 +236,11 @@ function render(previewOnly=false){
    const selected=selection.filter(s=>s.id===item.id),faceIds=selected.filter(s=>s.kind==='face').map(s=>s.index),whole=selected.some(s=>s.kind==='body'||s.kind==='sketch');
    const color=item.kind==='body'?(doc.ui?.colors?.[item.id]||'#d6dbe2'):item.kind==='plane'?'#99b9df':'#8fb8fa';
    const material=new THREE.MeshStandardMaterial({color:whole?'#b9d4fb':color,roughness:.55,metalness:.08,transparent:item.kind!=='body',depthWrite:item.kind==='body',opacity:item.kind==='plane'?.16:item.kind==='sketch'?.22:1,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:item.kind==='sketch'?-3:1,polygonOffsetUnits:item.kind==='sketch'?-3:1});
-   const highlight=new THREE.MeshStandardMaterial({color:'#73a8ef',roughness:.5,side:THREE.DoubleSide});for(const f of item.mesh.faceGroups)g.addGroup(f.start,f.count,faceIds.includes(f.faceIndex)?1:0);
+   const highlight=new THREE.MeshStandardMaterial({color:'#73a8ef',roughness:.5,side:THREE.DoubleSide});
+   if(item.kind==='body'&&preferences.displayMode==='wireframe'){material.colorWrite=false;material.depthWrite=false;highlight.colorWrite=faceIds.length>0;highlight.transparent=true;highlight.opacity=.13;highlight.depthWrite=false;}for(const f of item.mesh.faceGroups)g.addGroup(f.start,f.count,faceIds.includes(f.faceIndex)?1:0);
    const mesh=new THREE.Mesh(g,[material,highlight]);mesh.renderOrder=item.kind==='sketch'?3:0;mesh.userData={id:item.id,kind:item.kind,faceGroups:item.mesh.faceGroups};node.add(mesh);
   }
-  if(showEdges||item.kind!=='body')for(const edge of item.edges){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(edge.lines,3));const selected=selection.some(s=>s.id===item.id&&(s.kind==='edge'?s.index===edge.index:s.kind==='sketch'||s.kind==='body'));const line=new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:selected?'#2475e8':item.kind==='sketch'?'#4883c8':item.kind==='axis'?'#c89143':'#576372',transparent:true,opacity:item.kind==='plane'?.4:.9}));line.renderOrder=item.kind==='sketch'?4:1;line.userData={id:item.id,kind:'edge',index:edge.index,itemKind:item.kind};node.add(line);}
+  for(const edge of item.edges){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(edge.lines,3));const selected=selection.some(s=>s.id===item.id&&(s.kind==='edge'?s.index===edge.index:s.kind==='sketch'||s.kind==='body'));const line=new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:selected?'#2475e8':item.kind==='sketch'?'#4883c8':item.kind==='axis'?'#c89143':preferences.theme==='dark'?(preferences.displayMode==='wireframe'?'#a7c3df':'#70869e'):'#52687d',transparent:true,opacity:item.kind==='plane'?.4:.9}));line.material.colorWrite=item.kind!=='body'||showEdges||selection.some(s=>s.id===item.id&&s.kind==='edge'&&s.index===edge.index);line.renderOrder=item.kind==='sketch'?4:1;line.userData={id:item.id,kind:'edge',index:edge.index,itemKind:item.kind};node.add(line);}
  }
  $('empty').hidden=items.length>0;if(previewOnly!==true){renderSidebar();renderContext();updateSketchDimensions();}updateClip();updateFaceHandle();
 }
@@ -262,9 +264,10 @@ function showImmediate(type,params,ref){
    clear(directOverlay);if(displayItems){displayItems=null;render(true);}
    const geometry=new THREE.BufferGeometry(),positions=data.base.slice();geometry.setAttribute('position',new THREE.BufferAttribute(positions,3).setUsage(THREE.DynamicDrawUsage));
    const material=new THREE.MeshStandardMaterial({color:doc.ui?.colors?.[ref.id]||'#d6dbe2',roughness:.55,metalness:.08,side:THREE.DoubleSide});
+   if(preferences.displayMode==='wireframe'){material.colorWrite=false;material.depthWrite=false;}
    const mesh=new THREE.Mesh(geometry,material);directOverlay.add(mesh);
    const edgesGeometry=new THREE.BufferGeometry();edgesGeometry.setAttribute('position',new THREE.BufferAttribute(data.lines.slice(),3).setUsage(THREE.DynamicDrawUsage));
-   const edgeLines=new THREE.LineSegments(edgesGeometry,new THREE.LineBasicMaterial({color:'#576372'}));directOverlay.add(edgeLines);
+   const edgeLines=new THREE.LineSegments(edgesGeometry,new THREE.LineBasicMaterial({color:'#576372'}));edgeLines.visible=preferences.displayMode!=='shaded';directOverlay.add(edgeLines);
    immediateSession={ref:{...ref},mode:'prism',data,mesh,edgeLines};
   }
   const {data,mesh,edgeLines}=immediateSession;
@@ -384,7 +387,7 @@ renderer.domElement.addEventListener('pointerdown',e=>{
 },true);
 renderer.domElement.addEventListener('pointermove',e=>{if(e.pointerType==='touch'&&penActive){e.preventDefault();e.stopImmediatePropagation();return;}if(e.pointerType==='pen'){e.preventDefault();e.stopImmediatePropagation();lastPenAt=performance.now();}if(pointerStart&&Math.hypot(e.clientX-pointerStart.x,e.clientY-pointerStart.y)>5)pointerStart.moved=true;if(sketchMode&&draft){cast(e);drawingMove(e);}},true);
 renderer.domElement.addEventListener('pointerup',e=>{if(e.pointerType==='touch'&&penActive){e.preventDefault();e.stopImmediatePropagation();return;}if(e.pointerType==='pen'){e.preventDefault();e.stopImmediatePropagation();penActive=false;lastPenAt=performance.now();}const tap=pointerStart&&!pointerStart.moved&&touchCount<=1;if(sketchMode){if(draft)finishDrag(e);}else if(tap){cast(e);const mode=$('pickMode').value,hits=ray.intersectObjects(root.children,true),front=hits.find(h=>h.object.isMesh&&h.object.userData.kind==='body'),tolerance=(camera.top-camera.bottom)/camera.zoom/renderer.domElement.clientHeight*3;
- const isSketch=h=>h.object.userData.kind==='sketch'||h.object.userData.itemKind==='sketch',visible=h=>!front||h.distance<=front.distance+tolerance;
+ const isSketch=h=>h.object.userData.kind==='sketch'||h.object.userData.itemKind==='sketch',visible=h=>preferences.displayMode==='wireframe'||!front||h.distance<=front.distance+tolerance;
  let eligible=mode==='edge'?hits.filter(h=>h.object.isLineSegments&&h.object.userData.itemKind==='body'&&visible(h)):mode==='body'?hits.filter(h=>h.object.isMesh&&h.object.userData.kind==='body'):mode==='face'?hits.filter(h=>h.object.isMesh&&h.object.userData.kind==='body'):mode==='sketch'?hits.filter(h=>isSketch(h)&&visible(h)):hits.filter(h=>(isSketch(h)||h.object.isMesh||h.object.isLineSegments&&h.object.userData.itemKind==='body'&&(h.distanceToRay||0)<=(200/camera.zoom/renderer.domElement.clientHeight*(e.pointerType==='touch'?9:5)))&&visible(h));
  // Automatic selection follows the active workspace: solid faces first in Solid,
  // sketch profiles first in Sketch. Explicit selection filters remain authoritative.
@@ -400,12 +403,13 @@ renderer.domElement.addEventListener('pointerup',e=>{if(e.pointerType==='touch'&
 },true);
 renderer.domElement.addEventListener('pointercancel',()=>{touchCount=0;penActive=false;controls.enabled=!sketchMode;pointerStart=null;draft=null;clear(preview);});
 function fit(){const b=new THREE.Box3().setFromObject(root);if(b.isEmpty()){controls.target.set(0,0,0);camera.zoom=1;camera.updateProjectionMatrix();return;}const size=b.getSize(new THREE.Vector3()),c=b.getCenter(new THREE.Vector3()),aspect=renderer.domElement.clientWidth/Math.max(1,renderer.domElement.clientHeight),direction=camera.position.clone().sub(controls.target).normalize();if(!direction.length())direction.set(1,-1,1).normalize();controls.target.copy(c);camera.position.copy(c).addScaledVector(direction,Math.max(250,size.length()*2));camera.far=Math.max(10000,size.length()*10);controls.update();camera.updateMatrixWorld(true);let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;for(const x of [b.min.x,b.max.x])for(const y of [b.min.y,b.max.y])for(const z of [b.min.z,b.max.z]){const v=new THREE.Vector3(x,y,z).applyMatrix4(camera.matrixWorldInverse);minX=Math.min(minX,v.x);maxX=Math.max(maxX,v.x);minY=Math.min(minY,v.y);maxY=Math.max(maxY,v.y);}camera.zoom=Math.max(.02,Math.min(40,200*aspect*.72/Math.max(maxX-minX,1),200*.70/Math.max(maxY-minY,1)));camera.updateProjectionMatrix();controls.update();}
-function view(name){document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===name)));const c=controls.target.clone(),d=300,dir=name==='top'?[0,0,1]:name==='front'?[0,-1,0]:name==='right'?[1,0,0]:[1,-1,1];camera.up.set(0,0,1);if(name==='top')camera.up.set(0,1,0);camera.position.copy(c).add(new THREE.Vector3(...dir).normalize().multiplyScalar(d));controls.update();}
+function view(name){document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===name)));const c=controls.target.clone(),d=300,dir=cubeDirection(name);$('viewCube').dataset.view=name;camera.up.set(0,0,1);if(Math.abs(dir[2])===1&&dir[0]===0&&dir[1]===0)camera.up.set(0,1,0);camera.position.copy(c).add(new THREE.Vector3(...dir).normalize().multiplyScalar(d));controls.update();}
+const orientationCube=createOrientationCube({THREE,camera,controls,root:$('viewCube'),onView:view});
 $('fit').onclick=fit;document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>view(b.dataset.view));
 function resize(){const r=$('canvas').getBoundingClientRect(),aspect=r.width/Math.max(1,r.height);camera.left=-100*aspect;camera.right=100*aspect;camera.top=100;camera.bottom=-100;camera.updateProjectionMatrix();renderer.setSize(r.width,r.height);}
 new ResizeObserver(resize).observe($('canvas'));resize();function frame(){
  requestAnimationFrame(frame);
- controls.update();
+ controls.update();orientationCube.update(preferences.theme);
  if(cadDiagnostic){const text='Build '+document.documentElement.dataset.cadBuild+' · '+(selection.at(-1)?.kind||'none')+' · gizmo '+(gizmoTarget()?'ON':'OFF')+' · preview '+Boolean(displayItems);if(cadDiagnostic.textContent!==text)cadDiagnostic.textContent=text;}
  try{updateFaceHandle();}catch(e){console.error('Face gizmo render failed',e);faceHandle.hidden=true;}
  try{updateSketchDimensions();}catch(e){console.error('Sketch dimensions render failed',e);sketchDimensions.hidden=true;}
@@ -442,6 +446,19 @@ document.addEventListener('keydown',e=>{if(e.target.closest('input,select,textar
 document.addEventListener('pointerdown',e=>{if(e.target.closest('#rail,#menu,#toolPanel,#top,dialog'))return;$('menu').hidden=true;});
 // Let CSS track the dynamic viewport; never freeze a transient keyboard/browser height.
 window.addEventListener('resize',resize);window.addEventListener('pageshow',resize);window.visualViewport?.addEventListener('resize',resize);
+
+const displayButton=document.createElement('button');displayButton.id='displayModeButton';displayButton.type='button';displayButton.dataset.control='display';displayButton.innerHTML=ico('box');displayButton.setAttribute('aria-label','Display style');displayButton.setAttribute('aria-expanded','false');displayButton.title='Display style';$('settingsToggle').before(displayButton);
+const displayMenu=document.createElement('div');displayMenu.id='displayPopover';displayMenu.hidden=true;displayMenu.setAttribute('role','menu');displayMenu.setAttribute('aria-label','Display style');$('stage').append(displayMenu);
+const displayStyles=[['shaded','Solid'],['shadedEdges','Solid + edges'],['wireframe','Wireframe']];
+for(const [mode,label]of displayStyles){const b=document.createElement('button');b.type='button';b.dataset.displayMode=mode;b.dataset.control='display';b.setAttribute('role','menuitemradio');b.innerHTML=ico(mode==='wireframe'?'items':'box')+'<span>'+label+'</span><span class="displayCheck" aria-hidden="true">✓</span>';b.onclick=()=>{setDisplayMode(mode);closeDisplay();};displayMenu.append(b);}
+function syncDisplay(){displayStyles.forEach(([mode])=>displayMenu.querySelector('[data-display-mode="'+mode+'"]').setAttribute('aria-checked',String(preferences.displayMode===mode)));displayButton.title='Display: '+(displayStyles.find(([mode])=>preferences.displayMode===mode)?.[1]||'Solid + edges');}
+function closeDisplay(){displayMenu.hidden=true;displayButton.setAttribute('aria-expanded','false');}
+function setDisplayMode(mode){if(busy)return;direct.cancel();preferences.displayMode=mode;showEdges=mode!=='shaded';syncDisplay();updatePreferences();}
+displayButton.onclick=()=>{displayMenu.hidden=!displayMenu.hidden;displayButton.setAttribute('aria-expanded',String(!displayMenu.hidden));syncDisplay();};
+displayMenu.onkeydown=e=>{e.stopPropagation();if(e.key==='Escape'){closeDisplay();displayButton.focus();}if(['ArrowDown','ArrowUp'].includes(e.key)){e.preventDefault();const buttons=[...displayMenu.querySelectorAll('button')],index=buttons.indexOf(document.activeElement);buttons[(index+(e.key==='ArrowDown'?1:buttons.length-1)+buttons.length)%buttons.length].focus();}};
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('#displayModeButton,#displayPopover'))closeDisplay();});
+syncDisplay();
+
 updatePreferences();setWorkspaceMode('solid');decorateButtons();new MutationObserver(decorateButtons).observe(document.body,{childList:true,subtree:true});
 try{await rpc('ready');ready=true;const saved=localStorage.getItem('reqoo-cad-v1');if(saved){try{const parsed=JSON.parse(saved);validateProject(parsed);await rebuild(parsed,{history:false});fit();}catch{status('Saved project could not be restored. Open your downloaded backup.');}}status('Ready · create a sketch or add a solid');updateHistoryButtons();}catch(e){error(e);}
-if(new URLSearchParams(location.search).has('test'))window.__cad={get gizmo(){return {...direct.state,selection:selection.at(-1),busy,sketchMode:!!sketchMode}},get previewItems(){return displayItems},get immediatePreview(){return immediateSession?{mode:immediateSession.mode||'affine',value:immediateSession.value}:null},direct,get doc(){return doc;},get items(){return items;},get selection(){return selection;},apply,rebuild,select,startTool,exportFile,fit,ready:()=>ready,view,camera,root,worker:rpc};
+if(new URLSearchParams(location.search).has('test'))window.__cad={get gizmo(){return {...direct.state,selection:selection.at(-1),busy,sketchMode:!!sketchMode}},get previewItems(){return displayItems},get immediatePreview(){return immediateSession?{mode:immediateSession.mode||'affine',value:immediateSession.value}:null},direct,get doc(){return doc;},get items(){return items;},get selection(){return selection;},apply,rebuild,select,startTool,exportFile,fit,ready:()=>ready,view,camera,controls,root,worker:rpc};
