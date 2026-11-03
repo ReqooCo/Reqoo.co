@@ -49,6 +49,13 @@ jobs:
             node -e "JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'))" "$f"
           done
 
+      - name: Build current CAD source for the Web Worker asset binding
+        working-directory: cad-source
+        run: |
+          npm ci
+          npm run build
+          node -e "const fs=require('fs');fs.rmSync('../cad',{recursive:true,force:true});fs.cpSync('dist','../cad',{recursive:true})"
+
       - name: Install Wrangler
         shell: bash
         run: npm install --no-save --no-package-lock "wrangler@${WRANGLER_VERSION}"

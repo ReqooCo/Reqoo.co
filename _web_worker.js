@@ -204,7 +204,7 @@ export default{
 
     // CAD HTML must revalidate: otherwise a cached entrypoint can keep loading an
     // obsolete hashed JS bundle while the Pages deployment itself is current.
-    if(host==='reqoo.co'&&/^\\/cad\\/?(?:index\\.html)?$/i.test(url.pathname)){
+    if(host==='reqoo.co'&&/^\/cad\/?(?:index\.html)?$/i.test(url.pathname)){
       const assetUrl=new URL(request.url);assetUrl.pathname='/cad/index.html';
       const response=await env.ASSETS.fetch(new Request(assetUrl.toString(),request));
       const headers=new Headers(response.headers);
