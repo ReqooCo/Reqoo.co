@@ -10,3 +10,5 @@ Build: npm ci && npm run build. Browser QA: node tests/cad.mjs. See THIRD-PARTY-
 
 
 Release verification: GitHub Actions `CAD PR validation` builds, runs browser tests, and publishes verified `cad/` assets on `main`.
+
+Cloudflare Pages production builds CAD directly from `cad-source` into the `cad/` static route.
