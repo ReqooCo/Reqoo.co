@@ -1,0 +1,45 @@
+name: CAD live preview and production verification
+on:
+  push:
+    branches: [main, feature/cad-professional-20261103]
+    paths: ['cad-source/**','_web_worker.js','.github/workflows/cad-live-verification.yml','.github/workflows/deploy.yml']
+permissions:
+  contents: read
+concurrency:
+  group: cad-live-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CAD_TEST_URL: ${{ github.ref == 'refs/heads/main' && 'https://reqoo.co/cad/' || 'https://feature-cad-professional-202.reqoo-co.pages.dev/cad/' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Build expected source identity
+        working-directory: cad-source
+        run: |
+          npm ci
+          npm run build
+      - name: Install Chromium
+        working-directory: cad-source
+        run: npx playwright install --with-deps chromium
+      - name: Verify live source identity in the browser
+        working-directory: cad-source
+        run: node tests/live-identity.mjs
+      - name: Test the deployed CAD application
+        working-directory: cad-source
+        run: |
+          node tests/cad.mjs
+          node tests/acceptance.mjs
+          node tests/product.mjs
+          node tests/input.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cad-live-qa
+          path: cad-source/test-results
+          retention-days: 14

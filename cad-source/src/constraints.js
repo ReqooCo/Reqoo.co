@@ -16,6 +16,9 @@ export function solveSketch(points,constraints=[],{tolerance=1e-6}={}){
   else if(c.type==='vertical')rows.push(x=>x[b]-x[a]);
   else if(c.type==='coincident')rows.push(x=>x[b]-x[a],x=>x[b+1]-x[a+1]);
   else if(c.type==='length'){const v=target(c.value);if(v<=0)throw Error('Length must be positive');rows.push(x=>Math.hypot(x[b]-x[a],x[b+1]-x[a+1])-v);}
+  else if(c.type==='angle'){const angle=target(c.value)*Math.PI/180;rows.push(x=>Math.atan2(Math.sin(Math.atan2(x[b+1]-x[a+1],x[b]-x[a])-angle),Math.cos(Math.atan2(x[b+1]-x[a+1],x[b]-x[a])-angle))*Math.max(1,Math.hypot(x[b]-x[a],x[b+1]-x[a+1])));}
+  else if(c.type==='midpoint'){const k=index(c.c);rows.push(x=>x[a]-(x[b]+x[k])/2,x=>x[a+1]-(x[b+1]+x[k+1])/2);}
+  else if(['parallel','perpendicular','equal'].includes(c.type)){const k=index(c.c),l=index(c.d);if(k===l)throw Error('Reference segment needs distinct points');if(c.type==='equal')rows.push(x=>Math.hypot(x[b]-x[a],x[b+1]-x[a+1])-Math.hypot(x[l]-x[k],x[l+1]-x[k+1]));else rows.push(x=>{const ax=x[b]-x[a],ay=x[b+1]-x[a+1],bx=x[l]-x[k],by=x[l+1]-x[k+1];return(c.type==='parallel'?ax*by-ay*bx:ax*bx+ay*by)/Math.max(1,Math.hypot(bx,by));});}
   else throw Error('Unsupported sketch constraint');
  }
  const residual=x=>rows.map(fn=>fn(x));

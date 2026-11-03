@@ -1,7 +1,7 @@
 name: Real solid CAD build and verification
 on:
   push:
-    branches: [feature/cad-hole-icons-20261103]
+    branches: [feature/cad-professional-20261103]
     paths: ['cad-source/**','.github/workflows/solid-cad.yml']
 permissions:
   contents: write
@@ -52,8 +52,12 @@ jobs:
         working-directory: cad-source
         run: |
           npx playwright install --with-deps chromium
+          node tests/runtime-route.mjs
           node tests/constraints.mjs
           node tests/cad.mjs
+          node tests/acceptance.mjs
+          node tests/product.mjs
+          node tests/input.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -72,4 +76,4 @@ jobs:
           git config user.email 'actions@users.noreply.github.com'
           git add cad cad-source/package-lock.json cad-source/public/THIRD-PARTY-NOTICES.txt
           git diff --cached --quiet || git commit -m 'Stage verified standalone solid CAD application [skip ci]'
-          git push origin HEAD:feature/cad-hole-icons-20261103
+          git push origin HEAD:feature/cad-professional-20261103
