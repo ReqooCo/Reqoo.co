@@ -374,6 +374,16 @@ function select(next,extend=false){if(extend){for(const n of next){const index=s
 $('multi').onclick=()=>{const value=$('multi').getAttribute('aria-pressed')!=='true';$('multi').setAttribute('aria-pressed',String(value));};$('isolate').onclick=()=>{isolate=!isolate;$('isolate').classList.toggle('active',isolate);render();};
 $('measure').onclick=async()=>{try{const selected=selectedIds();if(selection.length===2){const d=await rpc('measure',{ids:selected,refs:selection});status('Minimum distance: '+d.toFixed(3)+' mm');}else{const i=selectedItem();if(!i)throw Error('Select one or two bodies to measure');const ref=selection[0];if(ref?.kind==='edge'){status('Edge length: '+i.edges.find(e=>e.index===ref.index).length.toFixed(3)+' mm');return;}if(ref?.kind==='face'){status('Face area: '+i.faceInfo.find(f=>f.index===ref.index).area.toFixed(3)+' mm²');return;}const b=i.bounds,size=b[0].map((v,n)=>b[1][n]-v);status(size.map(n=>n.toFixed(3)).join(' × ')+' mm · area '+i.area.toFixed(2)+' mm² · volume '+i.volume.toFixed(2)+' mm³');}}catch(e){error(e);}};
 const ray=new THREE.Raycaster();let pointerStart=null,touchCount=0,pickCandidates=[],penActive=false,lastPenAt=-Infinity,lastCanvasTap=null;
+// A face control can appear under the finger after the first tap.
+ // Recognize the second tap before the new control can consume it.
+ $('stage').addEventListener('pointerdown',e=>{
+  if(!e.target.closest?.('#faceDistance,#faceDragHandle')||!lastCanvasTap||sketchMode)return;
+  const previous=lastCanvasTap;
+  if(e.pointerType!==previous.type||performance.now()-previous.time>350||Math.hypot(e.clientX-previous.x,e.clientY-previous.y)>(e.pointerType==='touch'?24:12))return;
+  e.preventDefault();e.stopImmediatePropagation();lastCanvasTap=null;pointerStart=null;touchCount=0;
+  const full={id:previous.id,kind:'body'},extend=e.shiftKey||$('multi').getAttribute('aria-pressed')==='true';
+  select(extend?[...selection.filter(s=>s.id!==previous.id),full]:[full]);pickCandidates=[full];
+ },true);
 function cast(e){const r=renderer.domElement.getBoundingClientRect();ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1),camera);ray.params.Line.threshold=(camera.top-camera.bottom)/camera.zoom/r.height*(e.pointerType==='touch'?14:e.pointerType==='pen'?8:6);}
 renderer.domElement.addEventListener('pointerdown',e=>{
  if(e.pointerType==='touch'&&penActive){e.preventDefault();e.stopImmediatePropagation();return;}
