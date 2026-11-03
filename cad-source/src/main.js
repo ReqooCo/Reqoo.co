@@ -244,11 +244,30 @@ function referenceParams(type,params,ref=selection.at(-1)){
  return result;
 }
 function resetDirectPreview(){previewVersion++;if(displayItems){displayItems=null;render();}}
-const direct=createDirectModeling({THREE,camera,renderer,stage:$('stage'),getSelection:()=>selection,getItem:selectedItem,getDoc:()=>doc,isBusy:()=>busy,isSketching:()=>!!sketchMode,
+
+// Restrict diameter edits to an unambiguous source cylinder/profile. Imported
+// or boolean-derived cylindrical surfaces need an independent surface tool.
+function diameterTarget(ref){
+ const item=items.find(i=>i.id===ref?.id),feature=doc.features.find(f=>f.id===item?.featureId);
+ if(!item||!feature||ref.kind!=='face'||item.faceInfo.find(f=>f.index===ref.index)?.type!=='CYLINDER')return null;
+ if(feature.type==='cylinder')return{featureId:feature.id,diameter:2*(feature.params.radius??15)};
+ if(feature.type==='extrude'&&feature.inputs.length===1){
+  const sketch=doc.features.find(f=>f.id===feature.inputs[0]);
+  if(sketch?.type==='sketch'&&sketch.params.shape==='circle'&&!sketch.params.operations?.length)return{featureId:sketch.id,diameter:2*(sketch.params.radius??15)};
+ }
+ return null;
+}
+function diameterDocument(params,ref){
+ const target=diameterTarget(ref);if(!target)throw Error('Diameter source is not editable for this face');
+ if(!Number.isFinite(params.diameter)||params.diameter<=.001||params.diameter>2000)throw Error('Diameter must be between 0.001 and 2000 mm');
+ const next=snapshot();next.features.find(f=>f.id===target.featureId).params.radius=params.diameter/2;return next;
+}
+
+const direct=createDirectModeling({THREE,camera,renderer,stage:$('stage'),getSelection:()=>selection,getDiameterTarget:diameterTarget,getItem:selectedItem,getDoc:()=>doc,isBusy:()=>busy,isSketching:()=>!!sketchMode,
  onNavigation:enabled=>controls.enabled=enabled&&!sketchMode,
  getUnits:()=>({factor:unitFactorValue(),label:preferences.units}),onStatus:status,onResetPreview:resetDirectPreview,
- onPreview:async(type,params,ref,isCurrent)=>{const version=++previewVersion,next=snapshot();next.features.push({id:'direct_preview',type,name:'Direct preview',params:referenceParams(type,params,ref),inputs:[ref.id]});const result=await rpc('preview',{doc:next});if(isCurrent()&&version===previewVersion){displayItems=result;render();}},
- onCommit:async(type,params,ref)=>{resetDirectPreview();const id=await apply(type,referenceParams(type,params,ref),[ref.id]);select([{id,kind:'body'}]);}
+ onPreview:async(type,params,ref,isCurrent)=>{const version=++previewVersion,next=type==='diameter'?diameterDocument(params,ref):snapshot();if(type!=='diameter')next.features.push({id:'direct_preview',type,name:'Direct preview',params:referenceParams(type,params,ref),inputs:[ref.id]});const result=await rpc('preview',{doc:next});if(isCurrent()){displayItems=result;render();}},
+ onCommit:async(type,params,ref)=>{resetDirectPreview();if(type==='diameter'){await rebuild(diameterDocument(params,ref),{selectId:ref.id});return;}const id=await apply(type,referenceParams(type,params,ref),[ref.id]);select([{id,kind:'body'}]);}
 });
 const faceHandle=direct.handle,faceDistance=direct.dimensions;
 const faceDirection=()=>direct.direction(),gizmoTarget=()=>direct.target(),showFaceDistance=(value=0,operation)=>direct.begin(value,operation),updateFaceHandle=()=>direct.update();
