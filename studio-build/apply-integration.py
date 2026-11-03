@@ -96,4 +96,8 @@ for f in sorted((project/'desktop/fonts').glob('*.ttf')):shutil.copyfile(f,fontD
 shutil.copyfile(project/'desktop/FONT-LICENSES.txt',fontDir/'LICENSES.txt')
 edit('README.md',lambda s:'# Reqoo 3D Studio 1.5.0 — shared web and desktop\n\nBuilt and tested in GitHub Actions. The released v1.3.0 non-lamp generators remain; experimental Coral, Fold and related lamp generators are retired. Lamp Studio provides seven parametric mesh shapes, sliders and quantized nozzle motion. Custom experimental P2S 0.8 mm PETG G-code and preview share one XYZ/E/F plan, with Z-down extrusion, motion limits and preliminary nozzle checks. Unsafe exploratory waves cannot be exported. The fixed lattice sample remains separate. STL/3MF export the model envelope. Physical printing and lamp hardware fit remain unverified.\n\nHistorical baseline notes follow:\n\n'+s)
 edit('src/main.js',lambda s:"import {installLatticeSample} from './lattice-sample.js';\n"+s+"\ninstallLatticeSample({scene,camera,controls,group,status,choose});\n")
+edit('src/main.js',lambda s:s+"\nimport {installCadWorkspace} from './cad-workspace.js';\ninstallCadWorkspace({group,editor,add,choose,refresh,products,camera,controls,renderer,status});\n")
+edit('src/editor.js',lambda s:s.replace("if(e.button!==0||!moveMode||gizmoGuard?.(e))return;","if(e.pointerType==='touch'||e.button!==0||!moveMode||gizmoGuard?.(e))return;"))
+edit('index.html',lambda s:s.replace('width=device-width, initial-scale=1','width=device-width, initial-scale=1, viewport-fit=cover'))
+edit('src/main.js',lambda s:"import {createStudioRenderer} from './studio-graphics.js';\n"+s.replace("const renderer=new THREE.WebGLRenderer({antialias:true});","const renderer=createStudioRenderer();"))
 print('Integration applied to',project)
