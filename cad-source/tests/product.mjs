@@ -55,5 +55,33 @@ try{
  await page.locator('[data-view=iso]').click();await page.locator('#fit').click();await page.screenshot({path:path.join(out,'product-ring-solid-dark.png')});
  checks.push('Touch centre/band independently; band extrudes to a true annular BREP and rebuilds/reloads parametrically');
 
+
+ // Geometry-attached annotation editing and orientation controls.
+ await fresh();source=await op('sketch',{shape:'rectangle',width:30,height:20,plane:'XY'});
+ await page.locator('[data-view=top]').click();await page.locator('#fit').click();
+ point=await projection(0,0,0);await page.touchscreen.tap(point.x,point.y);
+ assert.equal(await page.locator('#sketchDimensionLines .dimensionMeasure').count(),2);
+ const beforePath=await page.locator('[data-measure=width]').getAttribute('d');
+ await page.locator('[data-view=iso]').click();await page.waitForFunction(old=>document.querySelector('[data-measure=width]')?.getAttribute('d')!==old,beforePath);
+ assert.equal(await page.locator('[data-view=iso]').getAttribute('aria-pressed'),'true');
+ await page.locator('[data-view=front]').click();assert.equal(await page.locator('[data-view=front]').getAttribute('aria-pressed'),'true');
+ await page.locator('[data-view=right]').click();assert.equal(await page.locator('[data-view=right]').getAttribute('aria-pressed'),'true');
+ await page.locator('[data-view=top]').click();
+ await page.locator('[data-dimension=width]').fill('40');await page.locator('[data-dimension=width]').press('Enter');await page.waitForFunction(()=>window.__cad.doc.features[0].params.width===40);
+ await page.screenshot({path:path.join(out,'product-attached-rectangle-dimensions.png')});
+ checks.push('Top/front/right/ISO widget selects and highlights orientations; dimension lines follow the camera');
+ await op('extrude',{distance:5,keepInputs:true},[source]);near((await body()).volume,4000,.03);
+ await page.evaluate(id=>window.__cad.select([{id,kind:'sketch'}]),source);
+ await page.locator('[data-dimension=width]').fill('50');await page.locator('[data-dimension=width]').press('Enter');await page.waitForFunction(()=>window.__cad.doc.features[0].params.width===50);near((await body()).volume,5000,.03);
+ checks.push('Tap sketch → attached width dimension → Enter updates sketch and dependent native extrusion');
+ await fresh();source=await op('sketch',{shape:'circle',radius:10,plane:'XY'});offset=await op('sketchOffset',{distance:2,keepInputs:false},[source]);
+ await page.locator('[data-view=top]').click();await page.locator('#fit').click();
+ assert.equal(await page.locator('[data-measure=innerDiameter]').count(),1);assert.equal(await page.locator('[data-measure=outerDiameter]').count(),1);
+ await page.locator('[data-dimension=innerDiameter]').fill('18');await page.locator('[data-dimension=outerDiameter]').fill('26');await page.getByRole('button',{name:'Apply sketch dimensions',exact:true}).click();
+ await page.waitForFunction(()=>window.__cad.doc.features[0].params.radius===9&&window.__cad.doc.features[1].params.distance===4);
+ await page.screenshot({path:path.join(out,'product-attached-ring-dimensions.png')});
+ await op('extrude',{distance:5},[offset+':band']);near((await body()).volume,440*Math.PI,.04);
+ checks.push('Ring inner/outer diameter annotations edit the source and offset in one history transaction');
+
  assert.deepEqual(errors,[]);await fs.writeFile(path.join(out,'product-results.json'),JSON.stringify({checks,errors},null,2));console.log('PRODUCT PASS',checks);
 }catch(e){console.error('PRODUCT FAILED',e,checks,await page.locator('body').innerText());await page.screenshot({path:path.join(out,'product-failure.png')}).catch(()=>{});throw e;}finally{await browser.close();await new Promise(r=>server.close(r));}

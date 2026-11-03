@@ -187,3 +187,33 @@ html[data-theme=dark] #viewCube button{background:#1d2938d9;color:#b2c1d3;border
 html[data-theme=dark] #projectName{color:#e0e9f5}
 html[data-theme=dark] #top>button.primary,html[data-theme=dark] #faceDistanceApply{background:#267bdc;color:#fff}
 @media(max-width:760px){#rail{width:46px}#rail button{min-height:44px;padding:9px}#context button{min-width:58px}#top #themeToggle{min-width:32px;width:32px}}
+
+/* Geometry-attached annotations, independent of the modeling toolbar. */
+#sketchDimensions{position:absolute;inset:0;left:0!important;top:0!important;width:100%;height:100%;max-width:none;max-height:none;display:block;padding:0;margin:0;background:none;border:0;box-shadow:none;backdrop-filter:none;overflow:visible;pointer-events:none}
+#sketchDimensionLines{position:absolute;inset:0;width:100%;height:100%;color:#3487df;pointer-events:none;overflow:visible}
+#sketchDimensionLines .dimensionExtension{fill:none;stroke:currentColor;stroke-width:1;opacity:.55}
+#sketchDimensionLines .dimensionMeasure{fill:none;stroke:currentColor;stroke-width:1.25;opacity:.9}
+#sketchDimensions>label{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;gap:4px;min-height:32px;padding:2px 5px;background:#f8fbfff2;border:1px solid #a8c9eb;border-radius:7px;box-shadow:0 2px 7px #234b7510;color:#2274c7;font-size:11px;font-weight:600;white-space:nowrap;pointer-events:auto}
+#sketchDimensions input{width:60px;min-height:28px;padding:2px;border:0;border-radius:4px;background:transparent;box-shadow:none;color:inherit;font-size:15px;font-weight:650;text-align:center;font-variant-numeric:tabular-nums;appearance:textfield}
+#sketchDimensions input::-webkit-inner-spin-button,#sketchDimensions input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+#sketchDimensions>label:focus-within{border-color:#3387e0;box-shadow:0 0 0 2px #3387e025;background:#fff}
+#sketchDimensions>button{position:absolute;transform:translate(-50%,-50%);min-width:34px;min-height:34px;padding:4px;border:0;border-radius:8px;pointer-events:auto;box-shadow:0 2px 8px #1d507533}
+html[data-theme=dark] #sketchDimensions{background:none;border:0}
+html[data-theme=dark] #sketchDimensions>label{background:#20334aee;border-color:#4b7fae;color:#acd4ff}
+html[data-theme=dark] #sketchDimensions input{background:transparent;color:#acd4ff}
+html[data-theme=dark] #sketchDimensions>label:focus-within{background:#284666;border-color:#83baff}
+html[data-theme=dark] #sketchDimensionLines{color:#7cb9f4}
+#viewCube{display:grid;grid-template-columns:repeat(2,58px);gap:4px;right:16px;top:16px;padding:7px;background:#ffffffb8;border:1px solid #dce5ef;border-radius:14px;opacity:1;box-shadow:0 4px 16px #172b3d0c;backdrop-filter:blur(10px)}
+#viewCube>div{display:contents}
+#viewCube button{display:flex;align-items:center;justify-content:center;gap:4px;min-height:33px;min-width:54px;padding:5px 7px;border-radius:8px;border:1px solid transparent;background:transparent;color:#6a7e96;font-size:10px;font-weight:650;letter-spacing:0}
+#viewCube [data-view=top],#viewCube [data-view=iso]{grid-column:1/-1;justify-self:center}
+#viewCube [data-view=iso]{min-width:76px;border-top:1px solid #e5ebf2;border-radius:8px}
+#viewCube [data-view=iso] svg{width:20px;height:20px}
+#viewCube button:hover{background:#e9f2fd;color:#2679db}
+#viewCube button[aria-pressed=true]{background:#e1efff;color:#176bc5;border-color:#b7d6f7}
+html[data-theme=dark] #viewCube{background:#1e2b3cdd;border-color:#35485e}
+html[data-theme=dark] #viewCube button{background:transparent;border-color:transparent;color:#a6bcd4}
+html[data-theme=dark] #viewCube button[aria-pressed=true]{background:#304d70;border-color:#4d80b2;color:#c1dfff}
+html[data-theme=dark] #viewCube [data-view=iso]{border-top-color:#35485e}
+@media(pointer:coarse){#sketchDimensions>label{min-height:40px}#sketchDimensions input{min-height:34px;font-size:16px}#sketchDimensions>button{min-height:40px;min-width:36px}#viewCube button{min-height:36px}}
+@media(max-width:760px){#viewCube{grid-template-columns:repeat(2,42px);padding:5px;right:8px;top:10px;gap:2px;border-radius:11px}#viewCube button{min-width:40px;min-height:30px;font-size:9px;padding:3px}#viewCube [data-view=iso]{min-width:60px}}
