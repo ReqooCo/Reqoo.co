@@ -93,5 +93,5 @@ for f in sorted((project/'desktop/fonts').glob('*.ttf')):shutil.copyfile(f,fontD
 (fontDir/'index.json').write_text(json.dumps(fontIndex))
 shutil.copyfile(project/'desktop/FONT-LICENSES.txt',fontDir/'LICENSES.txt')
 edit('README.md',lambda s:'# Reqoo 3D Studio 1.5.0 — shared web and desktop\n\nBuilt and tested in GitHub Actions. The released v1.3.0 non-lamp generators remain; experimental Coral, Fold and related lamp generators are retired. Lamp Studio provides seven parametric mesh shapes, sliders and illustrative nozzle motion. STL/3MF export the model envelope; direct G-code export is currently the fixed P2S 0.8 mm PETG test specimen only. Physical printing and lamp hardware fit remain unverified.\n\nHistorical baseline notes follow:\n\n'+s)
-edit('src/main.js',lambda s:"import {installLatticeSample} from './lattice-sample.js';\n"+s+"\ninstallLatticeSample({scene,camera,controls,group,status});\n")
+edit('src/main.js',lambda s:"import {installLatticeSample} from './lattice-sample.js';\n"+s+"\ninstallLatticeSample({scene,camera,controls,group,status,choose});\n")
 print('Integration applied to',project)
