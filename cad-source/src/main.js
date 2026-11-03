@@ -249,6 +249,7 @@ function gizmoTarget(){
 }
 function updateFaceHandle(){
  const target=gizmoTarget();
+ if(new URLSearchParams(location.search).has('test'))document.documentElement.dataset.cadGizmo=target?target.ref.kind:'none';
  if(!target){faceHandle.hidden=true;faceDistance.hidden=true;faceDistanceRef=null;return;}
  if(faceDistanceRef&&!sameFace(target.ref,faceDistanceRef)){faceDistance.hidden=true;faceDistanceRef=null;faceDistanceValue=0;}
  const rect=$('stage').getBoundingClientRect();
@@ -385,7 +386,13 @@ renderer.domElement.addEventListener('pointermove',e=>{if(pointerStart&&Math.hyp
 renderer.domElement.addEventListener('pointerup',e=>{const tap=pointerStart&&!pointerStart.moved&&touchCount<=1;if(sketchMode){if(draft)finishDrag(e);}else if(tap){cast(e);const mode=$('pickMode').value,hits=ray.intersectObjects(root.children,true),front=hits.find(h=>h.object.isMesh&&h.object.userData.kind==='body'),tolerance=(camera.top-camera.bottom)/camera.zoom/renderer.domElement.clientHeight*3;
  const isSketch=h=>h.object.userData.kind==='sketch'||h.object.userData.itemKind==='sketch',visible=h=>!front||h.distance<=front.distance+tolerance;
  let eligible=mode==='edge'?hits.filter(h=>h.object.isLineSegments&&h.object.userData.itemKind==='body'&&visible(h)):mode==='body'?hits.filter(h=>h.object.isMesh&&h.object.userData.kind==='body'):mode==='face'?hits.filter(h=>h.object.isMesh&&h.object.userData.kind==='body'):mode==='sketch'?hits.filter(h=>isSketch(h)&&visible(h)):hits.filter(h=>(isSketch(h)||h.object.isMesh)&&visible(h));
- if(mode==='sketch'||mode==='auto')eligible.sort((a,b)=>Number(isSketch(b)&&b.object.isMesh)-Number(isSketch(a)&&a.object.isMesh)||Number(isSketch(b))-Number(isSketch(a))||a.distance-b.distance);
+ // Automatic selection follows the active workspace: solid faces first in Solid,
+ // sketch profiles first in Sketch. Explicit selection filters remain authoritative.
+ if(mode==='auto')eligible.sort((a,b)=>{
+  const priority=h=>workspaceMode==='solid'?(h.object.isMesh&&h.object.userData.kind==='body'?3:isSketch(h)?2:1):(isSketch(h)&&h.object.isMesh?3:isSketch(h)?2:1);
+  return priority(b)-priority(a)||a.distance-b.distance;
+ });
+ else if(mode==='sketch')eligible.sort((a,b)=>Number(isSketch(b)&&b.object.isMesh)-Number(isSketch(a)&&a.object.isMesh)||a.distance-b.distance);
  pickCandidates=[];const keys=new Set();for(const hit of eligible){const d=hit.object.userData,kind=isSketch(hit)?'sketch':mode==='body'?'body':d.kind==='edge'?'edge':'face',ref={id:d.id,kind};if(kind==='edge')ref.index=d.index;if(kind==='face'){ref.index=d.faceGroups.find(g=>hit.faceIndex*3>=g.start&&hit.faceIndex*3<g.start+g.count)?.faceIndex??0;ref.point=hit.point.toArray();}const key=[ref.id,ref.kind,ref.index].join(':');if(!keys.has(key)){keys.add(key);pickCandidates.push(ref);}}
  // Sketch profiles are selected before the host face in automatic mode; face remains in Select other.
  select(pickCandidates.length?[pickCandidates[0]]:[],e.shiftKey||$('multi').getAttribute('aria-pressed')==='true');}
