@@ -1,7 +1,7 @@
 name: Prepare verified Reqoo Studio release
 on:
   push:
-    branches: [studio/v1.4.1]
+    branches: [studio/v1.4.2]
     paths: [.github/workflows/reqoo-studio-publish.yml, .github/scripts/prepare-studio-release.py]
 permissions:
   contents: write
@@ -15,17 +15,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: studio/v1.4.1
+          ref: studio/v1.4.2
       - name: Wait for verified cloud build
-        run: gh run watch 41579002183 --exit-status
+        run: gh run watch 41579878634 --exit-status
       - name: Refresh integrated source
         run: |
-          git fetch origin studio/v1.4.1
-          git reset --hard origin/studio/v1.4.1
+          git fetch origin studio/v1.4.2
+          git reset --hard origin/studio/v1.4.2
       - name: Download build outputs on the cloud runner only
         run: |
-          gh run download 41579002183 -n Reqoo-Studio-Web-1.4.1 -D .studio-release/web
-          gh run download 41579002183 -n Reqoo-3D-Studio-1.4.1-Installer-x64 -D .studio-release/installer
+          gh run download 41579878634 -n Reqoo-Studio-Web-1.4.2 -D .studio-release/web
+          gh run download 41579878634 -n Reqoo-3D-Studio-1.4.2-Installer-x64 -D .studio-release/installer
       - name: Prepare production assets without source or build caches
         run: python .github/scripts/prepare-studio-release.py
       - name: Commit verified web distribution for promotion
@@ -34,7 +34,7 @@ jobs:
           git config user.email 'actions@users.noreply.github.com'
           git add 3d-studio 3d-lamp-studio/index.html apps/index.html shared/ecosystem.json .assetsignore
           git diff --cached --quiet || git commit -m 'Publish verified Reqoo 3D Studio web distribution [skip ci]'
-          git push origin HEAD:studio/v1.4.1
+          git push origin HEAD:studio/v1.4.2
       - name: Publish only the finished installer and checksum
         run: |
-          gh release create reqoo-studio-v1.4.1 .studio-release/installer/Reqoo-3D-Studio-1.4.1-Setup-x64.exe .studio-release/installer/SHA256.txt --target studio/v1.4.1 --title 'Reqoo 3D Studio 1.4.1' --notes 'Restores the original 4-tier 84-rib alternating-wave lamp demo, with full filament preview, animation, restore-demo button and explicit STL shell view. Custom preview and fixed P2S sample export remain separate. Built and tested on GitHub; physical printer and lamp-fit tests are not claimed. Windows installer is not Authenticode signed.'
+          gh release create reqoo-studio-v1.4.2 .studio-release/installer/Reqoo-3D-Studio-1.4.2-Setup-x64.exe .studio-release/installer/SHA256.txt --target studio/v1.4.2 --title 'Reqoo 3D Studio 1.4.2' --notes 'Restores the original 4-tier 84-rib alternating-wave lamp demo, with full filament preview, animation, restore-demo button and explicit STL shell view. Custom preview and fixed P2S sample export remain separate. Built and tested on GitHub; physical printer and lamp-fit tests are not claimed. Windows installer is not Authenticode signed.'
