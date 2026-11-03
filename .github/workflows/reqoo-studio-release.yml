@@ -57,6 +57,9 @@ jobs:
           git push origin HEAD:studio/v1.4.0
   windows:
     runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4

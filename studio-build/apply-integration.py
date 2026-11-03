@@ -26,7 +26,7 @@ def geometry(s):
  s=s.replace('export function lampGeometry(input){','function legacyLampGeometry(input){')
  s+='''
 export function lampGeometry(input){
- const p=studioParameters({...LAMP_DEFAULTS,...input}),support=legacyLampGeometry({...p,shape:'drum',ripple:0,twist:0,ribs:4,topDiameter:p.diameter});
+ const supplied={...LAMP_DEFAULTS,...input};if(input.middleDiameter===undefined)delete supplied.middleDiameter;const p=studioParameters(supplied),support=legacyLampGeometry({...p,shape:'drum',ripple:0,twist:0,ribs:4,topDiameter:p.diameter});
  try{const shade=lampEnvelope(p),minimum=shade.userData.minimumInteriorRadius;
  if(p.source==='strip'&&p.postDiameter/2+p.stripHeight+5>minimum){shade.dispose();throw Error('Besarkan bukaan atau kecilkan tiang LED.');}
  if(p.source==='e27'&&(minimum<p.bulbDiameter/2+p.bulbGap||p.height<p.bulbHeight+p.bulbGap+3)){shade.dispose();throw Error('Ruang mentol tidak cukup untuk bentuk ini.');}
@@ -46,6 +46,8 @@ def ui(s):
  s=s.replace("['diameter','Diameter bawah (mm)',50,240]","['middleDiameter','Lebar tengah (mm)',30,240],['tiers','Bilangan tingkat',2,6],['bulge','Kembung tingkat (%)',5,40],['ribDepth','Timbul rusuk (mm)',0,3],['bottomThickness','Tebal tapak tertutup (mm)',.8,6],['pathAmplitude','Naik-turun nozzle Z (mm)',0,3],['pathWaves','Gelombang / pusingan',4,28],['pathPitch','Kenaikan nozzle / pusingan',.2,5],['diameter','Diameter bawah (mm)',50,240]")
  s=s.replace("['ribs','Bilangan alur',4,48]","['ribs','Bilangan rusuk',4,96]").replace("['twist','Pintal (°)',-90,90]","['twist','Pintal (°)',-180,180]")
  s=s.replace("${k==='ribs'?1:.1}","${['ribs','tiers','pathWaves'].includes(k)?1:.1}")
+ s=s.replace('let lampId=null;', 'let lampId=null,lastStudioShape=null;')
+ s=s.replace('function sync(){', "function sync(){const studioShape=$('lampShape').value,existing=editor.getSelectedMeshes().some(m=>m.userData.lamp?.parameters?.shape===studioShape);if(studioShape!==lastStudioShape&&!existing){const base=Number($('lamp_diameter').value),top=Number($('lamp_topDiameter').value);$('lamp_middleDiameter').value=studioShape==='hourglass'?Math.min(base,top)*.6:Math.max(base,top)*1.15;}lastStudioShape=studioShape;")
  s=s.replace("$('lamp_'+k).value=p[k]","$('lamp_'+k).value=p[k]??LAMP_DEFAULTS[k]")
  s=s.replace("const p={source:$('lampSource').value,shape:$('lampShape').value","const p={studioVersion:2,bottomMode:$('lampBottomMode').value,pathPattern:$('lampPathPattern').value,source:$('lampSource').value,shape:$('lampShape').value")
  marker="$('lampShape').replaceChildren(...LAMP_MODES.map(m=>new Option(m.bm,m.id)));"
@@ -61,7 +63,7 @@ edit('src/lamp-studio.js',ui)
 edit('src/main.js',lambda s:"import './web-platform.js';\nimport './combined-studio.css';\n"+s.replace('installLamps({group,products,editor,add,choose,refresh,status})','installLamps({group,products,editor,add,choose,refresh,status,scene})')+"\nif(new URLSearchParams(location.search).get('generator')==='lamp')products.selectGenerator('lamp','lantern');\n")
 edit('src/generator-studio.js',lambda s:s.replace("read('reqoo-app-theme','graphite')","read('reqoo-app-theme','classic')").replace("if(value.lamp){","if(value.lamp){if($('lampBottomMode'))$('lampBottomMode').value=value.lamp.parameters.bottomMode||'open';if($('lampPathPattern'))$('lampPathPattern').value=value.lamp.parameters.pathPattern||'spiral';"))
 
-package=json.loads((project/'package.json').read_text(encoding='utf-8-sig'));package['version']='1.4.0';package['overrides']={**package.get('overrides',{}),'temp':'0.9.4'};package['build']['directories']['output']='release/1.4.0';package['build']['files']=[s.replace('PANDUAN-v1.3.0','PANDUAN-v1.4.0') for s in package['build']['files']]
+package=json.loads((project/'package.json').read_text(encoding='utf-8-sig'));package['version']='1.4.0';package['overrides']={**package.get('overrides',{}),'temp':'0.9.4','fflate':'0.8.3'};package['build']['directories']['output']='release/1.4.0';package['build']['files']=[s.replace('PANDUAN-v1.3.0','PANDUAN-v1.4.0') for s in package['build']['files']]
 for item in package['build'].get('extraFiles',[]):
  if isinstance(item,dict):
   for k in ['from','to']:
