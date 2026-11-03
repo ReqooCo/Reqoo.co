@@ -21,7 +21,7 @@ test('Plan identity changes with actual design parameters and wave/shift both ex
 });
 test('Actual custom plan replaces the fixed sample and retains all four requested P2S AMS selections',()=>{
  for(let slot=1;slot<=4;slot++){const g=lampGcode(plan,slot),start=g.split('; MACHINE_START_GCODE_END')[0];
-  assert.ok(start.includes('\nT'+(slot-1)+'\n'));assert.ok(start.includes('H0.8'));assert.ok(g.includes(lampBody(plan)));assert.ok(g.includes('PLAN_HASH: '+plan.hash));assert.ok(g.includes('G1 Z37.280 F900'));assert.ok(g.includes('G29 A1 X80 Y80 I96 J96'));assert.ok(!g.includes('Jalur berongga'));
+  assert.ok(start.includes('\nT'+(slot-1)+'\n'));assert.ok(start.includes('H0.8'));assert.ok(g.includes(lampBody(plan)));assert.ok(g.includes('PLAN_HASH: '+plan.hash));assert.ok(g.includes('G1 Z37.000 F900'));assert.ok(g.includes('G29 A1 X80 Y80 I96 J96'));assert.ok(!g.includes('Jalur berongga'));
  }assert.throws(()=>lampGcode(plan,0),/AMS/);
 });
 test('Unsafe wave collisions, unsupported pitch and bed overflow block machine export instead of falling back to a sample',()=>{

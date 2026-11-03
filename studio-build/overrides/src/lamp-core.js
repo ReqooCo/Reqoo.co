@@ -13,7 +13,7 @@ if(p.shape==='lantern')r*=1-p.bulge/100+p.bulge/100*Math.sin(Math.PI*p.tiers*u)*
 r+=(p.shape==='lantern'?p.ribDepth:p.ripple)*Math.cos(p.ribs*(theta-(p.shape==='lantern'?0:u*p.twist*Math.PI/180)));
 return p.diameter/2*(1-blend)+r*blend;
 }
-export function studioToolpath(input,options={}){const p=studioParameters(input),points=[],floor=p.bottomMode==='closed'?p.bottomThickness:0;
+export function studioToolpath(input,options={}){const p=studioParameters(input),points=[],floor=p.bottomMode==='closed'?p.bottomThickness:(options.layerHeight||0);
 const n=Math.min(300000,Math.ceil((p.height-floor)/p.pathPitch*Math.max(128,p.ribs*12,p.pathWaves*32))),turns=(p.height-floor)/p.pathPitch;
 if(p.bottomMode==='closed'){const layers=Math.ceil(floor/(options.layerHeight||.4)),coils=p.diameter/2/(options.lineWidth?options.lineWidth*.9:.8);for(let j=0;j<layers;j++){for(let k=0;k<=Math.ceil(coils*96);k++){const u=k/Math.ceil(coils*96),a=u*coils*Math.PI*2,r=studioRadius(p,0,a)*u;points.push({x:r*Math.cos(a),y:r*Math.sin(a),z:(j+1)*floor/layers,extrude:k>0,stage:'Tapak'});}}}
 for(let k=0;k<=n;k++){const v=k/n,a=v*turns*Math.PI*2,r=studioRadius(p,v,a),span=p.height-floor,A=p.pathPattern==='spiral'?0:p.pathAmplitude,fade=Math.min(1,v*span/(2*A+.8),(1-v)*span/(2*A+.8)),z=floor+v*span+A*fade*Math.sin((p.pathWaves+(p.pathPattern==='shift'?.5:0))*a);points.push({x:r*Math.cos(a),y:r*Math.sin(a),z,extrude:k>0,stage:'Dinding'});}return points;}

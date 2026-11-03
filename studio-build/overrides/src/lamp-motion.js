@@ -17,7 +17,7 @@ export function lampMotionPlan(input){
   cur=b;maxZ=Math.max(maxZ,b.z);
  }
  for(const a of raw){
-  const target={x:a.x+s.centerX,y:a.y+s.centerY,z:a.z+(p.bottomMode==='open'?s.layerHeight:0)};
+  const target={x:a.x+s.centerX,y:a.y+s.centerY,z:a.z};
   if(!a.extrude){events.push({kind:'retract',e:-s.retract,f:1800,stage:'Retract'});move(cur.x,cur.y,maxZ+1,false,'Travel');move(target.x,target.y,cur.z,false,'Travel');move(target.x,target.y,target.z,false,a.stage);events.push({kind:'prime',e:s.retract,f:1800,stage:'Prime'});}
   else move(target.x,target.y,target.z,true,a.stage);
  }
@@ -37,7 +37,7 @@ export function validateLampPlan(plan){
  // Cell-centre uncertainty is included in the radius. Samples include segment interiors.
  const cells=new Map(),cell=.8,margin=cell*Math.SQRT2/2;
  let a={x:128,y:128,z:2},arc=0,collision=false,support=false;
- const turns=(p.height-(p.bottomMode==='closed'?p.bottomThickness:0))/p.pathPitch;
+ const turns=(p.height-(p.bottomMode==='closed'?p.bottomThickness:s.layerHeight))/p.pathPitch;
  const wall=plan.events.filter(e=>e.x!==undefined&&e.stage==='Dinding'&&e.extrude);
  const perTurn=wall.length/turns;
  for(let i=0;i<wall.length;i++){

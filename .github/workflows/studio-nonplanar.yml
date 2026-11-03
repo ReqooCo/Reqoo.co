@@ -22,6 +22,7 @@ jobs:
       - name: Install, build and test shared motion plan
         working-directory: studio-source
         run: |
+          python ../studio-build/prepare.py
           npm ci
           npm run build
           node --test tests/nonplanar.test.js tests/combined-lamp.test.js tests/lattice.test.js
