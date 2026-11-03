@@ -14,13 +14,13 @@ export function createDirectModeling(api){
   const face=ref.kind==='face'&&item.kind==='body'?item.faceInfo.find(f=>f.index===ref.index):null;
   const edge=ref.kind==='edge'&&item.kind==='body'?item.edges.find(e=>e.index===ref.index):null;
   const sketch=ref.kind==='sketch'&&item.kind==='sketch'?api.getDoc().features.find(f=>f.id===item.featureId)?.params:null;
-  if(face?.type!=='PLANE'&&!edge&&!(sketch&&sketch.closed!==false))return null;
+  if(face?.type!=='PLANE'&&!edge&&!(sketch&&sketch.closed!==false&&!item.construction))return null;
   return{ref,item,face,edge,sketch};
  }
  function direction(){
   const t=target();if(!t)return null;
   const origin=new THREE.Vector3(...(t.face?.center||t.edge?.center||t.item.bounds[0].map((v,i)=>(v+t.item.bounds[1][i])/2)));
-  const normal=new THREE.Vector3(...(t.face?.normal||t.sketch?.basis?.normal||(t.sketch?.plane==='XZ'?[0,-1,0]:t.sketch?.plane==='YZ'?[1,0,0]:[0,0,1]))).normalize();
+  const normal=new THREE.Vector3(...(t.face?.normal||t.item.sketchPlane?.normal||t.sketch?.basis?.normal||(t.sketch?.plane==='XZ'?[0,-1,0]:t.sketch?.plane==='YZ'?[1,0,0]:[0,0,1]))).normalize();
   const rect=stage.getBoundingClientRect(),p=origin.clone().project(camera),q=origin.clone().addScaledVector(normal,20).project(camera);
   let dx=(q.x-p.x)*rect.width/2,dy=(p.y-q.y)*rect.height/2;
   if(t.edge){dx=.707;dy=-.707;}else{const len=Math.hypot(dx,dy);if(len<3){dx=0;dy=-1;}else{dx/=len;dy/=len;}}

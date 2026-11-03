@@ -1,7 +1,7 @@
 import * as R from 'replicad';
 import {solveSketch} from './constraints.js';
 import {normalizedCenter,resolveReference} from './topology.js';
-export const TYPES=['sketch','box','cylinder','sphere','torus','extrude','hole','revolve','loft','sweep','union','subtract','intersect','fillet','chamfer','shell','offsetFace','draft','move','rotate','scale','mirror','pattern','circularPattern','duplicate','align','split','import','plane','axis','delete'];
+export const TYPES=['sketch','sketchOffset','sketchFillet','sketchMirror','box','cylinder','sphere','torus','extrude','hole','revolve','loft','sweep','union','subtract','intersect','fillet','chamfer','shell','offsetFace','draft','move','rotate','scale','mirror','pattern','circularPattern','duplicate','align','split','import','plane','axis','delete'];
 const V=(v,d=0)=>v===undefined?d:Number(v);
 export function number(v,name,min=-2000,max=2000){const n=Number(v);if(!Number.isFinite(n)||n<min||n>max)throw Error(name+' must be between '+min+' and '+max);return n;}
 export function basis(p={}){
@@ -28,6 +28,7 @@ export function profile(p){
   if(p.shape==='spline')d=R.drawPointsInterpolation(pts,{}, {closeShape:p.closed!==false});
   else{let pen=R.draw(pts[0]);if(p.shape==='arc')pen=pen.sagittaArc(pts[1][0]-pts[0][0],pts[1][1]-pts[0][1],number(p.sagitta??10,'Arc height',.01,1000));else for(const q of pts.slice(1))pen=pen.lineTo(q);d=p.closed===false?pen.done():pen.close();}
  }else d=R.drawRectangle(number(p.width,'Width',.02,2000),number(p.height,'Height',.02,2000));
+ if(p.operations!==undefined){if(!Array.isArray(p.operations)||p.operations.length>20)throw Error('Too many derived sketch operations');for(const op of p.operations){if(op.type==='offset')d=d.offset(number(op.distance,'Sketch offset',-500,500));else if(op.type==='fillet')d=d.fillet(number(op.radius,'Sketch fillet radius',.001,500));else if(op.type==='mirror')d=d.mirror(op.axis==='X'?[1,0]:[0,1],[0,0],'plane');else throw Error('Unsupported sketch operation');}}
  return d.translate([x,y]);
 }
 function sketch(p){const b=basis(p);return profile(p).sketchOnPlane(new R.Plane(b.origin,b.x,b.normal));}
@@ -47,7 +48,8 @@ export async function buildModel(doc){
  function save(f,s,kind='body',id=f.id,name=f.name||f.type){own(s);if(s.isNull)throw Error('Empty shape');if(kind==='body'&&(!R.isShape3D(s)||volume(s)<1e-8))throw Error('Operation did not create a closed solid');shapes.set(id,s);meta.set(id,{id,name,kind,featureId:f.id});visible.add(id);}
  try{
  for(const f of doc.features){currentFeature=f;if(f.suppressed)continue;const p=f.params,ins=f.inputs;let s=null,kind='body';
-  if(f.type==='sketch'){profiles.set(f.id,p);const sk=sketch(p);s=own(p.closed===false?sk.wire.clone():sk.face());sk.delete();save(f,s,'sketch');continue;}
+  if(f.type==='sketch'){profiles.set(f.id,p);const sk=sketch(p);s=own(p.closed===false||p.construction?sk.wire.clone():sk.face());sk.delete();save(f,s,'sketch');continue;}
+  if(['sketchOffset','sketchFillet','sketchMirror'].includes(f.type)){const original=profiles.get(ins[0]);if(!original)throw Error('Select a sketch first');const op=f.type==='sketchOffset'?{type:'offset',distance:number(p.distance,'Offset distance',-500,500)}:f.type==='sketchFillet'?{type:'fillet',radius:number(p.radius,'Corner radius',.001,500)}:{type:'mirror',axis:p.axis==='X'?'X':'Y'},recipe={...original,operations:[...(original.operations||[]),op]};profiles.set(f.id,recipe);const sk=sketch(recipe);s=own(recipe.closed===false||recipe.construction?sk.wire.clone():sk.face());sk.delete();save(f,s,'sketch');if(!p.keepInputs)visible.delete(ins[0]);continue;}
   if(f.type==='delete'){for(const id of ins)visible.delete(id);continue;}
   if(f.type==='plane'){const b=basis(p),pl=new R.Plane(b.origin,b.x,b.normal),sk=R.drawRectangle(80,80).sketchOnPlane(pl);s=sk.face();sk.delete();save(f,s,'plane');continue;}
   if(f.type==='axis'){const x=number(p.x??0,'X'),y=number(p.y??0,'Y'),z=number(p.z??0,'Z'),axis=p.axis||'Z';s=R.makeLine([x,y,z],[x+(axis==='X'?80:0),y+(axis==='Y'?80:0),z+(axis==='Z'?80:0)]);save(f,s,'axis');continue;}
@@ -59,7 +61,7 @@ export async function buildModel(doc){
   else if(f.type==='hole'){
    const target=body(ins[0]),source=ins[1]?profiles.get(ins[1]):null;
    let origin,normal,radius;
-   if(source){if(source.shape!=='circle')throw Error('Hole needs a circular sketch');const b=basis(source),xx=b.x,nn=b.normal,yy=[nn[1]*xx[2]-nn[2]*xx[1],nn[2]*xx[0]-nn[0]*xx[2],nn[0]*xx[1]-nn[1]*xx[0]];origin=b.origin.map((v,i)=>v+xx[i]*number(source.x??0,'Circle X')+yy[i]*number(source.y??0,'Circle Y'));normal=nn;radius=number(source.radius,'Radius',.01,1000);}
+   if(source){if(source.shape!=='circle'||source.construction||source.operations?.length)throw Error('Hole needs a basic non-construction circle. For derived profiles use an extrude cut.');const b=basis(source),xx=b.x,nn=b.normal,yy=[nn[1]*xx[2]-nn[2]*xx[1],nn[2]*xx[0]-nn[0]*xx[2],nn[0]*xx[1]-nn[1]*xx[0]];origin=b.origin.map((v,i)=>v+xx[i]*number(source.x??0,'Circle X')+yy[i]*number(source.y??0,'Circle Y'));normal=nn;radius=number(source.radius,'Radius',.01,1000);}
    else{const selected=face(target,p);if(selected.geomType!=='PLANE')throw Error('Choose a planar face for the hole');const nv=selected.normalAt(),cv=selected.center;normal=nv.toTuple();const len=Math.hypot(...normal);normal=normal.map(v=>v/len);origin=cv.toTuple();nv.delete();cv.delete();const seed=Math.abs(normal[0])<.9?[1,0,0]:[0,1,0],dot=seed.reduce((s,v,i)=>s+v*normal[i],0),xx=seed.map((v,i)=>v-dot*normal[i]),xl=Math.hypot(...xx);for(let i=0;i<3;i++)xx[i]/=xl;const yy=[normal[1]*xx[2]-normal[2]*xx[1],normal[2]*xx[0]-normal[0]*xx[2],normal[0]*xx[1]-normal[1]*xx[0]];origin=origin.map((v,i)=>v+xx[i]*number(p.x??0,'Centre X')+yy[i]*number(p.y??0,'Centre Y'));radius=number(p.diameter??10,'Diameter',.02,2000)/2;}
    if(p.reverse)normal=normal.map(v=>-v);
    const span=target.boundingBox.bounds,reach=Math.hypot(...span[0].map((v,i)=>span[1][i]-v))+Math.hypot(...origin.map((v,i)=>v-(span[0][i]+span[1][i])/2))+2;
@@ -68,7 +70,7 @@ export async function buildModel(doc){
   }
   else if(f.type==='extrude'||f.type==='revolve'||f.type==='sweep'||f.type==='loft'){
    const a=profiles.get(ins[0]);if(!a&&!(f.type==='extrude'&&shapes.has(ins[0])&&p.face!==undefined))throw Error('Select a sketch profile');
-   if(f.type==='extrude'){if(a?.closed===false)throw Error('Extrude needs a closed profile');const distance=number(p.distance,'Distance');if(Math.abs(distance)<.001)throw Error('Distance must not be zero');
+   if(f.type==='extrude'){if(a?.closed===false||a?.construction)throw Error('Extrude needs a closed, non-construction profile');const distance=number(p.distance,'Distance');if(Math.abs(distance)<.001)throw Error('Distance must not be zero');
  if(a)s=sketch(a).extrude(distance);else{const source=body(ins[0]),selected=face(source,p),raw=selected.normalAt(),n=raw.normalized(),v=n.multiply(distance);s=R.basicFaceExtrusion(selected,v);v.delete();n.delete();raw.delete();}
  const mode=p.operation||'New body',targetId=a?ins[1]:ins[0];if(mode!=='New body'){if(!['Add','Subtract','Intersect'].includes(mode))throw Error('Invalid extrude operation');const target=body(targetId);own(s);s=mode==='Add'?target.fuse(s):mode==='Subtract'?target.cut(s):target.intersect(s);}
  }
@@ -104,11 +106,11 @@ export async function buildModel(doc){
  }
  const items=[];
  for(const [id,m]of meta){if(!visible.has(id))continue;const s=shapes.get(id),faces=s.faces,edges=s.edges;for(const f of faces)own(f);for(const e of edges)own(e);
-  const faceMesh=m.kind==='axis'||(m.kind==='sketch'&&profiles.get(id)?.closed===false)?{triangles:[],vertices:[],normals:[],faceGroups:[]}:s.mesh({tolerance:.08,angularTolerance:.2});
+  const faceMesh=m.kind==='axis'||(m.kind==='sketch'&&(profiles.get(id)?.closed===false||profiles.get(id)?.construction))?{triangles:[],vertices:[],normals:[],faceGroups:[]}:s.mesh({tolerance:.08,angularTolerance:.2});
   const groups=faceMesh.faceGroups.map(g=>({...g,faceIndex:faces.findIndex(f=>f.hashCode===g.faceId)}));
   const lineMeshes=edges.slice(0,600).map((e,i)=>({index:i,length:length(e),type:e.geomType,reference:edgeDescriptor(s,e),center:e.boundingBox.center,lines:e.meshEdges({tolerance:.08,angularTolerance:.2}).lines}));
   const bb=s.boundingBox.bounds;
-  items.push({...m,mesh:{...faceMesh,faceGroups:groups},edges:lineMeshes,faceInfo:faces.map((f,i)=>{let normal=[0,0,1],center=[0,0,0];try{const n=f.normalAt(),c=f.center;const len=Math.hypot(...n.toTuple());normal=n.toTuple().map(v=>v/(len||1));center=c.toTuple();n.delete();c.delete();}catch{}return{index:i,type:f.geomType,normal,center,reference:faceDescriptor(s,f),area:area(f)};}),edgeCount:edges.length,bounds:bb,volume:m.kind==='body'?volume(s):0,area:m.kind==='body'||faces.length?area(s):0});
+  items.push({...m,construction:profiles.get(id)?.construction||false,sketchPlane:profiles.has(id)?basis(profiles.get(id)):null,profileClosed:profiles.has(id)?profiles.get(id).closed!==false&&!profiles.get(id).construction:null,mesh:{...faceMesh,faceGroups:groups},edges:lineMeshes,faceInfo:faces.map((f,i)=>{let normal=[0,0,1],center=[0,0,0];try{const n=f.normalAt(),c=f.center;const len=Math.hypot(...n.toTuple());normal=n.toTuple().map(v=>v/(len||1));center=c.toTuple();n.delete();c.delete();}catch{}return{index:i,type:f.geomType,normal,center,reference:faceDescriptor(s,f),area:area(f)};}),edgeCount:edges.length,bounds:bb,volume:m.kind==='body'?volume(s):0,area:m.kind==='body'||faces.length?area(s):0});
  }
  if(items.filter(i=>i.kind==='body').length>50)throw Error('Limit is 50 visible bodies');
  return{items,shapes,meta,visible,release,export:async(format,ids)=>{
