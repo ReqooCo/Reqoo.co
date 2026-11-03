@@ -66,7 +66,7 @@ edit('src/generator-studio.js',lambda s:s.replace("read('reqoo-app-theme','graph
 
 # Restore the user's last demo preset and keep numeric/range values synchronized.
 edit('src/lamp-geometry.js',lambda s:s.replace("...STUDIO_DEFAULTS,studioVersion:2,source:'bambu',shape:'lantern'", "studioVersion:2,source:'bambu',shape:'lantern'").replace("export const LAMP_DEFAULTS={","export const LAMP_DEFAULTS={").replace("export function lampGeometry(input){","export function lampGeometry(input){"))
-edit('src/lamp-geometry.js',lambda s:re.sub(r"(export const LAMP_DEFAULTS=\\{[^;]*)(\\};)",r"\\1,...STUDIO_DEFAULTS,diameter:120,topDiameter:120,height:150,ribs:84,ripple:0,twist:60\\2",s,count=1))
+edit('src/lamp-geometry.js',lambda s:re.sub(r"(export const LAMP_DEFAULTS=\{[^;]*)(\};)",r"\1,...STUDIO_DEFAULTS,diameter:120,topDiameter:120,height:150,ribs:84,ripple:0,twist:60\2",s,count=1))
 def demo_ui(s):
  s=s.replace("studioShape==='hourglass'?Math.min(base,top)*.6:Math.max(base,top)*1.15","studioShape==='hourglass'?Math.min(base,top)*.6:studioShape==='lantern'?120:Number((Math.max(base,top)*1.15).toFixed(1))")
  s=s.replace("lastStudioShape=studioShape;","lastStudioShape=studioShape;for(const c of $('lampDimensions').children){const n=c.querySelector('input[type=number]'),r=c.querySelector('input[type=range]');if(n&&r){n.value=Number(Number(n.value).toFixed(2));r.value=n.value;}}")
