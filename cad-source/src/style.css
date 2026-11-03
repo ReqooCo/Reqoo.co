@@ -123,3 +123,14 @@
 #cadDiagnostic{position:absolute;bottom:70px;left:8px;z-index:60;background:#10263de8;color:#fff;padding:7px 10px;font:11px system-ui;border-radius:8px;pointer-events:none;max-width:80vw}
 #sketchDimensions{max-width:calc(100% - 16px);flex-wrap:wrap}
 #sketchDimensions input{font-size:16px}
+
+html[data-theme=dark]{color-scheme:dark;--panel:#233140f5;--border:#405166;color:#d3deeb;background:#18232f}
+html[data-theme=dark] #top,html[data-theme=dark] #menu,html[data-theme=dark] #toolPanel,html[data-theme=dark] #sidebar,html[data-theme=dark] #faceDistance,html[data-theme=dark] #sketchDimensions,html[data-theme=dark] dialog{background:#233140;color:#d3deeb;border-color:#405166}
+html[data-theme=dark] button,html[data-theme=dark] input,html[data-theme=dark] select,html[data-theme=dark] #menu button[data-tool]{background:#2c3b4b;color:#d3deeb;border-color:#405166}
+html[data-theme=dark] #rail button,html[data-theme=dark] #context,html[data-theme=dark] #selectionBar,html[data-theme=dark] #workspaceModes{background:#233140e8}
+html[data-theme=dark] h2,html[data-theme=dark] .brand{color:#dbe8f6}html[data-theme=dark] footer{background:#1c2936;color:#8fa7c2}
+.preferenceGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 18px}.preferenceGrid label{display:flex;flex-direction:column;gap:6px;font-size:11px}.preferenceGrid select{width:100%}
+.featureHistoryRow{display:flex;align-items:center;gap:4px}.featureHistoryRow .historyRow{flex:1}.featureHistoryRow>button:not(.historyRow){font-size:10px;padding:5px;min-width:29px}
+.itemRow input.renameObject{width:100%;font-size:13px}
+
+.itemRow>button[data-control=rename]{width:30px;min-width:30px;padding:4px;flex:none}.itemRow>button[data-control=rename] svg{width:16px;height:16px}

@@ -36,6 +36,7 @@ jobs:
         run: |
           node tests/cad.mjs
           node tests/acceptance.mjs
+          node tests/product.mjs
       - name: Upload screenshots and QA output
         if: always()
         uses: actions/upload-artifact@v4

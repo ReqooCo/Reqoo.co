@@ -36,7 +36,7 @@ function length(s){const p=R.measureShapeLinearProperties(s);const v=p.length;p.
 function area(s){const v=R.measureShapeSurfaceProperties(s);const value=Math.abs(v.area);v.delete();return value;}
 
 function faceDescriptor(shape,f){const n=f.normalAt(),c=f.center,normal=n.toTuple(),len=Math.hypot(...normal),center=c.toTuple();n.delete();c.delete();return{kind:'face',type:f.geomType,center:normalizedCenter(shape.boundingBox.bounds,center),normal:normal.map(v=>v/(len||1))};}
-function edgeDescriptor(shape,e){return{kind:'edge',type:e.geomType,center:normalizedCenter(shape.boundingBox.bounds,e.boundingBox.center)};}
+function edgeDescriptor(shape,e){const bounds=shape.boundingBox.bounds;return{kind:'edge',type:e.geomType,center:normalizedCenter(bounds,e.boundingBox.center),measure:e.length/Math.max(1e-7,Math.hypot(...bounds[0].map((v,i)=>bounds[1][i]-v)))};}
 
 export async function buildModel(doc){
  validateProject(doc);const shapes=new Map(),profiles=new Map(),meta=new Map(),visible=new Set(),arena=new Set();let released=false,currentFeature=null;
