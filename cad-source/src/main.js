@@ -218,26 +218,69 @@ function render(){
  $('empty').hidden=items.length>0;renderSidebar();renderContext();updateClip();updateFaceHandle();
 }
 // Direct-manipulation face handle. Drag proposes a signed offset; Apply commits to history.
-const faceHandle=document.createElement('button');faceHandle.id='faceDragHandle';faceHandle.type='button';faceHandle.hidden=true;faceHandle.setAttribute('aria-label','Drag selected face to pull or push');faceHandle.innerHTML=ico('offsetFace')+'<span>Pull</span>';$('stage').append(faceHandle);
-let faceDrag=null;
-function updateFaceHandle(){
+// Direct face manipulator: drag along projected face normal; edit distance in-place.
+const faceHandle=document.createElement('button');faceHandle.id='faceDragHandle';faceHandle.type='button';faceHandle.hidden=true;faceHandle.setAttribute('aria-label','Drag arrow along face normal to pull or push');faceHandle.innerHTML='<span class="faceArrow">➜</span>';$('stage').append(faceHandle);
+const faceDistance=document.createElement('div');faceDistance.id='faceDistance';faceDistance.hidden=true;
+faceDistance.innerHTML='<label>Distance <input id="faceDistanceValue" type="number" step="0.1" value="0" aria-label="Pull distance in millimetres"> mm</label><button id="faceDistanceApply" type="button" aria-label="Apply pull">✓</button><button id="faceDistanceCancel" type="button" aria-label="Cancel pull">×</button>';$('stage').append(faceDistance);
+let faceDrag=null,faceDistanceRef=null,faceDistanceValue=0;
+const sameFace=(a,b)=>a&&b&&a.id===b.id&&a.index===b.index&&a.kind===b.kind;
+function faceDirection(){
  const ref=selection.at(-1),item=selectedItem(),face=ref?.kind==='face'&&item?.kind==='body'?item.faceInfo?.find(f=>f.index===ref.index):null;
- if(!face||face.type!=='PLANE'||sketchMode||busy){faceHandle.hidden=true;return;}
- const p=new THREE.Vector3(...(ref.point||face.center)).project(camera),rect=$('stage').getBoundingClientRect();
- if(p.z < -1||p.z > 1){faceHandle.hidden=true;return;}
- faceHandle.hidden=false;faceHandle.style.left=((p.x+1)*rect.width/2)+'px';faceHandle.style.top=((-p.y+1)*rect.height/2)+'px';
+ if(!face||face.type!=='PLANE')return null;
+ const origin=new THREE.Vector3(...(ref.point||face.center)),normal=new THREE.Vector3(...face.normal).normalize();
+ const rect=$('stage').getBoundingClientRect(),p=origin.clone().project(camera),q=origin.clone().addScaledVector(normal,20).project(camera);
+ let dx=(q.x-p.x)*rect.width/2,dy=(p.y-q.y)*rect.height/2;
+ const magnitude=Math.hypot(dx,dy);
+ if(magnitude<3){dx=0;dy=-1;}else{dx/=magnitude;dy/=magnitude;}
+ return {origin,normal,dx,dy,p,rect};
 }
-faceHandle.addEventListener('pointerdown',e=>{if(busy)return;e.preventDefault();e.stopPropagation();faceDrag={startY:e.clientY,distance:0};faceHandle.setPointerCapture(e.pointerId);controls.enabled=false;faceHandle.classList.add('dragging');});
-faceHandle.addEventListener('pointermove',e=>{if(!faceDrag)return;e.preventDefault();const px=(camera.top-camera.bottom)/camera.zoom/Math.max(1,renderer.domElement.clientHeight);faceDrag.distance=Math.round((faceDrag.startY-e.clientY)*px*10)/10;faceHandle.querySelector('span').textContent=(faceDrag.distance>=0?'+':'')+faceDrag.distance.toFixed(1)+' mm';});
-function finishFaceHandle(e){if(!faceDrag)return;const distance=faceDrag.distance;faceDrag=null;controls.enabled=true;faceHandle.classList.remove('dragging');faceHandle.querySelector('span').textContent='Pull';if(Math.abs(distance)>.05)startTool('offsetFace',{distance});}
-faceHandle.addEventListener('pointerup',finishFaceHandle);faceHandle.addEventListener('pointercancel',()=>{faceDrag=null;controls.enabled=true;faceHandle.classList.remove('dragging');faceHandle.querySelector('span').textContent='Pull';});
+function updateFaceHandle(){
+ const ref=selection.at(-1),direction=faceDirection();
+ if(!direction||sketchMode||busy){faceHandle.hidden=true;faceDistance.hidden=true;faceDistanceRef=null;return;}
+ if(faceDistanceRef&&!sameFace(ref,faceDistanceRef)){faceDistance.hidden=true;faceDistanceRef=null;faceDistanceValue=0;}
+ const {p,rect,dx,dy}=direction;
+ if(p.z < -1||p.z > 1){faceHandle.hidden=true;return;}
+ const x=(p.x+1)*rect.width/2,y=(1-p.y)*rect.height/2;
+ faceHandle.hidden=false;faceHandle.style.left=x+'px';faceHandle.style.top=y+'px';
+ faceHandle.style.setProperty('--arrow-angle',Math.atan2(dy,dx)+'rad');
+ if(!faceDistance.hidden){faceDistance.style.left=Math.max(10,Math.min(rect.width-225,x+46))+'px';faceDistance.style.top=Math.max(10,Math.min(rect.height-56,y-25))+'px';}
+}
+function showFaceDistance(value=0){
+ const ref=selection.at(-1);if(ref?.kind!=='face')return;
+ faceDistanceRef={...ref};faceDistanceValue=Number(value.toFixed(2));
+ $('faceDistanceValue').value=String(faceDistanceValue);faceDistance.hidden=false;updateFaceHandle();
+}
+faceHandle.addEventListener('pointerdown',e=>{
+ if(busy)return;const d=faceDirection();if(!d)return;
+ e.preventDefault();e.stopPropagation();faceDrag={x:e.clientX,y:e.clientY,dx:d.dx,dy:d.dy,start:faceDistance.hidden?0:Number($('faceDistanceValue').value)||0};
+ faceHandle.setPointerCapture(e.pointerId);controls.enabled=false;faceHandle.classList.add('dragging');showFaceDistance(faceDrag.start);
+});
+faceHandle.addEventListener('pointermove',e=>{
+ if(!faceDrag)return;e.preventDefault();
+ const pixels=(e.clientX-faceDrag.x)*faceDrag.dx+(e.clientY-faceDrag.y)*faceDrag.dy;
+ const mmPerPixel=(camera.top-camera.bottom)/camera.zoom/Math.max(1,renderer.domElement.clientHeight);
+ faceDistanceValue=Math.round((faceDrag.start+pixels*mmPerPixel)*10)/10;
+ $('faceDistanceValue').value=String(faceDistanceValue);
+});
+function finishFaceHandle(){if(!faceDrag)return;faceDrag=null;controls.enabled=true;faceHandle.classList.remove('dragging');}
+faceHandle.addEventListener('pointerup',finishFaceHandle);
+faceHandle.addEventListener('pointercancel',finishFaceHandle);
+$('faceDistanceCancel').onclick=()=>{faceDistance.hidden=true;faceDistanceRef=null;faceDistanceValue=0;};
+$('faceDistanceApply').onclick=async()=>{
+ const ref=selection.at(-1),distance=Number($('faceDistanceValue').value);
+ if(!sameFace(ref,faceDistanceRef)||!Number.isFinite(distance)||Math.abs(distance)<.001){status('Select a face and enter a non-zero distance');return;}
+ faceDistance.hidden=true;faceDistanceRef=null;
+ try{const id=await apply('offsetFace',{distance,face:ref.index},[ref.id]);select([{id,kind:items.find(i=>i.id===id)?.kind||'body'}]);}
+ catch(e){error(e);}
+};
+$('faceDistanceValue').addEventListener('keydown',e=>{if(e.key==='Enter'){$('faceDistanceApply').click();}if(e.key==='Escape')$('faceDistanceCancel').click();});
 function renderContext(){const c=$('context');c.replaceChildren();const item=selectedItem();c.hidden=!item;if(!item)return;
  const picked=selection.at(-1),onFace=picked?.kind==='face'&&item.kind==='body',onEdge=picked?.kind==='edge'&&item.kind==='body';
  const commands=item.kind==='sketch'?[...(doc.features.find(f=>f.id===item.featureId)?.params.shape==='circle'?[['hole','Hole']]:[]),['extrude','Extrude'],['revolve','Revolve'],['sweep']]:item.kind==='plane'?[['rectangle','Sketch on plane']]:item.kind==='axis'?[]:onEdge?[['fillet','Fillet'],['chamfer','Chamfer']]:onFace?[['offsetFace','Pull / Offset Face'],['extrude','Extrude'],['hole','Hole'],['scale','Scale Body']]:[['move','Move'],['rotate','Rotate'],['fillet','Fillet']];
  if(onFace){const sketchFace=document.createElement('button');buttonLabel(sketchFace,'sketch','Sketch on face');sketchFace.onclick=()=>startTool('sketch',{shape:'circle'});c.append(sketchFace);}
  if(item.kind==='sketch'){const make=document.createElement('button');buttonLabel(make,'box','Solid tools');make.onclick=()=>setWorkspaceMode('solid');c.append(make);}
  if(item.kind==='sketch'){const edit=document.createElement('button');buttonLabel(edit,'sketch','Edit sketch');edit.onclick=()=>{setWorkspaceMode('sketch');startTool('sketch',{},item.featureId);};c.append(edit);}
- for(const [type,label]of commands){const b=document.createElement('button');buttonLabel(b,type,label);b.onclick=()=>startTool(type);c.append(b);}if(pickCandidates.length>1){const other=document.createElement('button');other.setAttribute('aria-label','Select other');other.innerHTML=ico('selectOther')+'<span>Select other</span>';other.onclick=showSelectionChoices;c.append(other);}const del=document.createElement('button');del.textContent='Delete';del.onclick=()=>apply('delete',{},selectedIds()).then(()=>select([])).catch(error);c.append(del);
+ for(const [type,label]of commands){const b=document.createElement('button');buttonLabel(b,type,label);b.onclick=()=>type==='offsetFace'?showFaceDistance(0):startTool(type);c.append(b);}if(pickCandidates.length>1){const other=document.createElement('button');other.setAttribute('aria-label','Select other');other.innerHTML=ico('selectOther')+'<span>Select other</span>';other.onclick=showSelectionChoices;c.append(other);}const del=document.createElement('button');del.textContent='Delete';del.onclick=()=>apply('delete',{},selectedIds()).then(()=>select([])).catch(error);c.append(del);
 }
 
 function showSelectionChoices(){
