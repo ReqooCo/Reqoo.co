@@ -1,0 +1,75 @@
+REQOO 3D STUDIO 0.6.0 — WINDOWS 10/11 X64
+
+PASANG / PORTABLE
+Jalankan installer EXE, atau extract keseluruhan ZIP portable ke satu folder dan
+buka Reqoo 3D Studio.exe. Fail EXE belum ditandatangani secara digital.
+
+KEYCHAIN HURUF TANPA TAPAK
+1. Pilih Keychain huruf / nama. Isi nama (contoh CONTOH), pilih font.
+2. Tandakan Tanpa tapak. Ketebalan utama ialah ketebalan huruf; mula dengan 3 mm.
+3. Jana reka bentuk. Klik tab Gelung / Union / Resin.
+4. Rapatkan huruf, kemudian laraskan sentuhan dengan drag mouse.
+   Untuk huruf yang berjauhan, tambah palang penghubung belakang dan ubah saiznya.
+   Palang mungkin kelihatan di ruang kosong huruf. Font tebal lebih mudah dicantum.
+5. Pilih huruf pertama, pilih Gelung keychain dan Tambah gelung.
+   Permulaan: diameter lubang 4 mm, dinding 2 mm, ketebalan 3 mm.
+6. Drag gelung supaya DINDING gelung bertindih dengan huruf. Kekalkan lubang terbuka.
+   Klik gelung, ubah diameter/dinding/Z di panel sambungan dan tekan Terapkan saiz.
+7. Simpan projek. Tekan Union semua. Jika ada bahagian terpisah, laraskan dahulu.
+   Union sebenar menghasilkan satu badan tertutup. Lubang dan warna dikekalkan.
+   Ctrl+Z mengembalikan huruf berasingan. Selepas Union, edit per huruf memerlukan Undo.
+
+PEN DAN PIN
+Sarung pen tegak: lubang tembus di sepanjang Z. Diameter awal 10.5 mm, dinding 2 mm,
+tinggi 12 mm ialah contoh sahaja. Ukur pen, laraskan kelegaan dan cetak ujian muat.
+Ini sarung berlubang, bukan klip elastik sejagat atau pen yang dicetak sekali.
+Tapak pin: pad 18 x 6 mm untuk gam pin logam selepas cetakan. Diletakkan di belakang
+objek dipilih dengan sedikit pertindihan. Laraskan X/Y/Z, kemudian Union.
+Pin logam / cincin / pen sebenar tidak disertakan.
+
+BINGKAI RESIN UNTUK HURUF, LOGO DAN PLAT
+Buka Bingkai resin. Pilih semua reka bentuk atau objek dipilih sahaja.
+Pilih Ikut kontur atau Bingkai petak. Laraskan ketebalan lantai, jarak dari reka
+bentuk, tebal dinding dan bibir di atas reka bentuk. Tekan Jana bingkai resin.
+Lantai dan dinding membentuk dulang; reka bentuk diangkat ke atas lantai.
+Kekalkan semua lubang tembus mengekalkan lubang cincin DAN ruang huruf seperti O,
+dengan dinding dalaman untuk menahan resin. Jika dimatikan, semua lubang boleh tertutup.
+Kontur yang masih terpisah memerlukan jarak lebih besar atau bentuk petak.
+Untuk logo: import SVG/STL atau relief, pilih objek dan jana bingkai. Logo yang
+mempunyai banyak objek boleh dibingkaikan dengan pilihan semua objek.
+Semak bingkai, simpan projek dan Union semua. Jana semula pada skop semua mengganti
+bingkai lama yang belum di-Union. Bingkai yang sudah di-Union perlu Undo dahulu.
+Cetakan FDM perlu diuji kedapan dan muat sebelum menuang UV resin; belum diuji fizikal.
+
+PLAT MOTOR — KEYCHAIN MINI SAHAJA
+Pilih Keychain plat Malaysia > Motosikal belakang dua baris.
+Bentuk: Petak, V-shape (hujung bawah V), Diamond (sisi bawah potong serong).
+Contoh ABC / 1234; / memisahkan dua baris. Saiz awal 50 x 40 mm ialah keychain mini,
+bukan dimensi plat jalan raya. Ada juga pilihan motosikal hadapan memanjang.
+Gaya rujukan: Arial Bold, putih atas hitam. Font hiasan bebas untuk cenderamata.
+
+FONT HIASAN
+17 pilihan hiasan tambahan jika dipasang dalam Windows: Brush Script MT, Script MT
+Bold, French Script MT, Harlow Solid Italic, Magneto Bold, Forte, Bauhaus 93, Broadway,
+Algerian, Jokerman, Chiller, Curlz MT, Ravie, Showcard Gothic, Snap ITC, Stencil,
+Old English Text MT. Font tidak diedarkan bersama aplikasi. Boleh import TTF/OTF.
+Font hiasan yang mempunyai bahagian terpisah mungkin memerlukan palang/bingkai.
+Tukar font kemudian Jana semula menggantikan suntingan manual. Simpan salinan dahulu.
+
+BAMBU STUDIO / WARNA / CETAK
+Gunakan 3MF warna atau Buka di Bambu. STL tidak menyimpan warna.
+Mesej 'The 3mf file has invalid config, load geometry data only' ialah isu Bambu
+untuk 3MF model tanpa profil projek/printer Bambu; tekan OK untuk memuatkan geometri.
+Reqoo tidak menyertakan profil mesin, filament, G-code atau tetapan cetakan palsu.
+Semak warna dan padankan filament/AMS secara manual jika perlu. Pilih printer dan
+Slice plate > Print plate dalam Bambu. Reqoo tidak mencetak secara automatik.
+Native Bambu color assignment, sambungan printer dan cetakan fizikal belum diuji.
+Rujukan isu rasmi: https://github.com/bambulab/BambuStudio/issues/11927
+
+EDIT DAN SIMPAN
+Drag objek: gerak X/Y. Drag kosong: putar kamera. Shift: snap 1 mm.
+V gerak, O putar, F fokus, Del buang, Esc tutup inspector.
+Ctrl+Z undo, Ctrl+Y redo, Ctrl+C/X/V salin/potong/tampal, Ctrl+D duplicate.
+Simpan JSON untuk projek boleh diedit. Eksport STL/3MF untuk slicer.
+Projek lama mengekalkan mesh asal. Simpan salinan dan jana semula untuk lengkung halus.
+Windows 11 diuji. Windows 10 dan ketahanan cetakan fizikal belum diuji langsung.

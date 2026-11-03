@@ -1,0 +1,5 @@
+import * as THREE from 'three';
+import {STLExporter} from 'three/addons/exporters/STLExporter.js';
+import {geometryDiagnostics} from './manufacturing-core.js';
+export function bakedGeometry(mesh){mesh.updateWorldMatrix(true,false);geometryDiagnostics(mesh.geometry);const g=mesh.geometry.clone().applyMatrix4(mesh.matrixWorld);if(mesh.matrixWorld.determinant()<0){if(g.index){const a=g.index.array;for(let i=0;i<a.length;i+=3)[a[i+1],a[i+2]]=[a[i+2],a[i+1]]}else for(const a of Object.values(g.attributes))for(let i=0;i<a.count;i+=3)for(let j=0;j<a.itemSize;j++){const x=(i+1)*a.itemSize+j,y=(i+2)*a.itemSize+j;[a.array[x],a.array[y]]=[a.array[y],a.array[x]]}g.computeVertexNormals()}return g}
+export function exportManufacturingSTL(root){const temp=new THREE.Group();try{root.updateMatrixWorld(true);root.traverse(m=>{if(m.isMesh)temp.add(new THREE.Mesh(bakedGeometry(m),m.material))});temp.updateMatrixWorld(true);return new STLExporter().parse(temp,{binary:true})}finally{temp.children.forEach(m=>m.geometry.dispose())}}

@@ -1,0 +1,40 @@
+name: Prepare verified Reqoo Studio release
+on:
+  push:
+    branches: [studio/v1.4.0]
+    paths: [.github/workflows/reqoo-studio-publish.yml, .github/scripts/prepare-studio-release.py]
+permissions:
+  contents: write
+  actions: read
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: studio/v1.4.0
+      - name: Wait for verified cloud build
+        run: gh run watch 41575645549 --exit-status
+      - name: Refresh integrated source
+        run: |
+          git fetch origin studio/v1.4.0
+          git reset --hard origin/studio/v1.4.0
+      - name: Download build outputs on the cloud runner only
+        run: |
+          gh run download 41575645549 -n Reqoo-Studio-Web-1.4.0 -D .studio-release/web
+          gh run download 41575645549 -n Reqoo-3D-Studio-1.4.0-Installer-x64 -D .studio-release/installer
+      - name: Prepare production assets without source or build caches
+        run: python .github/scripts/prepare-studio-release.py
+      - name: Commit verified web distribution for promotion
+        run: |
+          git config user.name 'Reqoo Studio Build'
+          git config user.email 'actions@users.noreply.github.com'
+          git add 3d-studio 3d-lamp-studio/index.html apps/index.html shared/ecosystem.json .assetsignore
+          git diff --cached --quiet || git commit -m 'Publish verified Reqoo 3D Studio web distribution [skip ci]'
+          git push origin HEAD:studio/v1.4.0
+      - name: Publish only the finished installer and checksum
+        run: |
+          gh release create reqoo-studio-v1.4.0 .studio-release/installer/Reqoo-3D-Studio-1.4.0-Setup-x64.exe .studio-release/installer/SHA256.txt --target studio/v1.4.0 --title 'Reqoo 3D Studio 1.4.0' --notes 'Combined desktop and web studio. Seven replacement lamp forms, shared mesh geometry, nozzle preview and fixed P2S 0.8 mm PETG sample exporter. Other released generators retained; Coral/Fold experiments retired. Built and tested on GitHub; physical printer and lamp-fit tests are not claimed. Windows installer is not Authenticode signed.'

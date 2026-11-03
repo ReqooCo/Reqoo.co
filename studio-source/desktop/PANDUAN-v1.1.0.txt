@@ -1,0 +1,48 @@
+REQOO 3D STUDIO v1.1.0 — Windows 10/11 64-bit
+
+PERUBAHAN UTAMA
+Modul keychain kereta dikeluarkan. Foto kereta dan enjin pengasingan gambar tidak dibundel. Keychain huruf/logo, nametag, plate mini, bookmark, QRPay, signage dan huruf LED kekal.
+
+LAMPU 3D
+Klik ikon lampu pada toolbar atas, atau pilih Lampu 3D dalam senarai produk.
+1. Pilih LED strip, LED Bambu Lab Kit 001 atau LED E27.
+2. Pilih silinder, kon, tanglung, jam pasir, kubah terbuka atau beralur.
+3. Laras diameter bawah/atas, tinggi, ketebalan, bilangan/kedalaman alur, pintal dan kelegaan dudukan.
+4. Pilih susunan bahagian untuk cetak, atau pandangan terpasang. Pandangan terpasang untuk semakan; cetak tapak dan shade berasingan menggunakan pilihan eksport objek dipilih.
+5. Pilih semula mana-mana bahagian lampu, klik ikon lampu dan Kemas kini lampu dipilih untuk mengubah parameter set itu.
+
+Tapak mempunyai alur dudukan shade bulat. Bahagian bawah shade bermula dengan kolar bulat sebelum alur/pintal meningkat. LED strip mendapat tiang untuk lilitan serta laluan kabel bawah. Kit Bambu mendapat poket dan laluan kabel sisi. E27 mendapat lubang dudukan pemegang soket sebenar.
+
+Kit Bambu 001: nilai awal diameter 59 mm, tinggi 8 mm daripada kedai rasmi. Ukur kit anda; varian boleh berbeza. Ruang dan clearance ialah tetapan reka bentuk, bukan jaminan muat. E27 tidak bermaksud diameter lubang pemasangan 27 mm: ukur badan pemegang soket dan cincin sebenarnya. Nilai 42 mm hanyalah contoh permulaan. Aplikasi tidak mencetak bahagian elektrik/soket.
+
+Gunakan komponen LED sebenar dan soket lengkap yang sesuai. Model hanya menguji geometri, bukan suhu operasi atau keselamatan elektrik. Bukaan shade tidak membuktikan pengudaraan mencukupi. Uji muat dan haba dengan komponen serta bahan cetakan sebenar sebelum digunakan. E27 memerlukan ruang mentol dan dimensi pemegang yang betul; jangan gunakan mentol pijar/halogen dalam shade plastik ini.
+Rujukan: https://store.bambulab.com/products/led-lamp-kit-001
+
+HIASAN 3D — BOOKMARK / SIGNAGE / PRODUK LAIN
+Pilih tapak atau panel dahulu, kemudian ikon bunga 3D pada toolbar.
+Pilihan: bunga, daisy, daun, hati, bintang, rama-rama. Muka melengkung timbul dengan belakang rata. Laras lebar, tinggi, timbul, kelopak dan warna.
+Letak di atas objek dipilih menempatkan hiasan dengan pertindihan 0.2 mm. Untuk permukaan condong/menegak, laras Move/Rotate sendiri. Pilih beberapa objek dengan Shift+klik, kemudian Union jika hendak satu pepejal. Kekalkan bahagian berasingan untuk warna berbeza, atau eksport 3MF.
+Pilih hiasan semula > ikon bunga > Kemas kini hiasan dipilih. Selepas Union, gunakan Sunting sumber Union untuk membuka semula komponennya.
+
+TULISAN SKRIP LED — CONTOH BATRISYIA
+Dalam dialog Huruf LED, pilihan Kekalkan bentuk tulisan dan ruang huruf dihidupkan secara lalai. Ia mengekalkan kontur asal muka dan lubang huruf. Jambatan menyambung bahagian berasingan pada lantai belakang sahaja, bukan menebalkan muka seluruh perkataan. Jarak awal 0 mm; muka awal 100%.
+Mulakan dengan tinggi 45–60 mm untuk perkataan panjang/font skrip. Jika strip tidak muat, besarkan huruf atau guna strip lebih kecil, bukan menebalkan semua kontur sehingga ruang huruf tertutup. Nilai muat ialah anggaran; semak lebar, lengkungan, lokasi potong strip serta uji cetak. Penutup disusun muka ke bawah untuk cetakan dan diterbalikkan ketika pemasangan. Titik huruf mungkin menjadi bahagian penutup yang berasingan.
+
+ALIRAN KERJA
+Pilih produk > ubah tetapan > Kemas kini reka bentuk. Butang + menghasilkan produk baharu. Tools di toolbar atas termasuk Move, Rotate, Scale, bentuk, import, Mirror, Union dan Subtract. V = Move, R = Rotate, S = Scale, Ctrl+Z = Undo, Ctrl+D = Duplicate, Ctrl+K = cari arahan. Shift+klik untuk beberapa objek.
+
+SEMAKAN DAN SIMPANAN
+Ikon semakan cetakan: pilih plate 180/256/300 mm atau custom, margin dan lebar ekstrusi. Semak objek keluar plate, geometri tertutup dan anggaran ciri terlalu halus. Semakan unjuran XY tidak mengesahkan kekuatan, resin kedap, ketepatan poket, kebolehimbasan QR atau hasil cetakan sebenar.
+Ikon Lapisan: sorok/papar, kunci/buka kunci dan saiz tulisan UI. Sorok hanya paparan; objek masih dieksport.
+Autosave Windows menyimpan 5 revisi dalam folder data aplikasi/recovery. Pulihkan melalui alat projek. Simpan JSON tetap disyorkan. Fail projek lama versi 1–3 dimigrasikan; geometri kereta lama boleh dibuka sebagai mesh biasa tanpa modul kereta.
+Sunting sumber Union mengembalikan komponen untuk disunting. Lakukan Union semula selepas itu; ia bukan pengiraan semula automatik semua langkah.
+
+PESANAN CSV
+Ikon pesanan > import CSV nama,kuantiti > eksport ZIP. Sesuai keychain, nametag, plate, bookmark dan signage. Maksimum 100 item, 50 salinan satu baris. ZIP mengandungi setiap 3MF dan manifest pesanan. Projek asal dipulihkan selepas selesai/batal. Semak setiap model sebelum produksi.
+
+EKSPORT
+STL untuk satu warna. 3MF menyimpan warna/bahagian dan label filamen pilihan; padankan kepada filamen/AMS sebenar dalam Bambu Studio. Buka dalam Bambu menghantar OBJ berwarna; pilih filamen, Slice dan Print di Bambu Studio. Tiada arahan print terus kepada printer.
+QRPay menggunakan gambar QR asal: sentiasa uji imbas hasil akhir dengan aplikasi pembayaran sebenar. Anggaran resin bukan ukuran isipadu tepat.
+
+PORTABLE
+Ekstrak seluruh ZIP sebelum menjalankan Reqoo 3D Studio.exe. Jangan jalankan EXE dari dalam ZIP.
