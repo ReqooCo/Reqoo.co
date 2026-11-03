@@ -61,7 +61,7 @@ edit('src/lamp-studio.js',ui)
 edit('src/main.js',lambda s:"import './web-platform.js';\nimport './combined-studio.css';\n"+s.replace('installLamps({group,products,editor,add,choose,refresh,status})','installLamps({group,products,editor,add,choose,refresh,status,scene})')+"\nif(new URLSearchParams(location.search).get('generator')==='lamp')products.selectGenerator('lamp','lantern');\n")
 edit('src/generator-studio.js',lambda s:s.replace("read('reqoo-app-theme','graphite')","read('reqoo-app-theme','classic')").replace("if(value.lamp){","if(value.lamp){if($('lampBottomMode'))$('lampBottomMode').value=value.lamp.parameters.bottomMode||'open';if($('lampPathPattern'))$('lampPathPattern').value=value.lamp.parameters.pathPattern||'spiral';"))
 
-package=json.loads((project/'package.json').read_text(encoding='utf-8-sig'));package['version']='1.4.0';package['build']['directories']['output']='release/1.4.0';package['build']['files']=[s.replace('PANDUAN-v1.3.0','PANDUAN-v1.4.0') for s in package['build']['files']]
+package=json.loads((project/'package.json').read_text(encoding='utf-8-sig'));package['version']='1.4.0';package['overrides']={**package.get('overrides',{}),'temp':'0.9.4'};package['build']['directories']['output']='release/1.4.0';package['build']['files']=[s.replace('PANDUAN-v1.3.0','PANDUAN-v1.4.0') for s in package['build']['files']]
 for item in package['build'].get('extraFiles',[]):
  if isinstance(item,dict):
   for k in ['from','to']:
@@ -72,7 +72,7 @@ edit('desktop/main.cjs',lambda s:s.replace(r'json|stl|3mf|svg|zip|csv',r'json|st
 guide=(project/'desktop/PANDUAN-v1.3.0.txt').read_text(encoding='utf-8-sig');(project/'desktop/PANDUAN-v1.4.0.txt').write_text(guide+'\n\n1.4.0: Lamp Studio baharu berkongsi kod web/desktop. Tujuh bentuk, slider, preview nozzle, eksport sampel tetap P2S 0.8 PETG. Coral / Fold dan bentuk eksperimen dikeluarkan. STL ialah cangkerang reka bentuk, bukan jejak filament. Tetapan custom belum dieksport sebagai G-code.\n',encoding='utf-8')
 edit('desktop/installer.iss',lambda s:s.replace('1.3.0','1.4.0').replace(r'OutputDir=..\..\..\..\outputs',r'OutputDir=..\release').replace(r'Source: "..\..\..\..\release\1.4.0\win-unpacked\*"',r'Source: "..\release\1.4.0\win-unpacked\*"'))
 # Make the original bundled open fonts available to the web build too.
-fontDir=project/'public/fonts';fontDir.mkdir(parents=True,exist_ok=True);fontIndex=[]
+fontDir=project/'public-core/fonts';fontDir.mkdir(parents=True,exist_ok=True);fontIndex=[]
 for f in sorted((project/'desktop/fonts').glob('*.ttf')):shutil.copyfile(f,fontDir/f.name);fontIndex.append({'id':f.name,'label':f.stem.replace('-',' ').title()})
 (fontDir/'index.json').write_text(json.dumps(fontIndex))
 shutil.copyfile(project/'desktop/FONT-LICENSES.txt',fontDir/'LICENSES.txt')
