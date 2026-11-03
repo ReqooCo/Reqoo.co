@@ -1,5 +1,5 @@
 // Each app owns only its own cache namespace and URL scope.
-const PREFIX='laser-price-v', CACHE=PREFIX+'6';
+const PREFIX='laser-price-v', CACHE=PREFIX+'7';
 const ASSETS=['./','./index.html','./manifest.webmanifest','./icon.svg'];
 const APP_PATH='/laser-price/';
 self.addEventListener('install',event=>{
