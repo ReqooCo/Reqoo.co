@@ -1,0 +1,104 @@
+name: Reqoo 3D Studio cloud build
+on:
+  push:
+    branches: [studio/v1.4.0]
+    paths: [studio-build/**, .github/workflows/reqoo-studio-release.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: reqoo-studio-140
+  cancel-in-progress: true
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Restore released source and apply shared integration
+        run: python studio-build/prepare.py
+      - name: Install dependencies in the cloud
+        working-directory: studio-source
+        run: npm ci
+      - name: Build web and test geometry
+        working-directory: studio-source
+        run: |
+          npm run build
+          node --test tests/combined-lamp.test.js
+          node --test --test-name-pattern="Registry|Every creative mode|Every lamp mode" tests/generator-geometry.test.js
+      - name: Browser checks in cloud runner
+        working-directory: studio-source
+        run: |
+          npx playwright install --with-deps chromium
+          node tests/combined-ui.mjs --web
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Reqoo-Studio-Web-QA
+          path: studio-source/test-results
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Reqoo-Studio-Web-1.4.0
+          path: studio-source/dist
+          retention-days: 7
+      - name: Store editable integrated source on the branch
+        run: |
+          printf '\nnode_modules/\ndist/\nrelease/\ntest-results/\n' >> studio-source/.gitignore
+          git config user.name 'Reqoo Studio Build'
+          git config user.email 'actions@users.noreply.github.com'
+          git add studio-source
+          git diff --cached --quiet || git commit -m 'Store integrated Reqoo 3D Studio 1.4.0 source [skip ci]'
+          git push origin HEAD:studio/v1.4.0
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: python studio-build/prepare.py
+      - name: Install and build on GitHub Windows runner
+        working-directory: studio-source
+        run: |
+          npm ci
+          npm run build
+          node --test tests/combined-lamp.test.js
+          node tests/combined-ui.mjs
+      - name: Package Windows app
+        working-directory: studio-source
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: npx electron-builder --win --x64 --dir --publish never
+      - name: Check the packaged executable
+        working-directory: studio-source
+        shell: pwsh
+        run: |
+          $env:REQOO_EXE = (Resolve-Path 'release/1.4.0/win-unpacked/Reqoo 3D Studio.exe').Path
+          node tests/combined-ui.mjs
+      - name: Compile installer
+        working-directory: studio-source
+        shell: pwsh
+        run: |
+          $compiler = 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'
+          if (-not (Test-Path -LiteralPath $compiler)) { choco install innosetup --no-progress -y }
+          & $compiler desktop/installer.iss
+          if ($LASTEXITCODE -ne 0) { throw 'Installer failed' }
+          Get-FileHash 'release/Reqoo-3D-Studio-1.4.0-Setup-x64.exe' -Algorithm SHA256 | Format-List | Out-File 'release/SHA256.txt'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Reqoo-Studio-Windows-QA
+          path: studio-source/test-results
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Reqoo-3D-Studio-1.4.0-Installer-x64
+          path: |
+            studio-source/release/Reqoo-3D-Studio-1.4.0-Setup-x64.exe
+            studio-source/release/SHA256.txt
+          retention-days: 14
