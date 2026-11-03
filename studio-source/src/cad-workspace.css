@@ -155,3 +155,5 @@ body.cadGraphicsError p{font-size:15px;color:#67758a}
 body.cadGraphicsError button{background:#2869e8;color:white;border:0;border-radius:10px;min-height:46px;padding:12px 18px;font-size:16px}
 
 body.cadWorkspace:has(#lampNozzleControls:not([hidden])) #cadContext,body.cadWorkspace:has(#latticePlayback:not([hidden])) #cadContext{display:none!important}
+
+@media(max-width:760px){body.cadWorkspace #viewport :is(#lampNozzleControls,#latticePlayback) button{min-height:40px!important;font-size:12px!important;padding:7px 9px!important}}
