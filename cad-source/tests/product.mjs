@@ -39,7 +39,7 @@ try{
  await page.locator('#themeToggle').click();assert.equal(await page.locator('html').getAttribute('data-theme'),'dark');checks.push('Header appearance button switches light/dark immediately');
  await page.locator('#settingsToggle').click();await page.locator('#cadUnits').selectOption('mm');await page.locator('#settingsToggle').click();
  await fresh();source=await op('sketch',{shape:'circle',radius:10,plane:'XY'});offset=await op('sketchOffset',{distance:2,keepInputs:false},[source]);
- await page.locator('#modeSolid').click();await page.locator('[data-view=top]').click();await page.locator('#fit').click();
+ await page.locator('#modeSolid').click();await page.evaluate(()=>window.__cad.view('top'));await page.locator('#fit').click();
  let point=await projection(0,0,0);await page.touchscreen.tap(point.x,point.y);
  assert.equal(await page.evaluate(()=>window.__cad.selection.at(-1).id),offset+':core');
  point=await projection(11,0,0);await page.touchscreen.tap(point.x,point.y);
@@ -52,31 +52,31 @@ try{
  assert.equal(await page.evaluate(()=>window.__cad.doc.features.at(-1).inputs[0]),offset+':band');
  await page.evaluate(()=>{const d=JSON.parse(JSON.stringify(window.__cad.doc));d.features[0].params.radius=11;return window.__cad.rebuild(d);});near((await body()).volume,240*Math.PI,.03);
  await page.reload();await ready();near((await body()).volume,240*Math.PI,.03);assert.equal(await page.locator('html').getAttribute('data-theme'),'dark');
- await page.locator('[data-view=iso]').click();await page.locator('#fit').click();await page.screenshot({path:path.join(out,'product-ring-solid-dark.png')});
+ await page.evaluate(()=>window.__cad.view('iso'));await page.locator('#fit').click();await page.screenshot({path:path.join(out,'product-ring-solid-dark.png')});
  checks.push('Touch centre/band independently; band extrudes to a true annular BREP and rebuilds/reloads parametrically');
 
 
  // Geometry-attached annotation editing and orientation controls.
  await fresh();source=await op('sketch',{shape:'rectangle',width:30,height:20,plane:'XY'});
- await page.locator('[data-view=top]').click();await page.locator('#fit').click();
+ await page.evaluate(()=>window.__cad.view('top'));await page.locator('#fit').click();
  point=await projection(0,0,0);await page.touchscreen.tap(point.x,point.y);
  assert.equal(await page.locator('#sketchDimensionLines .dimensionMeasure').count(),2);
  const beforePath=await page.locator('[data-measure=width]').getAttribute('d');
- await page.locator('[data-view=iso]').click();await page.waitForFunction(old=>document.querySelector('[data-measure=width]')?.getAttribute('d')!==old,beforePath);
- assert.equal(await page.locator('[data-view=iso]').getAttribute('aria-pressed'),'true');
- await page.locator('[data-view=front]').click();assert.equal(await page.locator('[data-view=front]').getAttribute('aria-pressed'),'true');
- await page.locator('[data-view=right]').click();assert.equal(await page.locator('[data-view=right]').getAttribute('aria-pressed'),'true');
- await page.locator('[data-view=top]').click();
+ await page.evaluate(()=>window.__cad.view('iso'));await page.waitForFunction(old=>document.querySelector('[data-measure=width]')?.getAttribute('d')!==old,beforePath);
+ assert.equal(await page.locator('#viewCube').getAttribute('data-orientation'),'iso');
+ await page.evaluate(()=>window.__cad.view('front'));assert.equal(await page.locator('#viewCube').getAttribute('data-orientation'),'front');
+ await page.evaluate(()=>window.__cad.view('right'));assert.equal(await page.locator('#viewCube').getAttribute('data-orientation'),'right');
+ await page.evaluate(()=>window.__cad.view('top'));
  await page.locator('[data-dimension=width]').fill('40');await page.locator('[data-dimension=width]').press('Enter');await page.waitForFunction(()=>window.__cad.doc.features[0].params.width===40);
  const overlap=await page.evaluate(()=>{const a=document.querySelector('[data-dimension-label=width]').getBoundingClientRect(),b=document.querySelector('#context').getBoundingClientRect();return a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;});assert.equal(overlap,false,'Dimension label must not cover contextual tools');
  await page.screenshot({path:path.join(out,'product-attached-rectangle-dimensions.png')});
- checks.push('Top/front/right/ISO widget selects and highlights orientations; dimension lines follow the camera');
+ checks.push('Named orientations update camera and dimension lines');
  await op('extrude',{distance:5,keepInputs:true},[source]);near((await body()).volume,4000,.03);
  await page.evaluate(id=>window.__cad.select([{id,kind:'sketch'}]),source);
  await page.locator('[data-dimension=width]').fill('50');await page.locator('[data-dimension=width]').press('Enter');await page.waitForFunction(()=>window.__cad.doc.features[0].params.width===50);near((await body()).volume,5000,.03);
  checks.push('Tap sketch → attached width dimension → Enter updates sketch and dependent native extrusion');
  await fresh();source=await op('sketch',{shape:'circle',radius:10,plane:'XY'});offset=await op('sketchOffset',{distance:2,keepInputs:false},[source]);
- await page.locator('[data-view=top]').click();await page.locator('#fit').click();
+ await page.evaluate(()=>window.__cad.view('top'));await page.locator('#fit').click();
  assert.equal(await page.locator('[data-measure=innerDiameter]').count(),1);assert.equal(await page.locator('[data-measure=outerDiameter]').count(),1);
  await page.locator('[data-dimension=innerDiameter]').fill('18');await page.locator('[data-dimension=outerDiameter]').fill('26');await page.getByRole('button',{name:'Apply sketch dimensions',exact:true}).click();
  await page.waitForFunction(()=>window.__cad.doc.features[0].params.radius===9&&window.__cad.doc.features[1].params.distance===4);
@@ -86,13 +86,24 @@ try{
 
 
  // View cube targets change camera direction, including edge/corner orientations.
- await page.locator('[data-view=iso]').click();await page.locator('#fit').click();
+ await page.evaluate(()=>window.__cad.view('iso'));await page.locator('#fit').click();
  const cameraDirection=()=>page.evaluate(()=>window.__cad.camera.position.clone().sub(window.__cad.controls.target).normalize().toArray());
  await page.locator('[data-cube-view=top]').click();let dir=await cameraDirection();near(dir[2],1,.001);
  await page.locator('[data-cube-view="corner:1,-1,1"]').click();dir=await cameraDirection();near(dir[0],1/Math.sqrt(3),.002);near(dir[1],-1/Math.sqrt(3),.002);near(dir[2],1/Math.sqrt(3),.002);
  await page.locator('[data-cube-view="edge:1,0,1"]').click();dir=await cameraDirection();near(dir[0],Math.SQRT1_2,.002);near(dir[1],0,.002);near(dir[2],Math.SQRT1_2,.002);
  checks.push('Projected view cube face, corner and edge targets orient the actual modeling camera');
- await page.locator('[data-view=iso]').click();await page.evaluate(()=>window.__cad.select([]));
+ assert.equal(await page.locator('#viewCube .cubeShortcuts').count(),0);
+ const cube=await page.locator('.orientationGraphic').boundingBox(),beforeDrag=await cameraDirection();
+ await page.mouse.move(cube.x+cube.width/2,cube.y+cube.height/2);
+ await page.mouse.down();await page.mouse.move(cube.x+cube.width/2+24,cube.y+cube.height/2+16,{steps:8});
+ const duringDrag=await cameraDirection();
+ assert.ok(duringDrag.some((v,i)=>Math.abs(v-beforeDrag[i])>.02),'Cube drag rotates camera before release');
+ await page.mouse.up();await page.waitForTimeout(100);
+ const afterDrag=await cameraDirection();duringDrag.forEach((v,i)=>near(afterDrag[i],v,.002));
+ assert.equal(await page.evaluate(()=>window.__cad.controls.enabled),true);
+ checks.push('Cube drag rotates live without snapping on release; redundant text buttons removed');
+
+ await page.evaluate(()=>window.__cad.view('iso'));await page.evaluate(()=>window.__cad.select([]));
  const unchanged=await page.evaluate(()=>JSON.stringify(window.__cad.doc)),unchangedVolume=(await body()).volume;
  const chooseDisplay=async(mode)=>{await page.locator('#displayModeButton').click();await page.locator('[data-display-mode="'+mode+'"]').click();};
  for(const mode of ['shaded','wireframe','shadedEdges']){
@@ -105,7 +116,7 @@ try{
   await page.screenshot({path:path.join(out,'product-display-'+mode+'.png')});
  }
  checks.push('Solid / Solid + edges / CAD Wireframe alter drawing only and preserve exact model/history');
- await chooseDisplay('wireframe');await page.locator('[data-view=top]').click();await page.locator('#pickMode').selectOption('face');point=await projection(11,0,5);await page.touchscreen.tap(point.x,point.y);assert.equal(await page.evaluate(()=>window.__cad.selection.at(-1)?.kind),'face');
+ await chooseDisplay('wireframe');await page.evaluate(()=>window.__cad.view('top'));await page.locator('#pickMode').selectOption('face');point=await projection(11,0,5);await page.touchscreen.tap(point.x,point.y);assert.equal(await page.evaluate(()=>window.__cad.selection.at(-1)?.kind),'face');
  await page.reload();await ready();assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('reqoo-cad-preferences')).displayMode),'wireframe');near((await body()).volume,unchangedVolume,.01);
  await page.locator('#displayModeButton').click();assert.equal(await page.locator('[data-display-mode=wireframe]').getAttribute('aria-checked'),'true');await page.keyboard.press('Escape');
  checks.push('Wireframe retains real face picking and persists appearance across reload');
