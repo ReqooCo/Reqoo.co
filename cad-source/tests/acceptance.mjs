@@ -20,6 +20,7 @@ try{
  assert.equal(await page.evaluate(()=>document.documentElement.dataset.cadBuild),version.sourceHash);
  assert.equal(await page.locator('meta[name=reqoo-cad-source]').getAttribute('content'),version.sourceHash);checks.push('Served HTML, JavaScript and version manifest identify the same source');
  await page.locator('#startSketch').click();await page.locator('[data-tool=circle]').click();await page.getByRole('button',{name:'Create sketch',exact:true}).click();await page.waitForFunction(()=>window.__cad.items.some(i=>i.kind==='sketch'));
+ assert.equal(await page.locator('#sketchDimensionLines [data-measure=diameter]').count(),1);
  await page.locator('[data-dimension=diameter]').fill('40');await page.getByRole('button',{name:'Apply sketch dimensions',exact:true}).click();await page.waitForFunction(()=>window.__cad.doc.features[0].params.radius===20);
  await page.locator('#context').getByRole('button',{name:'Extrude',exact:true}).click();await page.locator('#faceDistanceValue').fill('20');await page.locator('#faceDistanceValue').dispatchEvent('input');await preview();near(await page.evaluate(()=>window.__cad.previewItems.find(i=>i.kind==='body').volume),Math.PI*400*20);
  assert.equal(await page.evaluate(()=>window.__cad.doc.features.length),1);await page.locator('#faceDistanceApply').click();await page.waitForFunction(()=>window.__cad.doc.features.at(-1).type==='extrude');near((await body()).volume,Math.PI*400*20);checks.push('Dimensioned circle → real BREP cylinder preview → committed extrusion');
