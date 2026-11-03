@@ -57,3 +57,22 @@
 #selectionBar{bottom:7px;left:7px;right:7px}
 #viewCube{right:10px;top:16px}
 }
+
+
+/* Compact touch-first tool palette and adaptive selection affordances. */
+#menu[data-key=sketch],#menu[data-key=add],#menu[data-key=transform],#menu[data-key=tools]{width:286px;display:block}
+#menu button[data-tool]{width:calc(50% - 5px);min-height:86px;margin:2px;gap:8px;box-shadow:0 2px 6px #243b5308;transition:background .15s,border-color .15s}
+#menu button[data-tool] svg{width:28px;height:28px;stroke-width:1.8;color:#2c689f}
+#menu button[data-tool] span{font-weight:550}
+#context button:focus-visible,#rail button:focus-visible,#menu button:focus-visible{outline:2px solid #2679db;outline-offset:2px}
+#context button[aria-label="Select other"]{border-left:1px solid #e3e8ee;border-radius:0}
+.selectionChoices{max-height:min(70dvh,560px);overflow:auto}
+.selectionChoices button{display:flex;align-items:center;gap:12px;width:100%;min-height:48px;margin:5px 0;text-align:left;border-color:#e6eaf0;background:#f9fbfd}
+.selectionChoices button svg{color:#397ab8}
+@media(max-width:760px){
+#menu[data-key=sketch],#menu[data-key=add],#menu[data-key=transform],#menu[data-key=tools]{width:min(286px,calc(100vw - 72px))}
+#menu button[data-tool]{min-height:78px;font-size:11px}
+#context{scrollbar-width:none;-webkit-overflow-scrolling:touch}
+#context::-webkit-scrollbar{display:none}
+#context button{flex-shrink:0}
+}
