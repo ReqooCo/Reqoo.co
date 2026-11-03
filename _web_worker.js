@@ -204,8 +204,9 @@ export default{
 
     // CAD HTML must revalidate: otherwise a cached entrypoint can keep loading an
     // obsolete hashed JS bundle while the Pages deployment itself is current.
-    if(host==='reqoo.co'&&['/cad','/cad/','/cad/index.html','/cad/version.json'].includes(url.pathname)){
-      const assetUrl=new URL(request.url);assetUrl.pathname=url.pathname.endsWith('version.json')?'/cad/version.json':'/cad/index.html';
+    if(host==='reqoo.co'&&['/cad','/cad/index.html'].includes(url.pathname)){const canonical=new URL(request.url);canonical.pathname='/cad/';return new Response(null,{status:308,headers:{location:canonical.toString(),'cache-control':'no-store','x-reqoo-cad-route':'worker-cad-redirect'}});}
+    if(host==='reqoo.co'&&['/cad/','/cad/version.json'].includes(url.pathname)){
+      const assetUrl=new URL(request.url);assetUrl.pathname=url.pathname.endsWith('version.json')?'/cad/version.json':'/cad/';
       const response=await env.ASSETS.fetch(new Request(assetUrl.toString(),request));
       const headers=new Headers(response.headers);
       headers.set('cache-control','no-store, no-cache, must-revalidate, max-age=0');
