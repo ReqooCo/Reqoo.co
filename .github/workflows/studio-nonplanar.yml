@@ -51,6 +51,6 @@ jobs:
           PY
           git config user.name 'Reqoo Studio Build'
           git config user.email 'actions@users.noreply.github.com'
-          git add 3d-studio
+          git add 3d-studio studio-source/README.md studio-source/desktop/PANDUAN-v1.5.0.txt
           git diff --cached --quiet || git commit -m 'Stage tested non-planar web app [skip ci]'
           git push origin HEAD:fix/lamp-nonplanar-20261103
