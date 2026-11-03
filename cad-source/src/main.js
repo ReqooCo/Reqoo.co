@@ -285,6 +285,12 @@ function updateSketchDimensions(){
  const fields=shape==='circle'?[['diameter','Ø',2*(p.radius??15)]]:
  ['rectangle','ellipse'].includes(shape)?[['width','W',p.width??40],['height','H',p.height??30]]:
  shape==='polygon'?[['radius','R',p.radius??15]]:[];
+ if(shape==='polyline'&&Array.isArray(p.points)&&p.points.length>=2){
+  const closed=Boolean(p.closed),count=p.points.length-(closed?0:1);
+  for(let i=0;i<count;i++){const a=p.points[i],b=p.points[(i+1)%p.points.length],dx=b[0]-a[0],dy=b[1]-a[1];
+   fields.push(['segmentLength:'+i,'L'+(i+1),Math.hypot(dx,dy)],['segmentAngle:'+i,'∠'+(i+1),Math.atan2(dy,dx)*180/Math.PI]);
+  }
+ }
  if(!fields.length){sketchDimensions.hidden=true;dimensionFeature=null;return;}
  fields.push(['x','X',p.x??0],['y','Y',p.y??0]);
  const rect=$('stage').getBoundingClientRect(),bounds=item.bounds,center=new THREE.Vector3(...bounds[0].map((v,i)=>(v+bounds[1][i])/2)).project(camera);
@@ -296,8 +302,28 @@ function updateSketchDimensions(){
  const updated={...feature.params};
  for(const input of sketchDimensions.querySelectorAll('input')){
   const n=Number(input.value),key=input.dataset.dimension;
-  if(input.value.trim()===''||!Number.isFinite(n)||(!['x','y'].includes(key)&&n<=0)){status('Enter a valid dimension (size must be greater than zero)');input.focus();return;}
-  if(key==='diameter')updated.radius=n/2;else updated[key]=n;
+  if(input.value.trim()===''||!Number.isFinite(n)||(!['x','y'].includes(key)&&!key.startsWith('segmentAngle:')&&n<=0)){status('Enter a valid dimension (size must be greater than zero)');input.focus();return;}
+  if(key==='diameter')updated.radius=n/2;
+  else if(key.startsWith('segment'))continue;
+  else updated[key]=n;
+ }
+ if(shape==='polyline'){
+  updated.points=(p.points||[]).map(pt=>[...pt]);
+  const changed=new Set();
+  for(let i=0;i<updated.points.length-(p.closed?0:1);i++){
+   const a=updated.points[i],b=updated.points[(i+1)%updated.points.length],dx=b[0]-a[0],dy=b[1]-a[1];
+   const length=Number(sketchDimensions.querySelector('[data-dimension="segmentLength:'+i+'"]')?.value);
+   const angle=Number(sketchDimensions.querySelector('[data-dimension="segmentAngle:'+i+'"]')?.value);
+   if(!Number.isFinite(length)||length<=0||!Number.isFinite(angle)){status('Enter a positive length and valid angle');return;}
+   const oldLength=Math.hypot(dx,dy),oldAngle=Math.atan2(dy,dx)*180/Math.PI;
+   if(Math.abs(length-oldLength)>1e-6||Math.abs(angle-oldAngle)>1e-6){
+    const rad=angle*Math.PI/180;const next=[a[0]+length*Math.cos(rad),a[1]+length*Math.sin(rad)];
+    const target=(i+1)%updated.points.length;
+    if(target===0){status('Closing segment is controlled by the first point. Edit another segment.');return;}
+    updated.points[target]=next;changed.add(i);
+   }
+  }
+  if(changed.size)updated.constraints=(p.constraints||[]).filter(c=>!([...changed].some(i=>c.a===i&&c.b===(i+1)%updated.points.length)&&['length','horizontal','vertical'].includes(c.type)));
  }
  try{const id=feature.id;await apply('sketch',updated,feature.inputs||[],id);dimensionFeature=null;render();}catch(e){error(e);}
  };sketchDimensions.append(applyButton);
