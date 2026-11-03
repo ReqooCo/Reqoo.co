@@ -217,3 +217,5 @@ html[data-theme=dark] #viewCube button[aria-pressed=true]{background:#304d70;bor
 html[data-theme=dark] #viewCube [data-view=iso]{border-top-color:#35485e}
 @media(pointer:coarse){#sketchDimensions>label{min-height:40px}#sketchDimensions input{min-height:34px;font-size:16px}#sketchDimensions>button{min-height:40px;min-width:36px}#viewCube button{min-height:36px}}
 @media(max-width:760px){#viewCube{grid-template-columns:repeat(2,42px);padding:5px;right:8px;top:10px;gap:2px;border-radius:11px}#viewCube button{min-width:40px;min-height:30px;font-size:9px;padding:3px}#viewCube [data-view=iso]{min-width:60px}}
+
+#sketchDimensions{z-index:31}
