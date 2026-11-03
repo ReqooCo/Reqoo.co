@@ -1,6 +1,6 @@
 # Reqoo 3D Studio 1.5.0 — shared web and desktop
 
-Built and tested in GitHub Actions. The released v1.3.0 non-lamp generators remain; experimental Coral, Fold and related lamp generators are retired. Lamp Studio provides seven parametric mesh shapes, sliders and illustrative nozzle motion. STL/3MF export the model envelope; direct G-code export is currently the fixed P2S 0.8 mm PETG test specimen only. Physical printing and lamp hardware fit remain unverified.
+Built and tested in GitHub Actions. The released v1.3.0 non-lamp generators remain; experimental Coral, Fold and related lamp generators are retired. Lamp Studio provides seven parametric mesh shapes, sliders and quantized nozzle motion. Custom experimental P2S 0.8 mm PETG G-code and preview share one XYZ/E/F plan, with Z-down extrusion, motion limits and preliminary nozzle checks. Unsafe exploratory waves cannot be exported. The fixed lattice sample remains separate. STL/3MF export the model envelope. Physical printing and lamp hardware fit remain unverified.
 
 Historical baseline notes follow:
 
