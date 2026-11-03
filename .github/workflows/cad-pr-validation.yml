@@ -30,7 +30,9 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Validate constraints
         working-directory: cad-source
-        run: node tests/constraints.mjs
+        run: |
+          node tests/runtime-route.mjs
+          node tests/constraints.mjs
       - name: Browser integration tests
         working-directory: cad-source
         run: |

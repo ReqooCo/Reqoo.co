@@ -52,6 +52,7 @@ jobs:
         working-directory: cad-source
         run: |
           npx playwright install --with-deps chromium
+          node tests/runtime-route.mjs
           node tests/constraints.mjs
           node tests/cad.mjs
           node tests/acceptance.mjs

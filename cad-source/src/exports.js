@@ -7,6 +7,7 @@ export function threeMF(items){
  return new Blob([zipSync({'[Content_Types].xml':strToU8('<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>'),'_rels/.rels':strToU8('<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>'),'3D/3dmodel.model':strToU8(model)},{level:6})],{type:'model/3mf'});
 }
 export function sketchExport(p,format){
+ if(p.operations?.length)throw Error('Derived sketch SVG/DXF export is not implemented. Export the native solid as STEP instead.');
  let points=null,circle=null;const x=p.x||0,y=p.y||0;
  if(p.shape==='circle')circle={x,y,r:p.radius};
  else if(p.shape==='rectangle')points=[[-p.width/2,-p.height/2],[p.width/2,-p.height/2],[p.width/2,p.height/2],[-p.width/2,p.height/2]].map(q=>[q[0]+x,q[1]+y]);

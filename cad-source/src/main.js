@@ -55,7 +55,7 @@ for(const [key,label]of [['search','Search'],['sketch','Draw'],['add','Shapes'],
 }
 const preferences=Object.assign({units:'mm',precision:3,theme:'light',snap:true},(()=>{try{return JSON.parse(localStorage.getItem('reqoo-cad-preferences')||'{}');}catch{return{};}})());
 const unitFactorValue=()=>preferences.units==='in'?25.4:1;
-function updatePreferences(){localStorage.setItem('reqoo-cad-preferences',JSON.stringify(preferences));document.documentElement.dataset.theme=preferences.theme;scene.background.set(preferences.theme==='dark'?'#18232f':'#f6f7f9');$('units').textContent=preferences.units+' · internal geometry mm';dimensionFeature=null;render();}
+function updatePreferences(){localStorage.setItem('reqoo-cad-preferences',JSON.stringify(preferences));document.documentElement.dataset.theme=preferences.theme;scene.background.set(preferences.theme==='dark'?'#18232f':'#f6f7f9');for(const [i,m]of (Array.isArray(grid.material)?grid.material:[grid.material]).entries())m.color.set(preferences.theme==='dark'?(i?'#283644':'#34495e'):(i?'#e6e9ee':'#cbd1d9'));$('units').textContent=preferences.units+' · internal geometry mm';dimensionFeature=null;render();}
 let workspaceMode='solid';
 let doc={format:'reqoo-cad',version:1,title:'Untitled',features:[],ui:{hidden:[],colors:{}}},items=[],selection=[],undo=[],redo=[],busy=false,ready=false,isolate=false,editing=null,activeTool=null,sketchMode=null,draft=null,counter=0,unitFactor=1,gridStep=1;
 let displayItems=null,previewVersion=0;
@@ -171,8 +171,8 @@ function mountConstraints(p){
 
 function startTool(type,initial={},editId=null){
  if(!ready||busy)return;
- if(type==='extrude'&&!editId&&['sketch','face'].includes(selection.at(-1)?.kind)){closePanels();showFaceDistance(20,'extrude');return;}
- if(!editId&&['fillet','chamfer','draft'].includes(type)&&['edge','face'].includes(selection.at(-1)?.kind)){closePanels();showFaceDistance(type==='draft'?5:1,type);return;}
+ if(type==='extrude'&&!editId&&['sketch','face'].includes(selection.at(-1)?.kind)){if(!direct.target()){status('Direct extrusion requires a closed sketch or planar face');return;}closePanels();showFaceDistance(20,'extrude');return;}
+ if(!editId&&(['fillet','chamfer'].includes(type)&&selection.at(-1)?.kind==='edge'||type==='draft'&&selection.at(-1)?.kind==='face'&&Math.abs(selectedItem()?.faceInfo.find(f=>f.index===selection.at(-1).index)?.normal?.[2]||0)<.9)){closePanels();showFaceDistance(type==='draft'?5:1,type);return;}
  setWorkspaceMode(type==='sketch'||type.startsWith('sketch')?'sketch':'solid');if(type==='import'){$('stepFile').click();return;}
  try{if(!editId)requireSelection(type,selectedIds());}catch(e){status(e.message);return;}
  closePanels();activeTool=type;editing=editId;const old=editId?doc.features.find(f=>f.id===editId):null,p={...old?.params,...initial};if(type==='hole'&&old){p.target=old.inputs[0];if(old.inputs[1])p.sketchId=old.inputs[1];}
@@ -279,7 +279,7 @@ function updateSketchDimensions(){
  if(center.z < -1||center.z > 1){sketchDimensions.hidden=true;return;}
  const id=feature.id;
  if(dimensionFeature!==id){dimensionFeature=id;sketchDimensions.replaceChildren();
- for(const [key,label,value] of fields){const wrap=document.createElement('label');wrap.textContent=label+' ';const input=document.createElement('input');input.type='number';input.step='any';input.value=String(Number((value/(key.startsWith('segmentAngle:')?1:unitFactorValue())).toFixed(preferences.precision)));input.dataset.original=input.value;input.dataset.dimension=key;input.setAttribute('aria-label',label+' dimension in mm');input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();sketchDimensions.querySelector('button')?.click();}});wrap.append(input);sketchDimensions.append(wrap);}
+ for(const [key,label,value] of fields){const wrap=document.createElement('label');wrap.textContent=label+' ';const input=document.createElement('input');input.type='number';input.step='any';input.value=String(Number((value/(key.startsWith('segmentAngle:')?1:unitFactorValue())).toFixed(preferences.precision)));input.dataset.original=input.value;input.dataset.dimension=key;input.setAttribute('aria-label',key.startsWith('segmentAngle:')?label+' angle in degrees':label+' dimension in '+preferences.units);input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();sketchDimensions.querySelector('button')?.click();}});wrap.append(input);sketchDimensions.append(wrap);}
  const applyButton=document.createElement('button');applyButton.textContent='✓';applyButton.title='Apply dimensions';applyButton.setAttribute('aria-label','Apply sketch dimensions');applyButton.onclick=async()=>{
  const updated={...feature.params};
  for(const input of sketchDimensions.querySelectorAll('input')){
@@ -300,11 +300,11 @@ function updateSketchDimensions(){
 }
 
 function renderContext(){const c=$('context');c.replaceChildren();const item=selectedItem();c.hidden=!item;if(!item)return;
- const picked=selection.at(-1),onFace=picked?.kind==='face'&&item.kind==='body',onEdge=picked?.kind==='edge'&&item.kind==='body';
- const commands=item.kind==='sketch'?[...(doc.features.find(f=>f.id===item.featureId)?.params.shape==='circle'?[['hole','Hole']]:[]),['extrude','Extrude'],['revolve','Revolve'],['sweep','Sweep']]:item.kind==='plane'?[['rectangle','Sketch on plane']]:item.kind==='axis'?[]:onEdge?[['fillet','Fillet'],['chamfer','Chamfer']]:onFace?[['offsetFace','Pull / Offset Face'],['extrude','Extrude'],['hole','Hole'],...(Math.abs(item.faceInfo.find(f=>f.index===picked.index)?.normal?.[2]||0)<.9?[['draft','Draft / Taper']]:[])]:[['move','Move'],['rotate','Rotate'],['fillet','Fillet']];
- if(onFace){const direct=document.createElement('button');buttonLabel(direct,'offsetFace','↕ Drag face');direct.onclick=()=>{showFaceDistance(0,'offsetFace');updateFaceHandle();};c.append(direct);}
+ const picked=selection.at(-1),onFace=picked?.kind==='face'&&item.kind==='body',onEdge=picked?.kind==='edge'&&item.kind==='body',planarFace=onFace&&item.faceInfo.find(f=>f.index===picked.index)?.type==='PLANE';
+ const commands=item.kind==='sketch'?[...(doc.features.find(f=>f.id===item.featureId)?.params.shape==='circle'?[['hole','Hole']]:[]),['extrude','Extrude'],['revolve','Revolve'],['sweep','Sweep']]:item.kind==='plane'?[['rectangle','Sketch on plane']]:item.kind==='axis'?[]:onEdge?[['fillet','Fillet'],['chamfer','Chamfer']]:planarFace?[['offsetFace','Pull / Offset Face'],['extrude','Extrude'],['hole','Hole'],...(Math.abs(item.faceInfo.find(f=>f.index===picked.index)?.normal?.[2]||0)<.9?[['draft','Draft / Taper']]:[])]:[['move','Move'],['rotate','Rotate'],['fillet','Fillet']];
+ if(planarFace){const direct=document.createElement('button');buttonLabel(direct,'offsetFace','↕ Drag face');direct.onclick=()=>{showFaceDistance(0,'offsetFace');updateFaceHandle();};c.append(direct);}
  if(item.kind==='sketch'){const direct=document.createElement('button');buttonLabel(direct,'extrude','↕ Extrude arrow');direct.onclick=()=>{showFaceDistance(20,'extrude');updateFaceHandle();};c.append(direct);}
- if(onFace){const sketchFace=document.createElement('button');buttonLabel(sketchFace,'sketch','Sketch on face');sketchFace.onclick=()=>startTool('sketch',{shape:'circle'});c.append(sketchFace);}
+ if(planarFace){const sketchFace=document.createElement('button');buttonLabel(sketchFace,'sketch','Sketch on face');sketchFace.onclick=()=>startTool('sketch',{shape:'circle'});c.append(sketchFace);}
  if(item.kind==='sketch'){const make=document.createElement('button');buttonLabel(make,'box','Solid tools');make.onclick=()=>setWorkspaceMode('solid');c.append(make);}
  if(item.kind==='sketch'){const edit=document.createElement('button');buttonLabel(edit,'sketch','Edit sketch');edit.onclick=()=>{setWorkspaceMode('sketch');startTool(doc.features.find(f=>f.id===item.featureId)?.type||'sketch',{},item.featureId);};c.append(edit);}
  for(const [type,label]of commands){const b=document.createElement('button');buttonLabel(b,type,label);b.onclick=()=>type==='offsetFace'?showFaceDistance(0):startTool(type);c.append(b);}if(pickCandidates.length>1){const other=document.createElement('button');other.setAttribute('aria-label','Select other');other.innerHTML=ico('selectOther')+'<span>Select other</span>';other.onclick=showSelectionChoices;c.append(other);}const del=document.createElement('button');del.textContent='Delete';del.onclick=()=>apply('delete',{},selectedIds()).then(()=>select([])).catch(error);c.append(del);
