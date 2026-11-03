@@ -66,8 +66,8 @@ export async function buildModel(doc){
    if(chosen&&!chosen.length)throw Error('Select an edge, or enable All edges');
    s=b[f.type](chosen?(e=>chosen.includes(e.hashCode)?r:0):r);
   }
-  else if(f.type==='shell'){const b=clone(ins[0]),selected=face(b,p);s=b.shell({thickness:-number(p.thickness,'Wall thickness',.01,500),filter:new R.FaceFinder().inList([selected])});}
-  else if(f.type==='offsetFace'){const b=clone(ins[0]),selected=face(b,p);if(selected.geomType!=='PLANE')throw Error('Offset Face currently supports planar faces');const d=number(p.distance,'Distance'),n=selected.normalAt(),v=new R.Vector(n.toTuple()).multiply(d),prism=own(R.basicFaceExtrusion(selected,v));v.delete();n.delete();s=d>0?b.fuse(prism):b.cut(prism);}
+  else if(f.type==='shell'){const b=clone(ins[0]),selected=face(b,p);s=b.shell({thickness:number(p.thickness,'Wall thickness',.01,500),filter:new R.FaceFinder().inList([selected])});}
+  else if(f.type==='offsetFace'){const b=clone(ins[0]),selected=face(b,p);if(selected.geomType!=='PLANE')throw Error('Offset Face currently supports planar faces');const d=number(p.distance,'Distance'),rawNormal=selected.normalAt(),n=rawNormal.normalized(),v=new R.Vector(n.toTuple()).multiply(d),prism=own(R.basicFaceExtrusion(selected,v));v.delete();n.delete();rawNormal.delete();s=d>0?b.fuse(prism):b.cut(prism);}
   else if(f.type==='move'||f.type==='duplicate'){s=clone(ins[0]).translate([number(p.x??0,'X'),number(p.y??0,'Y'),number(p.z??0,'Z')]);}
   else if(f.type==='rotate')s=clone(ins[0]).rotate(number(p.angle,'Angle',-3600,3600),[0,0,0],p.axis||'Z');
   else if(f.type==='scale')s=clone(ins[0]).scale(number(p.factor,'Scale',.001,100));
@@ -88,7 +88,7 @@ export async function buildModel(doc){
   const groups=faceMesh.faceGroups.map(g=>({...g,faceIndex:faces.findIndex(f=>f.hashCode===g.faceId)}));
   const lineMeshes=edges.slice(0,600).map((e,i)=>({index:i,length:length(e),lines:e.meshEdges({tolerance:.08,angularTolerance:.2}).lines}));
   const bb=s.boundingBox.bounds;
-  items.push({...m,mesh:{...faceMesh,faceGroups:groups},edges:lineMeshes,faceInfo:faces.map((f,i)=>{let normal=[0,0,1],center=[0,0,0];try{const n=f.normalAt(),c=f.center;normal=n.toTuple();center=c.toTuple();n.delete();c.delete();}catch{}return{index:i,type:f.geomType,normal,center,area:area(f)};}),edgeCount:edges.length,bounds:bb,volume:m.kind==='body'?volume(s):0,area:m.kind==='body'||faces.length?area(s):0});
+  items.push({...m,mesh:{...faceMesh,faceGroups:groups},edges:lineMeshes,faceInfo:faces.map((f,i)=>{let normal=[0,0,1],center=[0,0,0];try{const n=f.normalAt(),c=f.center;const len=Math.hypot(...n.toTuple());normal=n.toTuple().map(v=>v/(len||1));center=c.toTuple();n.delete();c.delete();}catch{}return{index:i,type:f.geomType,normal,center,area:area(f)};}),edgeCount:edges.length,bounds:bb,volume:m.kind==='body'?volume(s):0,area:m.kind==='body'||faces.length?area(s):0});
  }
  if(items.filter(i=>i.kind==='body').length>50)throw Error('Limit is 50 visible bodies');
  return{items,shapes,meta,visible,release,export:async(format,ids)=>{
