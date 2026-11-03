@@ -8,7 +8,6 @@ DefaultGroupName=Reqoo 3D Studio
 PrivilegesRequired=lowest
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
-SetupArchitecture=x64
 MinVersion=10.0
 OutputDir=..\release
 OutputBaseFilename=Reqoo-3D-Studio-1.4.0-Setup-x64
