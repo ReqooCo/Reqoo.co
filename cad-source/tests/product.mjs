@@ -34,5 +34,26 @@ try{
  await fresh();source=await op('box',{width:30,depth:20,height:10});let native=await body(),side=native.faceInfo.find(f=>f.normal[0]>.99);await op('draft',{face:side.index,faceRef:side.reference,angle:5,plane:'XY',offset:0},[source]);near(Math.abs((await body()).volume-6000),1000*Math.tan(5*Math.PI/180),.1);checks.push('Selected face draft is a native taper with analytic wedge volume');
  await fresh();source=await op('sketch',{shape:'rectangle',width:30,height:20,plane:'XY',construction:true});const prior=await page.evaluate(()=>JSON.stringify(window.__cad.doc));let rejected=false;try{await op('extrude',{distance:10},[source]);}catch{rejected=true;}assert.equal(rejected,true);assert.equal(await page.evaluate(()=>JSON.stringify(window.__cad.doc)),prior);checks.push('Construction geometry cannot accidentally become an extrusion');
 
+
+ await page.locator('#themeToggle').click();assert.equal(await page.locator('html').getAttribute('data-theme'),'light');
+ await page.locator('#themeToggle').click();assert.equal(await page.locator('html').getAttribute('data-theme'),'dark');checks.push('Header appearance button switches light/dark immediately');
+ await page.locator('#settingsToggle').click();await page.locator('#cadUnits').selectOption('mm');await page.locator('#settingsToggle').click();
+ await fresh();source=await op('sketch',{shape:'circle',radius:10,plane:'XY'});offset=await op('sketchOffset',{distance:2,keepInputs:false},[source]);
+ await page.locator('#modeSolid').click();await page.locator('[data-view=top]').click();await page.locator('#fit').click();
+ let point=await projection(0,0,0);await page.touchscreen.tap(point.x,point.y);
+ assert.equal(await page.evaluate(()=>window.__cad.selection.at(-1).id),offset+':core');
+ point=await projection(11,0,0);await page.touchscreen.tap(point.x,point.y);
+ assert.equal(await page.evaluate(()=>window.__cad.selection.at(-1).id),offset+':band');
+ assert.equal(await page.evaluate(()=>window.__cad.selection.length),1);
+ await page.screenshot({path:path.join(out,'product-ring-region-dark.png')});
+ await page.locator('#context').getByRole('button',{name:'Extrude',exact:true}).click();await page.locator('#faceDistanceValue').fill('5');await page.locator('#faceDistanceValue').dispatchEvent('input');await preview();
+ near(await page.evaluate(()=>window.__cad.previewItems.find(i=>i.kind==='body').volume),220*Math.PI,.03);
+ await page.locator('#faceDistanceApply').click();await page.waitForFunction(()=>window.__cad.items.some(i=>i.kind==='body'));near((await body()).volume,220*Math.PI,.03);
+ assert.equal(await page.evaluate(()=>window.__cad.doc.features.at(-1).inputs[0]),offset+':band');
+ await page.evaluate(()=>{const d=JSON.parse(JSON.stringify(window.__cad.doc));d.features[0].params.radius=11;return window.__cad.rebuild(d);});near((await body()).volume,240*Math.PI,.03);
+ await page.reload();await ready();near((await body()).volume,240*Math.PI,.03);assert.equal(await page.locator('html').getAttribute('data-theme'),'dark');
+ await page.locator('[data-view=iso]').click();await page.locator('#fit').click();await page.screenshot({path:path.join(out,'product-ring-solid-dark.png')});
+ checks.push('Touch centre/band independently; band extrudes to a true annular BREP and rebuilds/reloads parametrically');
+
  assert.deepEqual(errors,[]);await fs.writeFile(path.join(out,'product-results.json'),JSON.stringify({checks,errors},null,2));console.log('PRODUCT PASS',checks);
 }catch(e){console.error('PRODUCT FAILED',e,checks,await page.locator('body').innerText());await page.screenshot({path:path.join(out,'product-failure.png')}).catch(()=>{});throw e;}finally{await browser.close();await new Promise(r=>server.close(r));}
