@@ -7,7 +7,7 @@ on:
     paths: ['cad-source/**', '.github/workflows/cad-pr-validation.yml']
   workflow_dispatch:
 permissions:
-  contents: write
+  contents: read
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -33,26 +33,9 @@ jobs:
         run: node tests/constraints.mjs
       - name: Browser integration tests
         working-directory: cad-source
-        run: node tests/cad.mjs
-      - name: Publish verified CAD static assets to main
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          import shutil
-          source=Path('cad-source/dist')
-          target=Path('cad')
-          assert (source/'index.html').exists(), 'Missing built CAD entrypoint'
-          shutil.rmtree(target,ignore_errors=True)
-          shutil.copytree(source,target)
-          PY
-          git config user.name 'Reqoo CAD Release Bot'
-          git config user.email 'actions@users.noreply.github.com'
-          git add -A cad
-          if ! git diff --cached --quiet; then
-            git commit -m 'Deploy verified Reqoo CAD static build [skip ci]'
-            git push origin HEAD:main
-          fi
+          node tests/cad.mjs
+          node tests/acceptance.mjs
       - name: Upload screenshots and QA output
         if: always()
         uses: actions/upload-artifact@v4
