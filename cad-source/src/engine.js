@@ -32,7 +32,7 @@ export function profile(p){
  if(p.operations!==undefined){if(!Array.isArray(p.operations)||p.operations.length>20)throw Error('Too many derived sketch operations');for(const op of p.operations){if(op.type==='offset')d=d.offset(number(op.distance,'Sketch offset',-500,500));else if(op.type==='fillet')d=d.fillet(number(op.radius,'Sketch fillet radius',.001,500));else if(op.type==='mirror')d=d.mirror(op.axis==='X'?[1,0]:[0,1],[0,0],'plane');else throw Error('Unsupported sketch operation');}}
  return d.translate([x,y]);
 }
-function sketch(p){const b=basis(p);return profile(p).sketchOnPlane(new R.Plane(b.origin,b.x,b.normal));}
+function sketch(p){const b=basis(p),result=profile(p).sketchOnPlane(new R.Plane(b.origin,b.x,b.normal));return typeof result.face!=='function'&&result.sketches?.length===1?result.sketches[0]:result;}
 function volume(s){const v=R.measureShapeVolumeProperties(s);const value=Math.abs(v.volume);v.delete();return value;}
 function length(s){const p=R.measureShapeLinearProperties(s);const v=p.length;p.delete();return v;}
 function area(s){const v=R.measureShapeSurfaceProperties(s);const value=Math.abs(v.area);v.delete();return value;}
