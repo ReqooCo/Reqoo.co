@@ -95,6 +95,17 @@ jobs:
           & $compiler desktop/installer.iss
           if ($LASTEXITCODE -ne 0) { throw 'Installer failed' }
           Get-FileHash 'release/Reqoo-3D-Studio-1.4.0-Setup-x64.exe' -Algorithm SHA256 | Format-List | Out-File 'release/SHA256.txt'
+      - name: Verify installer extraction matches the tested application
+        working-directory: studio-source
+        shell: pwsh
+        run: |
+          $destination = Join-Path $env:RUNNER_TEMP 'reqoo-installer-verify'
+          $installer = (Resolve-Path 'release/Reqoo-3D-Studio-1.4.0-Setup-x64.exe').Path
+          $process = Start-Process -FilePath $installer -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/extractonly=1',('/DIR=' + $destination)) -Wait -PassThru -WindowStyle Hidden
+          if ($process.ExitCode -ne 0) { throw 'Installer extraction failed' }
+          $expected = (Get-FileHash 'release/1.4.0/win-unpacked/resources/app.asar').Hash
+          $actual = (Get-FileHash (Join-Path $destination 'resources/app.asar')).Hash
+          if ($expected -ne $actual) { throw 'Installer content differs from tested app' }
       - uses: actions/upload-artifact@v4
         if: always()
         with:

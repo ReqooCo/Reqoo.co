@@ -72,7 +72,7 @@ for item in package['build'].get('extraFiles',[]):
 lock=json.loads((project/'package-lock.json').read_text(encoding='utf-8-sig'));lock['version']='1.4.0';lock.get('packages',{}).get('',{})['version']='1.4.0';(project/'package-lock.json').write_text(json.dumps(lock,indent=2)+'\n')
 edit('desktop/main.cjs',lambda s:s.replace(r'json|stl|3mf|svg|zip|csv',r'json|stl|3mf|svg|zip|csv|gcode'))
 guide=(project/'desktop/PANDUAN-v1.3.0.txt').read_text(encoding='utf-8-sig');(project/'desktop/PANDUAN-v1.4.0.txt').write_text(guide+'\n\n1.4.0: Lamp Studio baharu berkongsi kod web/desktop. Tujuh bentuk, slider, preview nozzle, eksport sampel tetap P2S 0.8 PETG. Coral / Fold dan bentuk eksperimen dikeluarkan. STL ialah cangkerang reka bentuk, bukan jejak filament. Tetapan custom belum dieksport sebagai G-code.\n',encoding='utf-8')
-edit('desktop/installer.iss',lambda s:s.replace('1.3.0','1.4.0').replace(r'OutputDir=..\..\..\..\outputs',r'OutputDir=..\release').replace(r'Source: "..\..\..\..\release\1.4.0\win-unpacked\*"',r'Source: "..\release\1.4.0\win-unpacked\*"'))
+edit('desktop/installer.iss',lambda s:s.replace('1.3.0','1.4.0').replace('SetupArchitecture=x64\n','').replace(r'OutputDir=..\..\..\..\outputs',r'OutputDir=..\release').replace(r'Source: "..\..\..\..\release\1.4.0\win-unpacked\*"',r'Source: "..\release\1.4.0\win-unpacked\*"'))
 # Make the original bundled open fonts available to the web build too.
 fontDir=project/'public-core/fonts';fontDir.mkdir(parents=True,exist_ok=True);fontIndex=[]
 for f in sorted((project/'desktop/fonts').glob('*.ttf')):shutil.copyfile(f,fontDir/f.name);fontIndex.append({'id':f.name,'label':f.stem.replace('-',' ').title()})
