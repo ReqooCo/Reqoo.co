@@ -166,3 +166,24 @@ html,body{height:100%;min-height:0}
 #directPreviewStatus:not([data-error=true]){position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 #directPreviewStatus[data-error=true]{position:absolute;top:calc(100% + 4px);left:0;width:210px;background:var(--panel);padding:6px;border-radius:7px}
 @media(pointer:coarse){#faceDistance input,#faceDistance button{min-height:44px}#faceDistance button{min-width:40px}}
+
+/* A quieter modeling workspace, with directly accessible light/dark appearance. */
+#rail{width:112px;gap:4px}#rail button{min-height:42px;border-radius:10px;font-size:11px;gap:8px;padding:8px;background:#ffffffdf;border-color:#e4eaf1}
+#rail button svg{width:21px;height:21px}
+#context{border-radius:12px;padding:4px;gap:2px;background:#fffffff0;backdrop-filter:blur(12px)}
+#context button{min-height:42px;border-radius:8px;padding:5px 9px;gap:3px;font-size:10px}
+#selectionBar{box-shadow:none;border-radius:10px}
+#workspaceModes{box-shadow:0 3px 12px #172b3d0b;border-radius:12px}
+#top #themeToggle{width:36px;min-width:36px;border-radius:9px}
+html[data-theme=dark]{--panel:#1e2937f2;--border:#354152;--blue:#76b5ff;color:#dbe4ef;background:#111923}
+html[data-theme=dark] #stage{background:#151e29}
+html[data-theme=dark] #top,html[data-theme=dark] #menu,html[data-theme=dark] #toolPanel,html[data-theme=dark] #sidebar{background:#1c2633;border-color:#354152}
+html[data-theme=dark] #rail button,html[data-theme=dark] #context,html[data-theme=dark] #selectionBar{background:#202c3bef;border-color:#354457;color:#dbe4ef}
+html[data-theme=dark] #rail button svg,html[data-theme=dark] #context button svg{color:#8bc1ff}
+html[data-theme=dark] #workspaceModes{background:#202c3b;border-color:#354457}
+html[data-theme=dark] #workspaceModes button[aria-pressed=true],html[data-theme=dark] button.active{background:#304965;color:#a9d1ff}
+html[data-theme=dark] #faceDistance{background:#202d3d;border-color:#40546c}
+html[data-theme=dark] #viewCube button{background:#1d2938d9;color:#b2c1d3;border-color:#3b495b}
+html[data-theme=dark] #projectName{color:#e0e9f5}
+html[data-theme=dark] #top>button.primary,html[data-theme=dark] #faceDistanceApply{background:#267bdc;color:#fff}
+@media(max-width:760px){#rail{width:46px}#rail button{min-height:44px;padding:9px}#context button{min-width:58px}#top #themeToggle{min-width:32px;width:32px}}

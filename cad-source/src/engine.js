@@ -19,7 +19,8 @@ export function validateProject(doc){
 }
 export function profile(p){
  const x=number(p.x??0,'Sketch X'),y=number(p.y??0,'Sketch Y');let d;
- if(p.shape==='circle')d=R.drawCircle(number(p.radius,'Radius',.01,1000));
+ if(p.shape==='annulus'){const outer=number(p.radius,'Outer radius',.01,1000),inner=number(p.innerRadius,'Inner radius',.001,999);if(inner>=outer)throw Error('Inner radius must be smaller than outer radius');d=R.drawCircle(outer).cut(R.drawCircle(inner));}
+ else if(p.shape==='circle')d=R.drawCircle(number(p.radius,'Radius',.01,1000));
  else if(p.shape==='ellipse')d=R.drawEllipse(number(p.width,'Width',.02,2000)/2,number(p.height,'Height',.02,2000)/2);
  else if(p.shape==='polygon'){const sides=number(p.sides,'Sides',3,64);if(!Number.isInteger(sides))throw Error('Sides must be an integer');d=R.drawPolysides(number(p.radius,'Radius',.01,1000),sides);}
  else if(p.shape==='polyline'||p.shape==='spline'||p.shape==='arc'){
@@ -31,7 +32,7 @@ export function profile(p){
  if(p.operations!==undefined){if(!Array.isArray(p.operations)||p.operations.length>20)throw Error('Too many derived sketch operations');for(const op of p.operations){if(op.type==='offset')d=d.offset(number(op.distance,'Sketch offset',-500,500));else if(op.type==='fillet')d=d.fillet(number(op.radius,'Sketch fillet radius',.001,500));else if(op.type==='mirror')d=d.mirror(op.axis==='X'?[1,0]:[0,1],[0,0],'plane');else throw Error('Unsupported sketch operation');}}
  return d.translate([x,y]);
 }
-function sketch(p){const b=basis(p);return profile(p).sketchOnPlane(new R.Plane(b.origin,b.x,b.normal));}
+function sketch(p){const b=basis(p),result=profile(p).sketchOnPlane(new R.Plane(b.origin,b.x,b.normal));return typeof result.face!=='function'&&result.sketches?.length===1?result.sketches[0]:result;}
 function volume(s){const v=R.measureShapeVolumeProperties(s);const value=Math.abs(v.volume);v.delete();return value;}
 function length(s){const p=R.measureShapeLinearProperties(s);const v=p.length;p.delete();return v;}
 function area(s){const v=R.measureShapeSurfaceProperties(s);const value=Math.abs(v.area);v.delete();return value;}
@@ -45,6 +46,7 @@ export async function buildModel(doc,{base=null,preview=false}={}){
  if(reuse){for(const [k,v]of base.shapes)shapes.set(k,v);for(const [k,v]of base.profiles)profiles.set(k,v);for(const [k,v]of base.meta)meta.set(k,v);for(const k of base.visible)visible.add(k);}
  const metrics={reusedFeatures:reuse?base.featureCount:0,builtFeatures:0,meshedItems:0};
  const own=s=>{arena.add(s);return s;},release=()=>{if(released)return;released=true;for(const s of arena)try{s.delete();}catch{}};
+ function consume(id){visible.delete(id);const m=meta.get(id),host=m?.regionParent||(m?.regionHost?id:null);if(host)for(const [key,value]of meta)if(key===host||value.regionParent===host)visible.delete(key);}
  function body(id){const s=shapes.get(id);if(!s||meta.get(id)?.kind!=='body')throw Error('Select a solid body');return s;}
  function clone(id){return own(body(id).clone());}
  function face(s,p){const faces=s.faces;for(const f of faces)own(f);const i=resolveReference(p.faceRef,faces.map(f=>faceDescriptor(s,f)),p.face);return faces[i];}
@@ -52,7 +54,17 @@ export async function buildModel(doc,{base=null,preview=false}={}){
  try{
  for(const f of doc.features.slice(reuse?base.featureCount:0)){currentFeature=f;metrics.builtFeatures++;if(f.suppressed)continue;const p=f.params,ins=f.inputs;let s=null,kind='body';
   if(f.type==='sketch'){profiles.set(f.id,p);const sk=sketch(p);s=own(p.closed===false||p.construction?sk.wire.clone():sk.face());sk.delete();save(f,s,'sketch');continue;}
-  if(['sketchOffset','sketchFillet','sketchMirror'].includes(f.type)){const original=profiles.get(ins[0]);if(!original)throw Error('Select a sketch first');const op=f.type==='sketchOffset'?{type:'offset',distance:number(p.distance,'Offset distance',-500,500)}:f.type==='sketchFillet'?{type:'fillet',radius:number(p.radius,'Corner radius',.001,500)}:{type:'mirror',axis:p.axis==='X'?'X':'Y'},recipe={...original,operations:[...(original.operations||[]),op]};profiles.set(f.id,recipe);const sk=sketch(recipe);s=own(recipe.closed===false||recipe.construction?sk.wire.clone():sk.face());sk.delete();save(f,s,'sketch');if(!p.keepInputs)visible.delete(ins[0]);continue;}
+  if(['sketchOffset','sketchFillet','sketchMirror'].includes(f.type)){const original=profiles.get(ins[0]);if(!original)throw Error('Select a sketch first');const op=f.type==='sketchOffset'?{type:'offset',distance:number(p.distance,'Offset distance',-500,500)}:f.type==='sketchFillet'?{type:'fillet',radius:number(p.radius,'Corner radius',.001,500)}:{type:'mirror',axis:p.axis==='X'?'X':'Y'},recipe={...original,operations:[...(original.operations||[]),op]};profiles.set(f.id,recipe);const sk=sketch(recipe);s=own(recipe.closed===false||recipe.construction?sk.wire.clone():sk.face());sk.delete();save(f,s,'sketch');
+ if(f.type==='sketchOffset'&&original.shape==='circle'&&!original.operations?.length&&!original.construction&&Math.abs(p.distance)>.001){
+  const r0=original.radius,r1=r0+Number(p.distance),inner=Math.min(r0,r1),outer=Math.max(r0,r1);
+  if(inner>.001){
+   meta.set(f.id,{...meta.get(f.id),regionHost:true});
+   for(const [suffix,recipe,label]of [['core',{...original,radius:inner},'Centre'],['band',{...original,shape:'annulus',radius:outer,innerRadius:inner},'Ring']]){
+    const id=f.id+':'+suffix;profiles.set(id,recipe);const region=sketch(recipe);const face=own(region.face());region.delete();save(f,face,'sketch',id,(f.name||'Offset sketch')+' · '+label);meta.set(id,{...meta.get(id),regionParent:f.id,region:suffix});
+   }
+  }
+ }
+ if(!p.keepInputs)consume(ins[0]);continue;}
   if(f.type==='delete'){for(const id of ins)visible.delete(id);continue;}
   if(f.type==='plane'){const b=basis(p),pl=new R.Plane(b.origin,b.x,b.normal),sk=R.drawRectangle(80,80).sketchOnPlane(pl);s=sk.face();sk.delete();save(f,s,'plane');continue;}
   if(f.type==='axis'){const x=number(p.x??0,'X'),y=number(p.y??0,'Y'),z=number(p.z??0,'Z'),axis=p.axis||'Z';s=R.makeLine([x,y,z],[x+(axis==='X'?80:0),y+(axis==='Y'?80:0),z+(axis==='Z'?80:0)]);save(f,s,'axis');continue;}
@@ -105,7 +117,7 @@ export async function buildModel(doc,{base=null,preview=false}={}){
   else if(f.type==='split'){const b=clone(ins[0]),parts=b.split(p.plane||'XY',number(p.offset??0,'Plane offset'));if(!parts.positive||!parts.negative)throw Error('The plane must pass through the body');save(f,parts.positive,'body',f.id+':positive',(f.name||'Split')+' · positive');save(f,parts.negative,'body',f.id+':negative',(f.name||'Split')+' · negative');visible.delete(ins[0]);continue;}
   else throw Error('Unsupported CAD operation');
   save(f,s,kind);
-  if(!['box','cylinder','sphere','torus','import'].includes(f.type)&&f.type!=='duplicate'&&!p.keepInputs&&!(f.type==='extrude'&&!profiles.has(ins[0])&&(p.operation||'New body')==='New body'))for(const id of ins)if(f.type!=='align'||id===ins[0])visible.delete(id);
+  if(!['box','cylinder','sphere','torus','import'].includes(f.type)&&f.type!=='duplicate'&&!p.keepInputs&&!(f.type==='extrude'&&!profiles.has(ins[0])&&(p.operation||'New body')==='New body'))for(const id of ins)if(f.type!=='align'||id===ins[0])consume(id);
  }
  const items=[];
  for(const [id,m]of meta){if(!visible.has(id))continue;if(reuse&&base.shapes.get(id)===shapes.get(id)){const cached=base.items.find(i=>i.id===id);if(cached){items.push(cached);continue;}}metrics.meshedItems++;const s=shapes.get(id),faces=s.faces,edges=s.edges;for(const f of faces)own(f);for(const e of edges)own(e);
