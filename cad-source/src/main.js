@@ -190,7 +190,7 @@ function renderCommands(){const q=$('commandQuery').value.toLowerCase();$('comma
 $('commandQuery').oninput=renderCommands;document.querySelector('#searchDialog [data-close]').onclick=()=>$('searchDialog').close();
 function normalizeTool(type,p){return tools.sketch.some(v=>v[0]===type)?['sketch',{...p,shape:type}]:[type,p];}
 const actualStart=startTool;startTool=function(type,initial={},editId=null){const [t,p]=normalizeTool(type,initial);return actualStart(t,p,editId);};
-$('startSketch').onclick=()=>showMenu('sketch');
+$('startSketch').onclick=()=>{setWorkspaceMode('sketch');showMenu('sketch');};
 
 let renderer;try{renderer=new THREE.WebGLRenderer({antialias:!matchMedia('(pointer:coarse)').matches});}catch(e){$('stage').innerHTML='<div class="graphicsError"><h1>3D graphics unavailable</h1><p>Open this page in Safari or Chrome with WebGL enabled.</p></div>';throw e;}
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.localClippingEnabled=true;$('canvas').append(renderer.domElement);
