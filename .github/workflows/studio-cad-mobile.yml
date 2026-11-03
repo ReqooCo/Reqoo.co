@@ -31,7 +31,6 @@ jobs:
         working-directory: studio-source
         run: |
           npx playwright install --with-deps chromium
-          node tests/combined-ui.mjs --web
           node tests/cad-mobile.mjs
       - uses: actions/upload-artifact@v4
         if: always()

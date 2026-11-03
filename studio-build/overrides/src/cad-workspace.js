@@ -86,6 +86,11 @@ export function installCadWorkspace({group,editor,add,choose,refresh,products,ca
   take('lampBottomMode',$('cadLampSize'));take('lampPathPattern',$('cadLampPath'));
   const colorGrid=$('lampBaseColor')?.closest('.propertyGrid');if(colorGrid)appearance.append(colorGrid);take('lampLayout',appearance);
   const sections=['cadLampSize','cadLampStyle','cadLampPath','cadLampHardware','cadLampAppearance','cadLatticeSection','cadLampDemo'].map($).filter(Boolean);lamp.prepend(...sections);
+  for(const id of ['cadLampSize','cadLampStyle','cadLampPath']){
+   const section=$(id),grid=document.createElement('div');grid.className='cadFieldGrid';
+   for(const child of [...section.children])if(child.tagName!=='SUMMARY')grid.append(child);
+   section.append(grid);
+  }
   const footer=$('lampGenerate').closest('footer');lamp.append($('lampResult'),footer);
  }
  // Presets update the shared mode picker before applying their dimensions.
