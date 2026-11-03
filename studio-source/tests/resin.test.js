@@ -1,0 +1,27 @@
+import {useToolNavigation} from './tool-navigation.js';
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {_electron as electron} from 'playwright';
+import {mkdir,readFile,writeFile} from 'node:fs/promises';
+import path from 'node:path';
+
+test('Resin trays: contour letters, preserved keyring bore, watertight union, motorcycle and imported logo',async()=>{
+ await mkdir('test-results',{recursive:true});const flags=['--no-sandbox','--disable-gpu','--user-data-dir='+path.resolve('test-results/resin-profile-'+process.pid)];
+ const app=await electron.launch({...(process.env.REQOO_EXE?{executablePath:process.env.REQOO_EXE,args:flags}:{args:[...flags,'.']}),env:{...process.env,REQOO_TEST:'1',REQOO_TEST_DIR:path.resolve('test-results')},timeout:60000});
+ try{
+  const page=useToolNavigation(await app.firstWindow()),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.waitForFunction(()=>window.__reqoo&&document.querySelector('#fontStatus').textContent.includes('tersedia'));
+  const generate=async()=>{const merged=await page.evaluate(()=>window.__reqoo.group.children.some(m=>m.userData.union));await page.locator(merged?'#generateNew':'#generateProduct').click();await page.waitForFunction(()=>!document.querySelector('#generateProduct').disabled);assert.match(await page.locator('#status').textContent(),/Produk siap/)};
+  const frame=async()=>{await page.locator('#resinScope').selectOption('all');await page.locator('#resinPanel').evaluate(el=>el.open=true);await page.locator('#addResinFrame').click();await page.waitForFunction(()=>!document.querySelector('#addResinFrame').disabled,{},{timeout:60000});assert.match(await page.locator('#status').textContent(),/Bingkai resin siap/)};
+  const union=async()=>{await page.locator('#unionAll').click();await page.waitForFunction(()=>!document.querySelector('#unionAll').disabled,{},{timeout:60000});assert.match(await page.locator('#status').textContent(),/Union siap/)};
+  await page.locator('#keyNoBase').check();await generate();await frame();let data=await page.evaluate(()=>{const m=window.__reqoo.group.children.find(m=>m.userData.resinFrame);return{meta:m.userData.resinFrame,min:m.geometry.boundingBox.min.z+m.position.z,dim:m.userData.dim}});assert.equal(data.meta.components,1);assert.ok(Math.abs(data.min)<1e-5);assert.ok(data.dim[2]>5);await page.locator('#resinStyle').selectOption('rectangle');await frame();assert.equal(await page.evaluate(()=>window.__reqoo.group.children.filter(m=>m.userData.resinFrame).length),1);assert.equal(await page.evaluate(()=>window.__reqoo.group.children.find(m=>m.userData.resinFrame).userData.resinFrame.style),'rectangle');await page.locator('#resinStyle').selectOption('contour');await frame();await union();assert.equal(await page.evaluate(()=>window.__reqoo.group.children.length),1);
+  await page.locator('#save').click();await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('berjaya disimpan'));await writeFile('test-results/keychain-resin-v06.json',await readFile('test-results/reqoo-project.json'));await page.locator('#export3mf').click();await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('3MF berwarna dieksport'));await writeFile('test-results/keychain-resin-v06.3mf',await readFile('test-results/reqoo-color.3mf'));
+  await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].setSize(1600,1000));await page.locator('#fitProduct').click();await page.locator('#resinPanel').evaluate(el=>el.scrollIntoView({block:'start'}));await page.screenshot({path:'test-results/ui-v06-resin.png'});
+  await page.locator('#keyNoBase').uncheck();await generate();await frame();
+  const holeCovered=await page.evaluate(()=>{const m=window.__reqoo.group.children.find(m=>m.userData.resinFrame),p=m.geometry.attributes.position,x=-37.5,y=0;const cross=(a,b)=>(b[0]-a[0])*(y-a[1])-(b[1]-a[1])*(x-a[0]);for(let i=0;i<p.count;i+=3){const v=[0,1,2].map(j=>[p.getX(i+j),p.getY(i+j)]);const s=[cross(v[0],v[1]),cross(v[1],v[2]),cross(v[2],v[0])];if(s.every(n=>n>1e-6)||s.every(n=>n< -1e-6))return true}return false});assert.equal(holeCovered,false);await union();
+  await page.locator('#productKind').selectOption('plate');await page.locator('#plateKind').selectOption('motor');await page.waitForFunction(()=>!document.querySelector('#generateProduct').disabled);await page.locator('#motorShape').selectOption('v');await generate();await frame();await union();
+  // Fresh imported SVG logo, without a product base.
+  await page.evaluate(()=>{const a=window.__reqoo;for(const m of [...a.group.children]){a.group.remove(m);m.geometry.dispose();m.material.dispose()}a.choose(null);a.refresh()});await page.locator('details:has(#file)').evaluate(el=>el.open=true);
+  await page.locator('#file').setInputFiles({name:'logo.svg',mimeType:'image/svg+xml',buffer:Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="black" d="M50 2 L62 36 L98 36 L69 57 L80 94 L50 72 L20 94 L31 57 L2 36 L38 36 Z"/></svg>')});await page.waitForFunction(()=>window.__reqoo.group.children.length===1);await page.locator('#resinScope').selectOption('selected');await frame();await union();assert.equal(await page.evaluate(()=>window.__reqoo.group.children.length),1);assert.deepEqual(errors,[]);
+  console.log('PASS: contour tray with floor and raised rim; no-base letters and imported SVG logo; ring bore remains open; motorcycle tray; all unions produce one closed component; JSON/3MF export.');
+ }finally{await app.close()}
+});

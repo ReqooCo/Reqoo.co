@@ -1,0 +1,5 @@
+// Profiles change tessellation of newly generated geometry only; saved meshes stay intact.
+export const QUALITY_PROFILES=Object.freeze({draft:Object.freeze({outlineCurveSegments:24,fontCurveSegments:12,svgCurveSegments:20,cylinderRadialSegments:64,sphereWidthSegments:32,sphereHeightSegments:24,lampRadial:64,lampRows:24}),balanced:Object.freeze({outlineCurveSegments:48,fontCurveSegments:24,svgCurveSegments:40,cylinderRadialSegments:128,sphereWidthSegments:64,sphereHeightSegments:48,lampRadial:128,lampRows:40}),final:Object.freeze({outlineCurveSegments:96,fontCurveSegments:48,svgCurveSegments:64,cylinderRadialSegments:256,sphereWidthSegments:128,sphereHeightSegments:96,lampRadial:192,lampRows:64})});
+let quality='final';export const getQuality=()=>quality;
+export function setQuality(value){if(!Object.hasOwn(QUALITY_PROFILES,value))throw Error('Kualiti mesh tidak sah.');quality=value;return quality}
+export const MESH_QUALITY=Object.freeze(Object.defineProperties({},Object.fromEntries(Object.keys(QUALITY_PROFILES.final).map(key=>[key,{enumerable:true,get:()=>QUALITY_PROFILES[quality][key]}]))));

@@ -1,0 +1,389 @@
+UPGRADE SIGNAGE 0.9.3
+Nama berlapis dibina di latar daripada kontur font, bukan gabungan segitiga berulang.
+Tukar nama dan tekan Jana: papan/stand yang tidak berubah digunakan semula.
+Dua nama terakhir disimpan dalam cache sesi untuk penjanaan semula lebih cepat.
+Pilih tema belon, bunga, hati, bintang, rama-rama atau kosong.
+Pintasan Import logo pada papan meletakkan bentuk import pada permukaan papan.
+Kekalkan logo / bentuk tambahan dihidupkan secara lalai. Matikan untuk membuangnya semasa jana semula.
+Lebar garis luar dan garis putih nama boleh dilaras; garis luar mesti lebih besar.
+Warna papan dipulihkan selepas buka JSON; rekod UI lama dibersihkan.
+Projek lama akan membina semula struktur sekali sebelum boleh menggunakan penjanaan teks sahaja.
+Objek yang sudah di-Union tidak dipulihkan menjadi teks boleh diedit. Simpan salinan JSON sebelum Union.
+
+PEMBAIKAN PRESTASI 0.9.2
+Import raster dan pembinaan mesh logo kini diproses di latar.
+Pratonton mesh digunakan semula apabila ditekan Tambah, selagi ukuran tidak berubah.
+Titik kontur berlebihan dikurangkan dengan mengekalkan lubang dan bentuk utama.
+Penjanaan huruf mengemas kini senarai objek secara berkumpulan.
+Pemprosesan pertama mungkin mengambil sedikit masa untuk memulakan enjin; UI terus responsif.
+Logo dalam projek lama perlu diimport semula untuk mendapat mesh lebih ringan.
+
+PEMBAIKAN 0.9.1
+Import logo: lalai 1024px, pilihan 512/1024/2048px dan pelicinan 0-3.
+Logo lama perlu diimport semula daripada gambar asal untuk mendapatkan kontur baharu.
+SVG paling sesuai untuk garis tepat; resolusi tinggi tidak memulihkan butiran gambar asal yang kabur.
+Rotate: pilih objek, tekan ikon Rotate, drag gelang X/Y/Z. Scale: drag pemegang paksi atau tengah untuk skala seragam.
+Shift: snap 15 darjah / 1mm / skala 10%. Ctrl+Z membatalkan satu drag.
+Setiap objek dipilih mempunyai kotak cyan. Plate disembunyikan bila kamera berada di bawah; boleh togel dengan ikon plate.
+Huruf LED menggunakan nisbah font asal. Jana semula LED lama untuk bentuk baharu. Strip lalai 3mm boleh dilaras; semak muat strip sebenar. Penutup dicetak terbalik.
+
+SIGNAGE BULAT GANTUNG + STAND (v0.9)
+Produk Papan tanda gerai > gaya Bulat gantung + stand > Jana.
+Nama utama mengikut font semasa dengan lapisan hitam/putih dan huruf berwarna.
+Tagline dan media sosial menggunakan huruf blok. Pilih tiga belon atau kosong
+untuk mengimport logo sendiri selepas menjana papan.
+Diameter papan menggunakan Lebar; tinggi disamakan kepada diameter.
+Dua telinga gantung dengan lubang tembus sebenar disertakan pada papan.
+Stand terdiri daripada palang atas, dua tiang, dua kaki dan pilihan lapan pautan C.
+Semua komponen disusun rata. Lalai 150mm papan, 210mm palang/tiang disusun
+dalam kawasan 256×256mm; semak semula kedudukan/saiz dalam slicer jika diubah.
+Selepas cetak: dua tiang diputar X 90 darjah; tab bawah masuk ke slot kaki,
+tab atas masuk ke slot palang. Kaki memanjang depan/belakang. Gam selepas
+uji muat jika diperlukan. Pasang papan dengan rantai/gelung logam atau pautan
+C percubaan. Pautan C terbuka bukan pengunci beban yang telah diperakui.
+Kelegaan lalai 0.3mm, tab 8×6mm dan slot 8.3×6.3mm. Uji satu sambungan dahulu.
+Kekuatan, kestabilan dan daya tahan pautan belum diuji secara fizikal.
+Untuk papan besar, eksport/susun komponen pada beberapa plate jika perlu.
+Gaya ini ialah papan hiasan meja; jangan gunakan untuk menggantung beban berat.
+
+TAMBAHAN v0.9 — TOOLBAR, LED DAN IMPORT BAMBU
+
+Semua alat 3D berada di bar atas. Mirror, Align, Center, Group, Ungroup,
+Split, Emboss, Engrave, Backing, Union dan Subtract digunakan pada pilihan.
+Tetapan alat (ikon gear), gelung, resin dan hiasan dibuka sebagai panel terapung.
+Shift+klik untuk memilih beberapa objek. Subtract: badan dahulu, pemotong kemudian.
+
+TIRUS 3D
+Pilih huruf/logo > Tirus. Contoh muka hadapan 80%, tapak belakang 100%.
+Skala berubah mengikut ketebalan Z sebenar, bukan herotan tulisan 2D.
+Setiap objek menggunakan pusat sendiri. Ctrl+Z untuk kembali.
+
+HURUF LED
+Tekan LED di bar atas. Guna teks baharu dengan font semasa atau objek dipilih.
+Lebar strip, tinggi LED, dinding, lantai, kelegaan, penutup dan lubang wayar
+boleh diubah. Ukuran lalai ialah contoh, bukan ukuran strip anda.
+Badan dan penutup menjadi dua objek berasingan. Badan dicetak belakang di bawah;
+penutup disusun muka hadapan di bawah, kemudian diterbalikkan X 180 darjah
+untuk pemasangan. Lubang wayar berada di lantai belakang (0 untuk matikan).
+Rongga mengikuti bentuk. Aplikasi tidak merancang laluan litar, lokasi potong
+atau jejari lenturan strip. Periksa perkakasan sebenar dan uji muat selepas cetak.
+Huruf terpisah perlu dirapatkan atau disambung sebelum jana badan LED.
+Untuk keychain, tambah gelung pada badan dan Union; jangan gabung penutup.
+Pengubahsuaian saiz ruang: jana semula melalui dialog LED; JSON menyimpan mesh
+dan parameter asal untuk rujukan. Sambungan/friction fit bukan pengunci snap.
+
+BOOKMARK
+Pilih bentuk badan: bucu bulat, bujur, daun, beralun, tiket atau arch.
+Galeri 32 bentuk cute dan import logo sendiri masih tersedia. Sila semak teks
+tidak keluar dari badan yang sempit dan laraskan saiz/kedudukan sebelum Union.
+
+BAMBU STUDIO — LALUAN SERASI
+Butang Buka dalam Bambu menghantar OBJ berwarna (RGB setiap vertex).
+Ini mengelakkan pemeriksaan konfigurasi 3MF pada Bambu 2.8.2.61.
+Dalam dialog warna Bambu, padankan warna kepada filamen sebenar, semak model,
+pilih profil pencetak, kemudian Slice dan Print. OBJ mengekalkan kedudukan
+geometri, tetapi Bambu boleh menggabungkan bahagian menjadi satu objek import.
+Eksport 3MF berwarna masih tersedia untuk format berbahagian standard.
+Amaran invalid config pada 3MF standard ialah isu versi Bambu lama, dan masih
+boleh muncul apabila membuka 3MF itu secara manual. Pembaikan rasmi Bambu:
+https://github.com/bambulab/BambuStudio/commit/2ba84fc
+Ujian CLI Bambu membaca OBJ dan eksport semula berjaya; pemetaan warna GUI,
+AMS, sambungan pencetak dan cetakan fizikal belum disahkan secara langsung.
+
+ENGLISH
+All editing tools are on the top toolbar; settings open in floating panels.
+Taper scales the actual front/rear faces in 3D. LED generates a hollow housing
+and a separate face-down cover; flip the cover around X after printing.
+Strip dimensions are adjustable examples. Check real bend radius/cut points
+and test fit. The model does not design electronics. Keep the cover separate.
+Open in Bambu uses vertex-colour OBJ to avoid the old 3MF config check.
+Match colours in Bambu's colour dialog. Standard colour 3MF is still available.
+
+REQOO 3D STUDIO 0.9.0 — WINDOWS 10/11 X64
+
+BAHARU DALAM 0.9 — IMPORT LOGO & BM / EN
+
+Pilihan Bahasa Melayu (BM) dan English (EN) berada di bar atas dan disimpan pada
+PC. Bahasa UI tidak mengubah teks reka bentuk, nama fail, font atau nama objek.
+Info tambahan berada dalam ikon !: hover, fokus atau klik untuk membaca.
+
+IMPORT LOGO UNTUK PENANDA BUKU
+1. Tekan Import logo di bar atas atau Import logo / gambar sendiri di bahagian
+   penanda buku. Pilih PNG, JPG atau SVG.
+2. PNG lutsinar: Automatik mengambil kawasan legap. JPG: gunakan logo gelap pada
+   latar cerah. Buka Tetapan siluet untuk ambang dan resolusi. Pilih Bentuk cerah
+   pada latar gelap jika perlu. Foto tidak dibuang latar secara AI.
+3. Pratonton menunjukkan kontur satu warna, termasuk ekor dan sambungan automatik.
+   Ini geometri 3D sebenar. Warna gambar asal tidak menjadi bahagian berasingan.
+4. Pilih Bentuk sahaja atau Kepala penanda buku + ekor. Ubah saiz, ketebalan,
+   panjang dan lebar ekor. Kekalkan nisbah gambar mengekalkan proporsi logo.
+5. Isi lubang dalaman menutup ruang kosong; matikan untuk lubang asal. Sambung
+   bahagian terpisah menambah palang. Semak pratonton dan lebar sambungan.
+6. Tambah ke ruang kerja menambah tanpa memadam projek. Ubah saiz, kedudukan,
+   putaran dan warna dalam panel Sunting objek.
+7. Pilih bentuk import dan buka Import logo semula untuk ubah saiz, ketebalan
+   dan ekor. Tekan Gunakan pada bentuk dipilih. Selepas projek dibuka semula,
+   ambang dan resolusi memerlukan gambar asal diimport semula. Kontur dan tetapan
+   saiz / ekor disimpan dalam JSON dan boleh diedit tanpa gambar asal.
+
+GABUNG / POTONG
+Shift+klik beberapa objek. Gabung (Union) menyatukan bahagian bertindih.
+Potong (Subtract): pilih badan dahulu, Shift+klik pemotong, kemudian Potong.
+Untuk lubang, tambah bulat / silinder yang menembusi badan dan gunakan Potong.
+Selepas boolean, hasil menjadi jejaring biasa. Gunakan Buat asal atau salinan
+asal untuk kembali kepada kontur import. Simpan JSON sebelum operasi.
+
+NOTA SILUET
+SVG paling sesuai untuk kontur kemas. Gunakan laluan berisi dan tukar teks SVG
+kepada outline. Lubang SVG perlu laluan kompaun / hole; objek putih bertindih
+yang berasingan tidak automatik menjadi lubang. Jika ragu, eksport PNG lutsinar
+atau hitam / putih dan semak pratonton. Skrip dan imej luaran tidak dilaksanakan.
+Resolusi raster 128 / 256 / 384 px mempengaruhi butiran; nilai awal ialah 256.
+Naikkan tapisan butiran kecil untuk logo rumit. Had 24 komponen dan had kontur
+mengelakkan model terlalu berat. Semua pemprosesan berlaku pada PC.
+Had fail: gambar 15 MB, SVG 4 MB. Pratonton bukan jaminan kekuatan cetakan.
+Uji bookmark nipis dan sambungannya dengan pencetak dan bahan sendiri.
+
+ISTILAH UI
+BM                           EN
+Gerak                        Move
+Putar                        Rotate
+Buat asal / Buat semula       Undo / Redo
+Salin / Tampal / Gandakan     Copy / Paste / Duplicate
+Gabung (Union)               Union
+Potong (Subtract)            Subtract
+Bentuk tersuai               Custom shape
+Pratonton                    Preview
+Penanda buku                 Bookmark
+Rantai kunci                 Keychain
+Tanda nama                   Name tag
+Papan tanda gerai            Booth sign
+Simpan automatik / Templat   Autosave / Template
+
+ENGLISH QUICK START
+Choose EN from the language selector. Open Import logo and choose PNG, JPG or SVG.
+Transparent PNG uses its alpha outline; JPG uses black/white threshold settings.
+Select Shape only or Bookmark topper + tail, set dimensions and check the preview.
+Fill internal holes closes cutouts. Connect separate parts adds printable bridges.
+Add to workspace, then resize, move, rotate, Union or Subtract like other objects.
+Select the imported object and reopen Import logo to edit its parameters before
+boolean operations. Save JSON to preserve editable geometry and settings.
+Changing language affects the UI, not design text, filenames or stored object names.
+Use clear silhouettes; photos are not segmented by AI. Test physical strength,
+thickness and fit with your own printer and material.
+
+FUNGSI DARIPADA 0.8 YANG DIKEKALKAN
+• 32 bentuk bookmark / clipart: galeri bergambar, carian dan kategori.
+• Bentuk Custom: bulat, oval, petak, bucu bulat, segi tiga, poligon, bintang,
+  atau lukis titik sendiri. Edit ukuran, bucu dan titik sebelum Union.
+• Preset hiasan Floral, Cute, Minimal dan Retro; motif tepi / penjuru,
+  garis ikut kontur, teks tambahan dan palet warna.
+• 12 font OFL dibekalkan untuk penggunaan luar talian. Font Windows yang
+  dipasang pada PC dikesan, dengan carian, pratonton besar dan kegemaran.
+• Tulisan UI lebih besar. Penerangan tersembunyi di ikon !; hover / fokus /
+  klik untuk baca, klik di luar atau Esc untuk tutup.
+
+BENTUK CUSTOM
+Tekan Bentuk Custom + pada bar atas. Pilih bentuk dan ukuran, kemudian Tambah.
+Untuk bentuk bulat, lebar ialah diameter. Untuk lukisan sendiri, klik tambah
+sekurang-kurangnya tiga titik; drag titik untuk ubah, atau buang titik terakhir.
+Garisan bersilang / bertindih ditolak. Kontur ditutup secara automatik.
+Ukuran lukisan mengikut grid: titik yang tidak mencapai tepi tidak memenuhi
+seluruh ukuran lebar / tinggi. Gunakan inspector untuk ukuran akhir tepat.
+Pilih bentuk Custom dan buka alat semula untuk Terapkan pada bentuk dipilih.
+Ukuran baharu menggantikan skala; kedudukan dan putaran dikekalkan.
+Selepas Union / Subtract, hasil menjadi mesh biasa: ubah melalui inspector,
+atau Undo untuk kembali kepada bentuk asal. Import SVG juga disediakan.
+
+COMBINE / POTONG
+Shift+klik dua atau lebih objek, kemudian Union di bar atas. Wajib satu keping
+akan menolak objek terpisah. Rapatkan / tindihkan dahulu atau tambah palang.
+Subtract: pilih badan dahulu, kemudian pemotong. Hanya pilihan itu terlibat.
+Buat lubang: tambah silinder / bulat dengan Z menembusi seluruh badan, pilih
+badan dahulu dan bulat kemudian, tekan Subtract. Undo sentiasa tersedia.
+
+HIASAN BOOKMARK & BOOTH
+Jana produk dahulu. Tekan Hiasan & bentuk. Pilih preset, atau ubah motif,
+susunan, bilangan, saiz, tinggi dan warna. Tambah hiasan preset menambah motif
+pada projek; tidak menjana semula atau memadam suntingan sedia ada.
+Motif automatik hanya diletakkan jika muat di permukaan dan tidak menutup
+huruf atau panel QR. Jika tiada ruang, kecilkan saiz atau pilih tepi lain.
+Untuk kepala kecil, pilih kepala tersebut dahulu. Setiap kumpulan motif boleh
+drag / putar; gunakan Shift+klik untuk pilihan lain. Ungroup untuk edit satu.
+Timbul menambah objek. Ukiran memotong badan, dengan lantai sekurang-kurangnya
+0.2 mm. Untuk bookmark 0.9 mm, gunakan kedalaman ukiran 0.2–0.4 mm.
+Garis bingkai mengikut kontur badan, termasuk lubang asal. Hiasan automatik
+mengelakkan tab pemasangan supaya ketebalan tab kekal sesuai dengan slot. Ini garis hiasan;
+untuk UV resin gunakan alat Bingkai resin supaya ada lantai dan dinding.
+Teks tambahan menggunakan font semasa. Pilih kedudukan atas / tengah / bawah.
+Palet ialah tindakan berasingan supaya warna suntingan tidak ditukar tanpa
+sengaja; QR hitam / putih dan mesh Union berwarna tidak diwarnakan semula.
+Semak hiasan bertindih secara visual. Gunakan Union untuk hasil satu keping.
+Cadangan: bookmark floral dengan garis tepi nipis; cute dengan kepala besar;
+booth retro dengan judul tebal + tagline kecil; arch minimal dengan ruang lega.
+
+FONT
+Buka Galeri font, cari nama / pilih kategori, tukar teks pratonton dan klik
+font. Ikon bintang menyimpan kegemaran pada PC. 12 font Reqoo dibekalkan:
+Lilita One, Pacifico, Lobster, Cherry Bomb One, Bangers, Righteous, Yeseva One,
+Courgette, Berkshire Swash, Bubblegum Sans, Boogaloo dan Fugaz One.
+Font PC lain bergantung pada pemasangan Windows. Sesetengah font berubah /
+berwarna / simbol tidak menyokong pembinaan mesh ini; pilih TTF statik lain.
+Import font sendiri jika perlu dan patuhi lesen pemilik font untuk jualan.
+Pilih huruf berasingan sebelum Union, kemudian Terapkan font pada huruf dipilih.
+Kedudukan dikekalkan; lebar huruf boleh berubah, jadi semak jarak / sambungan.
+Saiz tajuk / nama dan tagline produk boleh diubah dalam tetapan produk.
+Teks panjang akan dikecilkan supaya muat. Jana semula menggantikan ruang kerja;
+simpan projek atau tambah teks hiasan jika mahu kekalkan suntingan manual.
+
+BOOKMARK / BENTUK CUTE
+Pilih Bookmark, isi nama dan font. Pilihan nama memanjang dengan lubang tassel,
+atau kepala nama dengan ekor nipis. Tebal awal ekor 0.9 mm; laraskan untuk printer.
+Bentuk kepala: 32 pilihan dalam galeri bergambar. Pilih nama di kepala
+untuk kepala berbentuk clipart + ekor. Warna dan saiz bentuk boleh diubah.
+Tandakan Bentuk sahaja untuk potongan clipart tanpa ekor. Tambah bentuk clipart
+ke canvas menambah objek 3D tanpa mengganti projek. Drag/putar/resize, tambah
+lubang melalui Subtract atau gelung, kemudian Union untuk bentuk keychain sendiri.
+
+QRPay DARIPADA GAMBAR ASAL
+Pilih QRPay / QR display. Pilih ruang stiker kosong atau import gambar PNG/JPG.
+Selepas gambar dibaca, mod bertukar kepada QR 3D. QR dibaca dan dijana semula
+setempat; kandungan asal dikekalkan. Tiada akaun pembayaran dicipta.
+Jika QR tidak dapat dibaca, guna gambar lebih jelas dengan margin putih.
+QR 3D menggunakan hitam atas putih, margin empat modul, modul minimum 0.9 mm.
+Jika terlalu padat, besarkan saiz QR dan papan. Saiz tajuk/tagline dikecilkan
+automatik jika perlu untuk menjauhkan teks daripada QR. QR yang tidak muat
+bersama tajuk/tagline akan ditolak; kecilkan QR atau besarkan papan. Logo tidak ditindih pada kod QR.
+Gunakan QR merchant statik asal. QR dinamik yang luput tidak sesuai untuk cetakan.
+Semak penerima pada aplikasi bank dan uji imbas selepas cetak. Gambar contoh QR
+pakej ujian menuju example.com sahaja; bukan QR pembayaran sebenar.
+
+SIGNAGE BOOTH
+Pilih Signage booth. Gaya Arch minimal, Scallop / beralun atau Retro.
+Isi nama, maksimum tiga baris menggunakan /, serta tagline. Pilih warna dan font.
+Papan dan tapak slot disusun RATA untuk cetakan. Papan mempunyai tab 8 mm di bawah;
+selepas cetak, berdirikan papan dan masukkan tab ke tapak. Kelegaan awal 0.3 mm
+ialah contoh, bukan jaminan muat; cetak ujian dahulu. Jangan Union tapak dengan
+papan ketika kedua-duanya masih disusun rata. Eksport setiap bahagian jika perlu.
+Grid ialah rujukan 256 mm, bukan profil printer. Semak muat pada printer sebenar.
+
+PILIHAN BERBILANG / UNION / SUBTRACT
+Shift+klik pada canvas untuk tambah/buang pilihan. Dalam senarai objek, Ctrl+klik
+atau Shift+klik juga boleh digunakan. Klik kosong untuk kosongkan pilihan.
+Butang Union dan Subtract terletak pada bar atas. Hanya pilihan diproses.
+Untuk Subtract, pilih BADAN dahulu kemudian Shift+klik PEMOTONG; semua pemotong
+dibuang daripada badan. Objek yang tidak dipilih dikekalkan. Ctrl+Z untuk kembali.
+Union semua dalam panel sambungan masih tersedia untuk seluruh reka bentuk.
+Wajib satu keping boleh dimatikan jika sengaja mahu beberapa badan dalam satu objek.
+
+PUTAR DAN GROUP
+Gerak (V): drag XY; Putar objek (R): drag untuk putar Z. Kamera (O): putar pandangan.
+Setiap objek juga mempunyai Putaran X, Y dan Z dalam panel edit. Shift ketika
+memutar snap 5 darjah. Mulakan drag biasa kemudian tahan Shift untuk snap gerakan.
+Group dipilih mengekalkan mesh berasingan. Klik satu ahli untuk pilih seluruh group;
+drag dan putar bersama. Ungroup memisahkan pilihan. Copy/paste/duplicate menyokong
+beberapa item. Nilai dalam inspector merujuk item aktif yang dipilih terakhir.
+
+ALIGN, UKUR, MIRROR, OFFSET, CUT DAN UKIR
+Buka Align / Ukur / Alat pada bar atas.
+Align: pilih dua objek atau lebih; objek pertama menjadi rujukan. Pilih kiri,
+kanan, atas, bawah atau center X/Y. Center pada grid mengalihkan pusat pilihan ke 0,0.
+Ukuran menunjukkan bounding box pilihan dalam mm dan jarak antara pusat dua objek.
+Snap grid boleh dihidupkan dengan langkah 0.1–10 mm. Shift semasa drag snap 1 mm.
+Mirror X/Y mencerminkan geometri dan mengekalkan orientasi muka mesh.
+Backing kontur: pilih huruf/logo, tetapkan offset dan tebal. Lantai menutup ruang
+huruf sebagai backing. Jika masih terpisah, besarkan offset atau rapatkan huruf.
+Split: pilih SATU objek; pilih paksi X/Y/Z dan koordinat satah potong. Hasil dua
+bahagian kekal pada lokasi asal. Gerakkan untuk cetakan. Tiada pengunci automatik.
+Emboss / Engrave: pilih badan dahulu, kemudian huruf/logo. Operasi pada permukaan Z
+tertinggi badan dengan tinggi/kedalaman dipilih. Semak posisi X/Y sebelum operasi.
+Semua operasi utama boleh Undo/Redo; simpan projek sebelum perubahan besar.
+
+AUTOSAVE DAN TEMPLATE
+Autosave setempat setiap 15 saat jika berubah; juga ketika keluar. Pemulihan hanya
+apabila Pulihkan autosave ditekan. Projek semasa tidak diganti secara senyap.
+Template saya menyimpan salinan projek bernama setempat. Nama sama mengganti
+salinan sebelumnya. Buka template dipilih untuk guna semula; buang untuk padam.
+Ruang simpanan setempat terhad. Jika penuh, gunakan Simpan projek JSON.
+Template/autosave bukan sandaran luaran dan tidak menggantikan fail JSON.
+
+Had: QR sebenar, cetakan fizikal, muat slot, kekuatan clipart dan kestabilan signage
+belum diuji pada printer. Ujian digital tidak menjamin hasil fizikal.
+
+PANDUAN FUNGSI TERDAHULU
+
+REQOO 3D STUDIO 0.9.0 — WINDOWS 10/11 X64
+
+PASANG / PORTABLE
+Jalankan installer EXE, atau extract keseluruhan ZIP portable ke satu folder dan
+buka Reqoo 3D Studio.exe. Fail EXE belum ditandatangani secara digital.
+
+KEYCHAIN HURUF TANPA TAPAK
+1. Pilih Keychain huruf / nama. Isi nama (contoh CONTOH), pilih font.
+2. Tandakan Tanpa tapak. Ketebalan utama ialah ketebalan huruf; mula dengan 3 mm.
+3. Jana reka bentuk. Klik tab Gelung / Union / Resin.
+4. Rapatkan huruf, kemudian laraskan sentuhan dengan drag mouse.
+   Untuk huruf yang berjauhan, tambah palang penghubung belakang dan ubah saiznya.
+   Palang mungkin kelihatan di ruang kosong huruf. Font tebal lebih mudah dicantum.
+5. Pilih huruf pertama, pilih Gelung keychain dan Tambah gelung.
+   Permulaan: diameter lubang 4 mm, dinding 2 mm, ketebalan 3 mm.
+6. Drag gelung supaya DINDING gelung bertindih dengan huruf. Kekalkan lubang terbuka.
+   Klik gelung, ubah diameter/dinding/Z di panel sambungan dan tekan Terapkan saiz.
+7. Simpan projek. Tekan Union semua. Jika ada bahagian terpisah, laraskan dahulu.
+   Union sebenar menghasilkan satu badan tertutup. Lubang dan warna dikekalkan.
+   Ctrl+Z mengembalikan huruf berasingan. Selepas Union, edit per huruf memerlukan Undo.
+
+PEN DAN PIN
+Sarung pen tegak: lubang tembus di sepanjang Z. Diameter awal 10.5 mm, dinding 2 mm,
+tinggi 12 mm ialah contoh sahaja. Ukur pen, laraskan kelegaan dan cetak ujian muat.
+Ini sarung berlubang, bukan klip elastik sejagat atau pen yang dicetak sekali.
+Tapak pin: pad 18 x 6 mm untuk gam pin logam selepas cetakan. Diletakkan di belakang
+objek dipilih dengan sedikit pertindihan. Laraskan X/Y/Z, kemudian Union.
+Pin logam / cincin / pen sebenar tidak disertakan.
+
+BINGKAI RESIN UNTUK HURUF, LOGO DAN PLAT
+Buka Bingkai resin. Pilih semua reka bentuk atau objek dipilih sahaja.
+Pilih Ikut kontur atau Bingkai petak. Laraskan ketebalan lantai, jarak dari reka
+bentuk, tebal dinding dan bibir di atas reka bentuk. Tekan Jana bingkai resin.
+Lantai dan dinding membentuk dulang; reka bentuk diangkat ke atas lantai.
+Kekalkan semua lubang tembus mengekalkan lubang cincin DAN ruang huruf seperti O,
+dengan dinding dalaman untuk menahan resin. Jika dimatikan, semua lubang boleh tertutup.
+Kontur yang masih terpisah memerlukan jarak lebih besar atau bentuk petak.
+Untuk logo: import SVG/STL atau relief, pilih objek dan jana bingkai. Logo yang
+mempunyai banyak objek boleh dibingkaikan dengan pilihan semua objek.
+Semak bingkai, simpan projek dan Union semua. Jana semula pada skop semua mengganti
+bingkai lama yang belum di-Union. Bingkai yang sudah di-Union perlu Undo dahulu.
+Cetakan FDM perlu diuji kedapan dan muat sebelum menuang UV resin; belum diuji fizikal.
+
+PLAT MOTOR — KEYCHAIN MINI SAHAJA
+Pilih Keychain plat Malaysia > Motosikal belakang dua baris.
+Bentuk: Petak, V-shape (hujung bawah V), Diamond (sisi bawah potong serong).
+Contoh ABC / 1234; / memisahkan dua baris. Saiz awal 50 x 40 mm ialah keychain mini,
+bukan dimensi plat jalan raya. Ada juga pilihan motosikal hadapan memanjang.
+Gaya rujukan: Arial Bold, putih atas hitam. Font hiasan bebas untuk cenderamata.
+
+FONT HIASAN
+17 pilihan hiasan tambahan jika dipasang dalam Windows: Brush Script MT, Script MT
+Bold, French Script MT, Harlow Solid Italic, Magneto Bold, Forte, Bauhaus 93, Broadway,
+Algerian, Jokerman, Chiller, Curlz MT, Ravie, Showcard Gothic, Snap ITC, Stencil,
+Old English Text MT. Font tidak diedarkan bersama aplikasi. Boleh import TTF/OTF.
+Font hiasan yang mempunyai bahagian terpisah mungkin memerlukan palang/bingkai.
+Tukar font kemudian Jana semula menggantikan suntingan manual. Simpan salinan dahulu.
+
+BAMBU STUDIO / WARNA / CETAK
+Gunakan 3MF warna atau Buka di Bambu. STL tidak menyimpan warna.
+Mesej 'The 3mf file has invalid config, load geometry data only' ialah isu Bambu
+untuk 3MF model tanpa profil projek/printer Bambu; tekan OK untuk memuatkan geometri.
+Reqoo tidak menyertakan profil mesin, filament, G-code atau tetapan cetakan palsu.
+Semak warna dan padankan filament/AMS secara manual jika perlu. Pilih printer dan
+Slice plate > Print plate dalam Bambu. Reqoo tidak mencetak secara automatik.
+Native Bambu color assignment, sambungan printer dan cetakan fizikal belum diuji.
+Rujukan isu rasmi: https://github.com/bambulab/BambuStudio/issues/11927
+
+EDIT DAN SIMPAN
+Drag objek: gerak X/Y. Drag kosong: putar kamera. Shift: snap 1 mm.
+V gerak, O putar, F fokus, Del buang, Esc tutup inspector.
+Ctrl+Z undo, Ctrl+Y redo, Ctrl+C/X/V salin/potong/tampal, Ctrl+D duplicate.
+Simpan JSON untuk projek boleh diedit. Eksport STL/3MF untuk slicer.
+Projek lama mengekalkan mesh asal. Simpan salinan dan jana semula untuk lengkung halus.
+Windows 11 diuji. Windows 10 dan ketahanan cetakan fizikal belum diuji langsung.

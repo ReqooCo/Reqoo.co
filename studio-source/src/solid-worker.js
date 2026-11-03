@@ -1,0 +1,14 @@
+import {enforceBudget} from './performance-ledger.js';
+import {creativeGeometry} from './creative-geometry.js';
+import {validateResult} from './manufacturing-core.js';
+import {setQuality} from './mesh-quality.js';
+import {lampGeometry} from './lamp-geometry.js';
+import {inspectMeshes} from './print-checks.js';
+import {makeLaceBookmark} from './lace-geometry.js';
+import * as THREE from 'three';
+import {backing} from './advanced-tools.js';
+import {unionMeshes,splitMesh} from './solid-union.js';
+import {makeResinFrame} from './resin-frame.js';
+import {makeLEDHousing} from './led-letters.js';
+import {unpackGeometry} from './solid-jobs.js';
+self.onmessage=async({data})=>{const meshes=data.meshes.map(v=>{const m=new THREE.Mesh(unpackGeometry(v),new THREE.MeshStandardMaterial({color:v.color}));m.matrix.fromArray(v.matrix);m.matrix.decompose(m.position,m.quaternion,m.scale);m.userData.name=v.name;return m});try{setQuality(data.parameters?._quality||'final');self.postMessage({progress:'Memproses / Processing…'});let result;if(data.type==='creative')result=await creativeGeometry(data.parameters);else if(data.type==='lamp')result=lampGeometry(data.parameters);else if(data.type==='inspect')result=await inspectMeshes(meshes,data.parameters);else if(data.type==='lace')result=await makeLaceBookmark(data.parameters);else if(data.type==='backing')result={geometry:await backing(meshes,data.parameters.offset,data.parameters.depth)};else if(data.type==='led')result=await makeLEDHousing(meshes,data.parameters);else if(data.type==='resin')result=await makeResinFrame(meshes,data.parameters);else if(data.type==='split')result={parts:await splitMesh(meshes[0],data.parameters.axis,data.parameters.position)};else result=await unionMeshes(meshes,data.parameters);validateResult(result);enforceBudget([...['geometry','base','shade','body','cover'].filter(k=>result[k]?.isBufferGeometry).map(k=>({geometry:result[k]})),...(result.parts||[])]);self.postMessage({progress:'Menyiapkan mesh / Finishing…'});const transfer=[];const pack=g=>{const attributes={};for(const [name,a]of Object.entries(g.attributes)){attributes[name]={array:a.array,itemSize:a.itemSize};transfer.push(a.array.buffer)}const index=g.index?.array;if(index)transfer.push(index.buffer);g.dispose();return{attributes,index}};for(const key of ['geometry','body','cover','base','shade'])if(result[key])result[key]=pack(result[key]);if(result.parts)result.parts=result.parts.map(v=>({...v,geometry:pack(v.geometry)}));self.postMessage({result},transfer)}catch(e){self.postMessage({error:e.message||String(e)})}finally{meshes.forEach(m=>{m.geometry.dispose();m.material.dispose()})}};
