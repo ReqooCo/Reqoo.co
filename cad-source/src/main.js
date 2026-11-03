@@ -245,7 +245,7 @@ function referenceParams(type,params,ref=selection.at(-1)){
  return result;
 }
 let immediateSession=null;
-function resetDirectPreview(){previewVersion++;const changed=displayItems||immediateSession;immediateSession=null;displayItems=null;if(changed)render(true);}
+function resetDirectPreview(force=false){previewVersion++;const changed=displayItems||immediateSession;immediateSession=null;displayItems=null;if(changed||force)render(true);}
 function showImmediate(type,params,ref){
  const item=items.find(i=>i.id===ref.id),value=type==='diameter'?params.diameter:params.distance;
  const transform=item&&immediateTransform(doc,item,ref,type,value);if(!transform)return false;

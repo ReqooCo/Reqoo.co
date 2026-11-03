@@ -68,7 +68,7 @@ export function createDirectModeling(api){
  const finish=()=>{drag=null;handle.classList.remove('dragging');api.onNavigation(true);if(session)schedule();};handle.addEventListener('pointerup',finish);handle.addEventListener('pointercancel',()=>{finish();cancel();});
  input.oninput=()=>{value=Number(input.value)*(operation==='draft'?1:api.getUnits?.().factor||1);schedule();};
  dimensions.querySelector('#faceDistanceCancel').onclick=cancel;
- dimensions.querySelector('#faceDistanceApply').onclick=async()=>{if(!session||!Number.isFinite(value)||Math.abs(value)<.001){api.onStatus('Enter a non-zero value');return;}const ref={...session},p=params(),op=operation;clearTimeout(timer);sequence++;previewEpoch++;wanted=null;try{await api.onCommit(op,p,ref);cancel();}catch(e){feedback.textContent=e.message;feedback.dataset.error='true';}};
+ dimensions.querySelector('#faceDistanceApply').onclick=async()=>{if(!session||!Number.isFinite(value)||Math.abs(value)<.001){api.onStatus('Enter a non-zero value');return;}const ref={...session},p=params(),op=operation;clearTimeout(timer);sequence++;previewEpoch++;wanted=null;try{await api.onCommit(op,p,ref);cancel();}catch(e){api.onResetPreview(true);feedback.textContent=e.message;feedback.dataset.error='true';}};
  input.onkeydown=e=>{if(e.key==='Enter')dimensions.querySelector('#faceDistanceApply').click();if(e.key==='Escape')cancel();};
  return{handle,dimensions,update,target,direction,begin,cancel,get state(){return{dragging:!!drag,visible:!handle.hidden,target:handle.dataset.target,preview:!!session,operation,value,inFlight,pending:!!wanted,position:{left:handle.style.left,top:handle.style.top}};}};
 }
