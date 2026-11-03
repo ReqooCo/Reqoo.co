@@ -23,10 +23,26 @@ try{
  await page.locator('[data-dimension=diameter]').fill('40');await page.getByRole('button',{name:'Apply sketch dimensions',exact:true}).click();await page.waitForFunction(()=>window.__cad.doc.features[0].params.radius===20);
  await page.locator('#context').getByRole('button',{name:'Extrude',exact:true}).click();await page.locator('#faceDistanceValue').fill('20');await page.locator('#faceDistanceValue').dispatchEvent('input');await preview();near(await page.evaluate(()=>window.__cad.previewItems.find(i=>i.kind==='body').volume),Math.PI*400*20);
  assert.equal(await page.evaluate(()=>window.__cad.doc.features.length),1);await page.locator('#faceDistanceApply').click();await page.waitForFunction(()=>window.__cad.doc.features.at(-1).type==='extrude');near((await body()).volume,Math.PI*400*20);checks.push('Dimensioned circle → real BREP cylinder preview → committed extrusion');
+
+ // Select cylindrical side and drive its source sketch diameter without a form.
+ await page.evaluate(()=>{const b=window.__cad.items.find(i=>i.kind==='body'),f=b.faceInfo.find(f=>['CYLINDRE','CYLINDER'].includes(f.type));window.__cad.select([{id:b.id,kind:'face',index:f.index}]);});
+ await page.waitForFunction(()=>window.__cad.direct.state.operation==='diameter');
+ assert.equal(await page.locator('#faceDistanceValue').inputValue(),'40');
+ await page.locator('#faceDistanceValue').fill('50');await page.locator('#faceDistanceValue').dispatchEvent('input');await preview();
+ await page.waitForFunction(()=>!window.__cad.direct.state.inFlight&&!window.__cad.direct.state.pending);
+ near(await page.evaluate(()=>window.__cad.previewItems.find(i=>i.kind==='body').volume),Math.PI*625*20,.1);
+ near((await body()).volume,Math.PI*400*20,.1);
+ await page.locator('#faceDistanceApply').click();await page.waitForFunction(()=>window.__cad.doc.features[0].params.radius===25);
+ near((await body()).volume,Math.PI*625*20,.1);
+ await page.locator('#undo').click();await page.waitForFunction(()=>window.__cad.doc.features[0].params.radius===20);
+ near((await body()).volume,Math.PI*400*20,.1);
+ checks.push('Cylindrical side → editable diameter → real BREP preview → source history commit → undo');
  await page.locator('[data-view=top]').click();await page.locator('#fit').click();let p=await projection(8,0,20);await page.touchscreen.tap(p.x,p.y);await page.waitForFunction(()=>window.__cad.gizmo.visible&&window.__cad.selection.at(-1)?.kind==='face');
  assert.equal(await page.locator('#faceDragHandle svg path').count(),1);assert.equal(await page.locator('#faceDragHandle').getAttribute('data-control'),'direct');assert.equal(await page.locator('#cadDiagnostic').isVisible(),true);
  const start=await page.locator('#faceDragHandle').boundingBox(),direction=await page.evaluate(()=>{const d=window.__cad.direct.direction();return{dx:d.dx,dy:d.dy};});
- await page.mouse.move(start.x+start.width/2,start.y+start.height/2);await page.mouse.down();await page.mouse.move(start.x+start.width/2+direction.dx*35,start.y+start.height/2+direction.dy*35,{steps:10});await page.mouse.up();await preview();
+ await page.mouse.move(start.x+start.width/2,start.y+start.height/2);await page.mouse.down();let moving=true;const movement=(async()=>{try{for(let n=1;n<=30;n++){await page.mouse.move(start.x+start.width/2+direction.dx*35*n/30,start.y+start.height/2+direction.dy*35*n/30);await page.waitForTimeout(60);}}finally{moving=false;}})();
+ await preview();assert.equal(moving,true,'Actual solid preview must appear before continuous drag ends');assert.equal(await page.evaluate(()=>window.__cad.doc.features.length),2);
+ await movement;await page.mouse.up();await page.waitForFunction(()=>!window.__cad.direct.state.inFlight&&!window.__cad.direct.state.pending);await preview();
  const delta=await page.evaluate(()=>window.__cad.direct.state.value);assert.ok(delta>0);near(await page.evaluate(()=>window.__cad.previewItems.find(i=>i.kind==='body').volume),Math.PI*400*(20+delta),.1);near((await body()).volume,Math.PI*400*20);
  await page.screenshot({path:path.join(out,'acceptance-01-real-face-preview.png')});await page.locator('#faceDistanceApply').click();await page.waitForFunction(()=>window.__cad.doc.features.at(-1).type==='offsetFace');
  const height=20+delta;near((await body()).volume,Math.PI*400*height,.1);checks.push('Touch-selected cylinder face exposes arrow; dragging changes actual BREP preview and commits signed pull');
