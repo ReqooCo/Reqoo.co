@@ -5,6 +5,7 @@ import './style.css';
 import {createDirectModeling} from './direct-modeling.js';
 import {threeMF,sketchExport} from './exports.js';
 import {solveSketch} from './constraints.js';
+import {simpleSource,immediateTransform} from './immediate-preview.js';
 
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const svg=(path)=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+path+'</svg>';
@@ -220,7 +221,7 @@ const root=new THREE.Group(),preview=new THREE.Group();scene.add(root,preview);
 let showEdges=true,sectionEnabled=false,sectionHeight=10;
 function updateClip(){root.traverse(o=>{if(o.material){const mats=Array.isArray(o.material)?o.material:[o.material];for(const m of mats){m.clippingPlanes=sectionEnabled?[new THREE.Plane(new THREE.Vector3(0,0,-1),sectionHeight)]:[];m.needsUpdate=true;}}});}
 function clear(g){for(const o of [...g.children]){g.remove(o);o.traverse(n=>{n.geometry?.dispose();for(const m of Array.isArray(n.material)?n.material:[n.material])m?.dispose();});}}
-function render(){
+function render(previewOnly=false){
  clear(root);const ids=selectedIds(),hidden=doc.ui?.hidden||[];
  for(const item of (displayItems||items)){if(hidden.includes(item.id)||isolate&&!ids.includes(item.id))continue;
   const node=new THREE.Group();node.userData.itemId=item.id;root.add(node);
@@ -233,7 +234,7 @@ function render(){
   }
   if(showEdges||item.kind!=='body')for(const edge of item.edges){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(edge.lines,3));const selected=selection.some(s=>s.id===item.id&&(s.kind==='edge'?s.index===edge.index:s.kind==='sketch'||s.kind==='body'));const line=new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:selected?'#2475e8':item.kind==='sketch'?'#4883c8':item.kind==='axis'?'#c89143':'#576372',transparent:true,opacity:item.kind==='plane'?.4:.9}));line.renderOrder=item.kind==='sketch'?4:1;line.userData={id:item.id,kind:'edge',index:edge.index,itemKind:item.kind};node.add(line);}
  }
- $('empty').hidden=items.length>0;renderSidebar();renderContext();updateClip();updateFaceHandle();updateSketchDimensions();
+ $('empty').hidden=items.length>0;if(previewOnly!==true){renderSidebar();renderContext();updateSketchDimensions();}updateClip();updateFaceHandle();
 }
 
 function referenceParams(type,params,ref=selection.at(-1)){
@@ -243,18 +244,24 @@ function referenceParams(type,params,ref=selection.at(-1)){
  if(type==='extrude'&&ref?.kind==='face')result.operation??='Add';
  return result;
 }
-function resetDirectPreview(){previewVersion++;if(displayItems){displayItems=null;render();}}
+let immediateSession=null;
+function resetDirectPreview(){previewVersion++;const changed=displayItems||immediateSession;immediateSession=null;displayItems=null;if(changed)render(true);}
+function showImmediate(type,params,ref){
+ const item=items.find(i=>i.id===ref.id),value=type==='diameter'?params.diameter:params.distance;
+ const transform=item&&immediateTransform(doc,item,ref,type,value);if(!transform)return false;
+ if(!immediateSession){displayItems=null;render(true);immediateSession={ref:{...ref}};}
+ const node=root.children.find(n=>n.userData.itemId===ref.id);if(!node)return false;
+ node.scale.set(...transform.scale);node.position.set(...transform.position);node.updateMatrixWorld(true);
+ immediateSession.value=value;return true;
+}
 
 // Restrict diameter edits to an unambiguous source cylinder/profile. Imported
 // or boolean-derived cylindrical surfaces need an independent surface tool.
 function diameterTarget(ref){
  const item=items.find(i=>i.id===ref?.id),feature=doc.features.find(f=>f.id===item?.featureId);
  if(!item||!feature||ref.kind!=='face'||!['CYLINDRE','CYLINDER'].includes(item.faceInfo.find(f=>f.index===ref.index)?.type))return null;
- if(feature.type==='cylinder')return{featureId:feature.id,diameter:2*(feature.params.radius??15)};
- if(feature.type==='extrude'&&feature.inputs.length===1){
-  const sketch=doc.features.find(f=>f.id===feature.inputs[0]);
-  if(sketch?.type==='sketch'&&sketch.params.shape==='circle'&&!sketch.params.operations?.length)return{featureId:sketch.id,diameter:2*(sketch.params.radius??15)};
- }
+ const source=simpleSource(doc,item);
+ if(source&&(source.type==='cylinder'||source.params.shape==='circle'))return{featureId:source.id,diameter:2*(source.params.radius??15)};
  return null;
 }
 function diameterDocument(params,ref){
@@ -265,9 +272,9 @@ function diameterDocument(params,ref){
 
 const direct=createDirectModeling({THREE,camera,renderer,stage:$('stage'),getSelection:()=>selection,getDiameterTarget:diameterTarget,getItem:selectedItem,getDoc:()=>doc,isBusy:()=>busy,isSketching:()=>!!sketchMode,
  onNavigation:enabled=>controls.enabled=enabled&&!sketchMode,
- getUnits:()=>({factor:unitFactorValue(),label:preferences.units}),onStatus:status,onResetPreview:resetDirectPreview,
- onPreview:async(type,params,ref,isCurrent)=>{const version=++previewVersion,next=type==='diameter'?diameterDocument(params,ref):snapshot();if(type!=='diameter')next.features.push({id:'direct_preview',type,name:'Direct preview',params:referenceParams(type,params,ref),inputs:[ref.id]});const result=await rpc('preview',{doc:next});if(isCurrent()){displayItems=result;render();}},
- onCommit:async(type,params,ref)=>{resetDirectPreview();if(type==='diameter'){await rebuild(diameterDocument(params,ref),{selectId:ref.id});return;}const id=await apply(type,referenceParams(type,params,ref),[ref.id]);select([{id,kind:'body'}]);}
+ getUnits:()=>({factor:unitFactorValue(),label:preferences.units}),onStatus:status,onResetPreview:resetDirectPreview,onImmediate:showImmediate,
+ onPreview:async(type,params,ref,isCurrent)=>{const version=++previewVersion,next=type==='diameter'?diameterDocument(params,ref):snapshot();if(type!=='diameter')next.features.push({id:'direct_preview',type,name:'Direct preview',params:referenceParams(type,params,ref),inputs:[ref.id]});const result=await rpc('preview',{doc:next});if(isCurrent()){displayItems=result;if(!immediateSession)render(true);else if(!direct.state.dragging&&(type==='diameter'?params.diameter:params.distance)===direct.state.value){immediateSession=null;render(true);}}},
+ onCommit:async(type,params,ref)=>{immediateSession=null;displayItems=null;if(type==='diameter'){await rebuild(diameterDocument(params,ref),{selectId:ref.id});return;}const id=await apply(type,referenceParams(type,params,ref),[ref.id]);select([{id,kind:'body'}]);}
 });
 const faceHandle=direct.handle,faceDistance=direct.dimensions;
 const faceDirection=()=>direct.direction(),gizmoTarget=()=>direct.target(),showFaceDistance=(value=0,operation)=>direct.begin(value,operation),updateFaceHandle=()=>direct.update();
@@ -321,8 +328,6 @@ function updateSketchDimensions(){
 function renderContext(){const c=$('context');c.replaceChildren();const item=selectedItem();c.hidden=!item;if(!item)return;
  const picked=selection.at(-1),onFace=picked?.kind==='face'&&item.kind==='body',onEdge=picked?.kind==='edge'&&item.kind==='body',planarFace=onFace&&item.faceInfo.find(f=>f.index===picked.index)?.type==='PLANE';
  const commands=item.kind==='sketch'?[...(doc.features.find(f=>f.id===item.featureId)?.params.shape==='circle'?[['hole','Hole']]:[]),['extrude','Extrude'],['revolve','Revolve'],['sweep','Sweep']]:item.kind==='plane'?[['rectangle','Sketch on plane']]:item.kind==='axis'?[]:onEdge?[['fillet','Fillet'],['chamfer','Chamfer']]:planarFace?[['offsetFace','Pull / Offset Face'],['extrude','Extrude'],['hole','Hole'],...(Math.abs(item.faceInfo.find(f=>f.index===picked.index)?.normal?.[2]||0)<.9?[['draft','Draft / Taper']]:[])]:[['move','Move'],['rotate','Rotate'],['fillet','Fillet']];
- if(planarFace){const direct=document.createElement('button');buttonLabel(direct,'offsetFace','↕ Drag face');direct.onclick=()=>{showFaceDistance(0,'offsetFace');updateFaceHandle();};c.append(direct);}
- if(item.kind==='sketch'){const direct=document.createElement('button');buttonLabel(direct,'extrude','↕ Extrude arrow');direct.onclick=()=>{showFaceDistance(20,'extrude');updateFaceHandle();};c.append(direct);}
  if(planarFace){const sketchFace=document.createElement('button');buttonLabel(sketchFace,'sketch','Sketch on face');sketchFace.onclick=()=>startTool('sketch',{shape:'circle'});c.append(sketchFace);}
  if(item.kind==='sketch'){const make=document.createElement('button');buttonLabel(make,'box','Solid tools');make.onclick=()=>setWorkspaceMode('solid');c.append(make);}
  if(item.kind==='sketch'){const edit=document.createElement('button');buttonLabel(edit,'sketch','Edit sketch');edit.onclick=()=>{setWorkspaceMode('sketch');startTool(doc.features.find(f=>f.id===item.featureId)?.type||'sketch',{},item.featureId);};c.append(edit);}
@@ -411,4 +416,4 @@ document.addEventListener('pointerdown',e=>{if(e.target.closest('#rail,#menu,#to
 const vh=()=>document.documentElement.style.setProperty('--app-height',(window.visualViewport?.height||innerHeight)+'px');window.visualViewport?.addEventListener('resize',vh);vh();
 updatePreferences();setWorkspaceMode('solid');decorateButtons();new MutationObserver(decorateButtons).observe(document.body,{childList:true,subtree:true});
 try{await rpc('ready');ready=true;const saved=localStorage.getItem('reqoo-cad-v1');if(saved){try{const parsed=JSON.parse(saved);validateProject(parsed);await rebuild(parsed,{history:false});fit();}catch{status('Saved project could not be restored. Open your downloaded backup.');}}status('Ready · create a sketch or add a solid');updateHistoryButtons();}catch(e){error(e);}
-if(new URLSearchParams(location.search).has('test'))window.__cad={get gizmo(){return {...direct.state,selection:selection.at(-1),busy,sketchMode:!!sketchMode}},get previewItems(){return displayItems},direct,get doc(){return doc;},get items(){return items;},get selection(){return selection;},apply,rebuild,select,startTool,exportFile,fit,ready:()=>ready,view,camera,root,worker:rpc};
+if(new URLSearchParams(location.search).has('test'))window.__cad={get gizmo(){return {...direct.state,selection:selection.at(-1),busy,sketchMode:!!sketchMode}},get previewItems(){return displayItems},get immediatePreview(){return immediateSession},direct,get doc(){return doc;},get items(){return items;},get selection(){return selection;},apply,rebuild,select,startTool,exportFile,fit,ready:()=>ready,view,camera,root,worker:rpc};

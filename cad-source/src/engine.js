@@ -39,15 +39,18 @@ function area(s){const v=R.measureShapeSurfaceProperties(s);const value=Math.abs
 function faceDescriptor(shape,f){const n=f.normalAt(),c=f.center,normal=n.toTuple(),len=Math.hypot(...normal),center=c.toTuple();n.delete();c.delete();return{kind:'face',type:f.geomType,center:normalizedCenter(shape.boundingBox.bounds,center),normal:normal.map(v=>v/(len||1))};}
 function edgeDescriptor(shape,e){const bounds=shape.boundingBox.bounds;return{kind:'edge',type:e.geomType,center:normalizedCenter(bounds,e.boundingBox.center),measure:e.length/Math.max(1e-7,Math.hypot(...bounds[0].map((v,i)=>bounds[1][i]-v)))};}
 
-export async function buildModel(doc){
+export async function buildModel(doc,{base=null,preview=false}={}){
  validateProject(doc);const shapes=new Map(),profiles=new Map(),meta=new Map(),visible=new Set(),arena=new Set();let released=false,currentFeature=null;
+ const reuse=base&&base.featureCount<=doc.features.length&&base.featureSignature===JSON.stringify(doc.features.slice(0,base.featureCount));
+ if(reuse){for(const [k,v]of base.shapes)shapes.set(k,v);for(const [k,v]of base.profiles)profiles.set(k,v);for(const [k,v]of base.meta)meta.set(k,v);for(const k of base.visible)visible.add(k);}
+ const metrics={reusedFeatures:reuse?base.featureCount:0,builtFeatures:0,meshedItems:0};
  const own=s=>{arena.add(s);return s;},release=()=>{if(released)return;released=true;for(const s of arena)try{s.delete();}catch{}};
  function body(id){const s=shapes.get(id);if(!s||meta.get(id)?.kind!=='body')throw Error('Select a solid body');return s;}
  function clone(id){return own(body(id).clone());}
  function face(s,p){const faces=s.faces;for(const f of faces)own(f);const i=resolveReference(p.faceRef,faces.map(f=>faceDescriptor(s,f)),p.face);return faces[i];}
  function save(f,s,kind='body',id=f.id,name=f.name||f.type){own(s);if(s.isNull)throw Error('Empty shape');if(kind==='body'&&(!R.isShape3D(s)||volume(s)<1e-8))throw Error('Operation did not create a closed solid');shapes.set(id,s);meta.set(id,{id,name,kind,featureId:f.id});visible.add(id);}
  try{
- for(const f of doc.features){currentFeature=f;if(f.suppressed)continue;const p=f.params,ins=f.inputs;let s=null,kind='body';
+ for(const f of doc.features.slice(reuse?base.featureCount:0)){currentFeature=f;metrics.builtFeatures++;if(f.suppressed)continue;const p=f.params,ins=f.inputs;let s=null,kind='body';
   if(f.type==='sketch'){profiles.set(f.id,p);const sk=sketch(p);s=own(p.closed===false||p.construction?sk.wire.clone():sk.face());sk.delete();save(f,s,'sketch');continue;}
   if(['sketchOffset','sketchFillet','sketchMirror'].includes(f.type)){const original=profiles.get(ins[0]);if(!original)throw Error('Select a sketch first');const op=f.type==='sketchOffset'?{type:'offset',distance:number(p.distance,'Offset distance',-500,500)}:f.type==='sketchFillet'?{type:'fillet',radius:number(p.radius,'Corner radius',.001,500)}:{type:'mirror',axis:p.axis==='X'?'X':'Y'},recipe={...original,operations:[...(original.operations||[]),op]};profiles.set(f.id,recipe);const sk=sketch(recipe);s=own(recipe.closed===false||recipe.construction?sk.wire.clone():sk.face());sk.delete();save(f,s,'sketch');if(!p.keepInputs)visible.delete(ins[0]);continue;}
   if(f.type==='delete'){for(const id of ins)visible.delete(id);continue;}
@@ -105,15 +108,15 @@ export async function buildModel(doc){
   if(!['box','cylinder','sphere','torus','import'].includes(f.type)&&f.type!=='duplicate'&&!p.keepInputs&&!(f.type==='extrude'&&!profiles.has(ins[0])&&(p.operation||'New body')==='New body'))for(const id of ins)if(f.type!=='align'||id===ins[0])visible.delete(id);
  }
  const items=[];
- for(const [id,m]of meta){if(!visible.has(id))continue;const s=shapes.get(id),faces=s.faces,edges=s.edges;for(const f of faces)own(f);for(const e of edges)own(e);
-  const faceMesh=m.kind==='axis'||(m.kind==='sketch'&&(profiles.get(id)?.closed===false||profiles.get(id)?.construction))?{triangles:[],vertices:[],normals:[],faceGroups:[]}:s.mesh({tolerance:.08,angularTolerance:.2});
+ for(const [id,m]of meta){if(!visible.has(id))continue;if(reuse&&base.shapes.get(id)===shapes.get(id)){const cached=base.items.find(i=>i.id===id);if(cached){items.push(cached);continue;}}metrics.meshedItems++;const s=shapes.get(id),faces=s.faces,edges=s.edges;for(const f of faces)own(f);for(const e of edges)own(e);
+  const faceMesh=m.kind==='axis'||(m.kind==='sketch'&&(profiles.get(id)?.closed===false||profiles.get(id)?.construction))?{triangles:[],vertices:[],normals:[],faceGroups:[]}:s.mesh({tolerance:preview?.25:.08,angularTolerance:preview?.35:.2});
   const groups=faceMesh.faceGroups.map(g=>({...g,faceIndex:faces.findIndex(f=>f.hashCode===g.faceId)}));
-  const lineMeshes=edges.slice(0,600).map((e,i)=>({index:i,length:length(e),type:e.geomType,reference:edgeDescriptor(s,e),center:e.boundingBox.center,lines:e.meshEdges({tolerance:.08,angularTolerance:.2}).lines}));
+  const lineMeshes=edges.slice(0,600).map((e,i)=>({index:i,length:length(e),type:e.geomType,reference:edgeDescriptor(s,e),center:e.boundingBox.center,lines:e.meshEdges({tolerance:preview?.25:.08,angularTolerance:preview?.35:.2}).lines}));
   const bb=s.boundingBox.bounds;
   items.push({...m,construction:profiles.get(id)?.construction||false,sketchPlane:profiles.has(id)?basis(profiles.get(id)):null,profileClosed:profiles.has(id)?profiles.get(id).closed!==false&&!profiles.get(id).construction:null,mesh:{...faceMesh,faceGroups:groups},edges:lineMeshes,faceInfo:faces.map((f,i)=>{let normal=[0,0,1],center=[0,0,0];try{const n=f.normalAt(),c=f.center;const len=Math.hypot(...n.toTuple());normal=n.toTuple().map(v=>v/(len||1));center=c.toTuple();n.delete();c.delete();}catch{}return{index:i,type:f.geomType,normal,center,reference:faceDescriptor(s,f),area:area(f)};}),edgeCount:edges.length,bounds:bb,volume:m.kind==='body'?volume(s):0,area:m.kind==='body'||faces.length?area(s):0});
  }
  if(items.filter(i=>i.kind==='body').length>50)throw Error('Limit is 50 visible bodies');
- return{items,shapes,meta,visible,release,export:async(format,ids)=>{
+ return{items,shapes,profiles,meta,visible,metrics,featureCount:doc.features.length,featureSignature:JSON.stringify(doc.features),release,export:async(format,ids)=>{
   const chosen=(ids?.length?ids:[...visible]).map(id=>{if(meta.get(id)?.kind!=='body')throw Error('Export needs solid bodies');return shapes.get(id);});
   if(!chosen.length)throw Error('Select a solid body to export');const combined=chosen.length===1?chosen[0]:own(R.makeCompound(chosen.map(s=>own(s.clone()))));
   return format==='step'?combined.blobSTEP():combined.blobSTL({binary:true,tolerance:.03,angularTolerance:.1});
