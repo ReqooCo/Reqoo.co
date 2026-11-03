@@ -55,13 +55,39 @@
     .foot{text-align:center;color:var(--muted);font-size:10px;margin-top:15px}
     @media(max-width:560px){.grid3{grid-template-columns:1fr 1fr}.herogrid{grid-template-columns:1fr}.hero .price{font-size:35px}.material-item{align-items:flex-start;flex-direction:column}.material-item .actions{width:100%}.material-item .btn{flex:1}}
     @media(max-width:370px){.grid2,.grid3{grid-template-columns:1fr}}
+
+    /* REQOO compact emerald-gold mobile redesign */
+    :root{--bg:#f6f8f5;--ink:#162b25;--muted:#667b72;--line:#dce7e0;--accent:#075743;--soft:#eaf3ed;--good:#12815b}
+    .app{max-width:820px;padding:14px 13px calc(100px + env(safe-area-inset-bottom))}
+    .top{background:linear-gradient(120deg,#064b3b,#08765b);color:white;border-radius:20px;padding:14px;margin-bottom:12px;box-shadow:0 8px 24px #064b3b22}
+    .logo{background:#092f2b;border:1px solid #cba85b;color:#eac77d;box-shadow:inset 0 0 12px #cba85b33}
+    .sub{color:#e2eee7}.status{background:#ffffff20;color:white;border:1px solid #ffffff55}
+    .hero{background:linear-gradient(140deg,#063b30,#08644f 72%,#123a32);border:1px solid #c9a565;border-radius:21px;padding:16px;box-shadow:0 8px 20px #063b3020}
+    .hero .eyebrow{color:#e2d5af}.hero .price{color:#f4d58b;font-size:clamp(34px,9vw,49px);margin-bottom:13px}
+    .herogrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+    .heroitem{background:#ffffff12;border:1px solid #ffffff2e;padding:10px 7px;min-width:0}
+    .heroitem span{color:#d2e4dc;font-size:10px}.heroitem b{font-size:clamp(12px,3.5vw,16px);overflow-wrap:anywhere}
+    .card,details{border-color:#e0e9e2;box-shadow:0 3px 14px #163e2b0b;border-radius:19px}
+    .card h2,.sectionhead h2{font-size:16px;color:#164d3b}
+    input,select{min-height:43px;border-color:#d9e5dc;border-radius:11px}
+    .btn.primary{background:#075743;color:white}.btn.secondary{background:#e9f0eb;color:#174b3a}
+    .btn:focus-visible,.lp-tab:focus-visible{outline:3px solid #d4b06d;outline-offset:2px}
+    .material-row{background:#f8faf8;border-color:#dce7df}
+    .lp-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;background:#07513f;padding:6px;border-radius:16px;margin-bottom:12px;position:sticky;top:0;z-index:5;box-shadow:0 5px 15px #064b3b22}
+    .lp-tab{border:0;border-radius:11px;background:transparent;color:#e4f1ea;min-height:51px;font-size:11px;font-weight:750;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px;cursor:pointer}
+    .lp-tab svg{width:20px;height:20px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+    .lp-tab[aria-selected="true"]{background:#e2bd72;color:#123c30;box-shadow:0 2px 8px #001a142c}
+    .lp-panel[hidden]{display:none!important}
+    .lp-actions{display:flex;gap:8px;position:sticky;bottom:0;z-index:6;background:#f6f8f5f2;padding:10px 0 calc(8px + env(safe-area-inset-bottom));backdrop-filter:blur(10px)}
+    .lp-actions .btn{min-width:0;font-size:12px}
+    @media(max-width:560px){.herogrid{grid-template-columns:repeat(3,minmax(0,1fr))}.heroitem{padding:8px 5px}.heroitem span{min-height:27px}.grid3{grid-template-columns:repeat(2,minmax(0,1fr))}}
   </style>
 </head>
 <body><div style="position:relative;z-index:2;padding:10px 18px;background:#f6f1e7;border-bottom:1px solid #ddd2c4;font:13px/1.5 system-ui,sans-serif;text-align:center"><a href="https://reqoo.co/apps/" style="color:#365343;text-decoration:underline;display:inline-block;padding:4px 8px">← Semua app REQOO</a></div>
 <main class="app">
   <div class="top">
-    <div class="logo">L</div>
-    <div><h1>Laser Price</h1><div class="sub">Material sendiri • saiz standard • quotation cepat</div></div>
+    <div class="logo" aria-hidden="true">✦</div>
+    <div><h1>Laser Price</h1><div class="sub">Kiraan harga & quotation laser cutting</div></div>
     <div id="status" class="status">Online</div>
   </div>
 
@@ -77,6 +103,13 @@
     </div>
   </section>
 
+  <nav class="lp-tabs" role="tablist" aria-label="Bahagian kalkulator">
+    <button class="lp-tab" role="tab" type="button" data-panel="calc" aria-selected="true">▦<span>Kiraan</span></button>
+    <button class="lp-tab" role="tab" type="button" data-panel="quote" aria-selected="false">▤<span>Quotation</span></button>
+    <button class="lp-tab" role="tab" type="button" data-panel="material" aria-selected="false">▱<span>Material</span></button>
+    <button class="lp-tab" role="tab" type="button" data-panel="settings" aria-selected="false">⚙<span>Tetapan</span></button>
+  </nav>
+  <div class="lp-panel" data-lp-panel="calc">
   <section class="card">
     <h2>Produk & saiz</h2>
     <div class="grid2">
@@ -97,6 +130,7 @@
     <div class="note">A5, A4 dan A3 ikut saiz standard. Pilih <b>Custom size</b> untuk masukkan ukuran sendiri.</div>
   </section>
 
+  </div><div class="lp-panel" data-lp-panel="material" hidden>
   <section class="card">
     <div class="sectionhead">
       <h2>Material untuk job ini</h2>
@@ -131,6 +165,7 @@
     </div>
   </details>
 
+  </div><div class="lp-panel" data-lp-panel="settings" hidden>
   <section class="card">
     <h2>Masa mesin & kerja</h2>
     <div class="grid3">
@@ -177,6 +212,7 @@
     <div class="note">“Untung atas kos 100%” = kos × 2. Harga manual akan override cadangan automatik.</div>
   </section>
 
+  </div><div class="lp-panel" data-lp-panel="quote" hidden>
   <details>
     <summary>Pecahan kiraan</summary>
     <div class="summary" style="margin-top:12px">
@@ -213,6 +249,12 @@
     <div id="savedMsg" class="note" aria-live="polite"></div>
   </section>
 
+  </div>
+  <div class="lp-actions">
+    <button id="lpReset" class="btn secondary" type="button">↺ Reset</button>
+    <button id="lpSave" class="btn secondary" type="button">▣ Simpan</button>
+    <button id="lpCalculate" class="btn primary" type="button">▦ Kira Harga</button>
+  </div>
   <div class="foot">Anggaran dalaman untuk quotation • Library material disimpan dalam peranti</div>
 </main>
 
@@ -534,6 +576,16 @@
   $('resetBtn').addEventListener('click',resetJob);
   window.addEventListener('online',network);window.addEventListener('offline',network);
 
+  const lpTabs=[...document.querySelectorAll('.lp-tab')];
+  function showLpPanel(name){
+    document.querySelectorAll('[data-lp-panel]').forEach(el=>{el.hidden=el.dataset.lpPanel!==name});
+    lpTabs.forEach(el=>{const selected=el.dataset.panel===name;el.setAttribute('aria-selected',String(selected));el.tabIndex=selected?0:-1});
+  }
+  lpTabs.forEach(el=>el.addEventListener('click',()=>showLpPanel(el.dataset.panel)));
+  $('lpReset').addEventListener('click',()=>{if(confirm('Reset job ini? Library material tidak akan dipadam.'))resetJob()});
+  $('lpSave').addEventListener('click',()=>saveSettings(true));
+  $('lpCalculate').addEventListener('click',()=>{calc();showLpPanel('quote');document.querySelector('.hero').scrollIntoView({behavior:'smooth',block:'start'})});
+  showLpPanel('calc');
   const isiOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
   const standalone=window.navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches;
   if(isiOS&&!standalone)$('installHint').classList.add('show');
