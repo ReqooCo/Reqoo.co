@@ -61,7 +61,7 @@ export function createDirectModeling(api){
   const hx=Math.max(38,Math.min(d.rect.width-38,x+d.dx*offset)),hy=Math.max(60,Math.min(d.rect.height-110,y+d.dy*offset));
   handle.style.left=hx+'px';handle.style.top=hy+'px';handle.style.setProperty('--arrow-angle',Math.atan2(d.dy,d.dx)+'rad');handle.dataset.target=t.ref.kind;handle.title=t.edge?'Drag edge radius / chamfer':t.sketch?'Drag to extrude profile':'Drag to pull or push face';
   guide.setAttribute('viewBox','0 0 '+d.rect.width+' '+d.rect.height);guide.querySelector('path').setAttribute('d','M'+x+' '+y+'L'+hx+' '+hy);
-  if(session){dimensions.hidden=false;dimensions.style.left=Math.max(7,Math.min(d.rect.width-280,hx+30))+'px';dimensions.style.top=Math.max(12,Math.min(d.rect.height-100,hy-24))+'px';}
+  if(session){dimensions.hidden=false;dimensions.style.left=Math.max(7,Math.min(d.rect.width-196,hx+22))+'px';dimensions.style.top=Math.max(12,Math.min(d.rect.height-100,hy-24))+'px';}
  }
  handle.addEventListener('pointerdown',e=>{if(api.isBusy())return;e.preventDefault();e.stopPropagation();const d=direction();if(!d)return;if(!session)begin(0);drag={id:e.pointerId,x:e.clientX,y:e.clientY,dx:d.dx,dy:d.dy,start:value};handle.setPointerCapture(e.pointerId);handle.classList.add('dragging');api.onNavigation(false);});
  handle.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;e.preventDefault();const pixels=(e.clientX-drag.x)*drag.dx+(e.clientY-drag.y)*drag.dy,scale=operation==='draft'?.2:200/camera.zoom/renderer.domElement.clientHeight;value=Math.round((drag.start+pixels*scale)*100)/100;if(operation==='fillet'||operation==='chamfer')value=Math.abs(value);input.value=String(Number(displayValue().toFixed(4)));schedule();update();});

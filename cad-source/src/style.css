@@ -152,3 +152,17 @@ html[data-theme=dark] h2,html[data-theme=dark] .brand{color:#dbe8f6}html[data-th
 html[data-theme=dark] #faceDistance input{background:#1b2c40;color:#8dc1ff}
 html[data-theme=dark] #selectionBar{background:#233140e8}
 @media(max-width:760px){#faceDistance{max-width:calc(100vw - 18px)}#directDimensionLabel{max-width:44px}#context button{min-width:60px}#context{bottom:58px}}
+
+/* Safari/iPad: viewport height is live CSS, not a cached visualViewport sample. */
+html,body{height:100%;min-height:0}
+#app{position:fixed;inset:0;height:100%;height:100dvh;min-height:0}
+#stage{flex:1 1 0;min-height:0}
+#faceDistance{width:auto;max-width:196px;min-height:48px;padding:3px 4px;gap:2px;flex-wrap:nowrap;border-radius:11px}
+#directDimensionLabel{display:none}
+#faceDistance label{gap:3px}
+#faceDistance input{width:66px;min-height:40px;padding:4px;font-size:16px}
+#directUnit{font-size:10px}
+#faceDistance button{min-width:40px;min-height:40px;width:40px;padding:3px;font-size:17px}
+#directPreviewStatus:not([data-error=true]){position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+#directPreviewStatus[data-error=true]{position:absolute;top:calc(100% + 4px);left:0;width:210px;background:var(--panel);padding:6px;border-radius:7px}
+@media(pointer:coarse){#faceDistance input,#faceDistance button{min-height:44px}#faceDistance button{min-width:40px}}
