@@ -1,0 +1,157 @@
+/* Canvas-first workspace. Existing generator and manufacturing commands retain their IDs. */
+body.cadWorkspace{--cad-accent:#2869e8;--cad-border:#dce1e7;--cad-panel:#fff;--cad-ink:#253244;--cad-sheet: min(44dvh,calc(100dvh - 320px));background:#eef0f3;color:var(--cad-ink);height:100dvh;overscroll-behavior:none}
+body.cadWorkspace #app{display:block!important;position:fixed;inset:0;width:100%;height:100dvh!important;overflow:hidden}
+body.cadWorkspace #topbar{position:absolute;inset:0 0 auto;height:56px;min-height:0;display:flex!important;gap:12px;padding:8px 18px;background:var(--cad-panel);color:var(--cad-ink);border-bottom:1px solid var(--cad-border);z-index:40}
+body.cadWorkspace #topbar .wordmark{min-width:0;font-size:21px;gap:8px}
+body.cadWorkspace #topbar .wordmark>b{display:none}
+body.cadWorkspace #topbar .wordmark span{font-size:8px;letter-spacing:1px;color:#778395}
+body.cadWorkspace #topbar .workspaceTitle{display:none!important}
+body.cadWorkspace #cadQuickActions{display:flex;align-items:center;gap:5px;margin-left:auto}
+body.cadWorkspace #cadQuickActions button{display:inline-flex;justify-content:center;align-items:center;gap:6px;width:auto;min-width:40px;height:38px;margin:0;padding:8px;background:transparent;border-color:transparent;color:var(--cad-ink)}
+body.cadWorkspace #cadQuickActions button img{width:20px;height:20px}
+body.cadWorkspace #cadQuickActions #undo span,body.cadWorkspace #cadQuickActions #redo span{display:none}
+body.cadWorkspace #workspaceNav,body.cadWorkspace #cadLegacyAside{display:none!important}
+body.cadWorkspace #editToolbar{display:contents!important}
+body.cadWorkspace #app>main{position:absolute;inset:56px 0 26px 80px;display:flex!important;min-width:0;min-height:0;grid-column:auto;grid-row:auto;background:#eef0f3;transition:right .16s ease}
+body.cadWorkspace.cadDockOpen #app>main{right:364px}
+body.cadWorkspace #app>main>header{display:none}
+body.cadWorkspace #viewport{flex:1;min-height:0;min-width:0;background:#e9edf2;touch-action:none}
+body.cadWorkspace #viewport>canvas{width:100%;height:100%;touch-action:none}
+body.cadWorkspace #app>main>footer{position:fixed;bottom:0;left:0;right:0;height:26px;min-height:0;display:flex;gap:12px;padding:4px 16px;background:var(--cad-panel);color:#748092;border-color:var(--cad-border);z-index:35;font-size:10px}
+body.cadWorkspace #status{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:85%;font-size:10px;color:#69788c}
+body.cadWorkspace #cadRail{position:absolute;left:10px;top:84px;width:62px;display:flex;flex-direction:column;gap:8px;z-index:30}
+body.cadWorkspace #cadRail button{display:flex!important;flex-direction:column;justify-content:center;align-items:center;gap:5px;width:60px;min-height:58px;margin:0;padding:8px 4px;border:1px solid transparent;border-radius:12px;background:var(--cad-panel);color:#5b6778;box-shadow:0 2px 9px #21324b08}
+body.cadWorkspace #cadRail button span{font-size:10px;font-weight:600}
+body.cadWorkspace #cadRail button[aria-expanded=true]{color:var(--cad-accent);background:#eaf1ff;border-color:#c7d9fc}
+body.cadWorkspace #cadRail button[data-selected=true]::after{content:'';position:absolute;width:5px;height:5px;background:var(--cad-accent);border-radius:50%;transform:translate(19px,-18px)}
+body.cadWorkspace #cadDock{position:absolute;top:68px;right:12px;bottom:38px;width:340px;max-width:calc(100vw - 32px);padding:0;display:flex;flex-direction:column;overflow:hidden;background:var(--cad-panel);color:var(--cad-ink);border:1px solid var(--cad-border);border-radius:16px;box-shadow:0 12px 36px #1e314a12;z-index:32;grid-column:auto;grid-row:auto}
+body.cadWorkspace #cadDock[hidden]{display:none!important}
+body.cadWorkspace #cadDockHeading{flex:none;display:flex;gap:8px;align-items:center;height:52px;min-height:52px;padding:8px 12px;border-bottom:1px solid var(--cad-border);background:transparent}
+body.cadWorkspace #cadDockHeading h2{margin:0;flex:1;font-size:14px;font-weight:650;letter-spacing:0;color:var(--cad-ink)}
+body.cadWorkspace #cadDockHeading button{width:34px;height:34px;min-height:34px;margin:0;padding:6px;display:grid;place-items:center;border:0;background:transparent;color:#657185}
+body.cadWorkspace #cadSheetHandle{display:none!important}
+body.cadWorkspace #cadPanelBody{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:14px;scrollbar-width:thin}
+body.cadWorkspace .cadPane[hidden]{display:none!important}
+body.cadWorkspace .cadPane{padding:0;border:0;background:transparent}
+body.cadWorkspace #cadDock button{font-size:12px;border-radius:8px;min-height:38px;line-height:1.35;white-space:normal;box-sizing:border-box}
+body.cadWorkspace #cadDock input,body.cadWorkspace #cadDock select{font-size:13px;border-radius:7px;min-height:38px;background:#f9fafc;color:var(--cad-ink);border:1px solid #d7dfe8}
+body.cadWorkspace #cadDock label{font-size:11px;color:#637083;margin:10px 0 5px}
+body.cadWorkspace #cadDock h3{font-size:12px;letter-spacing:0;color:var(--cad-ink);margin:12px 0}
+body.cadWorkspace #cadDock small,body.cadWorkspace .cadHint{font-size:11px;line-height:1.55;color:#7b8797}
+body.cadWorkspace #generatorStudio{padding:0 0 14px;border-bottom:1px solid var(--cad-border);margin-bottom:12px}
+body.cadWorkspace #generatorHeading,body.cadWorkspace #studioCategory,body.cadWorkspace #studioCategoryLabel,body.cadWorkspace .workflowSteps,body.cadWorkspace #productPanel>h3{display:none!important}
+body.cadWorkspace #chooseProduct{font-size:14px;min-height:44px;text-align:left;background:#f0f5ff;border:1px solid #d0def7;color:#2c5fae}
+body.cadWorkspace #generatorHint{font-size:11px}
+body.cadWorkspace #cadDock .productActions{position:static;display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 0;padding:12px 0 0;border-top:1px solid var(--cad-border);background:transparent}
+body.cadWorkspace #cadDock #generateProduct,body.cadWorkspace #cadDock #lampGenerate,body.cadWorkspace #cadDock .cadPrimary{background:var(--cad-accent);color:white;border-color:transparent}
+body.cadWorkspace #cadDock #inspector{position:static!important;inset:auto!important;width:100%!important;max-width:none;margin:0;padding:0;border:0;box-shadow:none;background:transparent;display:block}
+body.cadWorkspace #cadDock #inspector[hidden]{display:none!important}
+body.cadWorkspace #cadDock .inspectorHeading{display:none}
+body.cadWorkspace #cadDock #selected{font-size:13px;margin:0 0 12px}
+body.cadWorkspace #cadDock .propertyGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+body.cadWorkspace #cadDock #materialPanel{margin:16px 0 0;padding:12px 0;border-top:1px solid var(--cad-border);background:transparent}
+body.cadWorkspace #cadDock #objects{height:180px;min-height:160px;font-size:13px}
+body.cadWorkspace .cadPrimitiveGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 16px}
+body.cadWorkspace .cadPrimitiveGrid button{margin:0;min-height:48px}
+body.cadWorkspace #cadPane-add #openCustomShape{display:flex;align-items:center;gap:8px;background:#f0f5ff;color:#2859a8;border-color:#d0def7;min-height:44px}
+body.cadWorkspace #cadDock button img{width:20px;height:20px;object-fit:contain}
+body.cadWorkspace #cadContext{position:absolute;bottom:44px;left:calc((100% - 284px)/2);display:flex;align-items:center;gap:5px;padding:6px;background:var(--cad-panel);border:1px solid var(--cad-border);border-radius:12px;box-shadow:0 6px 20px #20314915;z-index:31}
+body.cadWorkspace.cadDockOpen #cadContext{left:calc((100% - 364px - 244px)/2)}
+body.cadWorkspace #cadContext[hidden]{display:none!important}
+body.cadWorkspace #cadContext button{display:flex!important;justify-content:center;align-items:center;width:40px;min-height:40px;height:40px;padding:8px;margin:0;border:0;background:transparent;color:#53627a}
+body.cadWorkspace #cadContext button img{width:22px;height:22px}
+body.cadWorkspace #cadContext button span{display:none}
+body.cadWorkspace #cadContext #delete{width:66px;font-size:10px;color:#b44545}
+body.cadWorkspace #cadContext .active{background:#eaf1ff;color:var(--cad-accent)}
+body.cadWorkspace #cadViewTools{position:absolute;right:12px;top:12px;display:flex;gap:5px;z-index:15}
+body.cadWorkspace #cadViewTools button{width:38px;min-height:38px;height:38px;display:flex;align-items:center;justify-content:center;margin:0;padding:8px;background:var(--cad-panel);border:1px solid var(--cad-border);border-radius:9px}
+body.cadWorkspace #cadViewTools img{width:20px;height:20px}
+body.cadWorkspace #cadViewTools span{display:none}
+body.cadWorkspace #cadPane-tools .toolGroup{display:flex;flex-wrap:wrap;padding:0;border:0;gap:6px}
+body.cadWorkspace #cadPane-tools .toolGroup button{flex:1;min-width:40px;margin:3px 0}
+body.cadWorkspace #cadPane-tools .toolbarMenu{display:block;width:100%;margin:8px 0}
+body.cadWorkspace #cadPane-tools .toolbarMenu>summary{display:flex;gap:9px;align-items:center;padding:10px;border:1px solid var(--cad-border);border-radius:8px;font-size:12px}
+body.cadWorkspace #cadPane-tools .toolbarMenu>summary img{width:20px;height:20px}
+body.cadWorkspace #cadPane-tools .toolbarMenu>div{position:static;display:grid;grid-template-columns:1fr 1fr;width:auto;min-width:0;box-shadow:none;padding:5px;border:0;background:transparent}
+body.cadWorkspace #cadPane-tools .toolbarMenu:not([open])>div{display:none}
+body.cadWorkspace #cadPane-tools .toolbarMenu>div button{display:flex;align-items:center;gap:7px;width:auto;min-width:0}
+body.cadWorkspace .cadSettings{display:block!important;border-top:1px solid var(--cad-border);margin:10px 0;padding:0}
+body.cadWorkspace .cadSettings>summary{padding:13px 0;cursor:pointer;font-size:12px;font-weight:600;color:var(--cad-ink)}
+body.cadWorkspace .cadSettings:not([open])>*:not(summary){display:none!important}
+body.cadWorkspace .cadSettings>div{min-width:0}
+body.cadWorkspace #cadLampSize[open],body.cadWorkspace #cadLampStyle[open],body.cadWorkspace #cadLampPath[open]{display:grid!important;grid-template-columns:1fr 1fr;column-gap:10px}
+body.cadWorkspace .cadSettings>summary,body.cadWorkspace #cadLampPath>button{grid-column:1/-1}
+body.cadWorkspace #cadDock input[type=range]{min-height:24px;margin:4px 0 0;background:transparent;padding:0;accent-color:var(--cad-accent)}
+body.cadWorkspace #cadDock #latticeSample{padding:10px;margin:0;background:#f6f8fb;border-color:var(--cad-border)}
+body.cadWorkspace #cadDock #fileActions{display:flex;flex-direction:column;align-items:stretch;gap:8px;margin:12px 0}
+body.cadWorkspace #cadDock #fileActions button{width:100%;margin:0;text-align:left;display:flex;align-items:center;gap:8px}
+body.cadWorkspace #cadDock #appTheme,body.cadWorkspace #cadDock #uiLanguage{width:100%;color:var(--cad-ink);background:#f9fafc}
+body.cadWorkspace #canvasEmpty{background:transparent}
+body.cadWorkspace #canvasEmpty h2{font-size:22px;color:#526073}
+body.cadWorkspace #canvasEmpty p{font-size:12px;color:#768399;text-align:center;padding:0 20px}
+body.cadWorkspace #canvasEmpty>span{font-size:9px;color:#99a3af}
+body.cadWorkspace #canvasEmpty .emptyMark{background:#fff;border-color:#e0e5eb;color:#7693bd;box-shadow:0 8px 32px #27364b0b}
+body.cadWorkspace #viewport #lampNozzleControls,body.cadWorkspace #viewport #latticePlayback{width:min(340px,calc(100% - 24px))!important;max-width:calc(100% - 24px)!important;bottom:12px;left:12px;right:auto;border-radius:12px;border-color:#d3dce8;background:#ffffffed;box-shadow:0 4px 20px #23314812}
+body.cadWorkspace #viewport .cadSettings{margin:4px 0 0}
+body.cadWorkspace #viewport .cadSettings>summary{padding:6px 0;font-size:10px}
+body.cadWorkspace #viewport #lampPlanExport{background:var(--cad-accent);color:#fff}
+body.cadWorkspace .studioDialog:not(.generatorInline){max-width:calc(100vw - 24px);max-height:calc(100dvh - 32px);overflow:auto;border-radius:14px}
+body.cadWorkspace .studioDialog button{min-height:40px}
+body.cadWorkspace #customShapeDialog canvas{width:100%;max-width:420px;height:auto;touch-action:none}
+body.cadWorkspace .floatingToolPanel{max-width:calc(100vw - 24px);max-height:calc(100dvh - 100px);overflow:auto}
+body.cadWorkspace button:focus-visible,body.cadWorkspace summary:focus-visible{outline:2px solid var(--cad-accent);outline-offset:2px}
+:root[data-app-theme=graphite] body.cadWorkspace{--cad-panel:#282b35;--cad-border:#444957;--cad-ink:#e4e9f4;--cad-accent:#a78bfa}
+:root[data-app-theme=graphite] body.cadWorkspace #cadDock input,:root[data-app-theme=graphite] body.cadWorkspace #cadDock select{background:#343845;color:#eee;border-color:#50586b}
+:root[data-app-theme=graphite] body.cadWorkspace #canvasEmpty h2{color:#e1e7f2}
+@media(max-width:760px){
+ body.cadWorkspace{--cad-sheet:min(44dvh,calc(100dvh - 320px))}
+ body.cadWorkspace.cadSheetExpanded{--cad-sheet:min(68dvh,calc(100dvh - 320px))}
+ body.cadWorkspace #topbar{height:52px;padding:6px 12px;padding-top:max(6px,env(safe-area-inset-top));}
+ body.cadWorkspace #topbar .wordmark{font-size:18px}
+ body.cadWorkspace #topbar .wordmark i{display:none}
+ body.cadWorkspace #cadQuickActions button{min-width:40px;min-height:40px}
+ body.cadWorkspace #cadFileTop span{display:none}
+ body.cadWorkspace #app>main,body.cadWorkspace.cadDockOpen #app>main{inset:52px 0 calc(84px + env(safe-area-inset-bottom)) 0}
+ body.cadWorkspace.cadDockOpen #app>main{bottom:calc(92px + env(safe-area-inset-bottom) + var(--cad-sheet))}
+ body.cadWorkspace #cadRail{left:0;right:0;top:auto;bottom:22px;width:100%;height:calc(62px + env(safe-area-inset-bottom));padding:4px 6px calc(4px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:2px;background:var(--cad-panel);border-top:1px solid var(--cad-border)}
+ body.cadWorkspace #cadRail button{width:100%;min-width:0;min-height:52px;height:52px;padding:5px 0;border-radius:9px;gap:4px;box-shadow:none}
+ body.cadWorkspace #cadRail button span{font-size:10px}
+ body.cadWorkspace #cadDock{top:auto;left:8px;right:8px;bottom:calc(92px + env(safe-area-inset-bottom));width:auto;height:var(--cad-sheet);max-width:none;border-radius:18px}
+ body.cadWorkspace #cadDockHeading{height:40px;min-height:40px;gap:4px;padding:4px 9px}
+ body.cadWorkspace #cadSheetHandle{display:grid!important;touch-action:none}
+ body.cadWorkspace #cadDockHeading h2{font-size:13px}
+ body.cadWorkspace #cadPanelBody{padding:10px 12px}
+ body.cadWorkspace #cadDock button{min-height:44px}
+ body.cadWorkspace #cadDock input,body.cadWorkspace #cadDock select{font-size:16px;min-height:44px}
+ body.cadWorkspace #cadContext,body.cadWorkspace.cadDockOpen #cadContext{left:50%;transform:translateX(-50%);bottom:calc(98px + env(safe-area-inset-bottom));padding:4px;gap:3px;max-width:calc(100% - 16px)}
+ body.cadWorkspace.cadDockOpen #cadContext{display:none!important}
+ body.cadWorkspace #cadContext button{width:42px;min-height:44px;height:44px}
+ body.cadWorkspace #cadViewTools{top:8px;right:8px}
+ body.cadWorkspace #cadViewTools button{width:40px;height:40px;min-height:40px}
+ body.cadWorkspace #app>main>footer{height:22px;padding:3px 10px;font-size:9px}
+ body.cadWorkspace #status{font-size:9px}
+ body.cadWorkspace #canvasEmpty h2{font-size:19px}
+ body.cadWorkspace #canvasEmpty p{max-width:300px}
+ body.cadWorkspace #viewport #lampNozzleControls,body.cadWorkspace #viewport #latticePlayback{bottom:8px;left:8px;max-width:calc(100% - 16px)!important;width:calc(100% - 16px)!important;padding:10px}
+ body.cadWorkspace .customShapeLayout{display:flex!important;flex-direction:column}
+ body.cadWorkspace #customShapeDialog{width:calc(100vw - 20px)}
+ body.cadWorkspace .floatingToolPanel[open]{position:fixed!important;left:8px!important;right:8px!important;top:64px!important;width:auto!important;max-height:calc(100dvh - 160px)}
+}
+@media(max-height:500px) and (min-width:600px){
+ body.cadWorkspace #cadDock{top:64px;right:8px;left:auto;bottom:34px;width:300px;height:auto}
+ body.cadWorkspace.cadDockOpen #app>main{inset:52px 316px 30px 72px}
+ body.cadWorkspace #cadRail{top:60px;bottom:30px;left:6px;width:58px;height:auto;padding:0;display:flex;border:0;background:transparent;gap:2px}
+ body.cadWorkspace #cadRail button{min-height:39px;height:39px;flex-direction:row}
+ body.cadWorkspace #cadRail button span{display:none}
+ body.cadWorkspace #cadRail button svg{width:20px;height:20px}
+ body.cadWorkspace #cadContext{bottom:36px}
+}
+@media(prefers-reduced-motion:reduce){body.cadWorkspace *{transition:none!important;scroll-behavior:auto!important}}
+
+body.cadGraphicsError{margin:0;min-height:100dvh;display:grid;place-items:center;background:#edf1f6;color:#253244;padding:24px;font:16px/1.6 system-ui}
+body.cadGraphicsError #app{position:static;width:min(480px,100%);height:auto;display:block;background:white;border:1px solid #d9e0e9;border-radius:18px;padding:28px}
+body.cadGraphicsError h1{font-size:22px;margin:0 0 14px}
+body.cadGraphicsError p{font-size:15px;color:#67758a}
+body.cadGraphicsError button{background:#2869e8;color:white;border:0;border-radius:10px;min-height:46px;padding:12px 18px;font-size:16px}
+
+body.cadWorkspace:has(#lampNozzleControls:not([hidden])) #cadContext,body.cadWorkspace:has(#latticePlayback:not([hidden])) #cadContext{display:none!important}

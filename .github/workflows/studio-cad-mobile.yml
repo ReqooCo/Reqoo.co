@@ -1,0 +1,56 @@
+name: CAD workspace and mobile verification
+on:
+  push:
+    branches: [feature/studio-cad-mobile-20261103]
+    paths: ['studio-source/**','studio-build/**','.github/workflows/studio-cad-mobile.yml']
+permissions:
+  contents: write
+concurrency:
+  group: studio-cad-mobile
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: studio-source/package-lock.json
+      - name: Rebuild release source and verify geometry and G-code
+        working-directory: studio-source
+        run: |
+          python ../studio-build/prepare.py
+          npm ci
+          npm run build
+          node --test tests/nonplanar.test.js tests/combined-lamp.test.js tests/lattice.test.js
+          node --test --test-name-pattern="Registry|Every creative mode|Every lamp mode" tests/generator-geometry.test.js
+      - name: Verify desktop generators and mobile touch workspace
+        working-directory: studio-source
+        run: |
+          npx playwright install --with-deps chromium
+          node tests/combined-ui.mjs --web
+          node tests/cad-mobile.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Reqoo-CAD-Mobile-QA
+          path: studio-source/test-results
+          retention-days: 14
+      - name: Stage verified application
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import shutil
+          for p in Path('studio-source/dist').iterdir():
+              target=Path('3d-studio')/p.name
+              if p.is_dir(): shutil.copytree(p,target,dirs_exist_ok=True)
+              else: shutil.copyfile(p,target)
+          PY
+          git config user.name 'Reqoo Studio Build'
+          git config user.email 'actions@users.noreply.github.com'
+          git add 3d-studio
+          git diff --cached --quiet || git commit -m 'Stage verified CAD workspace and phone layout [skip ci]'
+          git push origin HEAD:feature/studio-cad-mobile-20261103
