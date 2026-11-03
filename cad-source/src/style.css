@@ -136,3 +136,19 @@ html[data-theme=dark] h2,html[data-theme=dark] .brand{color:#dbe8f6}html[data-th
 .itemRow>button[data-control=rename]{width:30px;min-width:30px;padding:4px;flex:none}.itemRow>button[data-control=rename] svg{width:16px;height:16px}
 
 .segmentRelation{display:flex;flex-direction:column;gap:4px;font-size:11px;margin:8px 0;color:#768ca4}.segmentRelation select{font-size:13px}#sketchDimensions{max-height:min(35%,220px);overflow:auto}
+
+/* Direct manipulation workspace: quiet chrome, one geometry dimension. */
+#faceDistance{gap:4px;padding:5px 6px;border-radius:14px;box-shadow:0 6px 22px #142e491c;backdrop-filter:blur(12px)}
+#faceDistance label{gap:6px}#directDimensionLabel{font-size:10px;font-weight:650;max-width:56px}
+#faceDistance input{border:0;background:#f0f6ff;color:#1669c4;border-radius:8px;width:78px;font-variant-numeric:tabular-nums}
+#directPreviewStatus{min-height:12px;font-size:9px;color:#77899b;letter-spacing:.1px}
+#faceDistance button{border:0;background:transparent;color:#76869a}
+#faceDistance #faceDistanceApply{background:#1975dc;color:#fff}
+#faceDragHandle.dragging{background:#d9ecff77;color:#045eb9}
+#context{border:1px solid #dde5ee;box-shadow:0 6px 22px #173b5c12}
+#context button{min-width:58px;padding:6px 10px}
+#rail button{box-shadow:none;background:#ffffffd9}
+#selectionBar{background:#ffffffdf;border-color:#e0e7ef}
+html[data-theme=dark] #faceDistance input{background:#1b2c40;color:#8dc1ff}
+html[data-theme=dark] #selectionBar{background:#233140e8}
+@media(max-width:760px){#faceDistance{max-width:calc(100vw - 18px)}#directDimensionLabel{max-width:44px}#context button{min-width:60px}#context{bottom:58px}}

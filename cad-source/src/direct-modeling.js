@@ -31,19 +31,19 @@ export function createDirectModeling(api){
  function displayValue(){const factor=operation==='draft'?1:(api.getUnits?.().factor||1);return value/factor;}
  async function drain(){
   if(inFlight||!wanted)return;const task=wanted;wanted=null;inFlight=true;
-  try{await api.onPreview(task.operation,task.params,task.ref,()=>task.epoch===previewEpoch);if(task.epoch===previewEpoch)feedback.textContent='Preview · actual CAD geometry';}
+  try{await api.onPreview(task.operation,task.params,task.ref,()=>task.epoch===previewEpoch);if(task.epoch===previewEpoch&&task.token===sequence)feedback.textContent='Solid verified';}
   catch(e){if(task.epoch===previewEpoch&&!wanted){api.onResetPreview();feedback.textContent=e.message;feedback.dataset.error='true';}}
   finally{inFlight=false;if(wanted)drain();}
  }
  function schedule(){
   const token=++sequence;
   if(!session||!Number.isFinite(value)||(operation==='diameter'?value<=.001:Math.abs(value)<.001)){previewEpoch++;wanted=null;api.onResetPreview();feedback.textContent='Enter a value or drag the arrow';return;}
-  feedback.textContent='Calculating CAD preview…';feedback.dataset.error='false';
+  const immediate=api.onImmediate?.(operation,params(),session);feedback.textContent=immediate?'Live preview · checking solid…':'Updating solid…';feedback.dataset.error='false';
   // Latest-value queue: start immediately, replace pending work, and display
   // completed BREP frames during a continuous drag rather than starving them.
   wanted={token,epoch:previewEpoch,ref:{...session},operation,params:params()};drain();
  }
- function cancel(){clearTimeout(timer);sequence++;previewEpoch++;wanted=null;session=null;value=0;dimensions.hidden=true;api.onResetPreview();feedback.textContent='';}
+ function cancel(){drag=null;handle.classList.remove('dragging');api.onNavigation(true);clearTimeout(timer);sequence++;previewEpoch++;wanted=null;session=null;value=0;dimensions.hidden=true;api.onResetPreview();feedback.textContent='';}
  function begin(initial=0,requested){
   const t=target();if(!t)return;previewEpoch++;operation=requested||(t.diameter?'diameter':t.edge?'fillet':t.sketch?'extrude':'offsetFace');session={...t.ref};value=operation==='diameter'?(t.diameter.diameter+initial):initial;
   label.textContent=operation==='diameter'?'Diameter':operation==='fillet'?'Radius':operation==='chamfer'?'Chamfer':operation==='draft'?'Draft':'Distance';
@@ -55,19 +55,20 @@ export function createDirectModeling(api){
   const id=[t.ref.id,t.ref.kind,t.ref.index].join(':');
   if(id!==lastTarget){if(session&&!same(session,t.ref))cancel();lastTarget=id;if(t.diameter&&!session){begin(0);return;}}
   const d=direction();if(!d)return;
-  const x=Math.max(40,Math.min(d.rect.width-40,(d.p.x+1)*d.rect.width/2)),y=Math.max(70,Math.min(d.rect.height-100,(1-d.p.y)*d.rect.height/2));
-  const offset=48+(session&&operation!=='diameter'&&operation!=='fillet'&&operation!=='chamfer'?value/(200/camera.zoom/d.rect.height)*.25:0);
+  const projected=session&&operation==='offsetFace'?d.origin.clone().addScaledVector(d.normal,value).project(camera):d.p;
+  const x=Math.max(40,Math.min(d.rect.width-40,(projected.x+1)*d.rect.width/2)),y=Math.max(70,Math.min(d.rect.height-100,(1-projected.y)*d.rect.height/2));
+  const offset=48;
   const hx=Math.max(38,Math.min(d.rect.width-38,x+d.dx*offset)),hy=Math.max(60,Math.min(d.rect.height-110,y+d.dy*offset));
   handle.style.left=hx+'px';handle.style.top=hy+'px';handle.style.setProperty('--arrow-angle',Math.atan2(d.dy,d.dx)+'rad');handle.dataset.target=t.ref.kind;handle.title=t.edge?'Drag edge radius / chamfer':t.sketch?'Drag to extrude profile':'Drag to pull or push face';
   guide.setAttribute('viewBox','0 0 '+d.rect.width+' '+d.rect.height);guide.querySelector('path').setAttribute('d','M'+x+' '+y+'L'+hx+' '+hy);
   if(session){dimensions.hidden=false;dimensions.style.left=Math.max(7,Math.min(d.rect.width-280,hx+30))+'px';dimensions.style.top=Math.max(12,Math.min(d.rect.height-100,hy-24))+'px';}
  }
- handle.addEventListener('pointerdown',e=>{if(api.isBusy())return;e.preventDefault();e.stopPropagation();const d=direction();if(!d)return;if(!session)begin(0);drag={id:e.pointerId,x:e.clientX,y:e.clientY,dx:d.dx,dy:d.dy,start:value};handle.setPointerCapture(e.pointerId);api.onNavigation(false);});
+ handle.addEventListener('pointerdown',e=>{if(api.isBusy())return;e.preventDefault();e.stopPropagation();const d=direction();if(!d)return;if(!session)begin(0);drag={id:e.pointerId,x:e.clientX,y:e.clientY,dx:d.dx,dy:d.dy,start:value};handle.setPointerCapture(e.pointerId);handle.classList.add('dragging');api.onNavigation(false);});
  handle.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;e.preventDefault();const pixels=(e.clientX-drag.x)*drag.dx+(e.clientY-drag.y)*drag.dy,scale=operation==='draft'?.2:200/camera.zoom/renderer.domElement.clientHeight;value=Math.round((drag.start+pixels*scale)*100)/100;if(operation==='fillet'||operation==='chamfer')value=Math.abs(value);input.value=String(Number(displayValue().toFixed(4)));schedule();update();});
- const finish=()=>{drag=null;api.onNavigation(true);};handle.addEventListener('pointerup',finish);handle.addEventListener('pointercancel',()=>{finish();cancel();});
+ const finish=()=>{drag=null;handle.classList.remove('dragging');api.onNavigation(true);if(session)schedule();};handle.addEventListener('pointerup',finish);handle.addEventListener('pointercancel',()=>{finish();cancel();});
  input.oninput=()=>{value=Number(input.value)*(operation==='draft'?1:api.getUnits?.().factor||1);schedule();};
  dimensions.querySelector('#faceDistanceCancel').onclick=cancel;
- dimensions.querySelector('#faceDistanceApply').onclick=async()=>{if(!session||!Number.isFinite(value)||Math.abs(value)<.001){api.onStatus('Enter a non-zero value');return;}const ref={...session},p=params(),op=operation;clearTimeout(timer);sequence++;previewEpoch++;wanted=null;try{await api.onCommit(op,p,ref);cancel();}catch(e){feedback.textContent=e.message;feedback.dataset.error='true';}};
+ dimensions.querySelector('#faceDistanceApply').onclick=async()=>{if(!session||!Number.isFinite(value)||Math.abs(value)<.001){api.onStatus('Enter a non-zero value');return;}const ref={...session},p=params(),op=operation;clearTimeout(timer);sequence++;previewEpoch++;wanted=null;try{await api.onCommit(op,p,ref);cancel();}catch(e){api.onResetPreview(true);feedback.textContent=e.message;feedback.dataset.error='true';}};
  input.onkeydown=e=>{if(e.key==='Enter')dimensions.querySelector('#faceDistanceApply').click();if(e.key==='Escape')cancel();};
- return{handle,dimensions,update,target,direction,begin,cancel,get state(){return{visible:!handle.hidden,target:handle.dataset.target,preview:!!session,operation,value,inFlight,pending:!!wanted,position:{left:handle.style.left,top:handle.style.top}};}};
+ return{handle,dimensions,update,target,direction,begin,cancel,get state(){return{dragging:!!drag,visible:!handle.hidden,target:handle.dataset.target,preview:!!session,operation,value,inFlight,pending:!!wanted,position:{left:handle.style.left,top:handle.style.top}};}};
 }
