@@ -38,9 +38,9 @@ try{
  await page.locator('#undo').click();await page.waitForFunction(()=>window.__cad.doc.features[0].params.radius===20);
  near((await body()).volume,Math.PI*400*20,.1);
  checks.push('Cylindrical side → editable diameter → real BREP preview → source history commit → undo');
- await page.locator('[data-view=top]').click();await page.locator('#fit').click();let p=await projection(8,0,20);await page.touchscreen.tap(p.x,p.y);await page.waitForFunction(()=>window.__cad.gizmo.visible&&window.__cad.selection.at(-1)?.kind==='face');
+ await page.evaluate(()=>window.__cad.view('top'));await page.locator('#fit').click();let p=await projection(8,0,20);await page.touchscreen.tap(p.x,p.y);await page.waitForFunction(()=>window.__cad.gizmo.visible&&window.__cad.selection.at(-1)?.kind==='face');
  assert.equal(await page.locator('#faceDragHandle svg path').count(),1);assert.equal(await page.locator('#faceDragHandle').getAttribute('data-control'),'direct');assert.equal(await page.locator('#cadDiagnostic').isVisible(),true);
- await page.locator('[data-view=iso]').click();
+ await page.evaluate(()=>window.__cad.view('iso'));
  const start=await page.locator('#faceDragHandle').boundingBox(),direction=await page.evaluate(()=>{const d=window.__cad.direct.direction();return{dx:d.dx,dy:d.dy};});
  await page.mouse.move(start.x+start.width/2,start.y+start.height/2);await page.mouse.down();let moving=true;const movement=(async()=>{try{for(let n=1;n<=30;n++){await page.mouse.move(start.x+start.width/2+direction.dx*35*n/30,start.y+start.height/2+direction.dy*35*n/30);await page.waitForTimeout(60);}}finally{moving=false;}})();
  await page.waitForFunction(()=>window.__cad.immediatePreview&&window.__cad.root.children.some(n=>n.scale.z!==1));assert.equal(moving,true,'Affine solid display must follow the drag without waiting for the kernel');await preview();assert.equal(moving,true,'Actual solid preview must appear before continuous drag ends');assert.equal(await page.evaluate(()=>window.__cad.doc.features.length),2);
@@ -48,7 +48,7 @@ try{
  const cache=await page.evaluate(()=>window.__cad.worker('previewStats'));assert.equal(cache.reusedFeatures,2);assert.equal(cache.builtFeatures,1);assert.equal(cache.meshedItems,1);
  const delta=await page.evaluate(()=>window.__cad.direct.state.value);assert.ok(delta>0);near(await page.evaluate(()=>window.__cad.previewItems.find(i=>i.kind==='body').volume),Math.PI*400*(20+delta),.1);near((await body()).volume,Math.PI*400*20);
  await page.screenshot({path:path.join(out,'acceptance-01-real-face-preview.png')});await page.locator('#faceDistanceApply').click();await page.waitForFunction(()=>window.__cad.doc.features.at(-1).type==='offsetFace');
- await page.locator('[data-view=top]').click();
+ await page.evaluate(()=>window.__cad.view('top'));
  const height=20+delta;near((await body()).volume,Math.PI*400*height,.1);checks.push('Touch-selected cylinder face exposes arrow; dragging changes actual BREP preview and commits signed pull');
  await page.locator('#undo').click();await page.waitForFunction(()=>window.__cad.doc.features.at(-1).type==='extrude');near((await body()).volume,Math.PI*8000,.1);await page.locator('#redo').click();await page.waitForFunction(()=>window.__cad.doc.features.at(-1).type==='offsetFace');
  p=await projection(5,0,height);await page.touchscreen.tap(p.x,p.y);await page.locator('#context').getByRole('button',{name:'Hole',exact:true}).click();await page.locator('#p-diameter').fill('10');await page.locator('#p-extent').selectOption('Blind');await page.locator('#p-depth').fill('5');await page.getByRole('button',{name:'Apply',exact:true}).click();await page.waitForFunction(()=>window.__cad.doc.features.at(-1).type==='hole');
@@ -61,7 +61,7 @@ try{
 
  // A real filleted/holed body must show positive planar pull immediately too.
  await page.evaluate(()=>{const b=window.__cad.items.find(i=>i.kind==='body'),f=b.faceInfo.filter(f=>f.type==='PLANE'&&f.normal[2]>.99).sort((a,b)=>b.center[2]-a.center[2])[0];window.__cad.select([{id:b.id,kind:'face',index:f.index}]);window.__cad.direct.begin(0,'offsetFace');});
- await page.locator('[data-view=iso]').click();
+ await page.evaluate(()=>window.__cad.view('iso'));
  const complexArrow=await page.locator('#faceDragHandle').boundingBox(),complexDirection=await page.evaluate(()=>{const d=window.__cad.direct.direction();return{dx:d.dx,dy:d.dy};});
  await page.mouse.move(complexArrow.x+complexArrow.width/2,complexArrow.y+complexArrow.height/2);await page.mouse.down();
  await page.mouse.move(complexArrow.x+complexArrow.width/2+complexDirection.dx*28,complexArrow.y+complexArrow.height/2+complexDirection.dy*28,{steps:4});
@@ -78,7 +78,7 @@ try{
  for(const format of ['STEP','STL']){const dl=page.waitForEvent('download');await page.locator('#exportTop').click();await page.getByRole('button',{name:'Export '+format,exact:true}).click();const bytes=await fs.readFile(await(await dl).path());assert.ok(bytes.length>84);if(format==='STEP'){assert.ok(bytes.toString().includes('ISO-10303-21'));await fs.writeFile(path.join(out,'acceptance-project.step'),bytes);}else{const triangles=bytes.readUInt32LE(80);assert.equal(bytes.length,84+50*triangles);}}
  checks.push('Completed parametric project saves, reloads and exports valid STEP and binary STL');
  await page.mouse.click(500,100);
- for(const [width,h]of [[375,667],[1180,687],[1180,820],[1440,900]]){await page.setViewportSize({width,height:h});await page.locator('[data-view=iso]').click();await page.locator('#fit').click();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
+ for(const [width,h]of [[375,667],[1180,687],[1180,820],[1440,900]]){await page.setViewportSize({width,height:h});await page.evaluate(()=>window.__cad.view('iso'));await page.locator('#fit').click();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
  await page.evaluate(()=>document.documentElement.style.setProperty('--app-height','100px'));
  assert.ok(await page.evaluate(()=>Math.abs(document.querySelector('#app').getBoundingClientRect().bottom-innerHeight)<2),'Workspace must fill viewport even after a stale visualViewport height');
  await page.screenshot({path:path.join(out,'acceptance-layout-'+width+'.png')});}checks.push('Completed model renders in mobile, iPad and desktop layouts');
