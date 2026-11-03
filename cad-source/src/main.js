@@ -245,10 +245,16 @@ function faceDirection(){
 function gizmoTarget(){
  const ref=selection.at(-1),item=selectedItem();
  if(!ref||!item||!['face','sketch'].includes(ref.kind)||sketchMode||busy)return null;
+ if(ref.kind==='face'&&(item.kind!=='body'||!item.faceInfo?.some(f=>f.index===ref.index)))return null;
+ if(ref.kind==='sketch'&&item.kind!=='sketch')return null;
  return {ref,item};
 }
+// Opt-in on-device diagnostic for the complete selection-to-manipulator chain.
+const cadDiagnostic=new URLSearchParams(location.search).has('test')?document.createElement('output'):null;
+if(cadDiagnostic){cadDiagnostic.id='cadDiagnostic';cadDiagnostic.setAttribute('aria-live','polite');Object.assign(cadDiagnostic.style,{position:'absolute',left:'8px',top:'8px',zIndex:'60',background:'#10263de8',color:'#fff',padding:'7px 10px',font:'12px system-ui',borderRadius:'8px',pointerEvents:'none',maxWidth:'80vw'});$('stage').append(cadDiagnostic);}
 function updateFaceHandle(){
  const target=gizmoTarget();
+ if(cadDiagnostic){const ref=selection.at(-1),item=selectedItem();cadDiagnostic.textContent='CAD • '+workspaceMode+' • selected '+(ref?.kind||'none')+' • '+(item?.kind||'none')+' • busy '+busy+' • gizmo '+(target?'ON':'OFF');}
  if(new URLSearchParams(location.search).has('test'))document.documentElement.dataset.cadGizmo=target?target.ref.kind:'none';
  if(!target){faceHandle.hidden=true;faceDistance.hidden=true;faceDistanceRef=null;return;}
  if(faceDistanceRef&&!sameFace(target.ref,faceDistanceRef)){faceDistance.hidden=true;faceDistanceRef=null;faceDistanceValue=0;}
