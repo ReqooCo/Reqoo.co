@@ -241,18 +241,37 @@ function faceDirection(){
  if(magnitude<3){dx=0;dy=-1;}else{dx/=magnitude;dy/=magnitude;}
  return {origin,normal,dx,dy,p,rect};
 }
-function updateFaceHandle(){
+// Single source of truth for manipulator visibility and position.
+function gizmoTarget(){
  const ref=selection.at(-1),item=selectedItem();
- let direction=null;try{direction=faceDirection();}catch(e){console.warn('CAD gizmo projection fallback',e);}
- if((ref?.kind!=='face'&&ref?.kind!=='sketch')||!item||sketchMode||busy){faceHandle.hidden=true;faceDistance.hidden=true;faceDistanceRef=null;return;}
- if(!direction){const rect=$('stage').getBoundingClientRect();direction={p:{x:0,y:0,z:0},rect,dx:0,dy:-1};}
- if(faceDistanceRef&&!sameFace(ref,faceDistanceRef)){faceDistance.hidden=true;faceDistanceRef=null;faceDistanceValue=0;}
- const {p,rect,dx,dy}=direction;
- const x=Math.max(70,Math.min(rect.width-70,(p.x+1)*rect.width/2)),y=Math.max(85,Math.min(rect.height-150,(1-p.y)*rect.height/2));
- faceHandle.hidden=false;faceHandle.style.left=x+'px';faceHandle.style.top=y+'px';
- faceHandle.style.setProperty('--arrow-angle',Math.atan2(dy,dx)+'rad');
- if(!faceDistance.hidden){faceDistance.style.left=Math.max(10,Math.min(rect.width-225,x+46))+'px';faceDistance.style.top=Math.max(10,Math.min(rect.height-56,y-25))+'px';}
+ if(!ref||!item||!['face','sketch'].includes(ref.kind)||sketchMode||busy)return null;
+ return {ref,item};
 }
+function updateFaceHandle(){
+ const target=gizmoTarget();
+ if(!target){faceHandle.hidden=true;faceDistance.hidden=true;faceDistanceRef=null;return;}
+ if(faceDistanceRef&&!sameFace(target.ref,faceDistanceRef)){faceDistance.hidden=true;faceDistanceRef=null;faceDistanceValue=0;}
+ const rect=$('stage').getBoundingClientRect();
+ if(!rect.width||!rect.height){faceHandle.hidden=true;return;}
+ let projected=null;
+ try{projected=faceDirection();}catch(e){console.warn('Face gizmo projection unavailable',e);}
+ // Never silently hide the control when topology has no usable face normal.
+ const p=projected?.p;
+ const valid=p&&Number.isFinite(p.x)&&Number.isFinite(p.y);
+ const x=Math.max(64,Math.min(rect.width-64,valid?(p.x+1)*rect.width/2:rect.width/2));
+ const y=Math.max(75,Math.min(rect.height-130,valid?(1-p.y)*rect.height/2:rect.height/2));
+ const dx=projected?.dx??0,dy=projected?.dy??-1;
+ faceHandle.hidden=false;
+ faceHandle.style.left=x+'px';faceHandle.style.top=y+'px';
+ faceHandle.style.setProperty('--arrow-angle',Math.atan2(dy,dx)+'rad');
+ faceHandle.dataset.target=target.ref.kind;
+ faceHandle.title=target.ref.kind==='sketch'?'Drag to extrude sketch':'Drag to offset face';
+ if(!faceDistance.hidden){
+  faceDistance.style.left=Math.max(8,Math.min(rect.width-240,x+48))+'px';
+  faceDistance.style.top=Math.max(8,Math.min(rect.height-65,y-28))+'px';
+ }
+}
+
 function showFaceDistance(value=0,operation='offsetFace'){
  const ref=selection.at(-1);if(!ref||!['face','sketch'].includes(ref.kind))return;
  faceOperation=operation;faceDistanceRef={...ref};faceDistanceValue=Number(value.toFixed(2));
@@ -380,7 +399,7 @@ function resize(){const r=$('canvas').getBoundingClientRect(),aspect=r.width/Mat
 new ResizeObserver(resize).observe($('canvas'));resize();function frame(){
  requestAnimationFrame(frame);
  controls.update();
- try{updateFaceHandle();}catch(e){console.error('Face gizmo render failed',e);faceHandle.hidden=false;faceHandle.style.left='50%';faceHandle.style.top='45%';faceHandle.title='Gizmo fallback: '+e.message;}
+ try{updateFaceHandle();}catch(e){console.error('Face gizmo render failed',e);faceHandle.hidden=true;}
  try{updateSketchDimensions();}catch(e){console.error('Sketch dimensions render failed',e);sketchDimensions.hidden=true;}
  renderer.render(scene,camera);
 }frame();
@@ -416,4 +435,4 @@ document.addEventListener('pointerdown',e=>{if(e.target.closest('#rail,#menu,#to
 const vh=()=>document.documentElement.style.setProperty('--app-height',(window.visualViewport?.height||innerHeight)+'px');window.visualViewport?.addEventListener('resize',vh);vh();
 setWorkspaceMode('solid');decorateButtons();new MutationObserver(decorateButtons).observe(document.body,{childList:true,subtree:true});
 try{await rpc('ready');ready=true;const saved=localStorage.getItem('reqoo-cad-v1');if(saved){try{const parsed=JSON.parse(saved);validateProject(parsed);await rebuild(parsed,{history:false});fit();}catch{status('Saved project could not be restored. Open your downloaded backup.');}}status('Ready · create a sketch or add a solid');updateHistoryButtons();}catch(e){error(e);}
-if(new URLSearchParams(location.search).has('test'))window.__cad={get doc(){return doc;},get items(){return items;},get selection(){return selection;},apply,rebuild,select,startTool,exportFile,fit,ready:()=>ready,view,camera,root,worker:rpc};
+if(new URLSearchParams(location.search).has('test'))window.__cad={get gizmo(){return {visible:!faceHandle.hidden,target:faceHandle.dataset.target,position:{left:faceHandle.style.left,top:faceHandle.style.top},selection:selection.at(-1),busy,sketchMode:!!sketchMode}},get doc(){return doc;},get items(){return items;},get selection(){return selection;},apply,rebuild,select,startTool,exportFile,fit,ready:()=>ready,view,camera,root,worker:rpc};
