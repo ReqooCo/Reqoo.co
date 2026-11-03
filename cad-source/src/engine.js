@@ -1,6 +1,6 @@
 import * as R from 'replicad';
 import {solveSketch} from './constraints.js';
-export const TYPES=['sketch','box','cylinder','sphere','torus','extrude','revolve','loft','sweep','union','subtract','intersect','fillet','chamfer','shell','offsetFace','move','rotate','scale','mirror','pattern','circularPattern','duplicate','align','split','import','plane','axis','delete'];
+export const TYPES=['sketch','box','cylinder','sphere','torus','extrude','hole','revolve','loft','sweep','union','subtract','intersect','fillet','chamfer','shell','offsetFace','move','rotate','scale','mirror','pattern','circularPattern','duplicate','align','split','import','plane','axis','delete'];
 const V=(v,d=0)=>v===undefined?d:Number(v);
 export function number(v,name,min=-2000,max=2000){const n=Number(v);if(!Number.isFinite(n)||n<min||n>max)throw Error(name+' must be between '+min+' and '+max);return n;}
 export function basis(p={}){
@@ -51,6 +51,16 @@ export async function buildModel(doc){
   else if(f.type==='sphere'){const r=number(p.radius,'Radius',.01,1000);s=R.makeSphere(r).translate([number(p.x??0,'X'),number(p.y??0,'Y'),number(p.z??0,'Z')+r]);}
   else if(f.type==='torus'){const r=number(p.radius,'Major radius',.02,1000),t=number(p.tube,'Tube radius',.01,r-.001);s=R.drawCircle(t).translate(r,0).sketchOnPlane('XZ').revolve('Z');s=s.translateZ(t);}
   else if(f.type==='import'){if(typeof p.step!=='string'||p.step.length>20e6||!p.step.includes('ISO-10303-21'))throw Error('Choose a valid STEP file (up to 20 MB)');s=await R.importSTEP(new Blob([p.step]));}
+  else if(f.type==='hole'){
+   const target=body(ins[0]),source=ins[1]?profiles.get(ins[1]):null;
+   let origin,normal,radius;
+   if(source){if(source.shape!=='circle')throw Error('Hole needs a circular sketch');const b=basis(source),xx=b.x,nn=b.normal,yy=[nn[1]*xx[2]-nn[2]*xx[1],nn[2]*xx[0]-nn[0]*xx[2],nn[0]*xx[1]-nn[1]*xx[0]];origin=b.origin.map((v,i)=>v+xx[i]*number(source.x??0,'Circle X')+yy[i]*number(source.y??0,'Circle Y'));normal=nn;radius=number(source.radius,'Radius',.01,1000);}
+   else{const selected=face(target,p);if(selected.geomType!=='PLANE')throw Error('Choose a planar face for the hole');const nv=selected.normalAt(),cv=selected.center;normal=nv.toTuple();const len=Math.hypot(...normal);normal=normal.map(v=>v/len);origin=cv.toTuple();nv.delete();cv.delete();const seed=Math.abs(normal[0])<.9?[1,0,0]:[0,1,0],dot=seed.reduce((s,v,i)=>s+v*normal[i],0),xx=seed.map((v,i)=>v-dot*normal[i]),xl=Math.hypot(...xx);for(let i=0;i<3;i++)xx[i]/=xl;const yy=[normal[1]*xx[2]-normal[2]*xx[1],normal[2]*xx[0]-normal[0]*xx[2],normal[0]*xx[1]-normal[1]*xx[0]];origin=origin.map((v,i)=>v+xx[i]*number(p.x??0,'Centre X')+yy[i]*number(p.y??0,'Centre Y'));radius=number(p.diameter??10,'Diameter',.02,2000)/2;}
+   if(p.reverse)normal=normal.map(v=>-v);
+   const span=target.boundingBox.bounds,reach=Math.hypot(...span[0].map((v,i)=>span[1][i]-v))+Math.hypot(...origin.map((v,i)=>v-(span[0][i]+span[1][i])/2))+2;
+   const through=p.extent!=='Blind',depth=through?reach*2:number(p.depth??10,'Hole depth',.01,2000),start=origin.map((v,i)=>v+normal[i]*(through?reach:.02)),tool=own(R.makeCylinder(radius,depth+(through?0:.02),start,normal.map(v=>-v)));
+   s=target.cut(tool);if(Math.abs(volume(s)-volume(target))<1e-6)throw Error('The hole does not intersect the target body. Check centre, depth or reverse direction.');
+  }
   else if(f.type==='extrude'||f.type==='revolve'||f.type==='sweep'||f.type==='loft'){
    const a=profiles.get(ins[0]);if(!a)throw Error('Select a sketch profile');
    if(f.type==='extrude'){if(a.closed===false)throw Error('Extrude needs a closed profile');const distance=number(p.distance,'Distance');if(Math.abs(distance)<.001)throw Error('Distance must not be zero');s=sketch(a).extrude(distance);}
