@@ -156,7 +156,9 @@ function mountConstraints(p){
 }
 
 function startTool(type,initial={},editId=null){
- if(!ready||busy)return;setWorkspaceMode(type==='sketch'?'sketch':'solid');if(type==='import'){$('stepFile').click();return;}
+ if(!ready||busy)return;
+ if(type==='extrude'&&!editId&&selectedItem()?.kind==='sketch'){closePanels();showFaceDistance(20,'extrude');return;}
+ setWorkspaceMode(type==='sketch'?'sketch':'solid');if(type==='import'){$('stepFile').click();return;}
  try{if(!editId)requireSelection(type,selectedIds());}catch(e){status(e.message);return;}
  closePanels();activeTool=type;editing=editId;const old=editId?doc.features.find(f=>f.id===editId):null,p={...old?.params,...initial};if(type==='hole'&&old){p.target=old.inputs[0];if(old.inputs[1])p.sketchId=old.inputs[1];}
  if(type==='hole'&&!editId){const ref=selection.at(-1),item=selectedItem(),recipe=doc.features.find(f=>f.id===item?.featureId)?.params;if(item?.kind==='sketch'){p.sketchId=item.id;p.target=recipe?.hostBody||items.find(i=>i.kind==='body')?.id;}else{p.target=item?.id;p.face=ref?.index;const b=planeFromSelection();if(b&&ref?.point){const delta=ref.point.map((v,i)=>v-b.origin[i]),y=new THREE.Vector3(...b.normal).cross(new THREE.Vector3(...b.x));p.x=Number(delta.reduce((s,v,i)=>s+v*b.x[i],0).toFixed(3));p.y=Number(delta.reduce((s,v,i)=>s+v*y.getComponent(i),0).toFixed(3));}}}
@@ -222,12 +224,14 @@ function render(){
 const faceHandle=document.createElement('button');faceHandle.id='faceDragHandle';faceHandle.type='button';faceHandle.hidden=true;faceHandle.setAttribute('aria-label','Drag arrow along face normal to pull or push');faceHandle.innerHTML='<span class="faceArrow">➜</span>';$('stage').append(faceHandle);
 const faceDistance=document.createElement('div');faceDistance.id='faceDistance';faceDistance.hidden=true;
 faceDistance.innerHTML='<label>Distance <input id="faceDistanceValue" type="number" step="0.1" value="0" aria-label="Pull distance in millimetres"> mm</label><button id="faceDistanceApply" type="button" aria-label="Apply pull">✓</button><button id="faceDistanceCancel" type="button" aria-label="Cancel pull">×</button>';$('stage').append(faceDistance);
-let faceDrag=null,faceDistanceRef=null,faceDistanceValue=0;
+let faceDrag=null,faceDistanceRef=null,faceDistanceValue=0,faceOperation='offsetFace';
 const sameFace=(a,b)=>a&&b&&a.id===b.id&&a.index===b.index&&a.kind===b.kind;
 function faceDirection(){
  const ref=selection.at(-1),item=selectedItem(),face=ref?.kind==='face'&&item?.kind==='body'?item.faceInfo?.find(f=>f.index===ref.index):null;
- if(!face||face.type!=='PLANE')return null;
- const origin=new THREE.Vector3(...(ref.point||face.center)),normal=new THREE.Vector3(...face.normal).normalize();
+ const sketch=item?.kind==='sketch'&&ref?.kind==='sketch'?doc.features.find(f=>f.id===item.featureId)?.params:null;
+ if((!face||face.type!=='PLANE')&&!sketch)return null;
+ const plane=sketch?basis(sketch):null;
+ const origin=new THREE.Vector3(...(ref.point||face?.center||plane?.origin||[0,0,0])),normal=new THREE.Vector3(...(face?.normal||plane?.normal||[0,0,1])).normalize();
  const rect=$('stage').getBoundingClientRect(),p=origin.clone().project(camera),q=origin.clone().addScaledVector(normal,20).project(camera);
  let dx=(q.x-p.x)*rect.width/2,dy=(p.y-q.y)*rect.height/2;
  const magnitude=Math.hypot(dx,dy);
@@ -245,15 +249,15 @@ function updateFaceHandle(){
  faceHandle.style.setProperty('--arrow-angle',Math.atan2(dy,dx)+'rad');
  if(!faceDistance.hidden){faceDistance.style.left=Math.max(10,Math.min(rect.width-225,x+46))+'px';faceDistance.style.top=Math.max(10,Math.min(rect.height-56,y-25))+'px';}
 }
-function showFaceDistance(value=0){
- const ref=selection.at(-1);if(ref?.kind!=='face')return;
- faceDistanceRef={...ref};faceDistanceValue=Number(value.toFixed(2));
+function showFaceDistance(value=0,operation='offsetFace'){
+ const ref=selection.at(-1);if(!ref||!['face','sketch'].includes(ref.kind))return;
+ faceOperation=operation;faceDistanceRef={...ref};faceDistanceValue=Number(value.toFixed(2));
  $('faceDistanceValue').value=String(faceDistanceValue);faceDistance.hidden=false;updateFaceHandle();
 }
 faceHandle.addEventListener('pointerdown',e=>{
  if(busy)return;const d=faceDirection();if(!d)return;
  e.preventDefault();e.stopPropagation();faceDrag={x:e.clientX,y:e.clientY,dx:d.dx,dy:d.dy,start:faceDistance.hidden?0:Number($('faceDistanceValue').value)||0};
- faceHandle.setPointerCapture(e.pointerId);controls.enabled=false;faceHandle.classList.add('dragging');showFaceDistance(faceDrag.start);
+ faceHandle.setPointerCapture(e.pointerId);controls.enabled=false;faceHandle.classList.add('dragging');showFaceDistance(faceDrag.start,selection.at(-1)?.kind==='sketch'?'extrude':faceOperation);
 });
 faceHandle.addEventListener('pointermove',e=>{
  if(!faceDrag)return;e.preventDefault();
@@ -270,7 +274,7 @@ $('faceDistanceApply').onclick=async()=>{
  const ref=selection.at(-1),distance=Number($('faceDistanceValue').value);
  if(!sameFace(ref,faceDistanceRef)||!Number.isFinite(distance)||Math.abs(distance)<.001){status('Select a face and enter a non-zero distance');return;}
  faceDistance.hidden=true;faceDistanceRef=null;
- try{const id=await apply('offsetFace',{distance,face:ref.index},[ref.id]);select([{id,kind:items.find(i=>i.id===id)?.kind||'body'}]);}
+ try{const operation=ref.kind==='sketch'?'extrude':faceOperation;const id=await apply(operation,operation==='extrude'?{distance}:{distance,face:ref.index},[ref.id]);select([{id,kind:items.find(i=>i.id===id)?.kind||'body'}]);}
  catch(e){error(e);}
 };
 $('faceDistanceValue').addEventListener('keydown',e=>{if(e.key==='Enter'){$('faceDistanceApply').click();}if(e.key==='Escape')$('faceDistanceCancel').click();});
