@@ -22,6 +22,15 @@ export function solveSketch(points,constraints=[],{tolerance=1e-6}={}){
  function jacobian(x){const j=rows.map(()=>Array(n).fill(0));for(let k=0;k<n;k++){const h=1e-5,old=x[k];x[k]=old+h;const a=residual(x);x[k]=old-h;const b=residual(x);x[k]=old;for(let i=0;i<rows.length;i++)j[i][k]=(a[i]-b[i])/(2*h);}return j;}
  function linear(a,b){a=a.map((r,i)=>[...r,b[i]]);for(let k=0;k<n;k++){let pivot=k;for(let i=k+1;i<n;i++)if(Math.abs(a[i][k])>Math.abs(a[pivot][k]))pivot=i;[a[k],a[pivot]]=[a[pivot],a[k]];if(Math.abs(a[k][k])<1e-16)return null;for(let i=k+1;i<n;i++){const t=a[i][k]/a[k][k];for(let j=k;j<=n;j++)a[i][j]-=t*a[k][j];}}const x=Array(n).fill(0);for(let i=n-1;i>=0;i--){let v=a[i][n];for(let j=i+1;j<n;j++)v-=a[i][j]*x[j];x[i]=v/a[i][i];}return x;}
  const x=points.flat();let damping=1e-7;
+ // Seed a feasible direction when a length starts perpendicular to its axis constraint.
+ // The numerical length gradient alone cannot escape that symmetric configuration.
+ for(const c of constraints.filter(c=>c.type==='length')){
+  const a=c.a*2,b=c.b*2,rule=constraints.find(r=>['horizontal','vertical'].includes(r.type)&&((r.a===c.a&&r.b===c.b)||(r.a===c.b&&r.b===c.a))),axis=rule?.type==='vertical'?1:0;
+  if((rule&&Math.abs(x[b+axis]-x[a+axis])<1e-8)||Math.hypot(x[b]-x[a],x[b+1]-x[a+1])<1e-8){
+   const af=constraints.some(r=>r.type==='fixed'&&r.a===c.a),bf=constraints.some(r=>r.type==='fixed'&&r.a===c.b);
+   if(!bf)x[b+axis]=x[a+axis]+c.value;else if(!af)x[a+axis]=x[b+axis]-c.value;
+  }
+ }
  for(let iter=0;iter<100;iter++){
   const r=residual(x),err=Math.max(...r.map(Math.abs));if(err<tolerance)break;
   const j=jacobian(x),a=Array.from({length:n},()=>Array(n).fill(0)),b=Array(n).fill(0);

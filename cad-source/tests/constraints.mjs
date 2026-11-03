@@ -12,3 +12,7 @@ assert.throws(()=>solveSketch([[0,0],[10,0]],[{type:'length',a:0,b:9,value:10}])
 assert.throws(()=>solveSketch([[0,0],[10,0]],[{type:'length',a:0,b:1,value:-10}]),/positive/);
 const joined=solveSketch([[0,0],[10,2]],[{type:'coincident',a:0,b:1}]);near(joined.points[0][0],joined.points[1][0]);near(joined.points[0][1],joined.points[1][1]);
 console.log('PASS sketch constraints: dimensions, edit propagation, rank, duplicate constraints, conflicts, validation, coincidence');
+
+const symmetric=solveSketch([[0,0],[0,20]],[{type:'fixed',a:0,x:0,y:0},{type:'horizontal',a:0,b:1},{type:'length',a:0,b:1,value:30}]);near(symmetric.points[1][0],30);near(symmetric.points[1][1],0);assert.equal(symmetric.dof,0);
+const collapsed=solveSketch([[0,0],[0,0]],[{type:'length',a:0,b:1,value:20}]);near(Math.hypot(collapsed.points[1][0]-collapsed.points[0][0],collapsed.points[1][1]-collapsed.points[0][1]),20);
+console.log('PASS axis-aligned and collapsed initial geometry');
