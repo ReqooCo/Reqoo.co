@@ -1,3 +1,4 @@
+const lastLayouts=new WeakMap();
 // Screen-space annotation layout derived from the same sketch plane/parameters as CAD.
 export function layoutDimensions({THREE,basis,camera,stage,overlay,svg,params:p}){
  const rect=stage.getBoundingClientRect(),b=basis(p),origin=new THREE.Vector3(...b.origin),xAxis=new THREE.Vector3(...b.x).normalize(),normal=new THREE.Vector3(...b.normal).normalize(),yAxis=normal.clone().cross(xAxis).normalize();
@@ -24,6 +25,7 @@ export function layoutDimensions({THREE,basis,camera,stage,overlay,svg,params:p}
    const left=box.left-rect.left,right=box.right-rect.left,top=box.top-rect.top,bottom=box.bottom-rect.top;
    if(lx+hw>left-6&&lx-hw<right+6&&ly+hh>top-6&&ly-hh<bottom+6){
     if(id==='rail')lx=right+hw+10;
+    else if(id==='viewCube')lx=left-hw-10;
     else ly=top-hh-10;
    }
   }
@@ -33,7 +35,7 @@ export function layoutDimensions({THREE,basis,camera,stage,overlay,svg,params:p}
   label.style.left=lx+'px';label.style.top=ly+'px';
  }
  const markup='<defs><marker id="dimensionArrow" viewBox="0 0 6 6" refX="3" refY="3" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M6 3 0 0 0 6Z" fill="currentColor"/></marker></defs>'+paths.join('');
- svg.setAttribute('viewBox','0 0 '+rect.width+' '+rect.height);if(svg.innerHTML!==markup)svg.innerHTML=markup;
+ svg.setAttribute('viewBox','0 0 '+rect.width+' '+rect.height);if(lastLayouts.get(svg)!==markup){svg.innerHTML=markup;lastLayouts.set(svg,markup);}
  const focus=document.activeElement?.closest?.('[data-dimension-label]')||overlay.querySelector('[data-dimension-label]:not([hidden])'),confirm=overlay.querySelector('button');
  if(confirm&&focus){confirm.style.left=Math.min(rect.width-30,parseFloat(focus.style.left)+58)+'px';confirm.style.top=focus.style.top;}
 }
