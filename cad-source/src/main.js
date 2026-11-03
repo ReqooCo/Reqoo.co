@@ -91,7 +91,7 @@ function setWorkspaceMode(mode){
 $('modeSketch').onclick=()=>setWorkspaceMode('sketch');$('modeSolid').onclick=()=>setWorkspaceMode('solid');
 
 function showMenu(key){if(busy||!ready)return;if(!$('menu').hidden&&$('menu').dataset.key===key){closePanels();return;}closePanels();$('menu').dataset.key=key;$('menu').replaceChildren();const h=document.createElement('h2');h.textContent=key[0].toUpperCase()+key.slice(1);$('menu').append(h);
- for(const [type,label]of tools[key]){const b=document.createElement('button');b.textContent=label;b.dataset.tool=type;b.onclick=()=>startTool(type,key==='sketch'?{shape:type}:{});$('menu').append(b);}$('menu').hidden=false;$('nav-'+key).classList.add('active');
+ for(const [type,label]of tools[key]){const b=document.createElement('button');buttonLabel(b,type,label);b.dataset.tool=type;b.onclick=()=>startTool(type,key==='sketch'?{shape:type}:{});$('menu').append(b);}$('menu').hidden=false;$('nav-'+key).classList.add('active');
 }
 const field=(name,label,value=0,kind='number',options=null)=>({name,label,value,kind,options});
 function formFields(type,p){
@@ -228,7 +228,7 @@ function renderContext(){const c=$('context');c.replaceChildren();const item=sel
 
 function showSelectionChoices(){
  const dialog=document.createElement('dialog');dialog.className='selectionChoices';const heading=document.createElement('h2');heading.textContent='Select overlapping geometry';dialog.append(heading);
- for(const ref of pickCandidates){const item=items.find(i=>i.id===ref.id);if(!item)continue;const label=(ref.kind==='sketch'?'Sketch':ref.kind==='face'?'Face '+(ref.index+1):'Body')+' · '+item.name,b=document.createElement('button');b.innerHTML=ico(ref.kind==='sketch'?'sketch':'face')+'<span>'+esc(label)+'</span>';b.onclick=()=>{dialog.close();select([ref]);};dialog.append(b);}
+ for(const ref of pickCandidates){const item=items.find(i=>i.id===ref.id);if(!item)continue;const label=(ref.kind==='sketch'?'Sketch profile':ref.kind==='face'?'Solid face '+(ref.index+1):ref.kind==='edge'?'Edge':'Body')+' · '+item.name,b=document.createElement('button');b.innerHTML=ico(ref.kind==='sketch'?'sketch':'face')+'<span>'+esc(label)+'</span>';b.onclick=()=>{dialog.close();select([ref]);};dialog.append(b);}
  const cancel=document.createElement('button');cancel.innerHTML=ico('close')+'<span>Cancel</span>';cancel.onclick=()=>dialog.close();dialog.append(cancel);dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
 }
 
