@@ -229,9 +229,11 @@ const sameFace=(a,b)=>a&&b&&a.id===b.id&&a.index===b.index&&a.kind===b.kind;
 function faceDirection(){
  const ref=selection.at(-1),item=selectedItem(),face=ref?.kind==='face'&&item?.kind==='body'?item.faceInfo?.find(f=>f.index===ref.index):null;
  const sketch=item?.kind==='sketch'&&ref?.kind==='sketch'?doc.features.find(f=>f.id===item.featureId)?.params:null;
- if((!face||face.type!=='PLANE')&&!sketch)return null;
+ if(!face&&!sketch)return null;
  const plane=sketch?basis(sketch):null;
- const origin=new THREE.Vector3(...(ref.point||face?.center||plane?.origin||[0,0,0])),normal=new THREE.Vector3(...(face?.normal||plane?.normal||[0,0,1])).normalize();
+ const midpoint=item?.bounds?.[0]?.map((v,i)=>(v+item.bounds[1][i])/2);
+ const origin=new THREE.Vector3(...(face?.center||plane?.origin||midpoint||[0,0,0]));
+ const normal=new THREE.Vector3(...(face?.normal||plane?.normal||[0,0,1])).normalize();
  const rect=$('stage').getBoundingClientRect(),p=origin.clone().project(camera),q=origin.clone().addScaledVector(normal,20).project(camera);
  let dx=(q.x-p.x)*rect.width/2,dy=(p.y-q.y)*rect.height/2;
  const magnitude=Math.hypot(dx,dy);
@@ -243,8 +245,7 @@ function updateFaceHandle(){
  if(!direction||sketchMode||busy){faceHandle.hidden=true;faceDistance.hidden=true;faceDistanceRef=null;return;}
  if(faceDistanceRef&&!sameFace(ref,faceDistanceRef)){faceDistance.hidden=true;faceDistanceRef=null;faceDistanceValue=0;}
  const {p,rect,dx,dy}=direction;
- if(p.z < -1||p.z > 1){faceHandle.hidden=true;return;}
- const x=(p.x+1)*rect.width/2,y=(1-p.y)*rect.height/2;
+ const x=Math.max(70,Math.min(rect.width-70,(p.x+1)*rect.width/2)),y=Math.max(85,Math.min(rect.height-150,(1-p.y)*rect.height/2));
  faceHandle.hidden=false;faceHandle.style.left=x+'px';faceHandle.style.top=y+'px';
  faceHandle.style.setProperty('--arrow-angle',Math.atan2(dy,dx)+'rad');
  if(!faceDistance.hidden){faceDistance.style.left=Math.max(10,Math.min(rect.width-225,x+46))+'px';faceDistance.style.top=Math.max(10,Math.min(rect.height-56,y-25))+'px';}
