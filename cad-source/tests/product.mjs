@@ -46,7 +46,7 @@ try{
  assert.equal(await page.evaluate(()=>window.__cad.selection.at(-1).id),offset+':band');
  assert.equal(await page.evaluate(()=>window.__cad.selection.length),1);
  await page.screenshot({path:path.join(out,'product-ring-region-dark.png')});
- await page.locator('#context').getByRole('button',{name:'Extrude',exact:true}).click();await page.locator('#faceDistanceValue').fill('5');await page.locator('#faceDistanceValue').dispatchEvent('input');await preview();
+ await page.locator('#context').getByRole('button',{name:'Extrude',exact:true}).click();await page.locator('#faceDistanceValue').fill('5');await page.locator('#faceDistanceValue').dispatchEvent('input');await page.waitForFunction(()=>!window.__cad.direct.state.inFlight&&!window.__cad.direct.state.pending);await preview();
  near(await page.evaluate(()=>window.__cad.previewItems.find(i=>i.kind==='body').volume),220*Math.PI,.03);
  await page.locator('#faceDistanceApply').click();await page.waitForFunction(()=>window.__cad.items.some(i=>i.kind==='body'));near((await body()).volume,220*Math.PI,.03);
  assert.equal(await page.evaluate(()=>window.__cad.doc.features.at(-1).inputs[0]),offset+':band');
