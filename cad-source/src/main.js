@@ -399,7 +399,7 @@ renderer.domElement.addEventListener('pointerup',e=>{const tap=pointerStart&&!po
   return priority(b)-priority(a)||a.distance-b.distance;
  });
  else if(mode==='sketch')eligible.sort((a,b)=>Number(isSketch(b)&&b.object.isMesh)-Number(isSketch(a)&&a.object.isMesh)||a.distance-b.distance);
- pickCandidates=[];const keys=new Set();for(const hit of eligible){const d=hit.object.userData,kind=isSketch(hit)?'sketch':mode==='body'?'body':d.kind==='edge'?'edge':'face',ref={id:d.id,kind};if(kind==='edge')ref.index=d.index;if(kind==='face'){ref.index=d.faceGroups.find(g=>hit.faceIndex*3>=g.start&&hit.faceIndex*3<g.start+g.count)?.faceIndex??0;ref.point=hit.point.toArray();}const key=[ref.id,ref.kind,ref.index].join(':');if(!keys.has(key)){keys.add(key);pickCandidates.push(ref);}}
+ pickCandidates=[];const keys=new Set();for(const hit of eligible){const d=hit.object.userData,kind=isSketch(hit)?'sketch':mode==='body'?'body':d.kind==='edge'?'edge':'face',ref={id:d.id,kind};if(kind==='edge')ref.index=d.index;if(kind==='face'){const matched=d.faceGroups?.find(g=>hit.faceIndex*3>=g.start&&hit.faceIndex*3<g.start+g.count);if(!matched||!Number.isInteger(matched.faceIndex)||matched.faceIndex<0)continue;ref.index=matched.faceIndex;ref.point=hit.point.toArray();}const key=[ref.id,ref.kind,ref.index].join(':');if(!keys.has(key)){keys.add(key);pickCandidates.push(ref);}}
  // Sketch profiles are selected before the host face in automatic mode; face remains in Select other.
  select(pickCandidates.length?[pickCandidates[0]]:[],e.shiftKey||$('multi').getAttribute('aria-pressed')==='true');}
  if(e.pointerType==='touch')touchCount=Math.max(0,touchCount-1);if(e.pointerType==='pen')controls.enabled=true;pointerStart=null;
