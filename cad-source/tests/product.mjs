@@ -68,6 +68,7 @@ try{
  await page.locator('[data-view=right]').click();assert.equal(await page.locator('[data-view=right]').getAttribute('aria-pressed'),'true');
  await page.locator('[data-view=top]').click();
  await page.locator('[data-dimension=width]').fill('40');await page.locator('[data-dimension=width]').press('Enter');await page.waitForFunction(()=>window.__cad.doc.features[0].params.width===40);
+ const overlap=await page.evaluate(()=>{const a=document.querySelector('[data-dimension-label=width]').getBoundingClientRect(),b=document.querySelector('#context').getBoundingClientRect();return a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;});assert.equal(overlap,false,'Dimension label must not cover contextual tools');
  await page.screenshot({path:path.join(out,'product-attached-rectangle-dimensions.png')});
  checks.push('Top/front/right/ISO widget selects and highlights orientations; dimension lines follow the camera');
  await op('extrude',{distance:5,keepInputs:true},[source]);near((await body()).volume,4000,.03);

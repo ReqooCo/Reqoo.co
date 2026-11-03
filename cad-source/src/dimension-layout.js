@@ -14,11 +14,23 @@ export function layoutDimensions({THREE,basis,camera,stage,overlay,svg,params:p}
   const a=project(...aa),b=project(...bb),dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy),label=overlay.querySelector('[data-dimension-label="'+key+'"]');if(!label)continue;
   label.hidden=len<8;if(label.hidden)continue;
   let nx=-dy/len,ny=dx/len;if(((a.x+b.x)/2-centre.x)*nx+((a.y+b.y)/2-centre.y)*ny<0){nx=-nx;ny=-ny;}
-  const ax=a.x+nx*offset,ay=a.y+ny*offset,bx=b.x+nx*offset,by=b.y+ny*offset;
-  if(!key.startsWith('segmentAngle:'))paths.push('<path class="dimensionExtension" d="M'+a.x+' '+a.y+'L'+(ax+nx*6)+' '+(ay+ny*6)+'M'+b.x+' '+b.y+'L'+(bx+nx*6)+' '+(by+ny*6)+'"/><path class="dimensionMeasure" data-measure="'+key+'" marker-start="url(#dimensionArrow)" marker-end="url(#dimensionArrow)" d="M'+ax+' '+ay+'L'+bx+' '+by+'"/>');
+  let ax=a.x+nx*offset,ay=a.y+ny*offset,bx=b.x+nx*offset,by=b.y+ny*offset;
   const along=shape==='annulus'?(key==='outerDiameter'?1:-1)*Math.min(80,len*.2):0;
-  label.style.left=Math.max(50,Math.min(rect.width-55,(ax+bx)/2+nx*labelOffset+dx/len*along))+'px';
-  label.style.top=Math.max(65,Math.min(rect.height-100,(ay+by)/2+ny*labelOffset))+'px';
+  const desiredX=(ax+bx)/2+nx*labelOffset+dx/len*along,desiredY=(ay+by)/2+ny*labelOffset;
+  const hw=Math.max(40,label.offsetWidth/2),hh=Math.max(18,label.offsetHeight/2);
+  let lx=Math.max(hw+8,Math.min(rect.width-hw-8,desiredX)),ly=Math.max(60+hh,Math.min(rect.height-hh-12,desiredY));
+  for(const id of ['context','selectionBar','viewCube','rail']){
+   const element=stage.querySelector('#'+id);if(!element||element.hidden)continue;const box=element.getBoundingClientRect();if(!box.width||!box.height)continue;
+   const left=box.left-rect.left,right=box.right-rect.left,top=box.top-rect.top,bottom=box.bottom-rect.top;
+   if(lx+hw>left-6&&lx-hw<right+6&&ly+hh>top-6&&ly-hh<bottom+6){
+    if(id==='rail')lx=right+hw+10;
+    else ly=top-hh-10;
+   }
+  }
+  lx=Math.max(hw+8,Math.min(rect.width-hw-8,lx));ly=Math.max(hh+8,Math.min(rect.height-hh-8,ly));
+  const correction=(lx-desiredX)*nx+(ly-desiredY)*ny;ax+=nx*correction;ay+=ny*correction;bx+=nx*correction;by+=ny*correction;
+  if(!key.startsWith('segmentAngle:'))paths.push('<path class="dimensionExtension" d="M'+a.x+' '+a.y+'L'+(ax+nx*6)+' '+(ay+ny*6)+'M'+b.x+' '+b.y+'L'+(bx+nx*6)+' '+(by+ny*6)+'"/><path class="dimensionMeasure" data-measure="'+key+'" marker-start="url(#dimensionArrow)" marker-end="url(#dimensionArrow)" d="M'+ax+' '+ay+'L'+bx+' '+by+'"/>');
+  label.style.left=lx+'px';label.style.top=ly+'px';
  }
  const markup='<defs><marker id="dimensionArrow" viewBox="0 0 6 6" refX="3" refY="3" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M6 3 0 0 0 6Z" fill="currentColor"/></marker></defs>'+paths.join('');
  svg.setAttribute('viewBox','0 0 '+rect.width+' '+rect.height);if(svg.innerHTML!==markup)svg.innerHTML=markup;
