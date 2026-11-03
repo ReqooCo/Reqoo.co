@@ -215,11 +215,25 @@ function render(){
   }
   if(showEdges||item.kind!=='body')for(const edge of item.edges){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(edge.lines,3));const selected=selection.some(s=>s.id===item.id&&(s.kind==='edge'?s.index===edge.index:s.kind==='sketch'||s.kind==='body'));const line=new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:selected?'#2475e8':item.kind==='sketch'?'#4883c8':item.kind==='axis'?'#c89143':'#576372',transparent:true,opacity:item.kind==='plane'?.4:.9}));line.renderOrder=item.kind==='sketch'?4:1;line.userData={id:item.id,kind:'edge',index:edge.index,itemKind:item.kind};node.add(line);}
  }
- $('empty').hidden=items.length>0;renderSidebar();renderContext();updateClip();
+ $('empty').hidden=items.length>0;renderSidebar();renderContext();updateClip();updateFaceHandle();
 }
+// Direct-manipulation face handle. Drag proposes a signed offset; Apply commits to history.
+const faceHandle=document.createElement('button');faceHandle.id='faceDragHandle';faceHandle.type='button';faceHandle.hidden=true;faceHandle.setAttribute('aria-label','Drag selected face to pull or push');faceHandle.innerHTML=ico('offsetFace')+'<span>Pull</span>';$('stage').append(faceHandle);
+let faceDrag=null;
+function updateFaceHandle(){
+ const ref=selection.at(-1),item=selectedItem(),face=ref?.kind==='face'&&item?.kind==='body'?item.faceInfo?.find(f=>f.index===ref.index):null;
+ if(!face||face.type!=='PLANE'||sketchMode||busy){faceHandle.hidden=true;return;}
+ const p=new THREE.Vector3(...(ref.point||face.center)).project(camera),rect=$('stage').getBoundingClientRect();
+ if(p.z < -1||p.z > 1){faceHandle.hidden=true;return;}
+ faceHandle.hidden=false;faceHandle.style.left=((p.x+1)*rect.width/2)+'px';faceHandle.style.top=((-p.y+1)*rect.height/2)+'px';
+}
+faceHandle.addEventListener('pointerdown',e=>{if(busy)return;e.preventDefault();e.stopPropagation();faceDrag={startY:e.clientY,distance:0};faceHandle.setPointerCapture(e.pointerId);controls.enabled=false;faceHandle.classList.add('dragging');});
+faceHandle.addEventListener('pointermove',e=>{if(!faceDrag)return;e.preventDefault();const px=(camera.top-camera.bottom)/camera.zoom/Math.max(1,renderer.domElement.clientHeight);faceDrag.distance=Math.round((faceDrag.startY-e.clientY)*px*10)/10;faceHandle.querySelector('span').textContent=(faceDrag.distance>=0?'+':'')+faceDrag.distance.toFixed(1)+' mm';});
+function finishFaceHandle(e){if(!faceDrag)return;const distance=faceDrag.distance;faceDrag=null;controls.enabled=true;faceHandle.classList.remove('dragging');faceHandle.querySelector('span').textContent='Pull';if(Math.abs(distance)>.05)startTool('offsetFace',{distance});}
+faceHandle.addEventListener('pointerup',finishFaceHandle);faceHandle.addEventListener('pointercancel',()=>{faceDrag=null;controls.enabled=true;faceHandle.classList.remove('dragging');faceHandle.querySelector('span').textContent='Pull';});
 function renderContext(){const c=$('context');c.replaceChildren();const item=selectedItem();c.hidden=!item;if(!item)return;
  const picked=selection.at(-1),onFace=picked?.kind==='face'&&item.kind==='body',onEdge=picked?.kind==='edge'&&item.kind==='body';
- const commands=item.kind==='sketch'?[...(doc.features.find(f=>f.id===item.featureId)?.params.shape==='circle'?[['hole','Hole']]:[]),['extrude','Extrude'],['revolve','Revolve'],['sweep']]:item.kind==='plane'?[['rectangle','Sketch on plane']]:item.kind==='axis'?[]:onEdge?[['fillet','Fillet'],['chamfer','Chamfer']]:onFace?[['hole','Hole'],['offsetFace','Pull / Offset Face'],['extrude','Extrude']]:[['move','Move'],['rotate','Rotate'],['fillet','Fillet']];
+ const commands=item.kind==='sketch'?[...(doc.features.find(f=>f.id===item.featureId)?.params.shape==='circle'?[['hole','Hole']]:[]),['extrude','Extrude'],['revolve','Revolve'],['sweep']]:item.kind==='plane'?[['rectangle','Sketch on plane']]:item.kind==='axis'?[]:onEdge?[['fillet','Fillet'],['chamfer','Chamfer']]:onFace?[['offsetFace','Pull / Offset Face'],['extrude','Extrude'],['hole','Hole'],['scale','Scale Body']]:[['move','Move'],['rotate','Rotate'],['fillet','Fillet']];
  if(onFace){const sketchFace=document.createElement('button');buttonLabel(sketchFace,'sketch','Sketch on face');sketchFace.onclick=()=>startTool('sketch',{shape:'circle'});c.append(sketchFace);}
  if(item.kind==='sketch'){const make=document.createElement('button');buttonLabel(make,'box','Solid tools');make.onclick=()=>setWorkspaceMode('solid');c.append(make);}
  if(item.kind==='sketch'){const edit=document.createElement('button');buttonLabel(edit,'sketch','Edit sketch');edit.onclick=()=>{setWorkspaceMode('sketch');startTool('sketch',{},item.featureId);};c.append(edit);}
@@ -253,7 +267,7 @@ function fit(){const b=new THREE.Box3().setFromObject(root);if(b.isEmpty()){cont
 function view(name){const c=controls.target.clone(),d=300,dir=name==='top'?[0,0,1]:name==='front'?[0,-1,0]:name==='right'?[1,0,0]:[1,-1,1];camera.up.set(0,0,1);if(name==='top')camera.up.set(0,1,0);camera.position.copy(c).add(new THREE.Vector3(...dir).normalize().multiplyScalar(d));controls.update();}
 $('fit').onclick=fit;document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>view(b.dataset.view));
 function resize(){const r=$('canvas').getBoundingClientRect(),aspect=r.width/Math.max(1,r.height);camera.left=-100*aspect;camera.right=100*aspect;camera.top=100;camera.bottom=-100;camera.updateProjectionMatrix();renderer.setSize(r.width,r.height);}
-new ResizeObserver(resize).observe($('canvas'));resize();function frame(){requestAnimationFrame(frame);controls.update();renderer.render(scene,camera);}frame();
+new ResizeObserver(resize).observe($('canvas'));resize();function frame(){requestAnimationFrame(frame);controls.update();updateFaceHandle();renderer.render(scene,camera);}frame();
 function worldOnSketch(){const b=basis(sketchMode.params),normal=new THREE.Vector3(...b.normal),plane=new THREE.Plane(normal,-normal.dot(new THREE.Vector3(...b.origin))),hit=new THREE.Vector3();if(!ray.ray.intersectPlane(plane,hit))return null;const x=new THREE.Vector3(...b.x).normalize(),y=normal.clone().cross(x).normalize(),delta=hit.sub(new THREE.Vector3(...b.origin));return[Math.round(delta.dot(x)/gridStep)*gridStep,Math.round(delta.dot(y)/gridStep)*gridStep];}
 function beginDrawing(p){setWorkspaceMode('sketch');if(p.shape==='polyline')p={...p,constraints:[]};closePanels();sketchMode={params:p,points:[]};controls.enabled=false;$('sketchBar').hidden=false;$('sketchHint').textContent=p.shape+' · '+(p.plane||'selected face')+' · '+(['polyline','spline'].includes(p.shape)?'Click points, then Finish sketch':'Drag to draw');const b=basis(p),n=new THREE.Vector3(...b.normal),origin=new THREE.Vector3(...b.origin);controls.target.copy(origin);camera.up.set(0,0,1);if(Math.abs(n.z)>.9)camera.up.set(0,1,0);camera.position.copy(origin).addScaledVector(n,300);controls.update();status('Sketch active · snap '+gridStep+' mm');}
 function drawingDown(){const p=worldOnSketch();if(!p)return;if(['polyline','spline'].includes(sketchMode.params.shape)){sketchMode.points.push(p);draft={start:p,end:p,poly:true};drawDraft();}else draft={start:p,end:p};}
