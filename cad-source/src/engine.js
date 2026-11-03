@@ -48,7 +48,7 @@ export async function buildModel(doc){
   if(f.type==='box'){const w=number(p.width,'Width',.01,2000),d=number(p.depth,'Depth',.01,2000),h=number(p.height,'Height',.01,2000),x=number(p.x??0,'X'),y=number(p.y??0,'Y'),z=number(p.z??0,'Z');s=R.makeBox([x-w/2,y-d/2,z],[x+w/2,y+d/2,z+h]);}
   else if(f.type==='cylinder')s=R.makeCylinder(number(p.radius,'Radius',.01,1000),number(p.height,'Height',.01,2000),[number(p.x??0,'X'),number(p.y??0,'Y'),number(p.z??0,'Z')],[0,0,1]);
   else if(f.type==='sphere'){const r=number(p.radius,'Radius',.01,1000);s=R.makeSphere(r).translate([number(p.x??0,'X'),number(p.y??0,'Y'),number(p.z??0,'Z')+r]);}
-  else if(f.type==='torus'){const r=number(p.radius,'Major radius',.02,1000),t=number(p.tube,'Tube radius',.01,r-.001);s=R.drawCircle(t).translate(r,0).sketchOnPlane('XZ').revolve('Z');s.translateZ(t);}
+  else if(f.type==='torus'){const r=number(p.radius,'Major radius',.02,1000),t=number(p.tube,'Tube radius',.01,r-.001);s=R.drawCircle(t).translate(r,0).sketchOnPlane('XZ').revolve('Z');s=s.translateZ(t);}
   else if(f.type==='import'){if(typeof p.step!=='string'||p.step.length>20e6||!p.step.includes('ISO-10303-21'))throw Error('Choose a valid STEP file (up to 20 MB)');s=await R.importSTEP(new Blob([p.step]));}
   else if(f.type==='extrude'||f.type==='revolve'||f.type==='sweep'||f.type==='loft'){
    const a=profiles.get(ins[0]);if(!a)throw Error('Select a sketch profile');
@@ -75,7 +75,7 @@ export async function buildModel(doc){
   else if(f.type==='align'){const a=clone(ins[0]),b=body(ins[1]),aa=a.boundingBox.center,bb=b.boundingBox.center,axis=['X','Y','Z'].indexOf(p.axis||'X'),delta=[0,0,0];delta[axis]=bb[axis]-aa[axis];s=a.translate(delta);}
   else if(f.type==='pattern'||f.type==='circularPattern'){
    const count=number(p.count,'Count',2,25);if(!Number.isInteger(count))throw Error('Count must be an integer');const copies=[];
-   for(let i=0;i<count;i++){const c=clone(ins[0]);if(f.type==='pattern')c.translate([number(p.x??20,'X spacing')*i,number(p.y??0,'Y spacing')*i,number(p.z??0,'Z spacing')*i]);else c.rotate(i*number(p.angle??360,'Angle',.1,360)/count,[0,0,0],p.axis||'Z');copies.push(c);}s=R.makeCompound(copies);
+   for(let i=0;i<count;i++){let c=clone(ins[0]);if(f.type==='pattern')c=c.translate([number(p.x??20,'X spacing')*i,number(p.y??0,'Y spacing')*i,number(p.z??0,'Z spacing')*i]);else c=c.rotate(i*number(p.angle??360,'Angle',.1,360)/count,[0,0,0],p.axis||'Z');copies.push(c);}s=R.makeCompound(copies);
   }
   else if(f.type==='split'){const b=clone(ins[0]),parts=b.split(p.plane||'XY',number(p.offset??0,'Plane offset'));if(!parts.positive||!parts.negative)throw Error('The plane must pass through the body');save(f,parts.positive,'body',f.id+':positive',(f.name||'Split')+' · positive');save(f,parts.negative,'body',f.id+':negative',(f.name||'Split')+' · negative');visible.delete(ins[0]);continue;}
   else throw Error('Unsupported CAD operation');
