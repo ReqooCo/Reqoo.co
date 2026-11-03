@@ -1,0 +1,20 @@
+{
+  "name": "reqoo-cad",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build --base=./",
+    "test": "node tests/cad.mjs"
+  },
+  "dependencies": {
+    "three": "0.170.0",
+    "replicad": "1.2.0",
+    "replicad-opencascadejs": "1.1.0"
+  },
+  "devDependencies": {
+    "vite": "6.4.1",
+    "playwright": "1.56.1"
+  }
+}

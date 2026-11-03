@@ -1,0 +1,214 @@
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {basis,validateProject} from './engine.js';
+import './style.css';
+
+const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const svg=(path)=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+path+'</svg>';
+const icons={
+ search:'<circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/>',
+ sketch:'<path d="m4 16 12-12 4 4L8 20H4v-4Zm9-9 4 4"/>',
+ add:'<path d="M12 4v16M4 12h16"/>',
+ construct:'<path d="m3 17 9-12 9 12H3Zm9-12v16"/>',
+ transform:'<path d="M12 2v20M2 12h20m-7-7-3-3-3 3m6 14-3 3-3-3M5 9l-3 3 3 3m14-6 3 3-3 3"/>',
+ tools:'<path d="m5 20 8-8m0-7 6-2-2 6-4 3-3-3 3-4ZM4 17l3 3"/>',
+ items:'<path d="m3 7 9-4 9 4-9 4-9-4Zm0 5 9 4 9-4M3 17l9 4 9-4"/>',
+ history:'<path d="M4 11a8 8 0 1 1 2 7M4 4v7h7m1-4v6l4 2"/>',
+ settings:'<path d="M4 7h16M4 17h16M9 4v6m6 4v6"/>',
+ undo:'<path d="m8 5-6 6 6 6m-6-6h12a6 6 0 0 1 6 6"/>',
+ redo:'<path d="m16 5 6 6-6 6m6-6H10a6 6 0 0 0-6 6"/>',
+ fit:'<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5M8 8h8v8H8Z"/>',
+ close:'<path d="m5 5 14 14M19 5 5 19"/>',
+ file:'<path d="M5 3h10l4 4v14H5V3Zm10 0v5h4M8 12h8m-8 4h8"/>',
+ measure:'<path d="m3 17 14-14 4 4L7 21 3 17Zm5-5 3 3m1-7 3 3"/>'
+};
+const ico=k=>svg(icons[k]||icons.tools);
+document.getElementById('app').innerHTML='<header id="top"><div class="brand">reqoo<span>CAD</span></div><button id="fileMenu">File</button><button id="undo" aria-label="Undo">'+ico('undo')+'</button><button id="redo" aria-label="Redo">'+ico('redo')+'</button><input id="projectName" aria-label="Project name" value="Untitled"><span id="saveState">Saved locally</span><button id="itemsToggle" aria-label="Items">'+ico('items')+'</button><button id="historyToggle" aria-label="History">'+ico('history')+'</button><button id="settingsToggle" aria-label="Settings">'+ico('settings')+'</button><button id="exportTop" class="primary">Export</button></header><main id="stage"><div id="canvas"></div><div id="empty"><h1>Start with a sketch</h1><p>Choose a plane. Draw a profile. Build a solid.</p><button id="startSketch">New sketch</button></div><nav id="rail" aria-label="Modeling tools"></nav><section id="menu" hidden aria-label="Tool menu"></section><section id="toolPanel" hidden aria-label="Tool settings"></section><section id="sidebar" hidden></section><div id="viewCube" aria-label="View orientation"><button data-view="top">TOP</button><div><button data-view="front">FRONT</button><button data-view="right">RIGHT</button></div><button data-view="iso">ISO</button><span>mm</span></div><div id="selectionBar"><label>Selection<select id="pickMode"><option value="auto">Automatic</option><option value="body">Bodies</option><option value="face">Faces</option><option value="edge">Edges</option><option value="sketch">Sketches</option></select></label><button id="multi" aria-pressed="false">Multi-select</button><button id="isolate">Isolate</button><button id="measure">Measure</button><button id="fit" aria-label="Zoom to fit">'+ico('fit')+'</button></div><div id="sketchBar" hidden><strong id="sketchHint">Sketch</strong><button id="cancelSketch">Cancel</button><button id="finishSketch" class="primary">Finish sketch</button></div><div id="context" hidden></div></main><footer><span id="status" role="status">Preparing CAD engine…</span><span id="units">mm · grid 1 mm</span></footer><input id="openFile" type="file" accept=".json,.rqcad" hidden><input id="stepFile" type="file" accept=".step,.stp" hidden><dialog id="searchDialog"><header><strong>Search commands</strong><button data-close aria-label="Close">'+ico('close')+'</button></header><input id="commandQuery" placeholder="Search tools…" aria-label="Search commands"><div id="commandResults"></div></dialog><dialog id="errorDialog"><h2>CAD operation not completed</h2><p id="errorText"></p><button id="closeError">Continue editing</button></dialog>';
+
+const tools={
+ sketch:[['rectangle','Rectangle'],['circle','Circle'],['ellipse','Ellipse'],['polygon','Polygon'],['polyline','Line / polyline'],['arc','Arc'],['spline','Spline']],
+ add:[['box','Box'],['cylinder','Cylinder'],['sphere','Sphere'],['torus','Torus'],['import','Import STEP']],
+ construct:[['plane','Offset plane'],['axis','Axis']],
+ transform:[['move','Move / Translate'],['rotate','Rotate'],['scale','Scale'],['mirror','Mirror'],['duplicate','Copy'],['pattern','Linear pattern'],['circularPattern','Circular pattern'],['align','Align']],
+ tools:[['extrude','Extrude'],['revolve','Revolve'],['loft','Loft'],['sweep','Sweep'],['offsetFace','Offset Face'],['fillet','Fillet'],['chamfer','Chamfer'],['shell','Shell'],['union','Union'],['subtract','Subtract'],['intersect','Intersect'],['split','Split Body']]
+};
+for(const [key,label]of [['search','Search'],['sketch','Sketch'],['add','Add'],['construct','Construct'],['transform','Transform'],['tools','Tools']]){
+ const b=document.createElement('button');b.id='nav-'+key;b.type='button';b.innerHTML=ico(key)+'<span>'+label+'</span>';b.onclick=()=>key==='search'?search():showMenu(key);$('rail').append(b);
+}
+let doc={format:'reqoo-cad',version:1,title:'Untitled',features:[],ui:{hidden:[],colors:{}}},items=[],selection=[],undo=[],redo=[],busy=false,ready=false,isolate=false,editing=null,activeTool=null,sketchMode=null,draft=null,counter=0,unitFactor=1,gridStep=1;
+let worker=null,serial=0,requests=new Map();const uid=()=>('f'+Date.now().toString(36)+(++counter).toString(36));
+function spawn(){worker=new Worker(new URL('./kernel.worker.js',import.meta.url),{type:'module'});worker.onmessage=e=>{const p=requests.get(e.data.id);if(!p)return;clearTimeout(p.timer);requests.delete(e.data.id);e.data.ok?p.resolve(e.data.result):p.reject(Error(e.data.error));};worker.onerror=e=>{for(const p of requests.values()){clearTimeout(p.timer);p.reject(Error('The CAD engine stopped. Your last completed model is preserved.'));}requests.clear();worker.terminate();worker=null;status('CAD engine needs a reload. Save your project before refreshing.');};}
+function rpc(type,payload={}){if(!worker)spawn();return new Promise((resolve,reject)=>{const id=++serial,timer=setTimeout(()=>{worker?.terminate();worker=null;for(const p of requests.values())p.reject(Error('Operation timed out. The previous model is unchanged.'));requests.clear();},90000);requests.set(id,{resolve,reject,timer});worker.postMessage({id,type,doc,...payload});});}
+function status(text){$('status').textContent=text;}
+function error(e){$('errorText').textContent=e.message||String(e);if(!$('errorDialog').open)$('errorDialog').showModal();status('Operation not completed. Previous model preserved.');}
+$('closeError').onclick=()=>$('errorDialog').close();
+function setBusy(value){busy=value;document.body.classList.toggle('busy',value);for(const b of document.querySelectorAll('button[data-apply]'))b.disabled=value;updateHistoryButtons();}
+function snapshot(){return JSON.parse(JSON.stringify(doc));}
+function remember(stack,value){stack.push(value);while(stack.length>20||stack.length>1&&stack.reduce((n,d)=>n+JSON.stringify(d).length,0)>24e6)stack.shift();}
+function saveLocal(){try{localStorage.setItem('reqoo-cad-v1',JSON.stringify(doc));$('saveState').textContent='Saved locally';}catch{$('saveState').textContent='Download a project backup';}}
+async function rebuild(next,{history=true,selectId=null}={}){
+ if(busy)throw Error('Wait for the current CAD operation');validateProject(next);setBusy(true);
+ try{const result=await rpc('build',{doc:next});if(history){remember(undo,snapshot());redo=[];}doc=JSON.parse(JSON.stringify(next));items=result;if(selectId)selection=result.some(i=>i.id===selectId)?[{id:selectId,kind:items.find(i=>i.id===selectId).kind}]:[];else selection=selection.filter(s=>items.some(i=>i.id===s.id));render();saveLocal();$('projectName').value=doc.title;status(items.filter(i=>i.kind==='body').length+' solid bodies · ready');return result;}
+ finally{setBusy(false);}
+}
+async function apply(type,params={},inputs=selectedIds(),editId=null){
+ if(['sketch','box','cylinder','sphere','torus','plane','axis','import'].includes(type))inputs=[];
+ const next=snapshot(),f={id:editId||uid(),type,name:(type==='sketch'?(params.shape||'Sketch'):labelFor(type))+' '+(next.features.filter(f=>f.type===type).length+1),params,inputs};
+ if(editId){const index=next.features.findIndex(f=>f.id===editId);if(index<0)throw Error('History step no longer exists');f.name=next.features[index].name;next.features[index]=f;}else next.features.push(f);
+ await rebuild(next,{selectId:f.id});return f.id;
+}
+function selectedIds(){return [...new Set(selection.map(s=>s.id))];}
+function selectedItem(){return items.find(i=>i.id===selection.at(-1)?.id);}
+function updateHistoryButtons(){$('undo').disabled=!ready||busy||!undo.length;$('redo').disabled=!ready||busy||!redo.length;}
+async function travel(from,to){if(!from.length||busy)return;const next=from.at(-1),prior=snapshot();await rebuild(next,{history:false});from.pop();remember(to,prior);updateHistoryButtons();}
+$('undo').onclick=()=>travel(undo,redo).catch(error);$('redo').onclick=()=>travel(redo,undo).catch(error);
+$('projectName').onchange=()=>{doc.title=$('projectName').value.trim().slice(0,80)||'Untitled';saveLocal();};
+function labelFor(type){return [...Object.values(tools).flat(),['sketch','Sketch'],['delete','Delete']].find(t=>t[0]===type)?.[1]||type;}
+function closePanels(){$('menu').hidden=$('toolPanel').hidden=true;activeTool=null;editing=null;document.querySelectorAll('#rail button').forEach(b=>b.classList.remove('active'));}
+function showMenu(key){if(busy||!ready)return;if(!$('menu').hidden&&$('menu').dataset.key===key){closePanels();return;}closePanels();$('menu').dataset.key=key;$('menu').replaceChildren();const h=document.createElement('h2');h.textContent=key[0].toUpperCase()+key.slice(1);$('menu').append(h);
+ for(const [type,label]of tools[key]){const b=document.createElement('button');b.textContent=label;b.dataset.tool=type;b.onclick=()=>startTool(type,key==='sketch'?{shape:type}:{});$('menu').append(b);}$('menu').hidden=false;$('nav-'+key).classList.add('active');
+}
+const field=(name,label,value=0,kind='number',options=null)=>({name,label,value,kind,options});
+function formFields(type,p){
+ const f=(name,label,value=0)=>field(name,label,p[name]??value);
+ const select=(name,label,options,value)=>field(name,label,p[name]??value,'select',options);
+ const pos=[f('x','X (mm)'),f('y','Y (mm)'),f('z','Z (mm)')];
+ if(type==='sketch')return[select('plane','Sketch plane',['XY','XZ','YZ',...(planeFromSelection()?['Selected face']:[])],p.basis||planeFromSelection()?'Selected face':'XY'),f('offset','Plane offset (mm)'),...(['rectangle','ellipse'].includes(p.shape)?[f('width','Width (mm)',40),f('height','Height (mm)',30)]:['circle','polygon'].includes(p.shape)?[f('radius','Radius (mm)',15),...(p.shape==='polygon'?[f('sides','Sides',6)]:[])]:[field('points','Points: x,y; x,y',p.points?.map(q=>q.join(',')).join(';')||(p.shape==='spline'?'-20,0; 0,20; 20,0':'-20,0; 20,0'),'text'),...(p.shape==='arc'?[f('sagitta','Arc height (mm)',10)]:[]),field('closed','Closed profile',p.closed??!['arc','polyline'].includes(p.shape),'checkbox')]),f('x','Centre X (mm)'),f('y','Centre Y (mm)')];
+ if(type==='box')return[f('width','Width (mm)',40),f('depth','Depth (mm)',30),f('height','Height (mm)',20),...pos];
+ if(type==='cylinder')return[f('radius','Radius (mm)',15),f('height','Height (mm)',30),...pos];
+ if(type==='sphere')return[f('radius','Radius (mm)',15),...pos];
+ if(type==='torus')return[f('radius','Major radius (mm)',25),f('tube','Tube radius (mm)',5)];
+ if(type==='extrude')return[f('distance','Distance (mm)',20)];
+ if(type==='revolve')return[select('axis','Axis',['X','Y','Z'],'Z'),f('angle','Angle (°)',360)];
+ if(type==='sweep')return[f('radius','Round profile radius (mm)',3)];
+ if(type==='fillet'||type==='chamfer')return[f('radius',type==='fillet'?'Radius (mm)':'Distance (mm)',2),field('allEdges','All edges',p.allEdges??!selection.some(s=>s.kind==='edge'),'checkbox')];
+ if(type==='shell')return[f('thickness','Wall thickness (mm)',2)];
+ if(type==='offsetFace')return[f('distance','Distance (mm)',5)];
+ if(type==='move'||type==='duplicate')return pos.map(v=>({...v,value:p[v.name]??(type==='duplicate'&&v.name==='x'?30:0)}));
+ if(type==='rotate')return[select('axis','Axis through origin',['X','Y','Z'],'Z'),f('angle','Angle (°)',90)];
+ if(type==='scale')return[f('factor','Uniform scale factor',1.2)];
+ if(type==='mirror')return[select('plane','Mirror plane',['XY','XZ','YZ'],'YZ')];
+ if(type==='align')return[select('axis','Align body centres on axis',['X','Y','Z'],'X')];
+ if(type==='pattern')return[f('count','Count',3),f('x','X spacing (mm)',30),f('y','Y spacing (mm)',0),f('z','Z spacing (mm)',0)];
+ if(type==='circularPattern')return[f('count','Count',6),f('angle','Angle (°)',360),select('axis','Axis',['X','Y','Z'],'Z')];
+ if(type==='split'||type==='plane')return[select('plane','Plane',['XY','XZ','YZ'],'XY'),f('offset','Offset (mm)',type==='split'?10:20)];
+ if(type==='axis')return[select('axis','Direction',['X','Y','Z'],'Z'),...pos];
+ return[];
+}
+function planeFromSelection(){const s=selection.at(-1),item=selectedItem(),face=item?.faceInfo?.find(f=>f.index===s?.index);if(!face||face.type!=='PLANE')return null;const n=face.normal,x=Math.abs(n[0])<.9?[1,0,0]:[0,1,0],dot=x.reduce((s,v,i)=>s+v*n[i],0),xx=x.map((v,i)=>v-dot*n[i]),len=Math.hypot(...xx);return{origin:face.center,x:xx.map(v=>v/len),normal:n};}
+function requireSelection(type,ins){
+ if(['sketch','box','cylinder','sphere','torus','plane','axis','import'].includes(type))return;
+ if(!ins.length)throw Error('Select '+(['extrude','revolve','sweep','loft'].includes(type)?'a sketch':'a solid body')+' first');
+ if(['union','subtract','intersect','loft','align'].includes(type)&&ins.length<2)throw Error('Select at least two '+(type==='loft'?'sketches':'bodies')+'. Turn on Multi-select or use Shift.');
+ if(['shell','offsetFace'].includes(type)&&!selection.some(s=>s.kind==='face'))throw Error('Select a face first. Change Selection to Faces if needed.');
+}
+function startTool(type,initial={},editId=null){
+ if(!ready||busy)return;if(type==='import'){$('stepFile').click();return;}
+ try{if(!editId)requireSelection(type,selectedIds());}catch(e){status(e.message);return;}
+ closePanels();activeTool=type;editing=editId;const old=editId?doc.features.find(f=>f.id===editId):null,p={...old?.params,...initial};const fields=formFields(type,p),panel=$('toolPanel');
+ panel.innerHTML='<header><h2>'+esc(type==='sketch'?(p.shape[0].toUpperCase()+p.shape.slice(1))+' sketch':labelFor(type))+'</h2><button id="cancelTool" aria-label="Close">'+ico('close')+'</button></header><p class="toolHint">'+esc(type==='sketch'?'Enter dimensions or draw on the selected plane.':type==='subtract'?'The first selected body is the main body. Remaining bodies are cutters.':type==='fillet'||type==='chamfer'?'Select edges, or apply to all edges.':type==='revolve'?'The profile must not cross the rotation axis.':type==='loft'?'Use two closed sketches on separated planes.':type==='shell'||type==='offsetFace'?'Uses the selected face.':'Values use millimetres; transforms are relative to the origin.')+'</p><form id="toolForm"><div class="fields">'+fields.map(f=>'<label class="'+(f.kind==='checkbox'?'check':f.name==='points'?'wide':'')+'" for="p-'+f.name+'">'+(f.kind==='checkbox'?'<input id="p-'+f.name+'" name="'+f.name+'" type="checkbox" '+(f.value?'checked':'')+'>':'')+esc(f.label)+(f.kind==='checkbox'?'':f.kind==='select'?'<select id="p-'+f.name+'" name="'+f.name+'">'+f.options.map(o=>'<option '+(o===f.value?'selected':'')+'>'+esc(o)+'</option>').join('')+'</select>':'<input id="p-'+f.name+'" name="'+f.name+'" type="'+f.kind+'" step="any" value="'+esc(f.value)+'" required>')+'</label>').join('')+'</div><div class="actions">'+(type==='sketch'&&!editId?'<button type="button" id="drawSketch">Draw on plane</button>':'')+'<button type="submit" data-apply class="primary">'+(editId?'Update feature':type==='sketch'?'Create sketch':'Apply')+'</button></div></form>';
+ panel.hidden=false;$('cancelTool').onclick=closePanels;
+ function read(){const result={...p};for(const f of fields){const el=$('p-'+f.name);result[f.name]=f.kind==='checkbox'?el.checked:f.kind==='number'?Number(el.value):el.value;}if(type==='sketch'){if(result.plane==='Selected face'){result.basis=p.basis||planeFromSelection();if(!result.basis)throw Error('Select a planar face');}else delete result.basis;if(typeof result.points==='string')result.points=result.points.split(';').filter(v=>v.trim()).map(v=>v.split(',').map(Number));}if(type==='fillet'||type==='chamfer')result.edges=selection.filter(s=>s.kind==='edge'&&s.id===selectedIds()[0]).map(s=>s.index);if(type==='shell'||type==='offsetFace')result.face=p.face??selection.find(s=>s.kind==='face')?.index;return result;}
+ $('toolForm').onsubmit=async e=>{e.preventDefault();try{const id=await apply(type,read(),old?.inputs||selectedIds(),editId);closePanels();fit();select([{id,kind:items.find(i=>i.id===id)?.kind||'body'}]);}catch(err){error(err);}};
+ if($('drawSketch'))$('drawSketch').onclick=()=>{try{beginDrawing(read());}catch(e){error(e);}};
+}
+function showSidebar(type){
+ closePanels();const side=$('sidebar');if(!side.hidden&&side.dataset.type===type){side.hidden=true;return;}side.dataset.type=type;side.hidden=false;renderSidebar();
+}
+$('itemsToggle').onclick=()=>showSidebar('items');$('historyToggle').onclick=()=>showSidebar('history');$('settingsToggle').onclick=()=>showSidebar('settings');
+function renderSidebar(){
+ const side=$('sidebar');if(side.hidden)return;side.replaceChildren();const h=document.createElement('header');h.innerHTML='<h2>'+esc(side.dataset.type[0].toUpperCase()+side.dataset.type.slice(1))+'</h2><button aria-label="Close">'+ico('close')+'</button>';h.querySelector('button').onclick=()=>side.hidden=true;side.append(h);
+ if(side.dataset.type==='items')for(const item of items){const row=document.createElement('div');row.className='itemRow';const check=document.createElement('input');check.type='checkbox';check.checked=!(doc.ui?.hidden||[]).includes(item.id);check.setAttribute('aria-label','Show '+item.name);check.onchange=()=>{doc.ui.hidden=(doc.ui.hidden||[]).filter(id=>id!==item.id);if(!check.checked)doc.ui.hidden.push(item.id);render();saveLocal();};const b=document.createElement('button');b.textContent=item.name;b.classList.toggle('selected',selectedIds().includes(item.id));b.onclick=e=>select([{id:item.id,kind:item.kind}],e.shiftKey||$('multi').getAttribute('aria-pressed')==='true');row.append(check,b);side.append(row);}
+ else if(side.dataset.type==='history')for(const f of doc.features){const b=document.createElement('button');b.className='historyRow';b.textContent=f.name;b.title='Edit feature parameters';b.onclick=()=>startTool(f.type,{},f.id);if(f.type==='import'||f.type==='delete')b.disabled=true;side.append(b);}
+ else if(side.dataset.type==='settings'){
+  side.innerHTML+='<div class="settings"><label>Grid snap (mm)<input id="snapSize" type="number" min=".01" max="100" step=".1" value="'+gridStep+'"></label><label>Selection<select id="settingsSelection"><option>auto</option><option>body</option><option>face</option><option>edge</option><option>sketch</option></select></label><label class="check"><input type="checkbox" id="showGrid" '+(grid.visible?'checked':'')+'> Grid</label><label class="check"><input type="checkbox" id="showEdges" '+(showEdges?'checked':'')+'> Visible edges</label><label class="check"><input type="checkbox" id="sectionEnabled" '+(sectionEnabled?'checked':'')+'> Section view (XY)</label><label>Section height (mm)<input type="number" id="sectionHeight" value="'+sectionHeight+'"></label><button id="resetView">Reset view</button><p class="quiet">Reqoo CAD 0.1 · solid modelling<br>Projects are stored locally in this browser. Download backups from File.</p></div>';
+  side.querySelector('header button').onclick=()=>side.hidden=true;$('snapSize').onchange=()=>{gridStep=Math.max(.01,Math.min(100,Number($('snapSize').value)||1));$('units').textContent='mm · grid '+gridStep+' mm';};
+  $('settingsSelection').value=$('pickMode').value;$('settingsSelection').onchange=()=>$('pickMode').value=$('settingsSelection').value;
+  $('showGrid').onchange=()=>grid.visible=$('showGrid').checked;$('showEdges').onchange=()=>{showEdges=$('showEdges').checked;render();};$('sectionEnabled').onchange=()=>{sectionEnabled=$('sectionEnabled').checked;updateClip();};$('sectionHeight').onchange=()=>{sectionHeight=Number($('sectionHeight').value)||0;updateClip();};$('resetView').onclick=()=>{view('iso');fit();};
+ }
+}
+function search(){closePanels();$('searchDialog').showModal();$('commandQuery').value='';renderCommands();$('commandQuery').focus();}
+function renderCommands(){const q=$('commandQuery').value.toLowerCase();$('commandResults').replaceChildren();for(const [type,label]of [...tools.sketch,...tools.add,...tools.construct,...tools.transform,...tools.tools].filter(v=>v[1].toLowerCase().includes(q))){const b=document.createElement('button');b.textContent=label;b.onclick=()=>{$('searchDialog').close();startTool(type,tools.sketch.some(v=>v[0]===type)?{shape:type}:{});};$('commandResults').append(b);}}
+$('commandQuery').oninput=renderCommands;document.querySelector('#searchDialog [data-close]').onclick=()=>$('searchDialog').close();
+function normalizeTool(type,p){return tools.sketch.some(v=>v[0]===type)?['sketch',{...p,shape:type}]:[type,p];}
+const actualStart=startTool;startTool=function(type,initial={},editId=null){const [t,p]=normalizeTool(type,initial);return actualStart(t,p,editId);};
+$('startSketch').onclick=()=>showMenu('sketch');
+
+let renderer;try{renderer=new THREE.WebGLRenderer({antialias:!matchMedia('(pointer:coarse)').matches});}catch(e){$('stage').innerHTML='<div class="graphicsError"><h1>3D graphics unavailable</h1><p>Open this page in Safari or Chrome with WebGL enabled.</p></div>';throw e;}
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.localClippingEnabled=true;$('canvas').append(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#f6f7f9');const camera=new THREE.OrthographicCamera(-100,100,100,-100,.1,10000);camera.up.set(0,0,1);camera.position.set(130,-160,130);
+const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.target.set(0,0,10);controls.touches.ONE=THREE.TOUCH.ROTATE;controls.touches.TWO=THREE.TOUCH.DOLLY_PAN;
+scene.add(new THREE.HemisphereLight(0xffffff,0xb9c4d0,2.8));const lamp=new THREE.DirectionalLight(0xffffff,2.4);lamp.position.set(60,-90,150);scene.add(lamp);const fill=new THREE.DirectionalLight(0xffffff,.7);fill.position.set(-100,40,70);scene.add(fill);
+const grid=new THREE.GridHelper(1000,100,0xcbd1d9,0xe6e9ee);grid.rotation.x=Math.PI/2;grid.position.z=-.03;scene.add(grid);
+const root=new THREE.Group(),preview=new THREE.Group();scene.add(root,preview);
+let showEdges=true,sectionEnabled=false,sectionHeight=10;
+function updateClip(){root.traverse(o=>{if(o.material){const mats=Array.isArray(o.material)?o.material:[o.material];for(const m of mats){m.clippingPlanes=sectionEnabled?[new THREE.Plane(new THREE.Vector3(0,0,-1),sectionHeight)]:[];m.needsUpdate=true;}}});}
+function clear(g){for(const o of [...g.children]){g.remove(o);o.traverse(n=>{n.geometry?.dispose();for(const m of Array.isArray(n.material)?n.material:[n.material])m?.dispose();});}}
+function render(){
+ clear(root);const ids=selectedIds(),hidden=doc.ui?.hidden||[];
+ for(const item of items){if(hidden.includes(item.id)||isolate&&!ids.includes(item.id))continue;
+  const node=new THREE.Group();node.userData.itemId=item.id;root.add(node);
+  if(item.mesh.triangles.length){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(item.mesh.vertices,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(item.mesh.normals,3));g.setIndex(item.mesh.triangles);
+   const selected=selection.filter(s=>s.id===item.id),faceIds=selected.filter(s=>s.kind==='face').map(s=>s.index),whole=selected.some(s=>s.kind==='body'||s.kind==='sketch');
+   const color=item.kind==='body'?(doc.ui?.colors?.[item.id]||'#d6dbe2'):item.kind==='plane'?'#99b9df':'#8fb8fa';
+   const material=new THREE.MeshStandardMaterial({color:whole?'#b9d4fb':color,roughness:.55,metalness:.08,transparent:item.kind!=='body',opacity:item.kind==='plane'?.16:item.kind==='sketch'?.32:1,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:1});
+   const highlight=new THREE.MeshStandardMaterial({color:'#73a8ef',roughness:.5,side:THREE.DoubleSide});for(const f of item.mesh.faceGroups)g.addGroup(f.start,f.count,faceIds.includes(f.faceIndex)?1:0);
+   const mesh=new THREE.Mesh(g,[material,highlight]);mesh.userData={id:item.id,kind:item.kind,faceGroups:item.mesh.faceGroups};node.add(mesh);
+  }
+  if(showEdges||item.kind!=='body')for(const edge of item.edges){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(edge.lines,3));const selected=selection.some(s=>s.id===item.id&&(s.kind==='edge'?s.index===edge.index:s.kind==='sketch'||s.kind==='body'));const line=new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:selected?'#2475e8':item.kind==='sketch'?'#4883c8':item.kind==='axis'?'#c89143':'#576372',transparent:true,opacity:item.kind==='plane'?.4:.9}));line.userData={id:item.id,kind:'edge',index:edge.index,itemKind:item.kind};node.add(line);}
+ }
+ $('empty').hidden=items.length>0;renderSidebar();renderContext();updateClip();
+}
+function renderContext(){const c=$('context');c.replaceChildren();const item=selectedItem();c.hidden=!item;if(!item)return;
+ const commands=item.kind==='sketch'?[['extrude','Extrude'],['revolve','Revolve'],['sweep','Sweep']]:item.kind==='plane'?[['rectangle','Sketch on plane']]:item.kind==='axis'?[]:[['move','Move'],['rotate','Rotate'],['fillet','Fillet'],...(selection.some(s=>s.kind==='face')?[['offsetFace','Offset Face']]:[])];
+ for(const [type,label]of commands){const b=document.createElement('button');b.textContent=label;b.onclick=()=>startTool(type);c.append(b);}const del=document.createElement('button');del.textContent='Delete';del.onclick=()=>apply('delete',{},selectedIds()).then(()=>select([])).catch(error);c.append(del);
+}
+function select(next,extend=false){if(extend){for(const n of next){const index=selection.findIndex(s=>s.id===n.id&&s.kind===n.kind&&s.index===n.index);if(index>=0)selection.splice(index,1);else selection.push(n);}}else selection=next;render();const i=selectedItem();if(i)status(i.name+(i.kind==='body'?' · '+i.volume.toFixed(2)+' mm³':' · '+i.kind));}
+$('multi').onclick=()=>{const value=$('multi').getAttribute('aria-pressed')!=='true';$('multi').setAttribute('aria-pressed',String(value));};$('isolate').onclick=()=>{isolate=!isolate;$('isolate').classList.toggle('active',isolate);render();};
+$('measure').onclick=async()=>{try{const selected=selectedIds();if(selection.length===2){const d=await rpc('measure',{ids:selected,refs:selection});status('Minimum distance: '+d.toFixed(3)+' mm');}else{const i=selectedItem();if(!i)throw Error('Select one or two bodies to measure');const ref=selection[0];if(ref?.kind==='edge'){status('Edge length: '+i.edges.find(e=>e.index===ref.index).length.toFixed(3)+' mm');return;}if(ref?.kind==='face'){status('Face area: '+i.faceInfo.find(f=>f.index===ref.index).area.toFixed(3)+' mm²');return;}const b=i.bounds,size=b[0].map((v,n)=>b[1][n]-v);status(size.map(n=>n.toFixed(3)).join(' × ')+' mm · area '+i.area.toFixed(2)+' mm² · volume '+i.volume.toFixed(2)+' mm³');}}catch(e){error(e);}};
+const ray=new THREE.Raycaster();let pointerStart=null,touchCount=0;
+function cast(e){const r=renderer.domElement.getBoundingClientRect();ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1),camera);ray.params.Line.threshold=(camera.top-camera.bottom)/camera.zoom/r.height*5;}
+renderer.domElement.addEventListener('pointerdown',e=>{if(e.pointerType==='touch')touchCount++;pointerStart={x:e.clientX,y:e.clientY,moved:false,id:e.pointerId};if(sketchMode&&touchCount<=1){cast(e);drawingDown(e);} });
+renderer.domElement.addEventListener('pointermove',e=>{if(pointerStart&&Math.hypot(e.clientX-pointerStart.x,e.clientY-pointerStart.y)>5)pointerStart.moved=true;if(sketchMode&&draft){cast(e);drawingMove(e);}});
+renderer.domElement.addEventListener('pointerup',e=>{const tap=pointerStart&&!pointerStart.moved&&touchCount<=1;if(sketchMode){if(draft)finishDrag(e);}else if(tap){cast(e);const mode=$('pickMode').value,hits=ray.intersectObjects(root.children,true),line=hits.find(h=>h.object.isLineSegments&&(mode==='edge'||h.object.userData.itemKind==='sketch')),surface=hits.find(h=>h.object.isMesh&&(mode!=='sketch'||h.object.userData.kind==='sketch')),hit=mode==='edge'?line:surface||line;
+ if(!hit)select([]);else{const d=hit.object.userData;let s={id:d.id,kind:d.kind==='sketch'?'sketch':mode==='body'?'body':d.kind==='edge'?'edge':'face'};if(s.kind==='edge')s.index=d.index;if(s.kind==='face')s.index=d.faceGroups.find(g=>hit.faceIndex*3>=g.start&&hit.faceIndex*3<g.start+g.count)?.faceIndex??0;select([s],e.shiftKey||$('multi').getAttribute('aria-pressed')==='true');}}
+ if(e.pointerType==='touch')touchCount=Math.max(0,touchCount-1);pointerStart=null;
+});
+renderer.domElement.addEventListener('pointercancel',()=>{touchCount=0;pointerStart=null;draft=null;clear(preview);});
+function fit(){const b=new THREE.Box3().setFromObject(root);if(b.isEmpty()){controls.target.set(0,0,0);camera.zoom=1;camera.updateProjectionMatrix();return;}const size=b.getSize(new THREE.Vector3()),c=b.getCenter(new THREE.Vector3()),aspect=renderer.domElement.clientWidth/Math.max(1,renderer.domElement.clientHeight),direction=camera.position.clone().sub(controls.target).normalize();if(!direction.length())direction.set(1,-1,1).normalize();controls.target.copy(c);camera.position.copy(c).addScaledVector(direction,Math.max(250,size.length()*2));camera.far=Math.max(10000,size.length()*10);controls.update();camera.updateMatrixWorld(true);let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;for(const x of [b.min.x,b.max.x])for(const y of [b.min.y,b.max.y])for(const z of [b.min.z,b.max.z]){const v=new THREE.Vector3(x,y,z).applyMatrix4(camera.matrixWorldInverse);minX=Math.min(minX,v.x);maxX=Math.max(maxX,v.x);minY=Math.min(minY,v.y);maxY=Math.max(maxY,v.y);}camera.zoom=Math.max(.02,Math.min(40,200*aspect*.72/Math.max(maxX-minX,1),200*.70/Math.max(maxY-minY,1)));camera.updateProjectionMatrix();controls.update();}
+function view(name){const c=controls.target.clone(),d=300,dir=name==='top'?[0,0,1]:name==='front'?[0,-1,0]:name==='right'?[1,0,0]:[1,-1,1];camera.up.set(0,0,1);if(name==='top')camera.up.set(0,1,0);camera.position.copy(c).add(new THREE.Vector3(...dir).normalize().multiplyScalar(d));controls.update();}
+$('fit').onclick=fit;document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>view(b.dataset.view));
+function resize(){const r=$('canvas').getBoundingClientRect(),aspect=r.width/Math.max(1,r.height);camera.left=-100*aspect;camera.right=100*aspect;camera.top=100;camera.bottom=-100;camera.updateProjectionMatrix();renderer.setSize(r.width,r.height);}
+new ResizeObserver(resize).observe($('canvas'));resize();function frame(){requestAnimationFrame(frame);controls.update();renderer.render(scene,camera);}frame();
+function worldOnSketch(){const b=basis(sketchMode.params),normal=new THREE.Vector3(...b.normal),plane=new THREE.Plane(normal,-normal.dot(new THREE.Vector3(...b.origin))),hit=new THREE.Vector3();if(!ray.ray.intersectPlane(plane,hit))return null;const x=new THREE.Vector3(...b.x).normalize(),y=normal.clone().cross(x).normalize(),delta=hit.sub(new THREE.Vector3(...b.origin));return[Math.round(delta.dot(x)/gridStep)*gridStep,Math.round(delta.dot(y)/gridStep)*gridStep];}
+function beginDrawing(p){closePanels();sketchMode={params:p,points:[]};controls.enabled=false;$('sketchBar').hidden=false;$('sketchHint').textContent=p.shape+' · '+(p.plane||'selected face')+' · '+(['polyline','spline'].includes(p.shape)?'Click points, then Finish sketch':'Drag to draw');const b=basis(p),n=new THREE.Vector3(...b.normal),origin=new THREE.Vector3(...b.origin);controls.target.copy(origin);camera.up.set(0,0,1);if(Math.abs(n.z)>.9)camera.up.set(0,1,0);camera.position.copy(origin).addScaledVector(n,300);controls.update();status('Sketch active · snap '+gridStep+' mm');}
+function drawingDown(){const p=worldOnSketch();if(!p)return;if(['polyline','spline'].includes(sketchMode.params.shape)){sketchMode.points.push(p);draft={start:p,end:p,poly:true};drawDraft();}else draft={start:p,end:p};}
+function drawingMove(){const p=worldOnSketch();if(!p)return;draft.end=p;drawDraft();}
+function drawDraft(){clear(preview);const b=basis(sketchMode.params),x=new THREE.Vector3(...b.x),n=new THREE.Vector3(...b.normal),y=n.clone().cross(x),origin=new THREE.Vector3(...b.origin),world=q=>origin.clone().addScaledVector(x,q[0]).addScaledVector(y,q[1]);let pts=[];
+ if(draft.poly)pts=[...sketchMode.points,draft.end];else{const a=draft.start,c=draft.end,shape=sketchMode.params.shape;if(shape==='rectangle')pts=[a,[c[0],a[1]],c,[a[0],c[1]],a];else if(shape==='arc')pts=[a,c];else{const rx=Math.abs(c[0]-a[0]),ry=shape==='ellipse'?Math.abs(c[1]-a[1]):Math.hypot(c[0]-a[0],c[1]-a[1]),count=shape==='polygon'?Math.max(3,Math.round(sketchMode.params.sides||6)):80;pts=Array.from({length:count+1},(_,i)=>[a[0]+rx*Math.cos(i/count*Math.PI*2),a[1]+ry*Math.sin(i/count*Math.PI*2)]);}}
+ const g=new THREE.BufferGeometry().setFromPoints(pts.map(world));preview.add(new THREE.Line(g,new THREE.LineBasicMaterial({color:'#2372dd'})));
+}
+async function finishDrag(){if(draft.poly)return;const a=draft.start,b=draft.end,p={...sketchMode.params};if(Math.hypot(b[0]-a[0],b[1]-a[1])<gridStep/2)return;
+ if(p.shape==='rectangle'){p.width=Math.abs(b[0]-a[0]);p.height=Math.abs(b[1]-a[1]);p.x=(a[0]+b[0])/2;p.y=(a[1]+b[1])/2;}
+ else if(p.shape==='arc'){p.points=[a,b];p.x=p.y=0;p.closed=false;}
+ else{p.x=a[0];p.y=a[1];p.radius=Math.hypot(b[0]-a[0],b[1]-a[1]);p.width=Math.abs(b[0]-a[0])*2;p.height=Math.abs(b[1]-a[1])*2;}
+ try{await apply('sketch',p,[]);endDrawing();}catch(e){error(e);}
+}
+function endDrawing(){sketchMode=null;draft=null;controls.enabled=true;$('sketchBar').hidden=true;clear(preview);}
+$('cancelSketch').onclick=endDrawing;$('finishSketch').onclick=async()=>{if(!sketchMode)return;try{if(sketchMode.points.length>=2){await apply('sketch',{...sketchMode.params,points:sketchMode.points,x:0,y:0},[]);endDrawing();}else status('Draw a profile first');}catch(e){error(e);}};
+function download(name,content){const u=URL.createObjectURL(content instanceof Blob?content:new Blob([content])),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),2000);}
+async function exportFile(format){const ids=selectedIds().filter(id=>items.find(i=>i.id===id)?.kind==='body');const chosen=ids.length?ids:items.filter(i=>i.kind==='body'&&!(doc.ui.hidden||[]).includes(i.id)).map(i=>i.id);if(!chosen.length)throw Error('Create a solid body first');setBusy(true);try{const blob=await rpc('export',{format,ids:chosen});download((doc.title||'Reqoo-CAD')+'.'+(format==='step'?'step':'stl'),blob);status('Exported '+format.toUpperCase()+' · mm');}finally{setBusy(false);}}
+function fileMenu(){
+ closePanels();const m=$('menu');m.replaceChildren();m.dataset.key='file';m.hidden=false;
+ for(const [label,fn]of [['New project',async()=>{if(doc.features.length&&!confirm('Start a new project? Download your current project first if you need a backup.'))return;await rebuild({format:'reqoo-cad',version:1,title:'Untitled',features:[],ui:{hidden:[],colors:{}}});closePanels();}],['Save project',()=>download((doc.title||'Reqoo-CAD')+'.rqcad',JSON.stringify(doc,null,2))],['Open project',()=>$('openFile').click()],['Import STEP',()=>$('stepFile').click()],['Export STEP',()=>exportFile('step')],['Export STL',()=>exportFile('stl')],['Items',()=>showSidebar('items')],['History',()=>showSidebar('history')],['Settings',()=>showSidebar('settings')],['About / licenses',()=>{status('Reqoo CAD 0.1 · OpenCascade solid kernel · local projects');window.open('./THIRD-PARTY-NOTICES.txt','_blank','noopener');}]]){
+  const b=document.createElement('button');b.textContent=label;b.onclick=()=>Promise.resolve(fn()).catch(error);m.append(b);
+ }
+}
+$('fileMenu').onclick=fileMenu;$('exportTop').onclick=()=>{fileMenu();$('menu').querySelectorAll('button').forEach(b=>b.hidden=!/^Export/.test(b.textContent));};
+$('openFile').onchange=async e=>{const f=e.target.files[0];try{if(!f)return;if(f.size>24e6)throw Error('Project exceeds 24 MB');const parsed=JSON.parse(await f.text());validateProject(parsed);parsed.ui||={hidden:[],colors:{}};await rebuild(parsed);closePanels();fit();}catch(e){error(e);}finally{$('openFile').value='';}};
+$('stepFile').onchange=async e=>{const f=e.target.files[0];try{if(!f)return;if(f.size>20e6)throw Error('STEP file exceeds 20 MB');await apply('import',{step:await f.text()},[]);closePanels();fit();}catch(e){error(e);}finally{$('stepFile').value='';}};
+document.addEventListener('keydown',e=>{if(e.target.closest('input,select,textarea'))return;const mod=e.ctrlKey||e.metaKey;if(mod&&e.key.toLowerCase()==='z'){e.preventDefault();(e.shiftKey?$('redo'):$('undo')).click();}else if(mod&&e.key.toLowerCase()==='s'){e.preventDefault();download((doc.title||'Reqoo-CAD')+'.rqcad',JSON.stringify(doc,null,2));}else if(e.key.toLowerCase()==='f')fit();else if(e.key==='Escape'){closePanels();endDrawing();selection=[];render();}else if(e.key==='Delete'&&selection.length)apply('delete',{},selectedIds()).then(()=>select([])).catch(error);});
+document.addEventListener('pointerdown',e=>{if(e.target.closest('#rail,#menu,#toolPanel,#top,dialog'))return;$('menu').hidden=true;});
+const vh=()=>document.documentElement.style.setProperty('--app-height',(window.visualViewport?.height||innerHeight)+'px');window.visualViewport?.addEventListener('resize',vh);vh();
+try{await rpc('ready');ready=true;const saved=localStorage.getItem('reqoo-cad-v1');if(saved){try{const parsed=JSON.parse(saved);validateProject(parsed);await rebuild(parsed,{history:false});fit();}catch{status('Saved project could not be restored. Open your downloaded backup.');}}status('Ready · create a sketch or add a solid');updateHistoryButtons();}catch(e){error(e);}
+if(new URLSearchParams(location.search).has('test'))window.__cad={get doc(){return doc;},get items(){return items;},get selection(){return selection;},apply,rebuild,select,startTool,exportFile,fit,ready:()=>ready,view,camera,root,worker:rpc};
