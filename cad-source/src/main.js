@@ -215,7 +215,7 @@ function render(){
   }
   if(showEdges||item.kind!=='body')for(const edge of item.edges){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(edge.lines,3));const selected=selection.some(s=>s.id===item.id&&(s.kind==='edge'?s.index===edge.index:s.kind==='sketch'||s.kind==='body'));const line=new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:selected?'#2475e8':item.kind==='sketch'?'#4883c8':item.kind==='axis'?'#c89143':'#576372',transparent:true,opacity:item.kind==='plane'?.4:.9}));line.renderOrder=item.kind==='sketch'?4:1;line.userData={id:item.id,kind:'edge',index:edge.index,itemKind:item.kind};node.add(line);}
  }
- $('empty').hidden=items.length>0;renderSidebar();renderContext();updateClip();updateFaceHandle();
+ $('empty').hidden=items.length>0;renderSidebar();renderContext();updateClip();updateFaceHandle();updateSketchDimensions();
 }
 // Direct-manipulation face handle. Drag proposes a signed offset; Apply commits to history.
 // Direct face manipulator: drag along projected face normal; edit distance in-place.
@@ -274,6 +274,24 @@ $('faceDistanceApply').onclick=async()=>{
  catch(e){error(e);}
 };
 $('faceDistanceValue').addEventListener('keydown',e=>{if(e.key==='Enter'){$('faceDistanceApply').click();}if(e.key==='Escape')$('faceDistanceCancel').click();});
+// In-canvas editable sketch dimensions (persisted as parametric history edits).
+const sketchDimensions=document.createElement('div');sketchDimensions.id='sketchDimensions';sketchDimensions.hidden=true;$('stage').append(sketchDimensions);
+let dimensionFeature=null;
+function updateSketchDimensions(){
+ const item=selectedItem(),ref=selection.at(-1);
+ const feature=item?.kind==='sketch'&&ref?.kind==='sketch'?doc.features.find(f=>f.id===item.featureId):null;
+ if(!feature||feature.type!=='sketch'||busy||sketchMode){sketchDimensions.hidden=true;dimensionFeature=null;return;}
+ const p=feature.params||{},shape=p.shape,fields=shape==='circle'?[['radius','R',p.radius??15]]:shape==='rectangle'||shape==='ellipse'?[['width','W',p.width??40],['height','H',p.height??30]]:shape==='polygon'?[['radius','R',p.radius??15]]:[];
+ if(!fields.length){sketchDimensions.hidden=true;dimensionFeature=null;return;}
+ const rect=$('stage').getBoundingClientRect(),bounds=item.bounds,center=new THREE.Vector3(...bounds[0].map((v,i)=>(v+bounds[1][i])/2)).project(camera);
+ if(center.z < -1||center.z > 1){sketchDimensions.hidden=true;return;}
+ const id=feature.id;
+ if(dimensionFeature!==id){dimensionFeature=id;sketchDimensions.replaceChildren();
+ for(const [key,label,value] of fields){const wrap=document.createElement('label');wrap.textContent=label+' ';const input=document.createElement('input');input.type='number';input.step='any';input.min='0.001';input.value=Number(value).toFixed(2);input.dataset.dimension=key;input.setAttribute('aria-label',label+' dimension in mm');wrap.append(input);sketchDimensions.append(wrap);}
+ const applyButton=document.createElement('button');applyButton.textContent='✓';applyButton.title='Apply dimensions';applyButton.setAttribute('aria-label','Apply sketch dimensions');applyButton.onclick=async()=>{const updated={...feature.params};for(const input of sketchDimensions.querySelectorAll('input')){const n=Number(input.value);if(!Number.isFinite(n)||n<=0){status('Dimensions must be positive');input.focus();return;}updated[input.dataset.dimension]=n;}try{await apply('sketch',updated,[],id);dimensionFeature=null;render();}catch(e){error(e);}};sketchDimensions.append(applyButton);
+ }
+ sketchDimensions.hidden=false;sketchDimensions.style.left=Math.max(8,Math.min(rect.width-260,(center.x+1)*rect.width/2+35))+'px';sketchDimensions.style.top=Math.max(8,Math.min(rect.height-60,(1-center.y)*rect.height/2-24))+'px';
+}
 function renderContext(){const c=$('context');c.replaceChildren();const item=selectedItem();c.hidden=!item;if(!item)return;
  const picked=selection.at(-1),onFace=picked?.kind==='face'&&item.kind==='body',onEdge=picked?.kind==='edge'&&item.kind==='body';
  const commands=item.kind==='sketch'?[...(doc.features.find(f=>f.id===item.featureId)?.params.shape==='circle'?[['hole','Hole']]:[]),['extrude','Extrude'],['revolve','Revolve'],['sweep']]:item.kind==='plane'?[['rectangle','Sketch on plane']]:item.kind==='axis'?[]:onEdge?[['fillet','Fillet'],['chamfer','Chamfer']]:onFace?[['offsetFace','Pull / Offset Face'],['extrude','Extrude'],['hole','Hole'],['scale','Scale Body']]:[['move','Move'],['rotate','Rotate'],['fillet','Fillet']];
@@ -310,7 +328,7 @@ function fit(){const b=new THREE.Box3().setFromObject(root);if(b.isEmpty()){cont
 function view(name){const c=controls.target.clone(),d=300,dir=name==='top'?[0,0,1]:name==='front'?[0,-1,0]:name==='right'?[1,0,0]:[1,-1,1];camera.up.set(0,0,1);if(name==='top')camera.up.set(0,1,0);camera.position.copy(c).add(new THREE.Vector3(...dir).normalize().multiplyScalar(d));controls.update();}
 $('fit').onclick=fit;document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>view(b.dataset.view));
 function resize(){const r=$('canvas').getBoundingClientRect(),aspect=r.width/Math.max(1,r.height);camera.left=-100*aspect;camera.right=100*aspect;camera.top=100;camera.bottom=-100;camera.updateProjectionMatrix();renderer.setSize(r.width,r.height);}
-new ResizeObserver(resize).observe($('canvas'));resize();function frame(){requestAnimationFrame(frame);controls.update();updateFaceHandle();renderer.render(scene,camera);}frame();
+new ResizeObserver(resize).observe($('canvas'));resize();function frame(){requestAnimationFrame(frame);controls.update();updateFaceHandle();updateSketchDimensions();renderer.render(scene,camera);}frame();
 function worldOnSketch(){const b=basis(sketchMode.params),normal=new THREE.Vector3(...b.normal),plane=new THREE.Plane(normal,-normal.dot(new THREE.Vector3(...b.origin))),hit=new THREE.Vector3();if(!ray.ray.intersectPlane(plane,hit))return null;const x=new THREE.Vector3(...b.x).normalize(),y=normal.clone().cross(x).normalize(),delta=hit.sub(new THREE.Vector3(...b.origin));return[Math.round(delta.dot(x)/gridStep)*gridStep,Math.round(delta.dot(y)/gridStep)*gridStep];}
 function beginDrawing(p){setWorkspaceMode('sketch');if(p.shape==='polyline')p={...p,constraints:[]};closePanels();sketchMode={params:p,points:[]};controls.enabled=false;$('sketchBar').hidden=false;$('sketchHint').textContent=p.shape+' · '+(p.plane||'selected face')+' · '+(['polyline','spline'].includes(p.shape)?'Click points, then Finish sketch':'Drag to draw');const b=basis(p),n=new THREE.Vector3(...b.normal),origin=new THREE.Vector3(...b.origin);controls.target.copy(origin);camera.up.set(0,0,1);if(Math.abs(n.z)>.9)camera.up.set(0,1,0);camera.position.copy(origin).addScaledVector(n,300);controls.update();status('Sketch active · snap '+gridStep+' mm');}
 function drawingDown(){const p=worldOnSketch();if(!p)return;if(['polyline','spline'].includes(sketchMode.params.shape)){sketchMode.points.push(p);draft={start:p,end:p,poly:true};drawDraft();}else draft={start:p,end:p};}
