@@ -1,5 +1,6 @@
 # REQOO CAD integrated modeling release
 PR: https://github.com/ReqooCo/Reqoo.co/pull/243
+Production canonical routing correction: https://github.com/ReqooCo/Reqoo.co/pull/244
 Production application: https://reqoo.co/cad/
 Preview alias: https://feature-cad-professional-202.reqoo-co.pages.dev/cad/
 
@@ -24,6 +25,8 @@ This release repairs the core modeling/release pipeline and integrates direct ed
 6. Circle rim and hole rim edges can have identical bounding-box centres. Reference matching now includes normalized curve length, so concentric edges are distinguished.
 7. Source identity was not compared end-to-end. A deterministic hash covers source, dependencies and build configuration, appears in HTML/JS/version.json, and is checked on live preview/production.
 8. Pen events previously reached OrbitControls before the pen-specific listener. Capturing input ownership prevents pen strokes/palm touches from rotating the camera.
+
+9. Live production verification caught native Assets canonicalization redirecting /cad/index.html back to /cad/. The Worker now fetches the directory asset /cad/ directly and redirects noncanonical entry URLs before fetching. The route test models native index.html redirects and verifies query preservation.
 
 ## Main changed files
 Geometry: src/engine.js, src/kernel.worker.js, src/topology.js, src/constraints.js.
