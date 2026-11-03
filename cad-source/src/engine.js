@@ -86,7 +86,7 @@ export async function buildModel(doc,{base=null,preview=false}={}){
   else if(f.type==='extrude'||f.type==='revolve'||f.type==='sweep'||f.type==='loft'){
    const a=profiles.get(ins[0]);if(!a&&!(f.type==='extrude'&&shapes.has(ins[0])&&p.face!==undefined))throw Error('Select a sketch profile');
    if(f.type==='extrude'){if(a?.closed===false||a?.construction)throw Error('Extrude needs a closed, non-construction profile');const distance=number(p.distance,'Distance');if(Math.abs(distance)<.001)throw Error('Distance must not be zero');
- if(a)s=sketch(a).extrude(distance);else{const source=body(ins[0]),selected=face(source,p),raw=selected.normalAt(),n=raw.normalized(),v=n.multiply(distance);s=R.basicFaceExtrusion(selected,v);v.delete();n.delete();raw.delete();}
+ if(a){const extruded=own(sketch(a).extrude(distance));s=extruded.simplify();}else{const source=body(ins[0]),selected=face(source,p),raw=selected.normalAt(),n=raw.normalized(),v=n.multiply(distance);s=R.basicFaceExtrusion(selected,v);v.delete();n.delete();raw.delete();}
  const mode=p.operation||'New body',targetId=a?ins[1]:ins[0];if(mode!=='New body'){if(!['Add','Subtract','Intersect'].includes(mode))throw Error('Invalid extrude operation');const target=body(targetId);own(s);s=mode==='Add'?target.fuse(s):mode==='Subtract'?target.cut(s):target.intersect(s);}
  }
    else if(f.type==='revolve'){if(a.closed===false)throw Error('Revolve needs a closed profile');s=sketch(a).revolve(p.axis||'Z',{origin:[0,0,0],angle:number(p.angle??360,'Angle',.1,360)});}
@@ -121,9 +121,9 @@ export async function buildModel(doc,{base=null,preview=false}={}){
  }
  const items=[];
  for(const [id,m]of meta){if(!visible.has(id))continue;if(reuse&&base.shapes.get(id)===shapes.get(id)){const cached=base.items.find(i=>i.id===id);if(cached){items.push(cached);continue;}}metrics.meshedItems++;const s=shapes.get(id),faces=s.faces,edges=s.edges;for(const f of faces)own(f);for(const e of edges)own(e);
-  const faceMesh=m.kind==='axis'||(m.kind==='sketch'&&(profiles.get(id)?.closed===false||profiles.get(id)?.construction))?{triangles:[],vertices:[],normals:[],faceGroups:[]}:s.mesh({tolerance:preview?.12:.08,angularTolerance:.2});
+  const faceMesh=m.kind==='axis'||(m.kind==='sketch'&&(profiles.get(id)?.closed===false||profiles.get(id)?.construction))?{triangles:[],vertices:[],normals:[],faceGroups:[]}:s.mesh({tolerance:preview?.12:.02,angularTolerance:preview?.2:.08});
   const groups=faceMesh.faceGroups.map(g=>({...g,faceIndex:faces.findIndex(f=>f.hashCode===g.faceId)}));
-  const lineMeshes=edges.slice(0,600).map((e,i)=>({index:i,length:length(e),type:e.geomType,reference:edgeDescriptor(s,e),center:e.boundingBox.center,lines:e.meshEdges({tolerance:preview?.12:.08,angularTolerance:.2}).lines}));
+  const lineMeshes=edges.slice(0,600).map((e,i)=>({index:i,length:length(e),type:e.geomType,reference:edgeDescriptor(s,e),center:e.boundingBox.center,lines:e.meshEdges({tolerance:preview?.12:.02,angularTolerance:preview?.2:.08}).lines}));
   const bb=s.boundingBox.bounds;
   items.push({...m,construction:profiles.get(id)?.construction||false,sketchPlane:profiles.has(id)?basis(profiles.get(id)):null,profileClosed:profiles.has(id)?profiles.get(id).closed!==false&&!profiles.get(id).construction:null,mesh:{...faceMesh,faceGroups:groups},edges:lineMeshes,faceInfo:faces.map((f,i)=>{let normal=[0,0,1],center=[0,0,0];try{const n=f.normalAt(),c=f.center;const len=Math.hypot(...n.toTuple());normal=n.toTuple().map(v=>v/(len||1));center=c.toTuple();n.delete();c.delete();}catch{}return{index:i,type:f.geomType,normal,center,reference:faceDescriptor(s,f),area:area(f)};}),edgeCount:edges.length,bounds:bb,volume:m.kind==='body'?volume(s):0,area:m.kind==='body'||faces.length?area(s):0});
  }
