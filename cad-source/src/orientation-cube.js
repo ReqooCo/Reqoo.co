@@ -27,7 +27,7 @@ export function createOrientationCube({THREE,camera,controls,root,onView}){
  function activate(e){const hit=e.target.closest?.('[data-cube-view]');if(!hit)return;if(e.type==='keydown'&&!['Enter',' '].includes(e.key))return;e.preventDefault();e.stopPropagation();onView(hit.dataset.cubeView);}
  graphic.addEventListener('click',activate);graphic.addEventListener('keydown',activate);
  function update(theme='light'){
-  const key=[...camera.quaternion.toArray(),theme,root.dataset.view].join(':');if(key===last)return;last=key;
+  const key=[...camera.quaternion.toArray(),theme,root.dataset.orientation].join(':');if(key===last)return;last=key;
   const right=new THREE.Vector3(1,0,0).applyQuaternion(camera.quaternion),up=new THREE.Vector3(0,1,0).applyQuaternion(camera.quaternion),eye=camera.position.clone().sub(controls.target).normalize();
   const projected=vertices.map(p=>{const v=new THREE.Vector3(...p);return{x:64+v.dot(right)*27,y:54-v.dot(up)*27};}),visibleEdges=new Set(),visibleCorners=new Set();
   for(const f of faces){
