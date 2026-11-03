@@ -358,10 +358,16 @@
         </div>
         <div class="note">Kalau jumlah sebenar bulan ini sudah ada sebelum app digunakan, buka bulan dalam Kalkulator dan betulkan jumlah semasa sekali. Request baru selepas itu akan auto tambah.</div>
         <div id="recordList" class="record-list"></div>
+        <div class="ruleline"></div>
+        <h3>Backup Rekod Peribadi</h3>
+        <p class="note">Rekod disimpan dalam telefon ini. Simpan fail backup sebelum membuang aplikasi atau menukar iPhone.</p>
+        <div class="actions"><button id="exportBackupBtn" class="btn secondary" type="button">Download Backup JSON</button><button id="importBackupBtn" class="btn secondary" type="button">Restore Backup</button></div>
+        <input id="backupFileInput" type="file" accept=".json,application/json" hidden>
+        <p id="backupStatus" class="note" role="status"></p>
       </section>
     </div>
 
-    <div class="foot">Kalkulator peribadi • Boleh digunakan offline selepas dibuka sekali • Build 17</div>
+    <div class="foot">Kalkulator peribadi • Boleh digunakan offline selepas dibuka sekali • Build 18</div>
   </main>
 
   <script>
@@ -1056,6 +1062,37 @@
       const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       const standalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
       if (isiOS && !standalone) $('installHint').classList.add('show');
+
+      const PERSONAL_BACKUP_KEYS = [KEY, COMMIT_KEY, PROFILE_KEY, REQUEST_KEY, MONTH_KEY];
+      $('exportBackupBtn').addEventListener('click', () => {
+        try {
+          const data = {};
+          PERSONAL_BACKUP_KEYS.forEach(key => { const value=localStorage.getItem(key); if(value!==null) data[key]=value; });
+          const payload={app:'reqoo-ot-personal',version:1,exportedAt:new Date().toISOString(),data};
+          const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+          const url=URL.createObjectURL(blob);
+          const link=document.createElement('a');link.href=url;link.download='REQOO-OT-Personal-Backup-'+new Date().toISOString().slice(0,10)+'.json';
+          document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+          $('backupStatus').textContent='Backup disediakan. Simpan fail ini dalam Files / iCloud Drive.';
+        } catch(e) { $('backupStatus').textContent='Backup gagal: '+e.message; }
+      });
+      $('importBackupBtn').addEventListener('click',()=> $('backupFileInput').click());
+      $('backupFileInput').addEventListener('change',async e=>{
+        const file=e.target.files && e.target.files[0]; if(!file)return;
+        try {
+          if(file.size>2*1024*1024)throw new Error('Fail terlalu besar');
+          const payload=JSON.parse(await file.text());
+          if(payload.app!=='reqoo-ot-personal'||payload.version!==1||!payload.data||typeof payload.data!=='object'||Array.isArray(payload.data))throw new Error('Bukan backup OT Personal yang sah');
+          const entries=Object.entries(payload.data);
+          if(!entries.length||entries.some(([key,value])=>!PERSONAL_BACKUP_KEYS.includes(key)||typeof value!=='string'))throw new Error('Data backup tidak sah');
+          entries.forEach(([key,value])=>JSON.parse(value));
+          if(!confirm('Restore akan menggantikan data OT Personal yang ada pada telefon ini. Teruskan?'))return;
+          entries.forEach(([key,value])=>localStorage.setItem(key,value));
+          $('backupStatus').textContent='Restore berjaya. Memuat semula...';
+          location.reload();
+        }catch(err){$('backupStatus').textContent='Restore gagal: '+err.message}
+        finally{e.target.value=''}
+      });
 
       load();
       loadRequests();
