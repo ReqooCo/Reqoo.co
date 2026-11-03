@@ -1,7 +1,7 @@
 [Setup]
 AppId=co.reqoo.studio3d
 AppName=Reqoo 3D Studio
-AppVersion=1.4.2
+AppVersion=1.5.0
 AppPublisher=Reqoo
 DefaultDirName={localappdata}\Programs\Reqoo 3D Studio
 DefaultGroupName=Reqoo 3D Studio
@@ -10,7 +10,7 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0
 OutputDir=..\release
-OutputBaseFilename=Reqoo-3D-Studio-1.4.2-Setup-x64
+OutputBaseFilename=Reqoo-3D-Studio-1.5.0-Setup-x64
 Compression=lzma2/fast
 SolidCompression=yes
 WizardStyle=modern
@@ -23,7 +23,7 @@ DisableProgramGroupPage=yes
 Name: desktopicon; Description: "Cipta pintasan di Desktop"; Flags: unchecked
 
 [Files]
-Source: "..\release\1.4.2\win-unpacked\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\release\1.5.0\win-unpacked\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\Reqoo 3D Studio"; Filename: "{app}\Reqoo 3D Studio.exe"; Check: not IsExtractOnly

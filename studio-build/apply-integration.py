@@ -77,20 +77,21 @@ edit('src/lamp-studio.js',demo_ui)
 edit('src/lamp-studio.js',lambda s:s.replace("export function installLamps({group,products,editor,add,choose,refresh,status,scene})","export function installLamps({group,products,editor,add,choose,refresh,status,scene,camera,controls})").replace("installLampNozzlePreview({scene,group,products,editor,status})","installLampNozzlePreview({scene,camera,controls,group,products,editor,status})").replace("$('lampDimensions').before(choices);","$('lampDimensions').before(choices);$('lampPathPattern').value=LAMP_DEFAULTS.pathPattern;"))
 edit('src/main.js',lambda s:s.replace('installLamps({group,products,editor,add,choose,refresh,status,scene})','installLamps({group,products,editor,add,choose,refresh,status,scene,camera,controls})'))
 
-package=json.loads((project/'package.json').read_text(encoding='utf-8-sig'));package['version']='1.4.2';package['overrides']={**package.get('overrides',{}),'temp':'0.9.4','fflate':'0.8.3'};package['build']['directories']['output']='release/1.4.2';package['build']['files']=[s.replace('PANDUAN-v1.3.0','PANDUAN-v1.4.2') for s in package['build']['files']]
+package=json.loads((project/'package.json').read_text(encoding='utf-8-sig'));package['version']='1.5.0';package['overrides']={**package.get('overrides',{}),'temp':'0.9.4','fflate':'0.8.3'};package['build']['directories']['output']='release/1.5.0';package['build']['files']=[s.replace('PANDUAN-v1.3.0','PANDUAN-v1.5.0') for s in package['build']['files']]
 for item in package['build'].get('extraFiles',[]):
  if isinstance(item,dict):
   for k in ['from','to']:
-   if k in item:item[k]=item[k].replace('PANDUAN-v1.3.0','PANDUAN-v1.4.2')
+   if k in item:item[k]=item[k].replace('PANDUAN-v1.3.0','PANDUAN-v1.5.0')
 (project/'package.json').write_text(json.dumps(package,indent=2)+'\n')
-lock=json.loads((project/'package-lock.json').read_text(encoding='utf-8-sig'));lock['version']='1.4.2';lock.get('packages',{}).get('',{})['version']='1.4.2';(project/'package-lock.json').write_text(json.dumps(lock,indent=2)+'\n')
+lock=json.loads((project/'package-lock.json').read_text(encoding='utf-8-sig'));lock['version']='1.5.0';lock.get('packages',{}).get('',{})['version']='1.5.0';(project/'package-lock.json').write_text(json.dumps(lock,indent=2)+'\n')
 edit('desktop/main.cjs',lambda s:s.replace(r'json|stl|3mf|svg|zip|csv',r'json|stl|3mf|svg|zip|csv|gcode'))
-guide=(project/'desktop/PANDUAN-v1.3.0.txt').read_text(encoding='utf-8-sig');(project/'desktop/PANDUAN-v1.4.2.txt').write_text(guide+'\n\n1.4.2: Lamp Studio baharu berkongsi kod web/desktop. Tujuh bentuk, slider, preview nozzle, eksport sampel tetap P2S 0.8 PETG. Coral / Fold dan bentuk eksperimen dikeluarkan. STL ialah cangkerang reka bentuk, bukan jejak filament. Tetapan custom belum dieksport sebagai G-code.\n',encoding='utf-8')
-edit('desktop/installer.iss',lambda s:s.replace('1.3.0','1.4.2').replace('SetupArchitecture=x64\n','').replace(r'OutputDir=..\..\..\..\outputs',r'OutputDir=..\release').replace(r'Source: "..\..\..\..\release\1.4.2\win-unpacked\*"',r'Source: "..\release\1.4.2\win-unpacked\*"'))
+guide=(project/'desktop/PANDUAN-v1.3.0.txt').read_text(encoding='utf-8-sig');(project/'desktop/PANDUAN-v1.5.0.txt').write_text(guide+'\n\n1.5.0: Lamp Studio baharu berkongsi kod web/desktop. Tujuh bentuk, slider, preview nozzle, eksport sampel tetap P2S 0.8 PETG. Coral / Fold dan bentuk eksperimen dikeluarkan. STL ialah cangkerang reka bentuk, bukan jejak filament. Tetapan custom belum dieksport sebagai G-code.\n',encoding='utf-8')
+edit('desktop/installer.iss',lambda s:s.replace('1.3.0','1.5.0').replace('SetupArchitecture=x64\n','').replace(r'OutputDir=..\..\..\..\outputs',r'OutputDir=..\release').replace(r'Source: "..\..\..\..\release\1.5.0\win-unpacked\*"',r'Source: "..\release\1.5.0\win-unpacked\*"'))
 # Make the original bundled open fonts available to the web build too.
 fontDir=project/'public-core/fonts';fontDir.mkdir(parents=True,exist_ok=True);fontIndex=[]
 for f in sorted((project/'desktop/fonts').glob('*.ttf')):shutil.copyfile(f,fontDir/f.name);fontIndex.append({'id':f.name,'label':f.stem.replace('-',' ').title()})
 (fontDir/'index.json').write_text(json.dumps(fontIndex))
 shutil.copyfile(project/'desktop/FONT-LICENSES.txt',fontDir/'LICENSES.txt')
-edit('README.md',lambda s:'# Reqoo 3D Studio 1.4.2 — shared web and desktop\n\nBuilt and tested in GitHub Actions. The released v1.3.0 non-lamp generators remain; experimental Coral, Fold and related lamp generators are retired. Lamp Studio provides seven parametric mesh shapes, sliders and illustrative nozzle motion. STL/3MF export the model envelope; direct G-code export is currently the fixed P2S 0.8 mm PETG test specimen only. Physical printing and lamp hardware fit remain unverified.\n\nHistorical baseline notes follow:\n\n'+s)
+edit('README.md',lambda s:'# Reqoo 3D Studio 1.5.0 — shared web and desktop\n\nBuilt and tested in GitHub Actions. The released v1.3.0 non-lamp generators remain; experimental Coral, Fold and related lamp generators are retired. Lamp Studio provides seven parametric mesh shapes, sliders and illustrative nozzle motion. STL/3MF export the model envelope; direct G-code export is currently the fixed P2S 0.8 mm PETG test specimen only. Physical printing and lamp hardware fit remain unverified.\n\nHistorical baseline notes follow:\n\n'+s)
+edit('src/main.js',lambda s:"import {installLatticeSample} from './lattice-sample.js';\n"+s+"\ninstallLatticeSample({scene,camera,controls,group,status,choose});\n")
 print('Integration applied to',project)

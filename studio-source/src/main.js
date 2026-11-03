@@ -1,3 +1,4 @@
+import {installLatticeSample} from './lattice-sample.js';
 import './web-platform.js';
 import './combined-studio.css';
 import {exportManufacturingSTL} from './export-mesh.js';
@@ -144,3 +145,5 @@ if(new URLSearchParams(location.search).has('test'))window.__reqoo.inspect3mf=as
 
 
 if(new URLSearchParams(location.search).get('generator')==='lamp')products.selectGenerator('lamp','lantern');
+
+installLatticeSample({scene,camera,controls,group,status,choose});
