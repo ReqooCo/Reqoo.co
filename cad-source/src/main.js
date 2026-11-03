@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {basis,validateProject} from './engine.js';
 import './style.css';
+import {solveSketch} from './constraints.js';
 
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const svg=(path)=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+path+'</svg>';
@@ -53,6 +54,7 @@ async function rebuild(next,{history=true,selectId=null}={}){
 }
 async function apply(type,params={},inputs=selectedIds(),editId=null){
  if(['sketch','box','cylinder','sphere','torus','plane','axis','import'].includes(type))inputs=[];
+ if(type==='sketch'&&params.shape==='polyline'){const solved=solveSketch(params.points,params.constraints||[]);params={...params,points:solved.points};}
  const next=snapshot(),f={id:editId||uid(),type,name:(type==='sketch'?(params.shape||'Sketch'):labelFor(type))+' '+(next.features.filter(f=>f.type===type).length+1),params,inputs};
  if(editId){const index=next.features.findIndex(f=>f.id===editId);if(index<0)throw Error('History step no longer exists');f.name=next.features[index].name;next.features[index]=f;}else next.features.push(f);
  await rebuild(next,{selectId:f.id});return f.id;
@@ -102,13 +104,39 @@ function requireSelection(type,ins){
  if(['union','subtract','intersect','loft','align'].includes(type)&&ins.length<2)throw Error('Select at least two '+(type==='loft'?'sketches':'bodies')+'. Turn on Multi-select or use Shift.');
  if(['shell','offsetFace'].includes(type)&&!selection.some(s=>s.kind==='face'))throw Error('Select a face first. Change Selection to Faces if needed.');
 }
+
+function mountConstraints(p){
+ const form=$('toolForm'),section=document.createElement('section');section.className='constraintEditor';section.setAttribute('aria-label','Sketch constraints');
+ let points=(p.points||[[-20,0],[20,0]]).map(q=>[...q]),rules=JSON.parse(JSON.stringify(p.constraints||[]));
+ const raw=$('p-points').closest('label');raw.hidden=true;
+ const closed=()=>Boolean($('p-closed')?.checked);
+ function collect(){points=[...section.querySelectorAll('[data-point]')].map(row=>[Number(row.querySelector('[data-x]').value),Number(row.querySelector('[data-y]').value)]);const next=[];
+  section.querySelectorAll('[data-point]').forEach((row,i)=>{if(row.querySelector('[data-lock]').checked)next.push({type:'fixed',a:i,x:points[i][0],y:points[i][1]});});
+  section.querySelectorAll('[data-segment]').forEach(row=>{const a=Number(row.dataset.segment),b=(a+1)%points.length,dir=row.querySelector('select').value,len=row.querySelector('[data-length]').value;if(dir)next.push({type:dir,a,b});if(len!=='')next.push({type:'length',a,b,value:Number(len)});});rules=next;return{points,constraints:rules};
+ }
+ function updateStatus(result){const el=section.querySelector('[data-solve-status]');el.className=result.state==='fully'?'fullyDefined':'underDefined';el.textContent=result.state==='fully'?'Fully constrained':result.dof+' degrees of freedom';}
+ function render(){
+  const edges=points.length-(closed()?0:1);
+  section.innerHTML='<h3>Sketch dimensions & constraints</h3><p class="toolHint">Shared points stay joined. Lock a point, then set segment direction and length.</p><div class="pointHeading"><span>Point</span><span>X (mm)</span><span>Y (mm)</span><span>Lock</span></div>'+points.map((q,i)=>'<div class="pointRow" data-point="'+i+'"><span>P'+(i+1)+'</span><input aria-label="Point '+(i+1)+' X" data-x type="number" step="any" min="-2000" max="2000" value="'+q[0]+'" required><input aria-label="Point '+(i+1)+' Y" data-y type="number" step="any" min="-2000" max="2000" value="'+q[1]+'" required><input aria-label="Lock point '+(i+1)+'" data-lock type="checkbox" '+(rules.some(c=>c.type==='fixed'&&c.a===i)?'checked':'')+'></div>').join('')+'<div class="pointActions"><button type="button" data-add-point>Add point</button><button type="button" data-remove-point '+(points.length<=2?'disabled':'')+'>Remove last</button></div><div class="segmentHeading"><span>Segment</span><span>Direction</span><span>Length (mm)</span></div>'+Array.from({length:edges},(_,i)=>{const b=(i+1)%points.length,dir=rules.find(c=>c.a===i&&c.b===b&&['horizontal','vertical'].includes(c.type))?.type||'',len=rules.find(c=>c.type==='length'&&c.a===i&&c.b===b)?.value??'';return '<div class="segmentRow" data-segment="'+i+'"><span>P'+(i+1)+'–P'+(b+1)+'</span><select aria-label="Segment '+(i+1)+' direction"><option value="">Free</option><option value="horizontal" '+(dir==='horizontal'?'selected':'')+'>Horizontal</option><option value="vertical" '+(dir==='vertical'?'selected':'')+'>Vertical</option></select><input data-length aria-label="Segment '+(i+1)+' length" type="number" min=".001" max="4000" step="any" placeholder="Free" value="'+len+'"></div>';}).join('')+'<p data-solve-status role="status" aria-live="polite"></p><div class="pointActions"><button type="button" data-solve>Solve constraints</button><button type="button" data-clear>Clear constraints</button></div>';
+  try{updateStatus(solveSketch(points,rules));}catch(e){section.querySelector('[data-solve-status]').textContent=e.message;}
+  section.querySelector('[data-add-point]').onclick=()=>{collect();if(points.length>=40){status('Limit is 40 constrained points');return;}const q=points.at(-1);points.push([q[0]+10,q[1]+10]);render();};
+  section.querySelector('[data-remove-point]').onclick=()=>{collect();points.pop();rules=rules.filter(c=>c.a<points.length&&(c.b===undefined||c.b<points.length));render();};
+  section.querySelector('[data-clear]').onclick=()=>{collect();rules=[];render();};
+  section.querySelector('[data-solve]').onclick=()=>{try{collect();const result=solveSketch(points,rules);points=result.points;render();updateStatus(result);}catch(e){section.querySelector('[data-solve-status]').textContent=e.message;}};
+  section.oninput=()=>{const el=section.querySelector('[data-solve-status]');el.className='underDefined';el.textContent='Dimensions changed · solve or apply to update';};
+ }
+ form.querySelector('.actions').before(section);if($('p-closed'))$('p-closed').onchange=()=>{collect();render();};render();
+ return()=>{collect();const solved=solveSketch(points,rules);return{points:solved.points,constraints:rules};};
+}
+
 function startTool(type,initial={},editId=null){
  if(!ready||busy)return;if(type==='import'){$('stepFile').click();return;}
  try{if(!editId)requireSelection(type,selectedIds());}catch(e){status(e.message);return;}
  closePanels();activeTool=type;editing=editId;const old=editId?doc.features.find(f=>f.id===editId):null,p={...old?.params,...initial};const fields=formFields(type,p),panel=$('toolPanel');
  panel.innerHTML='<header><h2>'+esc(type==='sketch'?(p.shape[0].toUpperCase()+p.shape.slice(1))+' sketch':labelFor(type))+'</h2><button id="cancelTool" aria-label="Close">'+ico('close')+'</button></header><p class="toolHint">'+esc(type==='sketch'?'Enter dimensions or draw on the selected plane.':type==='subtract'?'The first selected body is the main body. Remaining bodies are cutters.':type==='fillet'||type==='chamfer'?'Select edges, or apply to all edges.':type==='revolve'?'The profile must not cross the rotation axis.':type==='loft'?'Use two closed sketches on separated planes.':type==='shell'||type==='offsetFace'?'Uses the selected face.':'Values use millimetres; transforms are relative to the origin.')+'</p><form id="toolForm"><div class="fields">'+fields.map(f=>'<label class="'+(f.kind==='checkbox'?'check':f.name==='points'?'wide':'')+'" for="p-'+f.name+'">'+(f.kind==='checkbox'?'<input id="p-'+f.name+'" name="'+f.name+'" type="checkbox" '+(f.value?'checked':'')+'>':'')+esc(f.label)+(f.kind==='checkbox'?'':f.kind==='select'?'<select id="p-'+f.name+'" name="'+f.name+'">'+f.options.map(o=>'<option '+(o===f.value?'selected':'')+'>'+esc(o)+'</option>').join('')+'</select>':'<input id="p-'+f.name+'" name="'+f.name+'" type="'+f.kind+'" step="any" value="'+esc(f.value)+'" required>')+'</label>').join('')+'</div><div class="actions">'+(type==='sketch'&&!editId?'<button type="button" id="drawSketch">Draw on plane</button>':'')+'<button type="submit" data-apply class="primary">'+(editId?'Update feature':type==='sketch'?'Create sketch':'Apply')+'</button></div></form>';
  panel.hidden=false;$('cancelTool').onclick=closePanels;
- function read(){const result={...p};for(const f of fields){const el=$('p-'+f.name);result[f.name]=f.kind==='checkbox'?el.checked:f.kind==='number'?Number(el.value):el.value;}if(type==='sketch'){if(result.plane==='Selected face'){result.basis=p.basis||planeFromSelection();if(!result.basis)throw Error('Select a planar face');}else delete result.basis;if(typeof result.points==='string')result.points=result.points.split(';').filter(v=>v.trim()).map(v=>v.split(',').map(Number));}if(type==='fillet'||type==='chamfer')result.edges=selection.filter(s=>s.kind==='edge'&&s.id===selectedIds()[0]).map(s=>s.index);if(type==='shell'||type==='offsetFace')result.face=p.face??selection.find(s=>s.kind==='face')?.index;return result;}
+ const readConstraints=type==='sketch'&&p.shape==='polyline'?mountConstraints(p):null;
+ function read(){const result={...p};for(const f of fields){const el=$('p-'+f.name);result[f.name]=f.kind==='checkbox'?el.checked:f.kind==='number'?Number(el.value):el.value;}if(type==='sketch'){if(result.plane==='Selected face'){result.basis=p.basis||planeFromSelection();if(!result.basis)throw Error('Select a planar face');}else delete result.basis;if(typeof result.points==='string')result.points=result.points.split(';').filter(v=>v.trim()).map(v=>v.split(',').map(Number));}if(readConstraints)Object.assign(result,readConstraints());if(type==='fillet'||type==='chamfer')result.edges=selection.filter(s=>s.kind==='edge'&&s.id===selectedIds()[0]).map(s=>s.index);if(type==='shell'||type==='offsetFace')result.face=p.face??selection.find(s=>s.kind==='face')?.index;return result;}
  $('toolForm').onsubmit=async e=>{e.preventDefault();try{const id=await apply(type,read(),old?.inputs||selectedIds(),editId);closePanels();fit();select([{id,kind:items.find(i=>i.id===id)?.kind||'body'}]);}catch(err){error(err);}};
  if($('drawSketch'))$('drawSketch').onclick=()=>{try{beginDrawing(read());}catch(e){error(e);}};
 }
@@ -161,6 +189,7 @@ function render(){
 }
 function renderContext(){const c=$('context');c.replaceChildren();const item=selectedItem();c.hidden=!item;if(!item)return;
  const commands=item.kind==='sketch'?[['extrude','Extrude'],['revolve','Revolve'],['sweep','Sweep']]:item.kind==='plane'?[['rectangle','Sketch on plane']]:item.kind==='axis'?[]:[['move','Move'],['rotate','Rotate'],['fillet','Fillet'],...(selection.some(s=>s.kind==='face')?[['offsetFace','Offset Face']]:[])];
+ if(item.kind==='sketch'){const edit=document.createElement('button');edit.textContent='Edit sketch';edit.onclick=()=>startTool('sketch',{},item.featureId);c.append(edit);}
  for(const [type,label]of commands){const b=document.createElement('button');b.textContent=label;b.onclick=()=>startTool(type);c.append(b);}const del=document.createElement('button');del.textContent='Delete';del.onclick=()=>apply('delete',{},selectedIds()).then(()=>select([])).catch(error);c.append(del);
 }
 function select(next,extend=false){if(extend){for(const n of next){const index=selection.findIndex(s=>s.id===n.id&&s.kind===n.kind&&s.index===n.index);if(index>=0)selection.splice(index,1);else selection.push(n);}}else selection=next;render();const i=selectedItem();if(i)status(i.name+(i.kind==='body'?' · '+i.volume.toFixed(2)+' mm³':' · '+i.kind));}
@@ -181,7 +210,7 @@ $('fit').onclick=fit;document.querySelectorAll('[data-view]').forEach(b=>b.oncli
 function resize(){const r=$('canvas').getBoundingClientRect(),aspect=r.width/Math.max(1,r.height);camera.left=-100*aspect;camera.right=100*aspect;camera.top=100;camera.bottom=-100;camera.updateProjectionMatrix();renderer.setSize(r.width,r.height);}
 new ResizeObserver(resize).observe($('canvas'));resize();function frame(){requestAnimationFrame(frame);controls.update();renderer.render(scene,camera);}frame();
 function worldOnSketch(){const b=basis(sketchMode.params),normal=new THREE.Vector3(...b.normal),plane=new THREE.Plane(normal,-normal.dot(new THREE.Vector3(...b.origin))),hit=new THREE.Vector3();if(!ray.ray.intersectPlane(plane,hit))return null;const x=new THREE.Vector3(...b.x).normalize(),y=normal.clone().cross(x).normalize(),delta=hit.sub(new THREE.Vector3(...b.origin));return[Math.round(delta.dot(x)/gridStep)*gridStep,Math.round(delta.dot(y)/gridStep)*gridStep];}
-function beginDrawing(p){closePanels();sketchMode={params:p,points:[]};controls.enabled=false;$('sketchBar').hidden=false;$('sketchHint').textContent=p.shape+' · '+(p.plane||'selected face')+' · '+(['polyline','spline'].includes(p.shape)?'Click points, then Finish sketch':'Drag to draw');const b=basis(p),n=new THREE.Vector3(...b.normal),origin=new THREE.Vector3(...b.origin);controls.target.copy(origin);camera.up.set(0,0,1);if(Math.abs(n.z)>.9)camera.up.set(0,1,0);camera.position.copy(origin).addScaledVector(n,300);controls.update();status('Sketch active · snap '+gridStep+' mm');}
+function beginDrawing(p){if(p.shape==='polyline')p={...p,constraints:[]};closePanels();sketchMode={params:p,points:[]};controls.enabled=false;$('sketchBar').hidden=false;$('sketchHint').textContent=p.shape+' · '+(p.plane||'selected face')+' · '+(['polyline','spline'].includes(p.shape)?'Click points, then Finish sketch':'Drag to draw');const b=basis(p),n=new THREE.Vector3(...b.normal),origin=new THREE.Vector3(...b.origin);controls.target.copy(origin);camera.up.set(0,0,1);if(Math.abs(n.z)>.9)camera.up.set(0,1,0);camera.position.copy(origin).addScaledVector(n,300);controls.update();status('Sketch active · snap '+gridStep+' mm');}
 function drawingDown(){const p=worldOnSketch();if(!p)return;if(['polyline','spline'].includes(sketchMode.params.shape)){sketchMode.points.push(p);draft={start:p,end:p,poly:true};drawDraft();}else draft={start:p,end:p};}
 function drawingMove(){const p=worldOnSketch();if(!p)return;draft.end=p;drawDraft();}
 function drawDraft(){clear(preview);const b=basis(sketchMode.params),x=new THREE.Vector3(...b.x),n=new THREE.Vector3(...b.normal),y=n.clone().cross(x),origin=new THREE.Vector3(...b.origin),world=q=>origin.clone().addScaledVector(x,q[0]).addScaledVector(y,q[1]);let pts=[];

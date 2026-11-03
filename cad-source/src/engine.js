@@ -1,4 +1,5 @@
 import * as R from 'replicad';
+import {solveSketch} from './constraints.js';
 export const TYPES=['sketch','box','cylinder','sphere','torus','extrude','revolve','loft','sweep','union','subtract','intersect','fillet','chamfer','shell','offsetFace','move','rotate','scale','mirror','pattern','circularPattern','duplicate','align','split','import','plane','axis','delete'];
 const V=(v,d=0)=>v===undefined?d:Number(v);
 export function number(v,name,min=-2000,max=2000){const n=Number(v);if(!Number.isFinite(n)||n<min||n>max)throw Error(name+' must be between '+min+' and '+max);return n;}
@@ -21,7 +22,7 @@ export function profile(p){
  else if(p.shape==='ellipse')d=R.drawEllipse(number(p.width,'Width',.02,2000)/2,number(p.height,'Height',.02,2000)/2);
  else if(p.shape==='polygon'){const sides=number(p.sides,'Sides',3,64);if(!Number.isInteger(sides))throw Error('Sides must be an integer');d=R.drawPolysides(number(p.radius,'Radius',.01,1000),sides);}
  else if(p.shape==='polyline'||p.shape==='spline'||p.shape==='arc'){
-  const pts=p.points;if(!Array.isArray(pts)||pts.length<2||pts.length>100||pts.some(q=>!Array.isArray(q)||q.length!==2||q.some(v=>!Number.isFinite(v)||Math.abs(v)>2000)))throw Error('Use 2–100 finite sketch points');
+  const pts=p.shape==='polyline'?solveSketch(p.points,p.constraints||[]).points:p.points;if(!Array.isArray(pts)||pts.length<2||pts.length>100||pts.some(q=>!Array.isArray(q)||q.length!==2||q.some(v=>!Number.isFinite(v)||Math.abs(v)>2000)))throw Error('Use 2–100 finite sketch points');
   if(p.closed!==false&&pts.length<3)throw Error('A closed profile needs at least three points');
   if(p.shape==='spline')d=R.drawPointsInterpolation(pts,{}, {closeShape:p.closed!==false});
   else{let pen=R.draw(pts[0]);if(p.shape==='arc')pen=pen.sagittaArc(pts[1][0]-pts[0][0],pts[1][1]-pts[0][1],number(p.sagitta??10,'Arc height',.01,1000));else for(const q of pts.slice(1))pen=pen.lineTo(q);d=p.closed===false?pen.done():pen.close();}
