@@ -31,7 +31,7 @@ export function createDirectModeling(api){
  function displayValue(){const factor=operation==='draft'?1:(api.getUnits?.().factor||1);return value/factor;}
  async function drain(){
   if(inFlight||!wanted)return;const task=wanted;wanted=null;inFlight=true;
-  try{await api.onPreview(task.operation,task.params,task.ref,()=>task.epoch===previewEpoch);if(task.epoch===previewEpoch)feedback.textContent='Solid verified';}
+  try{await api.onPreview(task.operation,task.params,task.ref,()=>task.epoch===previewEpoch);if(task.epoch===previewEpoch&&task.token===sequence)feedback.textContent='Solid verified';}
   catch(e){if(task.epoch===previewEpoch&&!wanted){api.onResetPreview();feedback.textContent=e.message;feedback.dataset.error='true';}}
   finally{inFlight=false;if(wanted)drain();}
  }
@@ -43,7 +43,7 @@ export function createDirectModeling(api){
   // completed BREP frames during a continuous drag rather than starving them.
   wanted={token,epoch:previewEpoch,ref:{...session},operation,params:params()};drain();
  }
- function cancel(){clearTimeout(timer);sequence++;previewEpoch++;wanted=null;session=null;value=0;dimensions.hidden=true;api.onResetPreview();feedback.textContent='';}
+ function cancel(){drag=null;handle.classList.remove('dragging');api.onNavigation(true);clearTimeout(timer);sequence++;previewEpoch++;wanted=null;session=null;value=0;dimensions.hidden=true;api.onResetPreview();feedback.textContent='';}
  function begin(initial=0,requested){
   const t=target();if(!t)return;previewEpoch++;operation=requested||(t.diameter?'diameter':t.edge?'fillet':t.sketch?'extrude':'offsetFace');session={...t.ref};value=operation==='diameter'?(t.diameter.diameter+initial):initial;
   label.textContent=operation==='diameter'?'Diameter':operation==='fillet'?'Radius':operation==='chamfer'?'Chamfer':operation==='draft'?'Draft':'Distance';
