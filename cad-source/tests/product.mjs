@@ -105,7 +105,7 @@ try{
 
  await page.evaluate(()=>window.__cad.view('iso'));await page.evaluate(()=>window.__cad.select([]));
  const unchanged=await page.evaluate(()=>JSON.stringify(window.__cad.doc)),unchangedVolume=(await body()).volume;
- const chooseDisplay=async(mode)=>{await page.locator('#displayModeButton').click();await page.locator('[data-display-mode="'+mode+'"]').click();};
+ const chooseDisplay=async(mode)=>{if(!await page.locator('[data-display-mode="'+mode+'"]').isVisible())await page.locator('#displayModeButton').click();await page.locator('[data-display-mode="'+mode+'"]').click();};
  for(const mode of ['shaded','wireframe','shadedEdges']){
   await chooseDisplay(mode);assert.equal(await page.locator('[data-display-mode="'+mode+'"]').getAttribute('aria-checked'),'true');
   const drawing=await page.evaluate(()=>{let surfaces=0,edges=0;window.__cad.root.traverse(n=>{if(n.isMesh&&n.userData.kind==='body'&&n.material.some(m=>m.colorWrite))surfaces++;if(n.isLineSegments&&n.userData.itemKind==='body'&&n.material.colorWrite)edges++;});return{surfaces,edges};});
@@ -120,6 +120,33 @@ try{
  await page.reload();await ready();assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('reqoo-cad-preferences')).displayMode),'wireframe');near((await body()).volume,unchangedVolume,.01);
  await page.locator('#displayModeButton').click();assert.equal(await page.locator('[data-display-mode=wireframe]').getAttribute('aria-checked'),'true');await page.keyboard.press('Escape');
  checks.push('Wireframe retains real face picking and persists appearance across reload');
+
+
+ // A two-arc sketch must extrude into one continuous cylindrical CAD face.
+ await fresh();await chooseDisplay('shadedEdges');await page.locator('#pickMode').selectOption('auto');
+ const circle=await op('sketch',{shape:'circle',radius:10,plane:'XY'});
+ await op('extrude',{distance:20},[circle]);
+ const cylinder=await body(),sides=cylinder.faceInfo.filter(f=>['CYLINDER','CYLINDRE'].includes(f.type));
+ assert.equal(sides.length,1,'Circle extrusion has one continuous cylindrical face');
+ assert.equal(cylinder.faceInfo.length,3);near(cylinder.volume,2000*Math.PI,.02);
+ await page.evaluate(()=>window.__cad.view('front'));await page.locator('#fit').click();await page.evaluate(()=>window.__cad.select([]));
+ let tapPoint=await projection(3,-Math.sqrt(91),10);
+ await page.touchscreen.tap(tapPoint.x,tapPoint.y);
+ assert.equal(await page.evaluate(()=>window.__cad.selection.at(-1)?.kind),'face');
+ assert.equal(await page.evaluate(()=>window.__cad.selection.at(-1)?.index),sides[0].index);
+ await page.touchscreen.tap(tapPoint.x,tapPoint.y);
+ assert.deepEqual(await page.evaluate(()=>window.__cad.selection.map(s=>({id:s.id,kind:s.kind}))),[{id:cylinder.id,kind:'body'}]);
+ assert.equal(await page.locator('#faceDistance').isVisible(),false);
+ await page.waitForTimeout(400);await page.evaluate(()=>window.__cad.select([]));
+ await page.mouse.dblclick(tapPoint.x,tapPoint.y);
+ assert.equal(await page.evaluate(()=>window.__cad.selection.at(-1)?.kind),'body');
+ await page.screenshot({path:path.join(out,'product-continuous-cylinder-body-selected.png')});
+ checks.push('Two-arc circle extrudes into one native cylindrical face; touch double tap and mouse double click select full body');
+ await fresh();const ringSketch=await op('sketch',{shape:'annulus',radius:12,innerRadius:8,plane:'XY'});
+ await op('extrude',{distance:5},[ringSketch]);const ring=await body();
+ assert.equal(ring.faceInfo.filter(f=>['CYLINDER','CYLINDRE'].includes(f.type)).length,2,'Ring has one inner and one outer cylindrical face');
+ near(ring.volume,400*Math.PI,.02);
+ checks.push('Annulus extrusion preserves exact volume with continuous inner and outer cylindrical faces');
 
  assert.deepEqual(errors,[]);await fs.writeFile(path.join(out,'product-results.json'),JSON.stringify({checks,errors},null,2));console.log('PRODUCT PASS',checks);
 }catch(e){console.error('PRODUCT FAILED',e,checks,await page.locator('body').innerText());await page.screenshot({path:path.join(out,'product-failure.png')}).catch(()=>{});throw e;}finally{await browser.close();await new Promise(r=>server.close(r));}
