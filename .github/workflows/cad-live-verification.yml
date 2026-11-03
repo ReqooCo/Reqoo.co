@@ -24,39 +24,12 @@ jobs:
         run: |
           npm ci
           npm run build
-      - name: Wait for live assets to match this source
-        working-directory: cad-source
-        run: |
-          python - <<'PY'
-          import json,os,time,urllib.request
-          expected=json.load(open('dist/version.json'))['sourceHash']
-          url=os.environ['CAD_TEST_URL']
-          deadline=time.time()+600
-          last=None
-          while time.time()<deadline:
-              try:
-                  req=urllib.request.Request(url+'version.json',headers={'Cache-Control':'no-cache'})
-                  with urllib.request.urlopen(req,timeout=20) as r:
-                      current=json.load(r)['sourceHash']
-                  if current==expected:
-                      with urllib.request.urlopen(urllib.request.Request(url,headers={'Cache-Control':'no-cache'}),timeout=20) as r:
-                          html=r.read().decode()
-                          assert expected in html,'HTML belongs to another source build'
-                          if url.startswith('https://reqoo.co/'):
-                              assert r.headers.get('x-reqoo-cad-route')=='worker-cad-index','Domain not served by the repaired Worker route'
-                              assert 'no-store' in r.headers.get('cache-control',''),'Entrypoint is cacheable'
-                      print('LIVE SOURCE VERIFIED',url,expected,flush=True)
-                      break
-                  message='Waiting for '+expected+'; live source is '+current
-              except Exception as e:
-                  message=str(e)
-              if message!=last: print(message,flush=True);last=message
-              time.sleep(10)
-          else: raise SystemExit('Live release did not reach the expected source identity')
-          PY
       - name: Install Chromium
         working-directory: cad-source
         run: npx playwright install --with-deps chromium
+      - name: Verify live source identity in the browser
+        working-directory: cad-source
+        run: node tests/live-identity.mjs
       - name: Test the deployed CAD application
         working-directory: cad-source
         run: |
