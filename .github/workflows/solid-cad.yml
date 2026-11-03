@@ -1,0 +1,73 @@
+name: Real solid CAD build and verification
+on:
+  push:
+    branches: [feature/solid-cad-20261103]
+    paths: ['cad-source/**','.github/workflows/solid-cad.yml']
+permissions:
+  contents: write
+concurrency:
+  group: reqoo-solid-cad
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Resolve pinned CAD dependencies and licenses
+        working-directory: cad-source
+        run: |
+          npm install --package-lock-only --ignore-scripts
+          npm ci
+          mkdir -p public
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import {execFileSync} from 'node:child_process';
+          const packages=['three','replicad','replicad-opencascadejs'];
+          let notice='REQOO CAD — third-party components\n\nAll dependencies below are used unmodified. The WebAssembly CAD engine is loaded as a separate asset and may be replaced with a compatible build. Reqoo CAD source is available in ReqooCo/Reqoo.co under cad-source.\n\n';
+          for(const name of packages){
+            const base='node_modules/'+name,pkg=JSON.parse(fs.readFileSync(base+'/package.json','utf8'));
+            let head='main';try{head=JSON.parse(execFileSync('npm',['view',name+'@'+pkg.version,'gitHead','--json'],{encoding:'utf8'}))||'main';}catch{}
+            notice+=name+' '+pkg.version+' — '+pkg.license+'\nSource: '+(name==='three'?'https://github.com/mrdoob/three': 'https://github.com/sgenoud/replicad')+'/tree/'+head+'\n';
+            for(const filename of ['LICENSE','LICENSE.txt','LICENSE.md'])if(fs.existsSync(base+'/'+filename)){notice+=fs.readFileSync(base+'/'+filename,'utf8')+'\n';break;}
+            notice+='\n\n';
+          }
+          fs.writeFileSync('public/THIRD-PARTY-NOTICES.txt',notice);
+          JS
+      - name: Build the independent CAD app
+        working-directory: cad-source
+        run: |
+          npm run build
+          python - <<'PY'
+          from pathlib import Path
+          files=list(Path('dist').rglob('*'))
+          for p in files:
+              if p.is_file() and p.stat().st_size>25*1024*1024: raise RuntimeError(f'Asset exceeds hosting limit: {p} ({p.stat().st_size})')
+          print('Largest asset:',max((p.stat().st_size,str(p)) for p in files if p.is_file()))
+          PY
+      - name: Exercise real OpenCascade operations, CAD UI, history and exports
+        working-directory: cad-source
+        run: |
+          npx playwright install --with-deps chromium
+          node tests/cad.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Reqoo-Solid-CAD-QA
+          path: cad-source/test-results
+          retention-days: 14
+      - name: Stage verified CAD distribution without generators
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import shutil
+          shutil.copytree('cad-source/dist','cad',dirs_exist_ok=True)
+          PY
+          git config user.name 'Reqoo CAD Build'
+          git config user.email 'actions@users.noreply.github.com'
+          git add cad cad-source/package-lock.json cad-source/public/THIRD-PARTY-NOTICES.txt
+          git diff --cached --quiet || git commit -m 'Stage verified standalone solid CAD application [skip ci]'
+          git push origin HEAD:feature/solid-cad-20261103
