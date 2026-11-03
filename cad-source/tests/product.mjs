@@ -84,5 +84,31 @@ try{
  await op('extrude',{distance:5},[offset+':band']);near((await body()).volume,440*Math.PI,.04);
  checks.push('Ring inner/outer diameter annotations edit the source and offset in one history transaction');
 
+
+ // View cube targets change camera direction, including edge/corner orientations.
+ await page.locator('[data-view=iso]').click();await page.locator('#fit').click();
+ const cameraDirection=()=>page.evaluate(()=>window.__cad.camera.position.clone().sub(window.__cad.controls.target).normalize().toArray());
+ await page.locator('[data-cube-view=top]').click();let dir=await cameraDirection();near(dir[2],1,.001);
+ await page.locator('[data-cube-view="corner:1,-1,1"]').click();dir=await cameraDirection();near(dir[0],1/Math.sqrt(3),.002);near(dir[1],-1/Math.sqrt(3),.002);near(dir[2],1/Math.sqrt(3),.002);
+ await page.locator('[data-cube-view="edge:1,0,1"]').click();dir=await cameraDirection();near(dir[0],Math.SQRT1_2,.002);near(dir[1],0,.002);near(dir[2],Math.SQRT1_2,.002);
+ checks.push('Projected view cube face, corner and edge targets orient the actual modeling camera');
+ await page.locator('[data-view=iso]').click();await page.evaluate(()=>window.__cad.select([]));
+ const unchanged=await page.evaluate(()=>JSON.stringify(window.__cad.doc)),unchangedVolume=(await body()).volume;
+ const chooseDisplay=async(mode)=>{await page.locator('#displayModeButton').click();await page.locator('[data-display-mode="'+mode+'"]').click();};
+ for(const mode of ['shaded','wireframe','shadedEdges']){
+  await chooseDisplay(mode);assert.equal(await page.locator('[data-display-mode="'+mode+'"]').getAttribute('aria-checked'),'true');
+  const drawing=await page.evaluate(()=>{let surfaces=0,edges=0;window.__cad.root.traverse(n=>{if(n.isMesh&&n.userData.kind==='body'&&n.material.some(m=>m.colorWrite))surfaces++;if(n.isLineSegments&&n.userData.itemKind==='body'&&n.material.colorWrite)edges++;});return{surfaces,edges};});
+  if(mode==='shaded'){assert.ok(drawing.surfaces>0);assert.equal(drawing.edges,0);}
+  if(mode==='wireframe'){assert.equal(drawing.surfaces,0);assert.ok(drawing.edges>0);}
+  if(mode==='shadedEdges'){assert.ok(drawing.surfaces>0&&drawing.edges>0);}
+  assert.equal(await page.evaluate(()=>JSON.stringify(window.__cad.doc)),unchanged);near((await body()).volume,unchangedVolume,.01);
+  await page.screenshot({path:path.join(out,'product-display-'+mode+'.png')});
+ }
+ checks.push('Solid / Solid + edges / CAD Wireframe alter drawing only and preserve exact model/history');
+ await chooseDisplay('wireframe');await page.locator('[data-view=top]').click();await page.locator('#pickMode').selectOption('face');point=await projection(11,0,5);await page.touchscreen.tap(point.x,point.y);assert.equal(await page.evaluate(()=>window.__cad.selection.at(-1)?.kind),'face');
+ await page.reload();await ready();assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('reqoo-cad-preferences')).displayMode),'wireframe');near((await body()).volume,unchangedVolume,.01);
+ await page.locator('#displayModeButton').click();assert.equal(await page.locator('[data-display-mode=wireframe]').getAttribute('aria-checked'),'true');await page.keyboard.press('Escape');
+ checks.push('Wireframe retains real face picking and persists appearance across reload');
+
  assert.deepEqual(errors,[]);await fs.writeFile(path.join(out,'product-results.json'),JSON.stringify({checks,errors},null,2));console.log('PRODUCT PASS',checks);
 }catch(e){console.error('PRODUCT FAILED',e,checks,await page.locator('body').innerText());await page.screenshot({path:path.join(out,'product-failure.png')}).catch(()=>{});throw e;}finally{await browser.close();await new Promise(r=>server.close(r));}
