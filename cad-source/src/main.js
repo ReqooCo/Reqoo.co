@@ -6,6 +6,7 @@ import {createDirectModeling} from './direct-modeling.js';
 import {threeMF,sketchExport} from './exports.js';
 import {solveSketch} from './constraints.js';
 import {simpleSource,immediateTransform} from './immediate-preview.js';
+import {facePrismData,updatePrismPositions} from './face-prism.js';
 
 const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const svg=(path)=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+path+'</svg>';
@@ -217,7 +218,7 @@ const scene=new THREE.Scene();scene.background=new THREE.Color('#f6f7f9');const 
 const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.target.set(0,0,10);controls.touches.ONE=THREE.TOUCH.ROTATE;controls.touches.TWO=THREE.TOUCH.DOLLY_PAN;controls.enablePan=true;controls.screenSpacePanning=true;controls.zoomSpeed=1.1;controls.rotateSpeed=.65;controls.panSpeed=.85;
 scene.add(new THREE.HemisphereLight(0xffffff,0xb9c4d0,2.8));const lamp=new THREE.DirectionalLight(0xffffff,2.4);lamp.position.set(60,-90,150);scene.add(lamp);const fill=new THREE.DirectionalLight(0xffffff,.7);fill.position.set(-100,40,70);scene.add(fill);
 const grid=new THREE.GridHelper(1000,100,0xcbd1d9,0xe6e9ee);grid.rotation.x=Math.PI/2;grid.position.z=-.03;scene.add(grid);
-const root=new THREE.Group(),preview=new THREE.Group();scene.add(root,preview);
+const root=new THREE.Group(),preview=new THREE.Group();const directOverlay=new THREE.Group();scene.add(root,preview,directOverlay);
 let showEdges=true,sectionEnabled=false,sectionHeight=10;
 function updateClip(){root.traverse(o=>{if(o.material){const mats=Array.isArray(o.material)?o.material:[o.material];for(const m of mats){m.clippingPlanes=sectionEnabled?[new THREE.Plane(new THREE.Vector3(0,0,-1),sectionHeight)]:[];m.needsUpdate=true;}}});}
 function clear(g){for(const o of [...g.children]){g.remove(o);o.traverse(n=>{n.geometry?.dispose();for(const m of Array.isArray(n.material)?n.material:[n.material])m?.dispose();});}}
@@ -245,10 +246,28 @@ function referenceParams(type,params,ref=selection.at(-1)){
  return result;
 }
 let immediateSession=null;
-function resetDirectPreview(force=false){previewVersion++;const changed=displayItems||immediateSession;immediateSession=null;displayItems=null;if(changed||force)render(true);}
+function resetDirectPreview(force=false){previewVersion++;const changed=displayItems||immediateSession;immediateSession=null;displayItems=null;clear(directOverlay);if(changed||force)render(true);}
 function showImmediate(type,params,ref){
  const item=items.find(i=>i.id===ref.id),value=type==='diameter'?params.diameter:params.distance;
- const transform=item&&immediateTransform(doc,item,ref,type,value);if(!transform)return false;
+ const transform=item&&immediateTransform(doc,item,ref,type,value);
+ if(!transform){
+  if(type!=='offsetFace'||value<=0||!item||sectionEnabled){if(immediateSession){immediateSession=null;clear(directOverlay);displayItems=null;render(true);}return false;}
+  if(immediateSession?.mode!=='prism'){
+   const data=facePrismData(item,ref.index);if(!data)return false;
+   clear(directOverlay);if(displayItems){displayItems=null;render(true);}
+   const geometry=new THREE.BufferGeometry(),positions=data.base.slice();geometry.setAttribute('position',new THREE.BufferAttribute(positions,3).setUsage(THREE.DynamicDrawUsage));
+   const material=new THREE.MeshStandardMaterial({color:doc.ui?.colors?.[ref.id]||'#d6dbe2',roughness:.55,metalness:.08,side:THREE.DoubleSide});
+   const mesh=new THREE.Mesh(geometry,material);directOverlay.add(mesh);
+   const edgesGeometry=new THREE.BufferGeometry();edgesGeometry.setAttribute('position',new THREE.BufferAttribute(data.lines.slice(),3).setUsage(THREE.DynamicDrawUsage));
+   const edgeLines=new THREE.LineSegments(edgesGeometry,new THREE.LineBasicMaterial({color:'#576372'}));directOverlay.add(edgeLines);
+   immediateSession={ref:{...ref},mode:'prism',data,mesh,edgeLines};
+  }
+  const {data,mesh,edgeLines}=immediateSession;
+  updatePrismPositions(mesh.geometry.attributes.position.array,data.base,data.weights,data.normal,value);
+  mesh.geometry.attributes.position.needsUpdate=true;mesh.geometry.computeVertexNormals();mesh.geometry.computeBoundingSphere();
+  updatePrismPositions(edgeLines.geometry.attributes.position.array,data.lines,data.lineWeights,data.normal,value);
+  edgeLines.geometry.attributes.position.needsUpdate=true;edgeLines.geometry.computeBoundingSphere();immediateSession.value=value;return true;
+ }
  if(!immediateSession){displayItems=null;render(true);immediateSession={ref:{...ref}};}
  const node=root.children.find(n=>n.userData.itemId===ref.id);if(!node)return false;
  node.scale.set(...transform.scale);node.position.set(...transform.position);node.updateMatrixWorld(true);
@@ -273,8 +292,8 @@ function diameterDocument(params,ref){
 const direct=createDirectModeling({THREE,camera,renderer,stage:$('stage'),getSelection:()=>selection,getDiameterTarget:diameterTarget,getItem:selectedItem,getDoc:()=>doc,isBusy:()=>busy,isSketching:()=>!!sketchMode,
  onNavigation:enabled=>controls.enabled=enabled&&!sketchMode,
  getUnits:()=>({factor:unitFactorValue(),label:preferences.units}),onStatus:status,onResetPreview:resetDirectPreview,onImmediate:showImmediate,
- onPreview:async(type,params,ref,isCurrent)=>{const version=++previewVersion,next=type==='diameter'?diameterDocument(params,ref):snapshot();if(type!=='diameter')next.features.push({id:'direct_preview',type,name:'Direct preview',params:referenceParams(type,params,ref),inputs:[ref.id]});const result=await rpc('preview',{doc:next});if(isCurrent()){displayItems=result;if(!immediateSession)render(true);else if(!direct.state.dragging&&(type==='diameter'?params.diameter:params.distance)===direct.state.value){immediateSession=null;render(true);}}},
- onCommit:async(type,params,ref)=>{immediateSession=null;displayItems=null;if(type==='diameter'){await rebuild(diameterDocument(params,ref),{selectId:ref.id});return;}const id=await apply(type,referenceParams(type,params,ref),[ref.id]);select([{id,kind:'body'}]);}
+ onPreview:async(type,params,ref,isCurrent)=>{const version=++previewVersion,next=type==='diameter'?diameterDocument(params,ref):snapshot();if(type!=='diameter')next.features.push({id:'direct_preview',type,name:'Direct preview',params:referenceParams(type,params,ref),inputs:[ref.id]});const result=await rpc('preview',{doc:next});if(isCurrent()){displayItems=result;if(!immediateSession)render(true);else if(!direct.state.dragging&&(type==='diameter'?params.diameter:params.distance)===direct.state.value){immediateSession=null;clear(directOverlay);render(true);}}},
+ onCommit:async(type,params,ref)=>{immediateSession=null;displayItems=null;clear(directOverlay);if(type==='diameter'){await rebuild(diameterDocument(params,ref),{selectId:ref.id});return;}const id=await apply(type,referenceParams(type,params,ref),[ref.id]);select([{id,kind:'body'}]);}
 });
 const faceHandle=direct.handle,faceDistance=direct.dimensions;
 const faceDirection=()=>direct.direction(),gizmoTarget=()=>direct.target(),showFaceDistance=(value=0,operation)=>direct.begin(value,operation),updateFaceHandle=()=>direct.update();
@@ -413,7 +432,8 @@ $('openFile').onchange=async e=>{const f=e.target.files[0];try{if(!f)return;if(f
 $('stepFile').onchange=async e=>{const f=e.target.files[0];try{if(!f)return;if(f.size>20e6)throw Error('STEP file exceeds 20 MB');await apply('import',{step:await f.text()},[]);closePanels();fit();}catch(e){error(e);}finally{$('stepFile').value='';}};
 document.addEventListener('keydown',e=>{if(e.target.closest('input,select,textarea'))return;const mod=e.ctrlKey||e.metaKey;if(mod&&e.key.toLowerCase()==='z'){e.preventDefault();(e.shiftKey?$('redo'):$('undo')).click();}else if(mod&&e.key.toLowerCase()==='s'){e.preventDefault();download((doc.title||'Reqoo-CAD')+'.rqcad',JSON.stringify(doc,null,2));}else if(e.key.toLowerCase()==='f')fit();else if(e.key==='Escape'){closePanels();endDrawing();selection=[];render();}else if(e.key==='Delete'&&selection.length)apply('delete',{},selectedIds()).then(()=>select([])).catch(error);});
 document.addEventListener('pointerdown',e=>{if(e.target.closest('#rail,#menu,#toolPanel,#top,dialog'))return;$('menu').hidden=true;});
-const vh=()=>document.documentElement.style.setProperty('--app-height',(window.visualViewport?.height||innerHeight)+'px');window.visualViewport?.addEventListener('resize',vh);vh();
+// Let CSS track the dynamic viewport; never freeze a transient keyboard/browser height.
+window.addEventListener('resize',resize);window.addEventListener('pageshow',resize);window.visualViewport?.addEventListener('resize',resize);
 updatePreferences();setWorkspaceMode('solid');decorateButtons();new MutationObserver(decorateButtons).observe(document.body,{childList:true,subtree:true});
 try{await rpc('ready');ready=true;const saved=localStorage.getItem('reqoo-cad-v1');if(saved){try{const parsed=JSON.parse(saved);validateProject(parsed);await rebuild(parsed,{history:false});fit();}catch{status('Saved project could not be restored. Open your downloaded backup.');}}status('Ready · create a sketch or add a solid');updateHistoryButtons();}catch(e){error(e);}
-if(new URLSearchParams(location.search).has('test'))window.__cad={get gizmo(){return {...direct.state,selection:selection.at(-1),busy,sketchMode:!!sketchMode}},get previewItems(){return displayItems},get immediatePreview(){return immediateSession},direct,get doc(){return doc;},get items(){return items;},get selection(){return selection;},apply,rebuild,select,startTool,exportFile,fit,ready:()=>ready,view,camera,root,worker:rpc};
+if(new URLSearchParams(location.search).has('test'))window.__cad={get gizmo(){return {...direct.state,selection:selection.at(-1),busy,sketchMode:!!sketchMode}},get previewItems(){return displayItems},get immediatePreview(){return immediateSession?{mode:immediateSession.mode||'affine',value:immediateSession.value}:null},direct,get doc(){return doc;},get items(){return items;},get selection(){return selection;},apply,rebuild,select,startTool,exportFile,fit,ready:()=>ready,view,camera,root,worker:rpc};
