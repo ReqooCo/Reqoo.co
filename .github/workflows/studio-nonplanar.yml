@@ -1,0 +1,56 @@
+name: Lamp non-planar verification
+on:
+  push:
+    branches: [fix/lamp-nonplanar-20261103]
+    paths: ['studio-source/**', 'studio-build/**', '.github/workflows/studio-nonplanar.yml']
+permissions:
+  contents: write
+concurrency:
+  group: lamp-nonplanar
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: studio-source/package-lock.json
+      - name: Install, build and test shared motion plan
+        working-directory: studio-source
+        run: |
+          python ../studio-build/prepare.py
+          npm ci
+          npm run build
+          node --test tests/nonplanar.test.js tests/combined-lamp.test.js tests/lattice.test.js
+          node --test --test-name-pattern="Registry|Every creative mode|Every lamp mode" tests/generator-geometry.test.js
+      - name: Verify preview, actual download and stale design protection
+        working-directory: studio-source
+        run: |
+          npx playwright install --with-deps chromium
+          node tests/combined-ui.mjs --web
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Lamp-nonplanar-QA
+          path: studio-source/test-results
+          retention-days: 14
+      - name: Stage tested distribution for normal production deployment on merge
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import shutil
+          source=Path('studio-source/dist')
+          target=Path('3d-studio')
+          for p in source.iterdir():
+              if p.is_dir(): shutil.copytree(p,target/p.name,dirs_exist_ok=True)
+              else: shutil.copyfile(p,target/p.name)
+          PY
+          git config user.name 'Reqoo Studio Build'
+          git config user.email 'actions@users.noreply.github.com'
+          git add 3d-studio studio-source/README.md studio-source/desktop/PANDUAN-v1.5.0.txt
+          git diff --cached --quiet || git commit -m 'Stage tested non-planar web app [skip ci]'
+          git push origin HEAD:fix/lamp-nonplanar-20261103

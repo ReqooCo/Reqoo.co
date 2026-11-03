@@ -6,6 +6,8 @@ for f in overrides.rglob('*'):
  if f.is_file():
   dest=project/f.relative_to(overrides);dest.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(f,dest)
 def edit(path,fn):
+ # A complete shared lamp UI override is already integrated; do not patch it twice.
+ if path=='src/lamp-studio.js' and (overrides/path).is_file():return
  p=project/path;s=p.read_text(encoding='utf-8-sig');p.write_text(fn(s),encoding='utf-8')
 
 def registry(s):
@@ -85,13 +87,13 @@ for item in package['build'].get('extraFiles',[]):
 (project/'package.json').write_text(json.dumps(package,indent=2)+'\n')
 lock=json.loads((project/'package-lock.json').read_text(encoding='utf-8-sig'));lock['version']='1.5.0';lock.get('packages',{}).get('',{})['version']='1.5.0';(project/'package-lock.json').write_text(json.dumps(lock,indent=2)+'\n')
 edit('desktop/main.cjs',lambda s:s.replace(r'json|stl|3mf|svg|zip|csv',r'json|stl|3mf|svg|zip|csv|gcode'))
-guide=(project/'desktop/PANDUAN-v1.3.0.txt').read_text(encoding='utf-8-sig');(project/'desktop/PANDUAN-v1.5.0.txt').write_text(guide+'\n\n1.5.0: Lamp Studio baharu berkongsi kod web/desktop. Tujuh bentuk, slider, preview nozzle, eksport sampel tetap P2S 0.8 PETG. Coral / Fold dan bentuk eksperimen dikeluarkan. STL ialah cangkerang reka bentuk, bukan jejak filament. Tetapan custom belum dieksport sebagai G-code.\n',encoding='utf-8')
+guide=(project/'desktop/PANDUAN-v1.3.0.txt').read_text(encoding='utf-8-sig');(project/'desktop/PANDUAN-v1.5.0.txt').write_text(guide+'\n\n1.5.0: Lamp Studio baharu berkongsi kod web/desktop. Tujuh bentuk, slider, preview nozzle, G-code reka bentuk non-planar P2S 0.8 PETG daripada pelan preview yang sama. Coral / Fold dan bentuk eksperimen dikeluarkan. STL ialah cangkerang reka bentuk, bukan jejak filament. G-code custom memerlukan semakan pelan dan profil; preset ujian kecil disediakan. Cetakan fizikal belum disahkan.\n',encoding='utf-8')
 edit('desktop/installer.iss',lambda s:s.replace('1.3.0','1.5.0').replace('SetupArchitecture=x64\n','').replace(r'OutputDir=..\..\..\..\outputs',r'OutputDir=..\release').replace(r'Source: "..\..\..\..\release\1.5.0\win-unpacked\*"',r'Source: "..\release\1.5.0\win-unpacked\*"'))
 # Make the original bundled open fonts available to the web build too.
 fontDir=project/'public-core/fonts';fontDir.mkdir(parents=True,exist_ok=True);fontIndex=[]
 for f in sorted((project/'desktop/fonts').glob('*.ttf')):shutil.copyfile(f,fontDir/f.name);fontIndex.append({'id':f.name,'label':f.stem.replace('-',' ').title()})
 (fontDir/'index.json').write_text(json.dumps(fontIndex))
 shutil.copyfile(project/'desktop/FONT-LICENSES.txt',fontDir/'LICENSES.txt')
-edit('README.md',lambda s:'# Reqoo 3D Studio 1.5.0 — shared web and desktop\n\nBuilt and tested in GitHub Actions. The released v1.3.0 non-lamp generators remain; experimental Coral, Fold and related lamp generators are retired. Lamp Studio provides seven parametric mesh shapes, sliders and illustrative nozzle motion. STL/3MF export the model envelope; direct G-code export is currently the fixed P2S 0.8 mm PETG test specimen only. Physical printing and lamp hardware fit remain unverified.\n\nHistorical baseline notes follow:\n\n'+s)
+edit('README.md',lambda s:'# Reqoo 3D Studio 1.5.0 — shared web and desktop\n\nBuilt and tested in GitHub Actions. The released v1.3.0 non-lamp generators remain; experimental Coral, Fold and related lamp generators are retired. Lamp Studio provides seven parametric mesh shapes, sliders and quantized nozzle motion. Custom experimental P2S 0.8 mm PETG G-code and preview share one XYZ/E/F plan, with Z-down extrusion, motion limits and preliminary nozzle checks. Unsafe exploratory waves cannot be exported. The fixed lattice sample remains separate. STL/3MF export the model envelope. Physical printing and lamp hardware fit remain unverified.\n\nHistorical baseline notes follow:\n\n'+s)
 edit('src/main.js',lambda s:"import {installLatticeSample} from './lattice-sample.js';\n"+s+"\ninstallLatticeSample({scene,camera,controls,group,status,choose});\n")
 print('Integration applied to',project)
