@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import http from 'node:http';
-const out=path.resolve('test-results'),root=path.resolve('dist');await fs.mkdir(out,{recursive:true});
+const out=path.resolve('test-results'),root=path.resolve(process.env.CAD_BUILD_DIR||'dist');await fs.mkdir(out,{recursive:true});
 const server=http.createServer(async(req,res)=>{try{let pathname=new URL(req.url,'http://localhost').pathname;if(pathname.startsWith('/cad/'))pathname=pathname.slice(4);const f=path.resolve(root,'.'+(pathname.endsWith('/')?pathname+'index.html':pathname));if(!f.startsWith(root+path.sep))throw Error();const bytes=await fs.readFile(f);res.writeHead(200,{'Content-Type':({'.js':'text/javascript','.css':'text/css','.wasm':'application/wasm','.html':'text/html','.json':'application/json'})[path.extname(f)]||'application/octet-stream'});res.end(bytes);}catch{res.writeHead(404);res.end();}});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const url=process.env.CAD_TEST_URL||('http://127.0.0.1:'+server.address().port+'/'),browser=await chromium.launch({headless:true});
