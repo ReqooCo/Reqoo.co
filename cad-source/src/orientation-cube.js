@@ -64,7 +64,7 @@ export function createOrientationCube({THREE,camera,controls,root,onView}){
   const projected=vertices.map(p=>{const v=new THREE.Vector3(...p);return{x:64+v.dot(right)*27,y:54-v.dot(up)*27};}),visibleEdges=new Set(),visibleCorners=new Set();
   for(const f of faces){
    const {group,polygon,text}=faceNodes.get(f.name),visible=new THREE.Vector3(...f.n).dot(eye)>.001;group.style.display=visible?'':'none';if(!visible)continue;
-   const pts=f.v.map(i=>projected[i]);polygon.setAttribute('points',pts.map(p=>p.x+','+p.y).join(' '));polygon.setAttribute('fill',theme==='dark'?(f.name==='top'?'#4a6785':f.name==='right'?'#263d56':'#36516e'):(f.name==='top'?'#f5f9ff':f.name==='right'?'#c7d8ed':'#dfebfa'));
+   const pts=f.v.map(i=>projected[i]),facing=new THREE.Vector3(...f.n).dot(eye),width=Math.max(...pts.map(p=>p.x))-Math.min(...pts.map(p=>p.x)),height=Math.max(...pts.map(p=>p.y))-Math.min(...pts.map(p=>p.y));text.style.display=facing>.25&&width>f.name.length*4.5+4&&height>14?'':'none';polygon.setAttribute('points',pts.map(p=>p.x+','+p.y).join(' '));polygon.setAttribute('fill',theme==='dark'?(f.name==='top'?'#4a6785':f.name==='right'?'#263d56':'#36516e'):(f.name==='top'?'#f5f9ff':f.name==='right'?'#c7d8ed':'#dfebfa'));
    text.setAttribute('x',pts.reduce((n,p)=>n+p.x,0)/4);text.setAttribute('y',pts.reduce((n,p)=>n+p.y,0)/4+3);
    for(let j=0;j<4;j++){visibleEdges.add([f.v[j],f.v[(j+1)%4]].sort((a,b)=>a-b).join(':'));visibleCorners.add(f.v[j]);}
   }

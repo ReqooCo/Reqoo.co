@@ -28,3 +28,4 @@ body.cadWorkspace #stage[data-workspace=sketch] #empty{display:none}
 /* Keep right-side popovers clear of utility captions and their hit areas. */
 body.cadWorkspace #stage:has(#sidebar:not([hidden])) .utilityLabel,body.cadWorkspace #stage:has(#partAlignment:not([hidden])) .utilityLabel,body.cadWorkspace #stage:has(#displayPopover:not([hidden])) .utilityLabel,body.cadWorkspace #stage:has(#snapOptions:not([hidden])) .utilityLabel{display:none}
 body.busy :is(#moveGizmo,#rotationGizmo,#partAlignment,#faceDistance,#faceDragHandle){pointer-events:none}body.busy :is(#moveDistance,#rotationGizmo,#faceDistance){opacity:.75}
+body.cadWorkspace #gridToggle[aria-pressed=true]{background:#2d4b6d;border-color:#579bdf;color:#c7e3ff}html[data-theme=light] body.cadWorkspace #gridToggle[aria-pressed=true]{background:#e4effc;border-color:#82addf;color:#1761b4}
