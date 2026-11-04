@@ -92,7 +92,7 @@ function rpc(type,payload={}){if(!worker)spawn();return new Promise((resolve,rej
 function status(text){$('status').textContent=text;}
 function error(e){$('errorText').textContent=e.message||String(e);if(!$('errorDialog').open)$('errorDialog').showModal();status('Operation not completed. Previous model preserved.');}
 $('closeError').onclick=()=>$('errorDialog').close();
-function setBusy(value){busy=value;document.body.classList.toggle('busy',value);for(const id of ['rail','context','toolPanel','sidebar','workspaceModes','utilityRail','selectionBar','moveGizmo','rotationGizmo','partAlignment','faceDistance'])if($(id))$(id).inert=value;for(const b of document.querySelectorAll('button[data-apply]'))b.disabled=value;updateHistoryButtons();}
+function setBusy(value){busy=value;document.body.classList.toggle('busy',value);for(const id of ['top','rail','context','toolPanel','sidebar','workspaceModes','utilityRail','selectionBar','moveGizmo','rotationGizmo','partAlignment','faceDistance'])if($(id))$(id).inert=value;for(const b of document.querySelectorAll('button[data-apply]'))b.disabled=value;updateHistoryButtons();}
 function snapshot(){return JSON.parse(JSON.stringify(doc));}
 function remember(stack,value){stack.push(value);while(stack.length>20||stack.length>1&&stack.reduce((n,d)=>n+JSON.stringify(d).length,0)>24e6)stack.shift();}
 function saveLocal(){try{const next=JSON.stringify(doc),prior=localStorage.getItem('reqoo-cad-v1');if(prior&&prior!==next)localStorage.setItem('reqoo-cad-v1-backup',prior);localStorage.setItem('reqoo-cad-v1',next);$('saveState').textContent='Saved locally';}catch{$('saveState').textContent='Download a project backup';}}
