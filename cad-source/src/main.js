@@ -79,7 +79,7 @@ function snapshot(){return JSON.parse(JSON.stringify(doc));}
 function remember(stack,value){stack.push(value);while(stack.length>20||stack.length>1&&stack.reduce((n,d)=>n+JSON.stringify(d).length,0)>24e6)stack.shift();}
 function saveLocal(){try{const next=JSON.stringify(doc),prior=localStorage.getItem('reqoo-cad-v1');if(prior&&prior!==next)localStorage.setItem('reqoo-cad-v1-backup',prior);localStorage.setItem('reqoo-cad-v1',next);$('saveState').textContent='Saved locally';}catch{$('saveState').textContent='Download a project backup';}}
 async function rebuild(next,{history=true,selectId=null}={}){
- if(busy)throw Error('Wait for the current CAD operation');validateProject(next);setBusy(true);
+ if(busy)throw Error('Wait for the current CAD operation');validateProject(next);moveGizmo?.cancel();setBusy(true);
  try{const result=await rpc('build',{doc:next});if(history){remember(undo,snapshot());redo=[];}doc=JSON.parse(JSON.stringify(next));items=result;pickCandidates=[];if(selectId){const preferred=result.find(i=>i.id===selectId+':band')||result.find(i=>i.id===selectId);selection=preferred?[{id:preferred.id,kind:preferred.kind}]:[];}else selection=selection.filter(s=>items.some(i=>i.id===s.id));render();saveLocal();$('projectName').value=doc.title;status(items.filter(i=>i.kind==='body').length+' solid bodies · ready');return result;}
  finally{setBusy(false);}
 }
