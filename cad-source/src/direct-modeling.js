@@ -27,7 +27,9 @@ export function createDirectModeling(api){
  }
  function direction(){
   const t=target();if(!t)return null;
-  const origin=new THREE.Vector3(...(t.ref.point||t.face?.center||t.edge?.center||t.item.bounds[0].map((v,i)=>(v+t.item.bounds[1][i])/2)));
+  const centre=t.face?.type==='PLANE'?t.face.center:t.edge?(t.ref.point||t.edge.center):t.item.faceInfo?.[0]?.center||t.item.bounds[0].map((v,i)=>(v+t.item.bounds[1][i])/2);
+  const origin=new THREE.Vector3(...centre);
+  if(t.diameter&&t.face?.cylinder){const c=t.face.cylinder,axis=new THREE.Vector3(...c.axis),mid=new THREE.Vector3(...c.origin).addScaledVector(axis,(c.min+c.max)/2),radial=new THREE.Vector3(...(t.ref.point||t.face.normal.map((v,i)=>mid.toArray()[i]+v))).sub(mid);radial.addScaledVector(axis,-radial.dot(axis));if(radial.lengthSq()<1e-10){radial.set(Math.abs(axis.x)<.9?1:0,Math.abs(axis.x)<.9?0:1,0);radial.addScaledVector(axis,-radial.dot(axis));}origin.copy(mid).addScaledVector(radial.normalize(),c.radius);}
   const radial=(face)=>{const c=face?.cylinder;if(!c)return new THREE.Vector3(...(face?.normal||[0,0,1]));const axis=new THREE.Vector3(...c.axis),v=origin.clone().sub(new THREE.Vector3(...c.origin));return v.addScaledVector(axis,-v.dot(axis)).normalize();};
   let normal=t.face?radial(t.face):new THREE.Vector3(...(t.item.sketchPlane?.normal||t.sketch?.basis?.normal||(t.sketch?.plane==='XZ'?[0,-1,0]:t.sketch?.plane==='YZ'?[1,0,0]:[0,0,1])));
   if(t.edge){const adjacent=t.item.faceInfo.filter(f=>t.edge.faceIndices?.includes(f.index));if(adjacent.length){normal=new THREE.Vector3();for(const f of adjacent)normal.add(radial(f));}}
@@ -67,7 +69,7 @@ export function createDirectModeling(api){
   if(id!==lastTarget){if(session&&!same(session,t.ref))cancel();lastTarget=id;if(t.diameter&&!session){begin(0);return;}}
   const d=direction();if(!d)return;
   const unit=(camera.top-camera.bottom)/camera.zoom/d.rect.height,length=unit*56;
-  const origin=d.origin.clone();if(session&&operation==='offsetFace')origin.addScaledVector(d.normal,value);
+  const origin=d.origin.clone();if(session&&(operation==='offsetFace'||operation==='extrude'))origin.addScaledVector(d.normal,value);
   else if(session&&operation==='diameter'&&t.diameter)origin.addScaledVector(d.normal,(value-t.diameter.diameter)/2);
   arrow.position.copy(origin);arrow.setDirection(d.normal);arrow.setLength(length,length*.3,length*.14);shaft.scale.set(unit*1.4,length*.7,unit*1.4);shaft.position.y=length*.35;
   const projected=origin.clone().addScaledVector(d.normal,length*.82).project(camera),hx=(projected.x+1)*d.rect.width/2,hy=(1-projected.y)*d.rect.height/2;
@@ -79,7 +81,7 @@ export function createDirectModeling(api){
  const finish=()=>{drag=null;handle.classList.remove('dragging');api.onNavigation(true);if(session)schedule();};handle.addEventListener('pointerup',finish);handle.addEventListener('pointercancel',()=>{finish();cancel();});
  input.oninput=()=>{api.onSnap?.(null);value=Number(input.value)*(operation==='draft'?1:api.getUnits?.().factor||1);schedule();};
  dimensions.querySelector('#faceDistanceCancel').onclick=cancel;
- dimensions.querySelector('#faceDistanceApply').onclick=async()=>{if(!session||!Number.isFinite(value)||Math.abs(value)<.001){api.onStatus('Enter a non-zero value');return;}const ref={...session},p=params(),op=operation;clearTimeout(timer);sequence++;previewEpoch++;wanted=null;try{await api.onCommit(op,p,ref);cancel();}catch(e){api.onResetPreview(true);feedback.textContent=e.message;feedback.dataset.error='true';}};
+ dimensions.querySelector('#faceDistanceApply').onclick=async()=>{if(api.isBusy())return;if(!session||!Number.isFinite(value)||Math.abs(value)<.001){api.onStatus('Enter a non-zero value');return;}const ref={...session},p=params(),op=operation;clearTimeout(timer);sequence++;previewEpoch++;wanted=null;try{await api.onCommit(op,p,ref);cancel();}catch(e){api.onResetPreview(true);feedback.textContent=e.message;feedback.dataset.error='true';}};
  input.onkeydown=e=>{if(e.key==='Enter')dimensions.querySelector('#faceDistanceApply').click();if(e.key==='Escape')cancel();};
  return{handle,dimensions,arrow,update,target,direction,begin,cancel,get state(){return{dragging:!!drag,visible:!handle.hidden,target:handle.dataset.target,preview:!!session,operation,value,inFlight,pending:!!wanted,position:{left:handle.style.left,top:handle.style.top}};}};
 }
