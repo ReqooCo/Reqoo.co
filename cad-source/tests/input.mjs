@@ -1,9 +1,10 @@
+import {beginSketch,createSketch} from './sketch-flow.mjs';
 import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import http from 'node:http';
-const out=path.resolve('test-results'),root=path.resolve('dist');await fs.mkdir(out,{recursive:true});
+const out=path.resolve('test-results'),root=path.resolve(process.env.CAD_BUILD_DIR||'dist');await fs.mkdir(out,{recursive:true});
 const server=http.createServer(async(req,res)=>{try{let pathname=new URL(req.url,'http://localhost').pathname;if(pathname.startsWith('/cad/'))pathname=pathname.slice(4);const f=path.resolve(root,'.'+(pathname.endsWith('/')?pathname+'index.html':pathname));if(!f.startsWith(root+path.sep))throw Error();const bytes=await fs.readFile(f);res.writeHead(200,{'Content-Type':({'.js':'text/javascript','.css':'text/css','.wasm':'application/wasm','.html':'text/html','.json':'application/json'})[path.extname(f)]||'application/octet-stream'});res.end(bytes);}catch{res.writeHead(404);res.end();}});
 await new Promise(r=>server.listen(4176,'127.0.0.1',r));
 const url=process.env.CAD_TEST_URL||'http://127.0.0.1:4176/',browser=await chromium.launch({headless:true});
@@ -16,7 +17,7 @@ const ready=()=>page.waitForFunction(()=>window.__cad?.ready(),{},{timeout:90000
 const preview=()=>page.waitForFunction(()=>window.__cad.previewItems?.some(i=>i.kind==='body'),{},{timeout:90000});
 try{
  await page.goto(url+'?test=1');await ready();const cdp=await context.newCDPSession(page);
- await page.locator('#startSketch').click();await page.locator('[data-tool=circle]').click();await page.locator('#drawSketch').click();
+ await beginSketch(page,{shape:'circle'});
  const rect=await page.locator('#canvas').boundingBox(),cx=rect.x+rect.width*.55,cy=rect.y+rect.height*.5;
  const before=await page.evaluate(()=>window.__cad.camera.position.toArray());
  await cdp.send('Input.dispatchMouseEvent',{type:'mouseMoved',x:cx,y:cy,pointerType:'pen'});
@@ -25,10 +26,10 @@ try{
  await cdp.send('Input.dispatchMouseEvent',{type:'mouseMoved',x:cx+60,y:cy,buttons:1,button:'left',pointerType:'pen',force:.5});
  await cdp.send('Input.dispatchMouseEvent',{type:'mouseReleased',x:cx+60,y:cy,button:'left',buttons:0,clickCount:1,pointerType:'pen'});
  await page.waitForFunction(()=>window.__cad.items.some(i=>i.kind==='sketch'));const params=await page.evaluate(()=>window.__cad.doc.features[0].params);assert.ok(params.radius>0);const after=await page.evaluate(()=>window.__cad.camera.position.toArray());assert.ok(before.every((v,i)=>Math.abs(v-after[i])<1e-6));checks.push('Pen pointer draws a circle without camera movement; concurrent palm contact is ignored');
- await page.locator('#modeSolid').click();const zoom=await page.evaluate(()=>window.__cad.camera.zoom);
+ await page.locator('#finishSketch').click();await page.waitForFunction(()=>!window.__cad.gizmo.sketchMode);await page.locator('#modeSolid').click();const zoom=await page.evaluate(()=>window.__cad.camera.zoom);
  const touch=async(type,points)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:points.map(([x,y,id])=>({x,y,id,radiusX:7,radiusY:7}))});
  await touch('touchStart',[[450,400,1],[650,400,2]]);await touch('touchMove',[[400,400,1],[700,400,2]]);await touch('touchEnd',[]);await page.waitForTimeout(150);const newZoom=await page.evaluate(()=>window.__cad.camera.zoom);assert.ok(Math.abs(newZoom-zoom)>.05);checks.push('Two-finger pinch changes orthographic zoom');
- const pos=await page.evaluate(()=>window.__cad.camera.position.toArray());await touch('touchStart',[[450,450,1],[650,450,2]]);await touch('touchMove',[[500,500,1],[700,500,2]]);await touch('touchEnd',[]);await page.waitForTimeout(150);const pan=await page.evaluate(()=>window.__cad.camera.position.toArray());assert.ok(pos.some((v,i)=>Math.abs(v-pan[i])>.1));checks.push('Two-finger pan changes camera position without changing geometry');
- const orbit=await page.evaluate(()=>window.__cad.camera.position.toArray());await touch('touchStart',[[600,400,1]]);await touch('touchMove',[[680,440,1]]);await touch('touchEnd',[]);await page.waitForTimeout(150);assert.ok((await page.evaluate(()=>window.__cad.camera.position.toArray())).some((v,i)=>Math.abs(v-orbit[i])>.1));assert.equal(await page.evaluate(()=>window.__cad.doc.features.length),1);checks.push('One-finger orbit navigates without editing the sketch');
+ assert.equal(await page.evaluate(()=>[[400,600],[600,600]].every(([x,y])=>document.elementFromPoint(x,y)?.tagName==='CANVAS')),true,'Pan starts on the canvas, clear of editable dimension controls');const pos=await page.evaluate(()=>window.__cad.camera.position.toArray());await touch('touchStart',[[400,600,1],[600,600,2]]);await touch('touchMove',[[450,650,1],[650,650,2]]);await touch('touchEnd',[]);await page.waitForTimeout(150);const pan=await page.evaluate(()=>window.__cad.camera.position.toArray());assert.ok(pos.some((v,i)=>Math.abs(v-pan[i])>.1));checks.push('Two-finger pan changes camera position without changing geometry');
+ const orbit=await page.evaluate(()=>window.__cad.camera.position.toArray());await touch('touchStart',[[600,600,1]]);await touch('touchMove',[[680,640,1]]);await touch('touchEnd',[]);await page.waitForTimeout(150);assert.ok((await page.evaluate(()=>window.__cad.camera.position.toArray())).some((v,i)=>Math.abs(v-orbit[i])>.1));assert.equal(await page.evaluate(()=>window.__cad.doc.features.length),1);checks.push('One-finger orbit navigates without editing the sketch');
  await page.screenshot({path:path.join(out,'input-pen-touch.png')});assert.deepEqual(errors,[]);await fs.writeFile(path.join(out,'input-results.json'),JSON.stringify({checks,hardware:'Chromium pen/touch protocol emulation; physical Apple Pencil unverified',errors},null,2));console.log('INPUT PASS',checks);
 }catch(e){console.error('INPUT FAILED',e,checks,await page.locator('body').innerText());await page.screenshot({path:path.join(out,'input-failure.png')}).catch(()=>{});throw e;}finally{await browser.close();await new Promise(r=>server.close(r));}

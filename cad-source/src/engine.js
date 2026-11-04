@@ -1,5 +1,6 @@
 import * as R from 'replicad';
 import {cylinderInfo,cutThread} from './thread-solid.js';
+import {WORLD_AXES,rotateFrame,concentricPlacement} from './transform-frames.js';
 import {alignmentDelta} from './snapping.js';
 import {solveSketch} from './constraints.js';
 import {normalizedCenter,resolveReference} from './topology.js';
@@ -45,7 +46,7 @@ function edgeDescriptor(shape,e){const bounds=shape.boundingBox.bounds,edgeBound
 
 
 export async function buildModel(doc,{base=null,preview=false}={}){
- validateProject(doc);const shapes=new Map(),profiles=new Map(),meta=new Map(),visible=new Set(),arena=new Set();let released=false,currentFeature=null;
+ validateProject(doc);const shapes=new Map(),profiles=new Map(),meta=new Map(),visible=new Set(),arena=new Set();let released=false,currentFeature=null,featureFrame=WORLD_AXES;
  const reuse=base&&base.featureCount<=doc.features.length&&base.featureSignature===JSON.stringify(doc.features.slice(0,base.featureCount));
  if(reuse){for(const [k,v]of base.shapes)shapes.set(k,v);for(const [k,v]of base.profiles)profiles.set(k,v);for(const [k,v]of base.meta)meta.set(k,v);for(const k of base.visible)visible.add(k);}
  const metrics={reusedFeatures:reuse?base.featureCount:0,builtFeatures:0,meshedItems:0};
@@ -54,10 +55,10 @@ export async function buildModel(doc,{base=null,preview=false}={}){
  function body(id){const s=shapes.get(id);if(!s||meta.get(id)?.kind!=='body')throw Error('Select a solid body');return s;}
  function clone(id){return own(body(id).clone());}
  function face(s,p){const faces=s.faces;for(const f of faces)own(f);const i=resolveReference(p.faceRef,faces.map(f=>faceDescriptor(s,f)),p.face);return faces[i];}
- function save(f,s,kind='body',id=f.id,name=f.name||f.type){own(s);if(s.isNull)throw Error('Empty shape');if(kind==='body'&&(!R.isShape3D(s)||volume(s)<1e-8))throw Error('Operation did not create a closed solid');shapes.set(id,s);meta.set(id,{id,name,kind,featureId:f.id});visible.add(id);}
+ function save(f,s,kind='body',id=f.id,name=f.name||f.type){own(s);if(s.isNull)throw Error('Empty shape');if(kind==='body'&&(!R.isShape3D(s)||volume(s)<1e-8))throw Error('Operation did not create a closed solid');shapes.set(id,s);meta.set(id,{id,name,kind,featureId:f.id,localFrame:featureFrame.map(v=>[...v])});visible.add(id);}
  try{
- for(const f of doc.features.slice(reuse?base.featureCount:0)){currentFeature=f;metrics.builtFeatures++;if(f.suppressed)continue;const p=f.params,ins=f.inputs;let s=null,kind='body';
-  if(f.type==='sketch'){profiles.set(f.id,p);const sk=sketch(p);s=own(p.closed===false||p.construction?sk.wire.clone():sk.face());sk.delete();save(f,s,'sketch');continue;}
+ for(const f of doc.features.slice(reuse?base.featureCount:0)){currentFeature=f;metrics.builtFeatures++;if(f.suppressed)continue;const p=f.params,ins=f.inputs;featureFrame=meta.get(ins[0])?.localFrame||WORLD_AXES;let s=null,kind='body';
+  if(f.type==='sketch'){const b=basis(p),x=b.x,n=b.normal;featureFrame=[x,[n[1]*x[2]-n[2]*x[1],n[2]*x[0]-n[0]*x[2],n[0]*x[1]-n[1]*x[0]],n];profiles.set(f.id,p);const sk=sketch(p);s=own(p.closed===false||p.construction?sk.wire.clone():sk.face());sk.delete();save(f,s,'sketch');continue;}
   if(['sketchOffset','sketchFillet','sketchMirror'].includes(f.type)){const original=profiles.get(ins[0]);if(!original)throw Error('Select a sketch first');const op=f.type==='sketchOffset'?{type:'offset',distance:number(p.distance,'Offset distance',-500,500)}:f.type==='sketchFillet'?{type:'fillet',radius:number(p.radius,'Corner radius',.001,500)}:{type:'mirror',axis:p.axis==='X'?'X':'Y'},recipe={...original,operations:[...(original.operations||[]),op]};profiles.set(f.id,recipe);const sk=sketch(recipe);s=own(recipe.closed===false||recipe.construction?sk.wire.clone():sk.face());sk.delete();save(f,s,'sketch');
  if(f.type==='sketchOffset'&&original.shape==='circle'&&!original.operations?.length&&!original.construction&&Math.abs(p.distance)>.001){
   const r0=original.radius,r1=r0+Number(p.distance),inner=Math.min(r0,r1),outer=Math.max(r0,r1);
@@ -111,16 +112,21 @@ export async function buildModel(doc,{base=null,preview=false}={}){
   else if(f.type==='draft'){const b=clone(ins[0]),selected=face(b,p),pl=new R.Plane(basis(p).origin,basis(p).x,basis(p).normal);s=b.draft(number(p.angle,'Draft angle',-75,75),(finder)=>finder.inList([selected]),pl);pl.delete();}
   else if(f.type==='offsetFace'){const b=clone(ins[0]),selected=face(b,p);if(selected.geomType!=='PLANE')throw Error('Offset Face currently supports planar faces');const d=number(p.distance,'Distance'),rawNormal=selected.normalAt(),n=rawNormal.normalized(),v=new R.Vector(n.toTuple()).multiply(d),prism=own(R.basicFaceExtrusion(selected,v));v.delete();n.delete();rawNormal.delete();s=d>0?b.fuse(prism):b.cut(prism);}
   else if(f.type==='move'||f.type==='duplicate'){s=clone(ins[0]).translate([number(p.x??0,'X'),number(p.y??0,'Y'),number(p.z??0,'Z')]);}
-  else if(f.type==='rotate')s=clone(ins[0]).rotate(number(p.angle,'Angle',-3600,3600),[0,0,0],p.axis||'Z');
+  else if(f.type==='rotate'){const angle=number(p.angle,'Angle',-3600,3600),axis=p.axisVector||p.axis||'Z',center=p.center||[0,0,0];if(Array.isArray(axis)){if(axis.length!==3||!axis.every(Number.isFinite)||Math.hypot(...axis)<1e-9)throw Error('Choose a valid rotation axis');}else if(!['X','Y','Z'].includes(axis))throw Error('Choose X, Y or Z');if(!Array.isArray(center)||center.length!==3||!center.every(Number.isFinite))throw Error('Choose a valid rotation pivot');s=clone(ins[0]).rotate(angle,center,axis);featureFrame=rotateFrame(featureFrame,angle,axis);}
   else if(f.type==='scale'){const center=p.center??[0,0,0];if(!Array.isArray(center)||center.length!==3||!center.every(Number.isFinite))throw Error('Scale needs a finite XYZ centre');s=clone(ins[0]).scale(number(p.factor,'Scale',.001,100),center);}
-  else if(f.type==='mirror')s=clone(ins[0]).mirror(['XY','XZ','YZ'].includes(p.plane)?p.plane:'YZ');
+  else if(f.type==='mirror'){const plane=['XY','XZ','YZ'].includes(p.plane)?p.plane:'YZ',axis={XY:2,XZ:1,YZ:0}[plane];s=clone(ins[0]).mirror(plane);featureFrame=featureFrame.map((v,i)=>v.map((n,k)=>n*(k===axis?-1:1)*(i===2?-1:1)));}
   else if(f.type==='align'){
    if(ins.length!==2||ins[0]===ins[1])throw Error('Choose two different solid parts');let a=clone(ins[0]);const b=body(ins[1]);
-   if(p.method==='faces'){
+   if(p.method==='concentric'){
+    const source=face(a,{face:p.sourceFace,faceRef:p.sourceFaceRef}),target=face(b,{face:p.targetFace,faceRef:p.targetFaceRef}),placement=concentricPlacement(cylinderInfo(source),cylinderInfo(target),p);
+    if(placement.angle>1e-7){a=own(a.rotate(placement.angle,placement.pivot,placement.axis));featureFrame=rotateFrame(featureFrame,placement.angle,placement.axis);}
+    if(Math.abs(placement.twist)>1e-7){a=own(a.rotate(placement.twist,placement.pivot,placement.direction));featureFrame=rotateFrame(featureFrame,placement.twist,placement.direction);}
+    s=a.translate(placement.delta);
+   }else if(p.method==='faces'){
     const source=face(a,{face:p.sourceFace,faceRef:p.sourceFaceRef}),target=face(b,{face:p.targetFace,faceRef:p.targetFaceRef});if(source.geomType!=='PLANE'||target.geomType!=='PLANE')throw Error('Face alignment needs two planar faces');
     const vectors=[source.normalAt(),target.normalAt(),source.center,target.center],tuple=v=>v.toTuple(),[ns,nt,cs,ct]=vectors.map(tuple);for(const v of vectors)v.delete();
     const normalize=v=>{const length=Math.hypot(...v);return v.map(x=>x/length);},cross=(u,v)=>[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]],n=normalize(ns),desired=normalize(nt).map(v=>-v),dot=Math.max(-1,Math.min(1,n.reduce((sum,v,i)=>sum+v*desired[i],0)));let axis=cross(n,desired);
-    if(dot<1-1e-10){if(Math.hypot(...axis)<1e-8)axis=cross(n,Math.abs(n[0])<.9?[1,0,0]:[0,1,0]);a=own(a.rotate(Math.acos(dot)*180/Math.PI,cs,normalize(axis)));}
+    if(dot<1-1e-10){if(Math.hypot(...axis)<1e-8)axis=cross(n,Math.abs(n[0])<.9?[1,0,0]:[0,1,0]);a=own(a.rotate(Math.acos(dot)*180/Math.PI,cs,normalize(axis)));featureFrame=rotateFrame(featureFrame,Math.acos(dot)*180/Math.PI,normalize(axis));}
     const gap=number(p.gap??0,'Face gap'),normal=normalize(nt),delta=ct.map((v,i)=>v+normal[i]*gap-cs[i]);s=a.translate(delta);
    }else s=a.translate(alignmentDelta(a.boundingBox.bounds,b.boundingBox.bounds,{axis:p.axis||'X',sourceAnchor:p.sourceAnchor||'centre',targetAnchor:p.targetAnchor||'centre'}));
   }

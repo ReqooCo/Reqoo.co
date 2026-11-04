@@ -1,9 +1,10 @@
+import {beginSketch,createSketch} from './sketch-flow.mjs';
 import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import http from 'node:http';
-const out=path.resolve('test-results'),root=path.resolve('dist');await fs.mkdir(out,{recursive:true});
+const out=path.resolve('test-results'),root=path.resolve(process.env.CAD_BUILD_DIR||'dist');await fs.mkdir(out,{recursive:true});
 const server=http.createServer(async(req,res)=>{try{let pathname=new URL(req.url,'http://localhost').pathname;if(pathname.startsWith('/cad/'))pathname=pathname.slice(4);const f=path.resolve(root,'.'+(pathname.endsWith('/')?pathname+'index.html':pathname));if(!f.startsWith(root+path.sep))throw Error();const bytes=await fs.readFile(f);res.writeHead(200,{'Content-Type':({'.js':'text/javascript','.css':'text/css','.wasm':'application/wasm','.html':'text/html','.json':'application/json'})[path.extname(f)]||'application/octet-stream'});res.end(bytes);}catch{res.writeHead(404);res.end();}});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const url=process.env.CAD_TEST_URL||('http://127.0.0.1:'+server.address().port+'/'),browser=await chromium.launch({headless:true});
@@ -19,7 +20,7 @@ try{
  const version=await(await page.request.get(new URL('version.json',url).href)).json();
  assert.equal(await page.evaluate(()=>document.documentElement.dataset.cadBuild),version.sourceHash);
  assert.equal(await page.locator('meta[name=reqoo-cad-source]').getAttribute('content'),version.sourceHash);checks.push('Served HTML, JavaScript and version manifest identify the same source');
- await page.locator('#startSketch').click();await page.locator('[data-tool=circle]').click();await page.getByRole('button',{name:'Create sketch',exact:true}).click();await page.waitForFunction(()=>window.__cad.items.some(i=>i.kind==='sketch'));
+ await createSketch(page,{shape:'circle',radius:15});
  assert.equal(await page.locator('#sketchDimensionLines [data-measure=diameter]').count(),1);
  await page.locator('[data-dimension=diameter]').fill('40');await page.getByRole('button',{name:'Apply sketch dimensions',exact:true}).click();await page.waitForFunction(()=>window.__cad.doc.features[0].params.radius===20);
  await page.locator('#context').getByRole('button',{name:'Extrude',exact:true}).click();await page.locator('#faceDistanceValue').fill('20');await page.locator('#faceDistanceValue').dispatchEvent('input');await preview();near(await page.evaluate(()=>window.__cad.previewItems.find(i=>i.kind==='body').volume),Math.PI*400*20);
