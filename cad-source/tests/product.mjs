@@ -174,10 +174,14 @@ try{
  finished=await body();const oldBounds=finished.bounds;
  await page.evaluate(id=>window.__cad.select([{id,kind:'body'}]),finished.id);await page.locator('#context').getByRole('button',{name:'Move',exact:true}).click();
  assert.equal(await page.locator('#toolPanel').isVisible(),false);assert.equal(await page.locator('[data-move-axis]').count(),3);
+ const xHandle=await page.locator('[data-move-axis="0"]').boundingBox(),xDirection=await page.evaluate(()=>{const c=window.__cad.camera,r=document.querySelector('#canvas').getBoundingClientRect(),a=c.position.clone().set(0,0,0).project(c),b=c.position.clone().set(1,0,0).project(c),x=(b.x-a.x)*r.width/2,y=(a.y-b.y)*r.height/2,l=Math.hypot(x,y);return{x:x/l,y:y/l};});
+ await page.mouse.move(xHandle.x+xHandle.width/2,xHandle.y+xHandle.height/2);await page.mouse.down();await page.mouse.move(xHandle.x+xHandle.width/2+xDirection.x*25,xHandle.y+xHandle.height/2+xDirection.y*25,{steps:5});
+ assert.ok(await page.evaluate(id=>window.__cad.root.children.find(n=>n.userData.itemId===id).position.x>0,finished.id),'XYZ arrow drag previews before release');await page.mouse.up();
  await page.locator('[aria-label="Move distance"]').fill('5');
  assert.equal(await page.evaluate(id=>window.__cad.root.children.find(n=>n.userData.itemId===id).position.x,finished.id),5,'Move preview updates immediately');
  await page.locator('[data-move-axis="1"]').click();await page.locator('[aria-label="Move distance"]').fill('7');
  await page.locator('[data-move-axis="2"]').click();await page.locator('[aria-label="Move distance"]').fill('3');
+ await page.screenshot({path:path.join(out,'product-compact-xyz-move.png')});
  await page.locator('[aria-label="Apply move"]').click();await page.waitForFunction(()=>window.__cad.doc.features.at(-1).type==='move'&&!window.__cad.gizmo.busy);
  let moved=await body();for(let i=0;i<3;i++)near(moved.bounds[0][i],oldBounds[0][i]+[5,7,3][i],.001);
  await page.locator('#undo').click();await page.waitForFunction(()=>window.__cad.doc.features.at(-1).type==='fillet');

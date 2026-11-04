@@ -17,7 +17,7 @@ export function createTranslationGizmo(api){
  const arrows=directions.map((d,i)=>{const a=new THREE.ArrowHelper(new THREE.Vector3(...d),new THREE.Vector3(),1,colors[i],.2,.1);for(const o of [a.line,a.cone]){o.material.depthTest=false;o.renderOrder=20;}group.add(a);return a;});
  const ui=document.createElement('div');ui.id='moveGizmo';ui.hidden=true;
  ui.innerHTML=directions.map((_,i)=>'<button type="button" data-move-axis="'+i+'" aria-label="Move '+['X','Y','Z'][i]+'" style="--axis-color:'+colors[i]+'">'+['X','Y','Z'][i]+'</button>').join('')+'<div id="moveDistance"><label><span id="moveAxisLabel">X</span><input aria-label="Move distance" type="number" step="any" value="0"><span class="moveUnit">mm</span></label><button type="button" aria-label="Apply move">✓</button><button type="button" aria-label="Cancel move">×</button></div>';
- stage.append(ui);const buttons=[...ui.querySelectorAll('[data-move-axis]')],panel=ui.querySelector('#moveDistance'),input=ui.querySelector('input');
+ stage.append(ui);for(const b of ui.querySelectorAll('button'))b.dataset.control='move';const buttons=[...ui.querySelectorAll('[data-move-axis]')],panel=ui.querySelector('#moveDistance'),input=ui.querySelector('input');
  let state=null,drag=null;
  function preview(){api.onPreview(state.ids,state.delta);input.value=String(Number((state.delta[state.axis]/api.getUnits().factor).toFixed(4)));}
  function cancel(){if(!state)return;api.onPreview(state.ids,[0,0,0]);state=null;drag=null;ui.hidden=true;group.visible=false;api.onNavigation(true);}
