@@ -1,8 +1,9 @@
 // Geometry-owned controls are never modified by generic icon decoration.
 export function createDirectModeling(api){
  const {THREE,scene,camera,renderer,stage}=api;
- const arrow=new THREE.ArrowHelper(new THREE.Vector3(0,0,1),new THREE.Vector3(),1,0x078aff,.2,.1);arrow.name='Face normal arrow';scene.add(arrow);arrow.visible=false;
+ const arrow=new THREE.ArrowHelper(new THREE.Vector3(0,0,1),new THREE.Vector3(),1,0xffb52e,.2,.1);arrow.name='Face normal arrow';scene.add(arrow);arrow.visible=false;
  for(const o of [arrow.line,arrow.cone]){o.material.depthTest=false;o.renderOrder=21;}
+ const shaft=new THREE.Mesh(new THREE.CylinderGeometry(1,1,1,8),new THREE.MeshBasicMaterial({color:0xffb52e,depthTest:false}));shaft.renderOrder=21;arrow.add(shaft);arrow.line.visible=false;
 
  const handle=document.createElement('button');handle.id='faceDragHandle';handle.type='button';handle.dataset.control='direct';handle.hidden=true;handle.setAttribute('aria-label','Drag arrow along geometry');handle.innerHTML='<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M5 24h34m-12-11 12 11-12 11" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
  const dimensions=document.createElement('div');dimensions.id='faceDistance';dimensions.dataset.control='direct';dimensions.hidden=true;
@@ -57,14 +58,14 @@ export function createDirectModeling(api){
  }
  function update(){
   const t=target();handle.hidden=!t;guide.hidden=true;arrow.visible=!!t;
-  if(!t){if(!api.isBusy()&&session)cancel();dimensions.hidden=true;return;}
+  if(!t){lastTarget='';if(!api.isBusy()&&session)cancel();dimensions.hidden=true;return;}
   const id=[t.ref.id,t.ref.kind,t.ref.index].join(':');
   if(id!==lastTarget){if(session&&!same(session,t.ref))cancel();lastTarget=id;if(t.diameter&&!session){begin(0);return;}}
   const d=direction();if(!d)return;
   const unit=(camera.top-camera.bottom)/camera.zoom/d.rect.height,length=unit*56;
   const origin=d.origin.clone();if(session&&operation==='offsetFace')origin.addScaledVector(d.normal,value);
   else if(session&&operation==='diameter'&&t.diameter)origin.addScaledVector(d.normal,(value-t.diameter.diameter)/2);
-  arrow.position.copy(origin);arrow.setDirection(d.normal);arrow.setLength(length,length*.3,length*.14);
+  arrow.position.copy(origin);arrow.setDirection(d.normal);arrow.setLength(length,length*.3,length*.14);shaft.scale.set(unit*1.4,length*.7,unit*1.4);shaft.position.y=length*.35;
   const projected=origin.clone().addScaledVector(d.normal,length*.82).project(camera),hx=(projected.x+1)*d.rect.width/2,hy=(1-projected.y)*d.rect.height/2;
   handle.style.pointerEvents=d.pixelsPerUnit<.02?'none':'auto';handle.style.left=hx+'px';handle.style.top=hy+'px';handle.dataset.normal=d.normal.toArray().join(',');handle.dataset.origin=origin.toArray().join(',');handle.dataset.target=t.ref.kind;handle.title=t.edge?'Drag edge radius / chamfer':t.sketch?'Drag to extrude profile':'Drag along face normal';
   if(session){dimensions.hidden=false;dimensions.style.left=Math.max(7,Math.min(d.rect.width-196,hx+22))+'px';dimensions.style.top=Math.max(12,Math.min(d.rect.height-100,hy-24))+'px';}

@@ -188,6 +188,7 @@ try{
  checks.push('Move uses compact XYZ arrows with live affine preview; commits exact X/Y/Z translations and supports undo');
  await page.evaluate(()=>window.__cad.view('iso'));await page.locator('#fit').click();
  finished=await body();finishedSide=finished.faceInfo.find(f=>f.type==='CYLINDRE');await page.evaluate(({id,index})=>window.__cad.select([{id,kind:'face',index,point:[15,0,10]}]),{id:finished.id,index:finishedSide.index});
+ await page.waitForFunction(()=>!document.querySelector('#faceDistance').hidden);
  await page.screenshot({path:path.join(out,'product-origin-fixed-face-arrow-selection.png')});
 
  assert.deepEqual(errors,[]);await fs.writeFile(path.join(out,'product-results.json'),JSON.stringify({checks,errors},null,2));console.log('PRODUCT PASS',checks);
