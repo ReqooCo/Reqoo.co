@@ -31,7 +31,7 @@ export function createOrientationCube({THREE,camera,controls,root,onView}){
    offset:camera.position.clone().sub(controls.target),up:camera.up.clone(),
    right:new THREE.Vector3(1,0,0).applyQuaternion(camera.quaternion),
    vertical:new THREE.Vector3(0,1,0).applyQuaternion(camera.quaternion)};
-  controls.enabled=false;graphic.setPointerCapture(e.pointerId);graphic.style.cursor='grabbing';
+  controls.stopMotion?.();controls.enabled=false;graphic.setPointerCapture(e.pointerId);graphic.style.cursor='grabbing';
  });
  graphic.addEventListener('pointermove',e=>{
   if(!drag||drag.id!==e.pointerId)return;
@@ -44,7 +44,7 @@ export function createOrientationCube({THREE,camera,controls,root,onView}){
   const rotation=pitch.multiply(yaw);
   camera.position.copy(controls.target).add(drag.offset.clone().applyQuaternion(rotation));
   camera.up.copy(drag.up).applyQuaternion(rotation);camera.lookAt(controls.target);
-  root.dataset.orientation='free';controls.update();update(document.documentElement.dataset.theme||'light');
+  root.dataset.orientation='free';controls.syncPose?.();update(document.documentElement.dataset.theme||'light');
  });
  function endDrag(e){
   if(!drag||drag.id!==e.pointerId)return;

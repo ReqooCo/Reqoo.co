@@ -42,6 +42,7 @@ jobs:
       - name: Test the deployed CAD application
         working-directory: cad-source
         run: |
+          node tests/motion-continuity-ui.mjs
           node tests/direct-sketch-ui.mjs
           node tests/rotation-ui.mjs
           node tests/extrude-modes-ui.mjs
