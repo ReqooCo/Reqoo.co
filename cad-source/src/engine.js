@@ -38,7 +38,7 @@ function length(s){const p=R.measureShapeLinearProperties(s);const v=p.length;p.
 function area(s){const v=R.measureShapeSurfaceProperties(s);const value=Math.abs(v.area);v.delete();return value;}
 
 function faceDescriptor(shape,f){const n=f.normalAt(),c=f.center,normal=n.toTuple(),len=Math.hypot(...normal),center=c.toTuple();n.delete();c.delete();return{kind:'face',type:f.geomType,center:normalizedCenter(shape.boundingBox.bounds,center),normal:normal.map(v=>v/(len||1))};}
-function edgeDescriptor(shape,e){const bounds=shape.boundingBox.bounds;return{kind:'edge',type:e.geomType,center:normalizedCenter(bounds,e.boundingBox.center),measure:e.length/Math.max(1e-7,Math.hypot(...bounds[0].map((v,i)=>bounds[1][i]-v)))};}
+function edgeDescriptor(shape,e){const bounds=shape.boundingBox.bounds,edgeBounds=e.boundingBox.bounds;return{kind:'edge',type:e.geomType,center:normalizedCenter(bounds,e.boundingBox.center),span:edgeBounds[0].map((v,i)=>(edgeBounds[1][i]-v)/Math.max(1e-7,bounds[1][i]-bounds[0][i])),measure:e.length/Math.max(1e-7,Math.hypot(...bounds[0].map((v,i)=>bounds[1][i]-v)))};}
 
 function cylinderData(f){
  if(f.geomType!=='CYLINDRE')return null;
