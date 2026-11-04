@@ -10,6 +10,13 @@ export function simpleSource(doc,item){
  }
  return null;
 }
+// Traverse finishing features only for source edits. Do not apply affine previews
+// to finished solids: their fixed fillet/chamfer radius must be rebuilt by OCC.
+export function diameterSource(doc,item){
+ let f=doc.features.find(f=>f.id===item?.featureId),seen=new Set();
+ while(f&&['fillet','chamfer','offsetFace'].includes(f.type)&&f.inputs.length===1&&!seen.has(f.id)){seen.add(f.id);f=doc.features.find(v=>v.id===f.inputs[0]);}
+ return f?simpleSource(doc,{featureId:f.id}):null;
+}
 export function immediateTransform(doc,item,ref,operation,value){
  const source=simpleSource(doc,item);if(!source)return null;
  const face=item.faceInfo.find(f=>f.index===ref.index);if(!face)return null;

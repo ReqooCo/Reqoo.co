@@ -5,8 +5,8 @@ import path from 'node:path';
 import http from 'node:http';
 const out=path.resolve('test-results'),root=path.resolve('dist');await fs.mkdir(out,{recursive:true});
 const server=http.createServer(async(req,res)=>{try{let pathname=new URL(req.url,'http://localhost').pathname;if(pathname.startsWith('/cad/'))pathname=pathname.slice(4);const f=path.resolve(root,'.'+(pathname.endsWith('/')?pathname+'index.html':pathname));if(!f.startsWith(root+path.sep))throw Error();const bytes=await fs.readFile(f);res.writeHead(200,{'Content-Type':({'.js':'text/javascript','.css':'text/css','.wasm':'application/wasm','.html':'text/html','.json':'application/json'})[path.extname(f)]||'application/octet-stream'});res.end(bytes);}catch{res.writeHead(404);res.end();}});
-await new Promise(r=>server.listen(4176,'127.0.0.1',r));
-const url=process.env.CAD_TEST_URL||'http://127.0.0.1:4176/',browser=await chromium.launch({headless:true});
+await new Promise(r=>server.listen(0,'127.0.0.1',r));
+const url=process.env.CAD_TEST_URL||('http://127.0.0.1:'+server.address().port+'/'),browser=await chromium.launch({headless:true});
 const context=await browser.newContext({viewport:{width:1180,height:820},hasTouch:true,isMobile:true,acceptDownloads:true}),page=await context.newPage(),errors=[],checks=[];
 page.on('pageerror',e=>errors.push(e.message));page.setDefaultTimeout(60000);
 const near=(actual,expected,tol=.01)=>assert.ok(Math.abs(actual-expected)<tol,JSON.stringify({actual,expected}));
@@ -147,6 +147,49 @@ try{
  assert.equal(ring.faceInfo.filter(f=>['CYLINDER','CYLINDRE'].includes(f.type)).length,2,'Ring has one inner and one outer cylindrical face');
  near(ring.volume,400*Math.PI,.02);
  checks.push('Annulus extrusion preserves exact volume with continuous inner and outer cylindrical faces');
+
+
+ // Origin, world-space face handles, finishing history and compact XYZ move.
+ assert.equal(await page.locator('#worldReference [data-origin]').innerText(),'0, 0, 0');
+ assert.equal(await page.locator('#worldReference [data-axis]').count(),3);
+ await fresh();const sourceCircle=await op('sketch',{shape:'circle',radius:10,plane:'XY'});await op('extrude',{distance:20},[sourceCircle]);
+ let finished=await body(),rim=finished.edges.find(e=>e.type==='CIRCLE'&&Math.abs(e.center[2]-20)<.001);
+ await op('chamfer',{radius:1,edges:[rim.index],edgeRefs:[rim.reference],allEdges:false},[finished.id]);
+ finished=await body();rim=finished.edges.find(e=>e.type==='CIRCLE'&&Math.abs(e.center[2])<.001);
+ await op('fillet',{radius:1,edges:[rim.index],edgeRefs:[rim.reference],allEdges:false},[finished.id]);
+ finished=await body();let finishedSide=finished.faceInfo.find(f=>f.type==='CYLINDRE');
+ await page.evaluate(({id,index})=>window.__cad.select([{id,kind:'face',index,point:[10,0,10]}]),{id:finished.id,index:finishedSide.index});
+ await page.waitForFunction(()=>document.querySelector('#faceDragHandle').dataset.normal==='1,0,0');
+ const anchoredNormal=await page.locator('#faceDragHandle').getAttribute('data-normal');
+ await page.evaluate(()=>window.__cad.view('back'));await page.waitForTimeout(100);assert.equal(await page.locator('#faceDragHandle').getAttribute('data-normal'),anchoredNormal);
+ await page.evaluate(()=>window.__cad.view('iso'));await page.waitForTimeout(100);assert.equal(await page.locator('#faceDragHandle').getAttribute('data-normal'),anchoredNormal);
+ const palette=await page.evaluate(()=>{const result=[];window.__cad.root.traverse(n=>{if(n.isMesh&&n.userData.kind==='body')result.push({base:n.material[0].color.getHexString(),selected:n.material[1].color.getHexString(),basic:n.material[1].isMeshBasicMaterial,highlight:n.geometry.groups.some(g=>g.materialIndex===1)});});return result;});
+ assert.ok(palette.some(p=>p.selected==='087ff5'&&p.basic&&p.highlight&&p.base!==p.selected));
+ await page.locator('#faceDistanceValue').fill('30');await page.locator('#faceDistanceApply').click();
+ await page.waitForFunction(id=>window.__cad.doc.features.find(f=>f.id===id).params.radius===15,sourceCircle);
+ finished=await body();assert.ok(finished.faceInfo.some(f=>f.type==='CONE'));assert.ok(finished.faceInfo.some(f=>f.type==='TORUS'));near(finished.faceInfo.find(f=>f.cylinder).cylinder.radius,15,.001);
+ await page.locator('#undo').click();await page.waitForFunction(id=>window.__cad.doc.features.find(f=>f.id===id).params.radius===10,sourceCircle);
+ await page.locator('#redo').click();await page.waitForFunction(id=>window.__cad.doc.features.find(f=>f.id===id).params.radius===15,sourceCircle);
+ checks.push('Diameter edits after chamfer and fillet rebuild both finishing features; undo/redo preserve source history; face arrow normal stays fixed while orbiting; selection has contrasting color');
+ finished=await body();const oldBounds=finished.bounds;
+ await page.evaluate(id=>window.__cad.select([{id,kind:'body'}]),finished.id);await page.locator('#context').getByRole('button',{name:'Move',exact:true}).click();
+ assert.equal(await page.locator('#toolPanel').isVisible(),false);assert.equal(await page.locator('[data-move-axis]').count(),3);
+ const xHandle=await page.locator('[data-move-axis="0"]').boundingBox(),xDirection=await page.evaluate(()=>{const c=window.__cad.camera,r=document.querySelector('#canvas').getBoundingClientRect(),a=c.position.clone().set(0,0,0).project(c),b=c.position.clone().set(1,0,0).project(c),x=(b.x-a.x)*r.width/2,y=(a.y-b.y)*r.height/2,l=Math.hypot(x,y);return{x:x/l,y:y/l};});
+ await page.mouse.move(xHandle.x+xHandle.width/2,xHandle.y+xHandle.height/2);await page.mouse.down();await page.mouse.move(xHandle.x+xHandle.width/2+xDirection.x*25,xHandle.y+xHandle.height/2+xDirection.y*25,{steps:5});
+ assert.ok(await page.evaluate(id=>window.__cad.root.children.find(n=>n.userData.itemId===id).position.x>0,finished.id),'XYZ arrow drag previews before release');await page.mouse.up();
+ await page.locator('[aria-label="Move distance"]').fill('5');
+ assert.equal(await page.evaluate(id=>window.__cad.root.children.find(n=>n.userData.itemId===id).position.x,finished.id),5,'Move preview updates immediately');
+ await page.locator('[data-move-axis="1"]').click();await page.locator('[aria-label="Move distance"]').fill('7');
+ await page.locator('[data-move-axis="2"]').click();await page.locator('[aria-label="Move distance"]').fill('3');
+ await page.screenshot({path:path.join(out,'product-compact-xyz-move.png')});
+ await page.locator('[aria-label="Apply move"]').click();await page.waitForFunction(()=>window.__cad.doc.features.at(-1).type==='move'&&!window.__cad.gizmo.busy);
+ let moved=await body();for(let i=0;i<3;i++)near(moved.bounds[0][i],oldBounds[0][i]+[5,7,3][i],.001);
+ await page.locator('#undo').click();await page.waitForFunction(()=>window.__cad.doc.features.at(-1).type==='fillet');
+ checks.push('Move uses compact XYZ arrows with live affine preview; commits exact X/Y/Z translations and supports undo');
+ await page.evaluate(()=>window.__cad.view('iso'));await page.locator('#fit').click();
+ finished=await body();finishedSide=finished.faceInfo.find(f=>f.type==='CYLINDRE');await page.evaluate(({id,index})=>window.__cad.select([{id,kind:'face',index,point:[15,0,10]}]),{id:finished.id,index:finishedSide.index});
+ await page.waitForFunction(()=>!document.querySelector('#faceDistance').hidden);
+ await page.screenshot({path:path.join(out,'product-origin-fixed-face-arrow-selection.png')});
 
  assert.deepEqual(errors,[]);await fs.writeFile(path.join(out,'product-results.json'),JSON.stringify({checks,errors},null,2));console.log('PRODUCT PASS',checks);
 }catch(e){console.error('PRODUCT FAILED',e,checks,await page.locator('body').innerText());await page.screenshot({path:path.join(out,'product-failure.png')}).catch(()=>{});throw e;}finally{await browser.close();await new Promise(r=>server.close(r));}

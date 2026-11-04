@@ -249,3 +249,22 @@ html[data-theme=dark] #displayPopover button{color:#c9d9eb}
 html[data-theme=dark] #displayPopover button[aria-checked=true]{background:#315174;color:#c5e0ff}
 @media(max-width:760px){#viewCube{width:116px;padding:4px;right:8px;top:10px}#viewCube .orientationGraphic{width:106px;height:88px}#viewCube .cubeShortcuts [data-view]{min-height:26px;font-size:8px}#top #displayModeButton{min-width:29px}#displayPopover{right:8px;top:10px;width:180px}}
 @media(max-width:420px){#top .brand span{display:none}}
+
+/* Geometry arrows are drawn in world space; HTML only supplies touch targets. */
+#faceDragHandle svg{display:none}
+#faceDragHandle{width:48px;height:48px;filter:none;border-radius:50%;background:transparent;box-shadow:none;border:0}
+#faceDragHandle:hover,#faceDragHandle.dragging{background:#168aff22;outline:1px solid #168aff66}
+#worldReference{position:absolute;inset:0;pointer-events:none;z-index:5;overflow:hidden}
+#worldReference span{position:absolute;font-size:10px;font-weight:700;white-space:nowrap;text-shadow:0 1px 2px #fff}
+#worldReference [data-origin]{color:#65778c;background:#ffffffaa;padding:2px 4px;border-radius:4px}
+#worldReference [data-axis=X]{color:#ef5151}#worldReference [data-axis=Y]{color:#19af68}#worldReference [data-axis=Z]{color:#2589f8}
+html[data-theme=dark] #worldReference span{text-shadow:0 1px 2px #141e29}
+html[data-theme=dark] #worldReference [data-origin]{background:#182331c9;color:#e1e9f4}
+#moveGizmo{position:absolute;inset:0;pointer-events:none;z-index:34}
+#moveGizmo>[data-move-axis]{position:absolute;transform:translate(-50%,-50%);width:42px;height:42px;min-height:42px;border-radius:50%;border:1px solid var(--axis-color);background:#ffffffd9;color:var(--axis-color);font-weight:750;padding:0;pointer-events:auto;touch-action:none;box-shadow:0 2px 7px #0002}
+#moveGizmo>[data-move-axis][aria-pressed=true]{background:var(--axis-color);color:white}
+#moveDistance{position:absolute;display:flex;align-items:center;gap:2px;pointer-events:auto;padding:3px 4px;border:1px solid #c1d2e6;border-radius:10px;background:#ffffffed;box-shadow:0 4px 15px #152c4422;max-width:218px}
+#moveDistance label{display:flex;align-items:center;gap:4px;font-size:11px}#moveDistance input{width:66px;border:0;min-height:40px;font-size:16px;padding:4px;color:#087ff5;background:#edf5ff}
+#moveDistance button{min-height:40px;min-width:36px;border:0;padding:3px;background:transparent}#moveDistance [aria-label='Apply move']{background:#137deb;color:white}
+html[data-theme=dark] #moveDistance{background:#202d3d;color:#e1ebf7;border-color:#40546c}html[data-theme=dark] #moveGizmo>[data-move-axis]:not([aria-pressed=true]){background:#182331}
+html[data-theme=dark] #moveDistance input{background:#14273c;color:#68beff}

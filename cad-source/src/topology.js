@@ -3,7 +3,8 @@ export function descriptorDistance(a,b){
  if(!a||!b||a.kind!==b.kind||a.type!==b.type)return Infinity;
  let score=Math.hypot(...a.center.map((v,i)=>v-b.center[i]));
  if(a.normal&&b.normal){const dot=a.normal.reduce((s,v,i)=>s+v*b.normal[i],0);if(dot<.95)return Infinity;score+=(1-dot)*2;}
- if(Number.isFinite(a.measure)&&Number.isFinite(b.measure))score+=Math.abs(a.measure-b.measure);
+ if(['CIRCLE','ELLIPSE'].includes(a.type)){if(a.span&&b.span)score+=Math.hypot(...a.span.map((v,i)=>v-b.span[i]))*.5;else if(Number.isFinite(a.measure)&&Number.isFinite(b.measure))score+=Math.abs(a.measure-b.measure)*.03;}
+ else if(Number.isFinite(a.measure)&&Number.isFinite(b.measure))score+=Math.abs(a.measure-b.measure);
  return score;
 }
 export function resolveReference(reference,candidates,legacyIndex){

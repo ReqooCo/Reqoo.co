@@ -1,6 +1,10 @@
 // Geometry-owned controls are never modified by generic icon decoration.
 export function createDirectModeling(api){
- const {THREE,camera,renderer,stage}=api;
+ const {THREE,scene,camera,renderer,stage}=api;
+ const arrow=new THREE.ArrowHelper(new THREE.Vector3(0,0,1),new THREE.Vector3(),1,0xffb52e,.2,.1);arrow.name='Face normal arrow';scene.add(arrow);arrow.visible=false;
+ for(const o of [arrow.line,arrow.cone]){o.material.depthTest=false;o.renderOrder=21;}
+ const shaft=new THREE.Mesh(new THREE.CylinderGeometry(1,1,1,8),new THREE.MeshBasicMaterial({color:0xffb52e,depthTest:false}));shaft.renderOrder=21;arrow.add(shaft);arrow.line.visible=false;
+
  const handle=document.createElement('button');handle.id='faceDragHandle';handle.type='button';handle.dataset.control='direct';handle.hidden=true;handle.setAttribute('aria-label','Drag arrow along geometry');handle.innerHTML='<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M5 24h34m-12-11 12 11-12 11" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
  const dimensions=document.createElement('div');dimensions.id='faceDistance';dimensions.dataset.control='direct';dimensions.hidden=true;
  dimensions.innerHTML='<label><span id="directDimensionLabel">Distance</span><input id="faceDistanceValue" aria-label="Direct modeling value" type="number" step="any"><span id="directUnit">mm</span></label><button id="faceDistanceApply" data-control="direct" aria-label="Apply direct edit" type="button">✓</button><button id="faceDistanceCancel" data-control="direct" aria-label="Cancel direct edit" type="button">×</button><output id="directPreviewStatus" aria-live="polite"></output>';
@@ -20,13 +24,16 @@ export function createDirectModeling(api){
  }
  function direction(){
   const t=target();if(!t)return null;
-  const origin=new THREE.Vector3(...(t.face?.center||t.edge?.center||t.item.bounds[0].map((v,i)=>(v+t.item.bounds[1][i])/2)));
-  const normal=new THREE.Vector3(...(t.face?.normal||t.item.sketchPlane?.normal||t.sketch?.basis?.normal||(t.sketch?.plane==='XZ'?[0,-1,0]:t.sketch?.plane==='YZ'?[1,0,0]:[0,0,1]))).normalize();
+  const origin=new THREE.Vector3(...(t.ref.point||t.face?.center||t.edge?.center||t.item.bounds[0].map((v,i)=>(v+t.item.bounds[1][i])/2)));
+  const radial=(face)=>{const c=face?.cylinder;if(!c)return new THREE.Vector3(...(face?.normal||[0,0,1]));const axis=new THREE.Vector3(...c.axis),v=origin.clone().sub(new THREE.Vector3(...c.origin));return v.addScaledVector(axis,-v.dot(axis)).normalize();};
+  let normal=t.face?radial(t.face):new THREE.Vector3(...(t.item.sketchPlane?.normal||t.sketch?.basis?.normal||(t.sketch?.plane==='XZ'?[0,-1,0]:t.sketch?.plane==='YZ'?[1,0,0]:[0,0,1])));
+  if(t.edge){const adjacent=t.item.faceInfo.filter(f=>t.edge.faceIndices?.includes(f.index));if(adjacent.length){normal=new THREE.Vector3();for(const f of adjacent)normal.add(radial(f));}}
+  if(normal.lengthSq()<1e-10)normal.set(0,0,1);normal.normalize();
   const rect=stage.getBoundingClientRect(),p=origin.clone().project(camera),q=origin.clone().addScaledVector(normal,20).project(camera);
-  let dx=(q.x-p.x)*rect.width/2,dy=(p.y-q.y)*rect.height/2;
-  if(t.edge){dx=.707;dy=-.707;}else{const len=Math.hypot(dx,dy);if(len<3){dx=0;dy=-1;}else{dx/=len;dy/=len;}}
-  return{...t,origin,normal,rect,p,dx,dy};
+  const sx=(q.x-p.x)*rect.width/2,sy=(p.y-q.y)*rect.height/2,len=Math.hypot(sx,sy),dx=len>1e-5?sx/len:0,dy=len>1e-5?sy/len:0;
+  return{...t,origin,normal,rect,p,dx,dy,pixelsPerUnit:len/20};
  }
+
  function params(){if(operation==='diameter')return{diameter:value};return operation==='fillet'||operation==='chamfer'?{radius:Math.abs(value),edges:[session.index],allEdges:false}:operation==='draft'?{angle:value,face:session.index,plane:'XY',offset:0}:{distance:value,...(session.kind==='face'?{face:session.index}:{})};}
  function displayValue(){const factor=operation==='draft'?1:(api.getUnits?.().factor||1);return value/factor;}
  async function drain(){
@@ -50,25 +57,25 @@ export function createDirectModeling(api){
   unit.textContent=operation==='draft'?'°':api.getUnits?.().label||'mm';input.value=String(Number(displayValue().toFixed(4)));dimensions.hidden=false;update();if(initial)schedule();
  }
  function update(){
-  const t=target();handle.hidden=!t;guide.hidden=!t;
-  if(!t){if(!api.isBusy()&&session)cancel();dimensions.hidden=true;return;}
+  const t=target();handle.hidden=!t;guide.hidden=true;arrow.visible=!!t;
+  if(!t){lastTarget='';if(!api.isBusy()&&session)cancel();dimensions.hidden=true;return;}
   const id=[t.ref.id,t.ref.kind,t.ref.index].join(':');
   if(id!==lastTarget){if(session&&!same(session,t.ref))cancel();lastTarget=id;if(t.diameter&&!session){begin(0);return;}}
   const d=direction();if(!d)return;
-  const projected=session&&operation==='offsetFace'?d.origin.clone().addScaledVector(d.normal,value).project(camera):d.p;
-  const x=Math.max(40,Math.min(d.rect.width-40,(projected.x+1)*d.rect.width/2)),y=Math.max(70,Math.min(d.rect.height-100,(1-projected.y)*d.rect.height/2));
-  const offset=48;
-  const hx=Math.max(38,Math.min(d.rect.width-38,x+d.dx*offset)),hy=Math.max(60,Math.min(d.rect.height-110,y+d.dy*offset));
-  handle.style.left=hx+'px';handle.style.top=hy+'px';handle.style.setProperty('--arrow-angle',Math.atan2(d.dy,d.dx)+'rad');handle.dataset.target=t.ref.kind;handle.title=t.edge?'Drag edge radius / chamfer':t.sketch?'Drag to extrude profile':'Drag to pull or push face';
-  guide.setAttribute('viewBox','0 0 '+d.rect.width+' '+d.rect.height);guide.querySelector('path').setAttribute('d','M'+x+' '+y+'L'+hx+' '+hy);
+  const unit=(camera.top-camera.bottom)/camera.zoom/d.rect.height,length=unit*56;
+  const origin=d.origin.clone();if(session&&operation==='offsetFace')origin.addScaledVector(d.normal,value);
+  else if(session&&operation==='diameter'&&t.diameter)origin.addScaledVector(d.normal,(value-t.diameter.diameter)/2);
+  arrow.position.copy(origin);arrow.setDirection(d.normal);arrow.setLength(length,length*.3,length*.14);shaft.scale.set(unit*1.4,length*.7,unit*1.4);shaft.position.y=length*.35;
+  const projected=origin.clone().addScaledVector(d.normal,length*.82).project(camera),hx=(projected.x+1)*d.rect.width/2,hy=(1-projected.y)*d.rect.height/2;
+  handle.style.pointerEvents=d.pixelsPerUnit<.02?'none':'auto';handle.style.left=hx+'px';handle.style.top=hy+'px';handle.dataset.normal=d.normal.toArray().join(',');handle.dataset.origin=origin.toArray().join(',');handle.dataset.target=t.ref.kind;handle.title=t.edge?'Drag edge radius / chamfer':t.sketch?'Drag to extrude profile':'Drag along face normal';
   if(session){dimensions.hidden=false;dimensions.style.left=Math.max(7,Math.min(d.rect.width-196,hx+22))+'px';dimensions.style.top=Math.max(12,Math.min(d.rect.height-100,hy-24))+'px';}
  }
- handle.addEventListener('pointerdown',e=>{if(api.isBusy())return;e.preventDefault();e.stopPropagation();const d=direction();if(!d)return;if(!session)begin(0);drag={id:e.pointerId,x:e.clientX,y:e.clientY,dx:d.dx,dy:d.dy,start:value};handle.setPointerCapture(e.pointerId);handle.classList.add('dragging');api.onNavigation(false);});
- handle.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;e.preventDefault();const pixels=(e.clientX-drag.x)*drag.dx+(e.clientY-drag.y)*drag.dy,scale=operation==='draft'?.2:200/camera.zoom/renderer.domElement.clientHeight;value=Math.round((drag.start+pixels*scale)*100)/100;if(operation==='fillet'||operation==='chamfer')value=Math.abs(value);input.value=String(Number(displayValue().toFixed(4)));schedule();update();});
+ handle.addEventListener('pointerdown',e=>{if(api.isBusy())return;e.preventDefault();e.stopPropagation();const d=direction();if(!d)return;if(!session)begin(0);drag={id:e.pointerId,x:e.clientX,y:e.clientY,dx:d.dx,dy:d.dy,pixelsPerUnit:d.pixelsPerUnit,start:value};handle.setPointerCapture(e.pointerId);handle.classList.add('dragging');api.onNavigation(false);});
+ handle.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;e.preventDefault();if(drag.pixelsPerUnit<.02)return;const pixels=(e.clientX-drag.x)*drag.dx+(e.clientY-drag.y)*drag.dy,scale=operation==='draft'?.2:1/drag.pixelsPerUnit;value=Math.round((drag.start+pixels*scale)*100)/100;if(operation==='fillet'||operation==='chamfer')value=Math.abs(value);input.value=String(Number(displayValue().toFixed(4)));schedule();update();});
  const finish=()=>{drag=null;handle.classList.remove('dragging');api.onNavigation(true);if(session)schedule();};handle.addEventListener('pointerup',finish);handle.addEventListener('pointercancel',()=>{finish();cancel();});
  input.oninput=()=>{value=Number(input.value)*(operation==='draft'?1:api.getUnits?.().factor||1);schedule();};
  dimensions.querySelector('#faceDistanceCancel').onclick=cancel;
  dimensions.querySelector('#faceDistanceApply').onclick=async()=>{if(!session||!Number.isFinite(value)||Math.abs(value)<.001){api.onStatus('Enter a non-zero value');return;}const ref={...session},p=params(),op=operation;clearTimeout(timer);sequence++;previewEpoch++;wanted=null;try{await api.onCommit(op,p,ref);cancel();}catch(e){api.onResetPreview(true);feedback.textContent=e.message;feedback.dataset.error='true';}};
  input.onkeydown=e=>{if(e.key==='Enter')dimensions.querySelector('#faceDistanceApply').click();if(e.key==='Escape')cancel();};
- return{handle,dimensions,update,target,direction,begin,cancel,get state(){return{dragging:!!drag,visible:!handle.hidden,target:handle.dataset.target,preview:!!session,operation,value,inFlight,pending:!!wanted,position:{left:handle.style.left,top:handle.style.top}};}};
+ return{handle,dimensions,arrow,update,target,direction,begin,cancel,get state(){return{dragging:!!drag,visible:!handle.hidden,target:handle.dataset.target,preview:!!session,operation,value,inFlight,pending:!!wanted,position:{left:handle.style.left,top:handle.style.top}};}};
 }
