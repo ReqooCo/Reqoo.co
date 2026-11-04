@@ -1,8 +1,9 @@
 import * as R from 'replicad';
+import {cylinderInfo,cutThread} from './thread-solid.js';
 import {alignmentDelta} from './snapping.js';
 import {solveSketch} from './constraints.js';
 import {normalizedCenter,resolveReference} from './topology.js';
-export const TYPES=['sketch','sketchOffset','sketchFillet','sketchMirror','box','cylinder','sphere','torus','extrude','hole','revolve','loft','sweep','union','subtract','intersect','fillet','chamfer','shell','offsetFace','draft','move','rotate','scale','mirror','pattern','circularPattern','duplicate','align','split','import','plane','axis','delete'];
+export const TYPES=['sketch','sketchOffset','sketchFillet','sketchMirror','box','cylinder','sphere','torus','extrude','hole','revolve','loft','sweep','union','subtract','intersect','fillet','chamfer','thread','shell','offsetFace','draft','move','rotate','scale','mirror','pattern','circularPattern','duplicate','align','split','import','plane','axis','delete'];
 const V=(v,d=0)=>v===undefined?d:Number(v);
 export function number(v,name,min=-2000,max=2000){const n=Number(v);if(!Number.isFinite(n)||n<min||n>max)throw Error(name+' must be between '+min+' and '+max);return n;}
 export function basis(p={}){
@@ -41,12 +42,7 @@ function area(s){const v=R.measureShapeSurfaceProperties(s);const value=Math.abs
 function faceDescriptor(shape,f){const n=f.normalAt(),c=f.center,normal=n.toTuple(),len=Math.hypot(...normal),center=c.toTuple();n.delete();c.delete();return{kind:'face',type:f.geomType,center:normalizedCenter(shape.boundingBox.bounds,center),normal:normal.map(v=>v/(len||1))};}
 function edgeDescriptor(shape,e){const bounds=shape.boundingBox.bounds,edgeBounds=e.boundingBox.bounds;return{kind:'edge',type:e.geomType,center:normalizedCenter(bounds,e.boundingBox.center),span:edgeBounds[0].map((v,i)=>(edgeBounds[1][i]-v)/Math.max(1e-7,bounds[1][i]-bounds[0][i])),measure:e.length/Math.max(1e-7,Math.hypot(...bounds[0].map((v,i)=>bounds[1][i]-v)))};}
 
-function cylinderData(f){
- if(f.geomType!=='CYLINDRE')return null;
- const surface=f.surface,cylinder=surface.wrapped.Cylinder(),axis=cylinder.Axis(),point=axis.Location(),direction=axis.Direction();
- const result={origin:[point.X(),point.Y(),point.Z()],axis:[direction.X(),direction.Y(),direction.Z()],radius:cylinder.Radius()};
- for(const v of [direction,point,axis,cylinder,surface])v.delete();return result;
-}
+
 
 export async function buildModel(doc,{base=null,preview=false}={}){
  validateProject(doc);const shapes=new Map(),profiles=new Map(),meta=new Map(),visible=new Set(),arena=new Set();let released=false,currentFeature=null;
@@ -110,6 +106,7 @@ export async function buildModel(doc,{base=null,preview=false}={}){
    if(chosen&&!chosen.length)throw Error('Select an edge, or enable All edges');
    s=b[f.type](chosen?(e=>chosen.includes(e.hashCode)?r:0):r);
   }
+  else if(f.type==='thread'){const b=body(ins[0]);s=cutThread(b,face(b,p),p);}
   else if(f.type==='shell'){const b=clone(ins[0]),selected=face(b,p);s=b.shell({thickness:number(p.thickness,'Wall thickness',.01,500),filter:new R.FaceFinder().inList([selected])});}
   else if(f.type==='draft'){const b=clone(ins[0]),selected=face(b,p),pl=new R.Plane(basis(p).origin,basis(p).x,basis(p).normal);s=b.draft(number(p.angle,'Draft angle',-75,75),(finder)=>finder.inList([selected]),pl);pl.delete();}
   else if(f.type==='offsetFace'){const b=clone(ins[0]),selected=face(b,p);if(selected.geomType!=='PLANE')throw Error('Offset Face currently supports planar faces');const d=number(p.distance,'Distance'),rawNormal=selected.normalAt(),n=rawNormal.normalized(),v=new R.Vector(n.toTuple()).multiply(d),prism=own(R.basicFaceExtrusion(selected,v));v.delete();n.delete();rawNormal.delete();s=d>0?b.fuse(prism):b.cut(prism);}
@@ -143,7 +140,7 @@ export async function buildModel(doc,{base=null,preview=false}={}){
   const edgeFaces=new Map();faces.forEach((f,j)=>{for(const e of f.edges){own(e);const key=e.hashCode;if(!edgeFaces.has(key))edgeFaces.set(key,[]);edgeFaces.get(key).push(j);}});
   const lineMeshes=edges.slice(0,600).map((e,i)=>({index:i,faceIndices:edgeFaces.get(e.hashCode)||[],length:length(e),type:e.geomType,reference:edgeDescriptor(s,e),center:e.boundingBox.center,lines:e.meshEdges({tolerance:preview?.12:.02,angularTolerance:preview?.2:.08}).lines}));
   const bb=s.boundingBox.bounds;
-  items.push({...m,construction:profiles.get(id)?.construction||false,sketchPlane:profiles.has(id)?basis(profiles.get(id)):null,profileClosed:profiles.has(id)?profiles.get(id).closed!==false&&!profiles.get(id).construction:null,mesh:{...faceMesh,faceGroups:groups},edges:lineMeshes,faceInfo:faces.map((f,i)=>{let normal=[0,0,1],center=[0,0,0];try{const n=f.normalAt(),c=f.center;const len=Math.hypot(...n.toTuple());normal=n.toTuple().map(v=>v/(len||1));center=c.toTuple();n.delete();c.delete();}catch{}return{index:i,type:f.geomType,normal,center,cylinder:cylinderData(f),reference:faceDescriptor(s,f),area:area(f)};}),edgeCount:edges.length,bounds:bb,volume:m.kind==='body'?volume(s):0,area:m.kind==='body'||faces.length?area(s):0});
+  items.push({...m,construction:profiles.get(id)?.construction||false,sketchPlane:profiles.has(id)?basis(profiles.get(id)):null,profileClosed:profiles.has(id)?profiles.get(id).closed!==false&&!profiles.get(id).construction:null,mesh:{...faceMesh,faceGroups:groups},edges:lineMeshes,faceInfo:faces.map((f,i)=>{let normal=[0,0,1],center=[0,0,0];try{const n=f.normalAt(),c=f.center;const len=Math.hypot(...n.toTuple());normal=n.toTuple().map(v=>v/(len||1));center=c.toTuple();n.delete();c.delete();}catch{}return{index:i,type:f.geomType,normal,center,cylinder:cylinderInfo(f),reference:faceDescriptor(s,f),area:area(f)};}),edgeCount:edges.length,bounds:bb,volume:m.kind==='body'?volume(s):0,area:m.kind==='body'||faces.length?area(s):0});
  }
  if(items.filter(i=>i.kind==='body').length>50)throw Error('Limit is 50 visible bodies');
  return{items,shapes,profiles,meta,visible,metrics,featureCount:doc.features.length,featureSignature:JSON.stringify(doc.features),release,export:async(format,ids)=>{
