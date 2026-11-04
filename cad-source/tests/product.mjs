@@ -165,7 +165,7 @@ try{
  await page.evaluate(()=>window.__cad.view('back'));await page.waitForTimeout(100);assert.equal(await page.locator('#faceDragHandle').getAttribute('data-normal'),anchoredNormal);
  await page.evaluate(()=>window.__cad.view('iso'));await page.waitForTimeout(100);assert.equal(await page.locator('#faceDragHandle').getAttribute('data-normal'),anchoredNormal);
  const palette=await page.evaluate(()=>{const result=[];window.__cad.root.traverse(n=>{if(n.isMesh&&n.userData.kind==='body')result.push({base:n.material[0].color.getHexString(),selected:n.material[1].color.getHexString(),basic:n.material[1].isMeshBasicMaterial,highlight:n.geometry.groups.some(g=>g.materialIndex===1)});});return result;});
- assert.ok(palette.some(p=>p.selected==='087ff5'&&p.basic&&p.highlight&&p.base!==p.selected));
+ const selectedColor=await page.evaluate(()=>document.documentElement.dataset.theme==='dark'?'29b6d3':'087ff5');assert.ok(palette.some(p=>p.selected===selectedColor&&p.basic&&p.highlight&&p.base!==p.selected));
  await page.locator('#faceDistanceValue').fill('30');await page.locator('#faceDistanceApply').click();
  await page.waitForFunction(id=>window.__cad.doc.features.find(f=>f.id===id).params.radius===15,sourceCircle);
  finished=await body();assert.ok(finished.faceInfo.some(f=>f.type==='CONE'));assert.ok(finished.faceInfo.some(f=>f.type==='TORUS'));near(finished.faceInfo.find(f=>f.cylinder).cylinder.radius,15,.001);
