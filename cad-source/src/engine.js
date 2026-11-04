@@ -1,4 +1,5 @@
 import * as R from 'replicad';
+import {alignmentDelta} from './snapping.js';
 import {solveSketch} from './constraints.js';
 import {normalizedCenter,resolveReference} from './topology.js';
 export const TYPES=['sketch','sketchOffset','sketchFillet','sketchMirror','box','cylinder','sphere','torus','extrude','hole','revolve','loft','sweep','union','subtract','intersect','fillet','chamfer','shell','offsetFace','draft','move','rotate','scale','mirror','pattern','circularPattern','duplicate','align','split','import','plane','axis','delete'];
@@ -114,9 +115,18 @@ export async function buildModel(doc,{base=null,preview=false}={}){
   else if(f.type==='offsetFace'){const b=clone(ins[0]),selected=face(b,p);if(selected.geomType!=='PLANE')throw Error('Offset Face currently supports planar faces');const d=number(p.distance,'Distance'),rawNormal=selected.normalAt(),n=rawNormal.normalized(),v=new R.Vector(n.toTuple()).multiply(d),prism=own(R.basicFaceExtrusion(selected,v));v.delete();n.delete();rawNormal.delete();s=d>0?b.fuse(prism):b.cut(prism);}
   else if(f.type==='move'||f.type==='duplicate'){s=clone(ins[0]).translate([number(p.x??0,'X'),number(p.y??0,'Y'),number(p.z??0,'Z')]);}
   else if(f.type==='rotate')s=clone(ins[0]).rotate(number(p.angle,'Angle',-3600,3600),[0,0,0],p.axis||'Z');
-  else if(f.type==='scale')s=clone(ins[0]).scale(number(p.factor,'Scale',.001,100));
+  else if(f.type==='scale'){const center=p.center??[0,0,0];if(!Array.isArray(center)||center.length!==3||!center.every(Number.isFinite))throw Error('Scale needs a finite XYZ centre');s=clone(ins[0]).scale(number(p.factor,'Scale',.001,100),center);}
   else if(f.type==='mirror')s=clone(ins[0]).mirror(['XY','XZ','YZ'].includes(p.plane)?p.plane:'YZ');
-  else if(f.type==='align'){const a=clone(ins[0]),b=body(ins[1]),aa=a.boundingBox.center,bb=b.boundingBox.center,axis=['X','Y','Z'].indexOf(p.axis||'X'),delta=[0,0,0];delta[axis]=bb[axis]-aa[axis];s=a.translate(delta);}
+  else if(f.type==='align'){
+   if(ins.length!==2||ins[0]===ins[1])throw Error('Choose two different solid parts');let a=clone(ins[0]);const b=body(ins[1]);
+   if(p.method==='faces'){
+    const source=face(a,{face:p.sourceFace,faceRef:p.sourceFaceRef}),target=face(b,{face:p.targetFace,faceRef:p.targetFaceRef});if(source.geomType!=='PLANE'||target.geomType!=='PLANE')throw Error('Face alignment needs two planar faces');
+    const vectors=[source.normalAt(),target.normalAt(),source.center,target.center],tuple=v=>v.toTuple(),[ns,nt,cs,ct]=vectors.map(tuple);for(const v of vectors)v.delete();
+    const normalize=v=>{const length=Math.hypot(...v);return v.map(x=>x/length);},cross=(u,v)=>[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]],n=normalize(ns),desired=normalize(nt).map(v=>-v),dot=Math.max(-1,Math.min(1,n.reduce((sum,v,i)=>sum+v*desired[i],0)));let axis=cross(n,desired);
+    if(dot<1-1e-10){if(Math.hypot(...axis)<1e-8)axis=cross(n,Math.abs(n[0])<.9?[1,0,0]:[0,1,0]);a=own(a.rotate(Math.acos(dot)*180/Math.PI,cs,normalize(axis)));}
+    const gap=number(p.gap??0,'Face gap'),normal=normalize(nt),delta=ct.map((v,i)=>v+normal[i]*gap-cs[i]);s=a.translate(delta);
+   }else s=a.translate(alignmentDelta(a.boundingBox.bounds,b.boundingBox.bounds,{axis:p.axis||'X',sourceAnchor:p.sourceAnchor||'centre',targetAnchor:p.targetAnchor||'centre'}));
+  }
   else if(f.type==='pattern'||f.type==='circularPattern'){
    const count=number(p.count,'Count',2,25);if(!Number.isInteger(count))throw Error('Count must be an integer');const copies=[];
    for(let i=0;i<count;i++){let c=clone(ins[0]);if(f.type==='pattern')c=c.translate([number(p.x??20,'X spacing')*i,number(p.y??0,'Y spacing')*i,number(p.z??0,'Z spacing')*i]);else c=c.rotate(i*number(p.angle??360,'Angle',.1,360)/count,[0,0,0],p.axis||'Z');copies.push(c);}s=R.makeCompound(copies);

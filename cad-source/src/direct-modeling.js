@@ -1,3 +1,4 @@
+import {roundToStep} from './snapping.js';
 // Geometry-owned controls are never modified by generic icon decoration.
 export function createDirectModeling(api){
  const {THREE,scene,camera,renderer,stage}=api;
@@ -71,7 +72,7 @@ export function createDirectModeling(api){
   if(session){dimensions.hidden=false;dimensions.style.left=Math.max(7,Math.min(d.rect.width-196,hx+22))+'px';dimensions.style.top=Math.max(12,Math.min(d.rect.height-100,hy-24))+'px';}
  }
  handle.addEventListener('pointerdown',e=>{if(api.isBusy())return;e.preventDefault();e.stopPropagation();const d=direction();if(!d)return;if(!session)begin(0);drag={id:e.pointerId,x:e.clientX,y:e.clientY,dx:d.dx,dy:d.dy,pixelsPerUnit:d.pixelsPerUnit,start:value};handle.setPointerCapture(e.pointerId);handle.classList.add('dragging');api.onNavigation(false);});
- handle.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;e.preventDefault();if(drag.pixelsPerUnit<.02)return;const pixels=(e.clientX-drag.x)*drag.dx+(e.clientY-drag.y)*drag.dy,scale=operation==='draft'?.2:1/drag.pixelsPerUnit;value=Math.round((drag.start+pixels*scale)*100)/100;if(operation==='fillet'||operation==='chamfer')value=Math.abs(value);input.value=String(Number(displayValue().toFixed(4)));schedule();update();});
+ handle.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;e.preventDefault();if(drag.pixelsPerUnit<.02)return;const pixels=(e.clientX-drag.x)*drag.dx+(e.clientY-drag.y)*drag.dy,scale=operation==='draft'?.2:1/drag.pixelsPerUnit;value=Math.round((drag.start+pixels*scale)*100)/100;const snap=api.getSnap?.();if(snap?.enabled&&!e.altKey)value=roundToStep(value,operation==='draft'?5:snap.step||1);if(operation==='fillet'||operation==='chamfer')value=Math.abs(value);input.value=String(Number(displayValue().toFixed(4)));schedule();update();});
  const finish=()=>{drag=null;handle.classList.remove('dragging');api.onNavigation(true);if(session)schedule();};handle.addEventListener('pointerup',finish);handle.addEventListener('pointercancel',()=>{finish();cancel();});
  input.oninput=()=>{value=Number(input.value)*(operation==='draft'?1:api.getUnits?.().factor||1);schedule();};
  dimensions.querySelector('#faceDistanceCancel').onclick=cancel;
