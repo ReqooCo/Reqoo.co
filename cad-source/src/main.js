@@ -190,6 +190,7 @@ function mountConstraints(p){
 
 function startTool(type,initial={},editId=null){
  if(!ready||busy)return;
+ if(type==='sketch'&&!editId&&chosenSketchPlane&&initial.plane===chosenSketchPlane){beginDrawing({...initial,plane:chosenSketchPlane,offset:0});return;}
  if(['move','scale','pattern'].includes(type)&&!editId){const bodies=items.filter(i=>i.kind==='body'&&selectedIds().includes(i.id)&&!(doc.ui.hidden||[]).includes(i.id));if(!bodies.length){status('Select a solid body to move');return;}closePanels();direct.cancel();moveGizmo.begin(bodies,{mode:type,count:preferences.patternCount,spacing:preferences.patternSpacing});return;}
  if(type==='align'&&!editId){if(workspaceMode!=='solid')setWorkspaceMode('solid');const refs=selection.map(s=>({...s}));closePanels();direct.cancel();$('sidebar').hidden=true;alignGizmo.begin(refs);return;}
  if(type==='extrude'&&!editId&&['sketch','face'].includes(selection.at(-1)?.kind)){if(!direct.target()){status('Direct extrusion requires a closed sketch or planar face');return;}closePanels();showFaceDistance(20,'extrude');return;}
