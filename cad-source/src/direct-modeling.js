@@ -8,9 +8,11 @@ export function createDirectModeling(api){
 
  const handle=document.createElement('button');handle.id='faceDragHandle';handle.type='button';handle.dataset.control='direct';handle.hidden=true;handle.setAttribute('aria-label','Drag arrow along geometry');handle.innerHTML='<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M5 24h34m-12-11 12 11-12 11" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
  const dimensions=document.createElement('div');dimensions.id='faceDistance';dimensions.dataset.control='direct';dimensions.hidden=true;
- dimensions.innerHTML='<label><span id="directDimensionLabel">Distance</span><input id="faceDistanceValue" aria-label="Direct modeling value" type="number" step="any"><span id="directUnit">mm</span></label><button id="faceDistanceApply" data-control="direct" aria-label="Apply direct edit" type="button">✓</button><button id="faceDistanceCancel" data-control="direct" aria-label="Cancel direct edit" type="button">×</button><output id="directPreviewStatus" aria-live="polite"></output>';
+ dimensions.innerHTML='<label><span id="directDimensionLabel">Distance</span><input id="faceDistanceValue" aria-label="Direct modeling value" type="number" step="any"><span id="directUnit">mm</span></label><button id="faceDistanceApply" data-control="direct" aria-label="Apply direct edit" type="button">✓</button><button id="faceDistanceCancel" data-control="direct" aria-label="Cancel direct edit" type="button">×</button><div class="extrudeChoices" hidden><select aria-label="Extrude operation"><option>New body</option><option value="Add">Union</option><option>Subtract</option><option>Intersect</option></select><select aria-label="Extrude target body"></select></div><output id="directPreviewStatus" aria-live="polite"></output>';
  const guide=document.createElementNS('http://www.w3.org/2000/svg','svg');guide.id='directGuide';guide.innerHTML='<path fill="none" stroke="#1676df" stroke-width="2" stroke-dasharray="4 4"/>';stage.append(guide,handle,dimensions);
  const input=dimensions.querySelector('input'),label=dimensions.querySelector('#directDimensionLabel'),unit=dimensions.querySelector('#directUnit'),feedback=dimensions.querySelector('output');
+ const extrudeChoices=dimensions.querySelector('.extrudeChoices'),extrudeOperation=dimensions.querySelector('[aria-label="Extrude operation"]'),extrudeTarget=dimensions.querySelector('[aria-label="Extrude target body"]');
+ extrudeOperation.onchange=()=>{extrudeTarget.hidden=extrudeOperation.value==='New body';schedule();};extrudeTarget.onchange=()=>schedule();
  let session=null,drag=null,value=0,operation='offsetFace',timer=null,sequence=0,inFlight=false,wanted=null,lastTarget='',previewEpoch=0;
  const same=(a,b)=>a&&b&&a.id===b.id&&a.kind===b.kind&&a.index===b.index;
  function target(){
@@ -35,7 +37,7 @@ export function createDirectModeling(api){
   return{...t,origin,normal,rect,p,dx,dy,pixelsPerUnit:len/20};
  }
 
- function params(){if(operation==='diameter')return{diameter:value};return operation==='fillet'||operation==='chamfer'?{radius:Math.abs(value),edges:[session.index],allEdges:false}:operation==='draft'?{angle:value,face:session.index,plane:'XY',offset:0}:{distance:value,...(session.kind==='face'?{face:session.index}:{})};}
+ function params(){if(operation==='extrude')return{distance:value,...(session.kind==='face'?{face:session.index}:{}),operation:extrudeOperation.value,...(extrudeOperation.value!=='New body'?{target:extrudeTarget.value}:{})};if(operation==='diameter')return{diameter:value};return operation==='fillet'||operation==='chamfer'?{radius:Math.abs(value),edges:[session.index],allEdges:false}:operation==='draft'?{angle:value,face:session.index,plane:'XY',offset:0}:{distance:value,...(session.kind==='face'?{face:session.index}:{})};}
  function displayValue(){const factor=operation==='draft'?1:(api.getUnits?.().factor||1);return value/factor;}
  async function drain(){
   if(inFlight||!wanted)return;const task=wanted;wanted=null;inFlight=true;
@@ -54,6 +56,7 @@ export function createDirectModeling(api){
  function cancel(){api.onSnap?.(null);drag=null;handle.classList.remove('dragging');api.onNavigation(true);clearTimeout(timer);sequence++;previewEpoch++;wanted=null;session=null;value=0;dimensions.hidden=true;api.onResetPreview();feedback.textContent='';}
  function begin(initial=0,requested){
   const t=target();if(!t)return;previewEpoch++;operation=requested||(t.diameter?'diameter':t.edge?'fillet':t.sketch?'extrude':'offsetFace');session={...t.ref};value=operation==='diameter'?(t.diameter.diameter+initial):initial;
+  extrudeChoices.hidden=operation!=='extrude';if(operation==='extrude'){const targets=api.getExtrudeTargets?.(session)||[];extrudeTarget.replaceChildren(...targets.map(item=>{const option=document.createElement('option');option.value=item.id;option.textContent=item.name;return option;}));extrudeOperation.value='New body';extrudeTarget.hidden=true;for(const option of extrudeOperation.options)option.disabled=option.value!=='New body'&&!targets.length;}
   label.textContent=operation==='diameter'?'Diameter':operation==='fillet'?'Radius':operation==='chamfer'?'Chamfer':operation==='draft'?'Draft':'Distance';
   unit.textContent=operation==='draft'?'°':api.getUnits?.().label||'mm';input.value=String(Number(displayValue().toFixed(4)));dimensions.hidden=false;update();if(initial)schedule();
  }

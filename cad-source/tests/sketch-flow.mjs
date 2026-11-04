@@ -12,3 +12,4 @@ export async function createSketch(page,{plane='XY',shape='rectangle',width=30,h
  if(shape==='circle'&&radius>15){await page.locator('[data-dimension=diameter]').fill(String(radius*2));await page.getByRole('button',{name:'Apply sketch dimensions',exact:true}).click();await page.waitForFunction(radius=>window.__cad.doc.features.at(-1).params.radius===radius,radius);}
  await page.locator('#finishSketch').click();await page.waitForFunction(()=>!window.__cad.gizmo.sketchMode&&!window.__cad.gizmo.busy);return page.evaluate(()=>window.__cad.doc.features.at(-1).id);
 }
+export async function openToolMenu(page,key){const button=page.locator('#nav-'+key);if(!await button.isVisible())await page.getByRole('button',{name:'More tools',exact:true}).click();await button.click();}

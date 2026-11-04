@@ -44,6 +44,7 @@ jobs:
         run: |
           node tests/direct-sketch-ui.mjs
           node tests/rotation-ui.mjs
+          node tests/extrude-modes-ui.mjs
           node tests/cad.mjs
           node tests/acceptance.mjs
           node tests/product.mjs
