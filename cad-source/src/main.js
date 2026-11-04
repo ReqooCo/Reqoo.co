@@ -117,7 +117,7 @@ function setWorkspaceMode(mode){
 $('modeSketch').onclick=()=>setWorkspaceMode('sketch');$('modeSolid').onclick=()=>setWorkspaceMode('solid');
 
 function showMenu(key){if(busy||!ready)return;if(!$('menu').hidden&&$('menu').dataset.key===key){closePanels();return;}closePanels();$('menu').dataset.key=key;$('menu').replaceChildren();const h=document.createElement('h2');h.textContent=key[0].toUpperCase()+key.slice(1);$('menu').append(h);
- for(const [type,label]of tools[key]){const b=document.createElement('button');buttonLabel(b,type,label);b.dataset.tool=type;b.onclick=()=>startTool(type,key==='sketch'?{shape:type}:{});$('menu').append(b);}$('menu').hidden=false;$('nav-'+key).classList.add('active');
+ for(const [type,label]of tools[key]){const b=document.createElement('button');buttonLabel(b,type,label);b.dataset.tool=type;b.onclick=()=>startTool(type,key==='sketch'?{shape:type,...(chosenSketchPlane?{plane:chosenSketchPlane}:{})}:{});$('menu').append(b);}$('menu').hidden=false;$('nav-'+key).classList.add('active');
 }
 const field=(name,label,value=0,kind='number',options=null)=>({name,label,value,kind,options});
 function formFields(type,p){
@@ -235,7 +235,22 @@ function renderCommands(){const q=$('commandQuery').value.toLowerCase();$('comma
 $('commandQuery').oninput=renderCommands;document.querySelector('#searchDialog [data-close]').onclick=()=>$('searchDialog').close();
 function normalizeTool(type,p){return sketchPrimitives.has(type)?['sketch',{...p,shape:type}]:[type,p];}
 const actualStart=startTool;startTool=function(type,initial={},editId=null){const [t,p]=normalizeTool(type,initial);return actualStart(t,p,editId);};
-$('startSketch').onclick=()=>{setWorkspaceMode('sketch');showMenu('sketch');};
+// A new sketch starts by choosing a plane, not by opening a primitive form.
+let chosenSketchPlane=null;
+function chooseSketchPlane(){
+ setWorkspaceMode('sketch');closePanels();
+ let picker=$('sketchPlanePicker');
+ if(!picker){
+  picker=document.createElement('section');picker.id='sketchPlanePicker';picker.setAttribute('aria-label','Choose sketch plane');
+  picker.style.cssText='position:absolute;z-index:32;left:50%;top:42%;transform:translate(-50%,-50%);padding:16px;border:1px solid #49617a;border-radius:16px;background:#1d2b3b;box-shadow:0 12px 40px #0008;color:#e9f1fc;text-align:center;max-width:calc(100vw - 32px)';
+  picker.innerHTML='<strong>Choose a sketch plane</strong><p style="margin:8px 0 14px;color:#aabbd0">Select XY, XZ or YZ to look straight at the plane.</p><div style="display:flex;gap:10px;justify-content:center"><button data-plane="XY">XY · Top</button><button data-plane="XZ">XZ · Front</button><button data-plane="YZ">YZ · Right</button></div><button data-cancel style="margin-top:12px">Cancel</button>';
+  picker.querySelectorAll('[data-plane]').forEach(b=>{b.style.cssText='min-width:94px;min-height:58px;border:1px solid #6384a5;border-radius:10px;background:#30465e;color:#fff;font-size:16px';b.onclick=()=>{chosenSketchPlane=b.dataset.plane;picker.hidden=true;view(chosenSketchPlane==='XY'?'top':chosenSketchPlane==='XZ'?'front':'right');showMenu('sketch');status('Plane '+chosenSketchPlane+' selected · choose a drawing tool');};});
+  picker.querySelector('[data-cancel]').onclick=()=>{picker.hidden=true;};
+  $('stage').append(picker);
+ }
+ picker.hidden=false;
+}
+$('startSketch').onclick=chooseSketchPlane;
 
 let renderer;try{renderer=new THREE.WebGLRenderer({antialias:!matchMedia('(pointer:coarse)').matches});}catch(e){$('stage').innerHTML='<div class="graphicsError"><h1>3D graphics unavailable</h1><p>Open this page in Safari or Chrome with WebGL enabled.</p></div>';throw e;}
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.localClippingEnabled=true;$('canvas').append(renderer.domElement);
