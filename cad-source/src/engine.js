@@ -1,3 +1,4 @@
+import {resolveDimensionDocument} from './smart-dimensions.js';
 import {imprintPlanarRegions} from './planar-regions.js';
 import * as R from 'replicad';
 import {cylinderInfo,cutThread} from './thread-solid.js';
@@ -17,6 +18,8 @@ export function validateProject(doc){
  if(!doc||doc.format!=='reqoo-cad'||doc.version!==1||!Array.isArray(doc.features)||doc.features.length>150)throw Error('Not a supported Reqoo CAD project');
  if(doc.title!==undefined&&(typeof doc.title!=='string'||doc.title.length>80))throw Error('Invalid project title');
  if(doc.ui!==undefined){if(!doc.ui||typeof doc.ui!=='object'||Array.isArray(doc.ui))throw Error('Invalid appearance');if(doc.ui.hidden!==undefined&&(!Array.isArray(doc.ui.hidden)||doc.ui.hidden.some(id=>typeof id!=='string')))throw Error('Invalid hidden items');if(doc.ui.colors!==undefined&&(!doc.ui.colors||typeof doc.ui.colors!=='object'||Array.isArray(doc.ui.colors)||Object.values(doc.ui.colors).some(c=>typeof c!=='string'||!/^#[a-fA-F0-9]{6}$/.test(c))))throw Error('Invalid colours');}
+ if(doc.ui?.smartDimensions!==undefined){const pins=doc.ui.smartDimensions;if(!Array.isArray(pins)||pins.length>40||pins.some(p=>!p||typeof p.id!=='string'||typeof p.target!=='string'||p.source!==null&&typeof p.source!=='string'||typeof p.from!=='string'||typeof p.to!=='string'||!['reference','driving'].includes(p.kind)||!['horizontal','vertical','distance'].includes(p.mode)||p.labelOffset!==undefined&&(!Array.isArray(p.labelOffset)||p.labelOffset.length!==2||p.labelOffset.some(v=>!Number.isFinite(v)||Math.abs(v)>20000))))throw Error('Invalid pinned dimensions');}
+ if(doc.ui?.dimensionsVisible!==undefined&&typeof doc.ui.dimensionsVisible!=='boolean')throw Error('Invalid dimension visibility');
  const ids=new Set();for(const f of doc.features){if(!f||!TYPES.includes(f.type)||typeof f.id!=='string'||!/^[a-zA-Z0-9_-]{1,80}$/.test(f.id)||ids.has(f.id))throw Error('Invalid or repeated history feature');ids.add(f.id);if(!f.params||typeof f.params!=='object'||Array.isArray(f.params))throw Error('Invalid feature settings');if(!Array.isArray(f.inputs)||f.inputs.some(v=>typeof v!=='string'||v.length>100))throw Error('Invalid feature references');}
  if(JSON.stringify(doc).length>24e6)throw Error('Project is too large');
  return doc;
@@ -47,7 +50,7 @@ function edgeDescriptor(shape,e){const bounds=shape.boundingBox.bounds,edgeBound
 
 
 export async function buildModel(doc,{base=null,preview=false}={}){
- validateProject(doc);const shapes=new Map(),profiles=new Map(),meta=new Map(),visible=new Set(),arena=new Set();let released=false,currentFeature=null,featureFrame=WORLD_AXES;
+ validateProject(doc);doc=resolveDimensionDocument(doc,basis);const shapes=new Map(),profiles=new Map(),meta=new Map(),visible=new Set(),arena=new Set();let released=false,currentFeature=null,featureFrame=WORLD_AXES;
  const reuse=base&&base.featureCount<=doc.features.length&&base.featureSignature===JSON.stringify(doc.features.slice(0,base.featureCount));
  if(reuse){for(const [k,v]of base.shapes)shapes.set(k,v);for(const [k,v]of base.profiles)profiles.set(k,v);for(const [k,v]of base.meta)meta.set(k,v);for(const k of base.visible)visible.add(k);}
  const metrics={reusedFeatures:reuse?base.featureCount:0,builtFeatures:0,meshedItems:0};
