@@ -236,6 +236,7 @@ function startTool(type,initial={},editId=null){
  if($('drawSketch'))$('drawSketch').onclick=()=>{try{beginDrawing(read());}catch(e){error(e);}};
 }
 function showSidebar(type){
+ if(visualizer?.active){if(type==='items')visualizer.hideControls();else visualizer.exit();}
  closePanels();const side=$('sidebar');if(!side.hidden&&side.dataset.type===type){side.hidden=true;return;}side.dataset.type=type;side.hidden=false;renderSidebar();
 }
 $('itemsToggle').title='Parts and visibility';$('itemsToggle').onclick=()=>showSidebar('items');$('historyToggle').onclick=()=>showSidebar('history');$('settingsToggle').onclick=()=>showSidebar('settings');
@@ -266,7 +267,7 @@ const hemisphere=new THREE.HemisphereLight(0xffffff,0xb9c4d0,2.8);scene.add(hemi
 const grid=new THREE.GridHelper(1000,100,0xcbd1d9,0xe6e9ee);grid.rotation.x=Math.PI/2;grid.position.z=-.03;scene.add(grid);grid.visible=preferences.gridVisible!==false;
 const gridToggle=document.createElement('button');gridToggle.id='gridToggle';gridToggle.type='button';gridToggle.dataset.control='grid';gridToggle.setAttribute('aria-label','Toggle grid');gridToggle.innerHTML=svg('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18m6-18v18M3 9h18M3 15h18"/>');$('fit').before(gridToggle);
 function setGridVisible(visible){preferences.gridVisible=!!visible;grid.visible=!!visible;gridToggle.setAttribute('aria-pressed',String(grid.visible));if($('showGrid'))$('showGrid').checked=grid.visible;localStorage.setItem('reqoo-cad-preferences',JSON.stringify(preferences));status('Grid '+(visible?'on':'off'));}
-gridToggle.onclick=()=>setGridVisible(!grid.visible);gridToggle.setAttribute('aria-pressed',String(grid.visible));
+gridToggle.onclick=()=>{if(visualizer?.active)visualizer.exit();setGridVisible(!grid.visible);};gridToggle.setAttribute('aria-pressed',String(grid.visible));
 const worldReference=createWorldReference({THREE,scene,camera,stage:$('stage')});
 planePicker=createSketchPlanePicker({THREE,scene,camera,controls,stage:$('stage'),getSelectedFace:()=>{const basis=planeFromSelection(),ref=selection.at(-1);return basis?{plane:'Selected face',basis,hostBody:ref.id,hostFace:ref.index}:null;},onChoose:recipe=>{chosenSketchPlane=recipe;beginDrawing({...recipe,shape:'rectangle',closed:true,width:30,height:20},{direct:true});},onCancel:()=>{setWorkspaceMode('solid');status('Sketch plane selection cancelled');}});
 const root=new THREE.Group(),preview=new THREE.Group();const directOverlay=new THREE.Group();scene.add(root,preview,directOverlay);
@@ -574,7 +575,7 @@ for(const [mode,label]of displayStyles){const b=document.createElement('button')
 function syncDisplay(){displayStyles.forEach(([mode])=>displayMenu.querySelector('[data-display-mode="'+mode+'"]').setAttribute('aria-checked',String(preferences.displayMode===mode)));displayButton.title='Display: '+(displayStyles.find(([mode])=>preferences.displayMode===mode)?.[1]||'Solid + edges');}
 function closeDisplay(){displayMenu.hidden=true;displayButton.setAttribute('aria-expanded','false');}
 function setDisplayMode(mode){if(busy)return;direct.cancel();rotationGizmo?.cancel();moveGizmo?.cancel();alignGizmo?.cancel();preferences.displayMode=mode;showEdges=mode!=='shaded';syncDisplay();updatePreferences();}
-displayButton.onclick=()=>{displayMenu.hidden=!displayMenu.hidden;displayButton.setAttribute('aria-expanded',String(!displayMenu.hidden));syncDisplay();};
+displayButton.onclick=()=>{if(visualizer?.active)visualizer.exit();displayMenu.hidden=!displayMenu.hidden;displayButton.setAttribute('aria-expanded',String(!displayMenu.hidden));syncDisplay();};
 displayMenu.onkeydown=e=>{e.stopPropagation();if(e.key==='Escape'){closeDisplay();displayButton.focus();}if(['ArrowDown','ArrowUp'].includes(e.key)){e.preventDefault();const buttons=[...displayMenu.querySelectorAll('button')],index=buttons.indexOf(document.activeElement);buttons[(index+(e.key==='ArrowDown'?1:buttons.length-1)+buttons.length)%buttons.length].focus();}};
 document.addEventListener('pointerdown',e=>{if(!e.target.closest('#displayModeButton,#displayPopover'))closeDisplay();});
 syncDisplay();
