@@ -573,7 +573,7 @@ async function commitSketchPath(){
  current.points=[];draft=null;drawingMeasure.hidden=true;clear(preview);
 }
 async function selectSketchProfiles(){
- if(!sketchMode)return;try{await commitSketchPath();sketchMode.editMode='select';draft=null;drawingMeasure.hidden=true;clear(preview);if($('sketchEditHUD'))$('sketchEditHUD').hidden=true;render(true);status('Tap a profile to select and edit dimensions · tap again to deselect');}catch(e){error(e);}
+ if(!sketchMode)return;try{await commitSketchPath();sketchMode.editMode='select';draft=null;drawingMeasure.hidden=true;clear(preview);if($('sketchEditHUD'))$('sketchEditHUD').hidden=true;render(true);workspaceChrome?.update();status('Tap a profile to select and edit dimensions · tap again to deselect');}catch(e){error(e);}
 }
 async function quickSketch(shape){
  if(!ready||busy)return;try{const previous=sketchMode,ref=selection.at(-1),plane=previous?null:planeFromSelection(),saved=previous?.params,base=saved?{plane:saved.plane,offset:saved.offset,basis:saved.basis,hostBody:saved.hostBody,hostFace:saved.hostFace}:plane?{plane:'Selected face',basis:plane,hostBody:ref.id,hostFace:ref.index}:chosenSketchPlane||{plane:'XY'};
