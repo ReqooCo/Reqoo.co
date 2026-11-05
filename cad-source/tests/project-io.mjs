@@ -1,0 +1,8 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';import init from 'replicad-opencascadejs';import * as R from 'replicad';
+import {parseProject,serializeProject} from '../src/project-io.js';import {buildModel} from '../src/engine.js';
+const legacy={format:'reqoo-cad',version:1,features:[{id:'circle',type:'sketch',params:{shape:'circle',radius:8},inputs:[]},{id:'solid',type:'extrude',params:{distance:12},inputs:['circle']},{id:'round',type:'fillet',params:{allEdges:true,radius:.5},inputs:['solid']}]};
+const d=parseProject('\uFEFF'+JSON.stringify(legacy));assert.equal(d.title,'Untitled');assert.deepEqual(d.ui,{hidden:[],colors:{}});assert.deepEqual(parseProject(serializeProject(d)),d);
+assert.throws(()=>parseProject('<html>Error</html>'),/not valid project JSON/);assert.throws(()=>parseProject('{"format":"other"}'),/supported/);
+const invalid=structuredClone(d);invalid.features[2].id='circle';assert.throws(()=>serializeProject(invalid),/repeated/);
+const require=createRequire(import.meta.url);R.setOC(await init({locateFile:()=>require.resolve('replicad-opencascadejs/wasm')}));const progress=[];const m=await buildModel(d,{onProgress:p=>progress.push(p)}),original=m.items[0].volume;assert.equal(progress.filter(p=>p.phase==='feature').length,3);assert.ok(progress.some(p=>p.phase==='mesh'&&p.index===1));m.release();const reopened=await buildModel(parseProject(serializeProject(d)));assert.ok(Math.abs(reopened.items[0].volume-original)<1e-6);reopened.release();console.log('PROJECT IO PASS: BOM/legacy defaults, schema rejection, exact native fillet volume and build progress');

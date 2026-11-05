@@ -38,6 +38,7 @@ jobs:
         run: |
           node tests/display-cache.mjs
           node tests/native-cache.mjs
+          node tests/project-io.mjs
           node tests/multi-profile.mjs
           node tests/visualization.mjs
           node tests/smart-dimensions.mjs
@@ -65,6 +66,7 @@ jobs:
             modeling)
               node tests/sketch-regions-ui.mjs
               node tests/direct-sketch-ui.mjs
+              node tests/sketch-file-ux-ui.mjs
               node tests/rotation-ui.mjs
               node tests/extrude-modes-ui.mjs
               node tests/cad.mjs

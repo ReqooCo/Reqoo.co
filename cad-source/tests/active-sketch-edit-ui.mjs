@@ -17,7 +17,7 @@ try{
  await beginSketch(page,{shape:'circle'});await dragSketch(page,[0,0],[10,0],{touch:true});
  for(const name of ['Offset in sketch','Profile in sketch','Trim region in sketch'])assert.equal(await page.getByRole('button',{name,exact:true}).isVisible(),true);
  await page.getByRole('button',{name:'Offset in sketch',exact:true}).click();await page.getByLabel('Sketch offset distance',{exact:true}).fill('2');await page.getByRole('button',{name:'Apply sketch edit',exact:true}).click();await page.waitForFunction(()=>!window.__cad.gizmo.busy&&window.__cad.doc.features.at(-1).type==='sketchOffset');assert.equal(await page.evaluate(()=>window.__cad.gizmo.sketchMode),true);near(await page.evaluate(()=>window.__cad.items.find(i=>i.id.endsWith(':band')).area),44*Math.PI,.03);
- await page.locator('#cancelSketch').click();await page.waitForFunction(()=>!window.__cad.gizmo.busy&&!window.__cad.gizmo.sketchMode);assert.equal(await page.evaluate(()=>window.__cad.doc.features.length),0);
+ await page.keyboard.press('Escape');await page.waitForFunction(()=>!window.__cad.gizmo.busy&&!window.__cad.gizmo.sketchMode);assert.equal(await page.evaluate(()=>window.__cad.doc.features.length),0);
  await beginSketch(page,{shape:'rectangle'});await dragSketch(page,[-15,-10],[15,10]);await page.getByRole('button',{name:'Draw circle',exact:true}).click();await dragSketch(page,[0,0],[5,0]);
  await page.getByRole('button',{name:'Profile in sketch',exact:true}).click();await page.getByLabel('Profile operation',{exact:true}).selectOption('Cut');
  for(const p of [[10,5],[0,0]]){const q=await projectSketchPoint(page,p);await page.touchscreen.tap(q.x,q.y);}
