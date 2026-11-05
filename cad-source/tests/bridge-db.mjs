@@ -1,0 +1,4 @@
+import {DatabaseSync} from 'node:sqlite';
+import fs from 'node:fs';
+// Real SQLite statements exercise the same schema and bindings used by D1.
+export function bridgeDB(){const sqlite=new DatabaseSync(':memory:');sqlite.exec('PRAGMA foreign_keys=ON');sqlite.exec(fs.readFileSync(new URL('../../migrations/20261105_cad_bridge.sql',import.meta.url),'utf8'));const prepare=(sql,args=[])=>({bind:(...values)=>prepare(sql,values),first:async()=>sqlite.prepare(sql).get(...args)||null,all:async()=>({results:sqlite.prepare(sql).all(...args)}),run:async()=>({meta:sqlite.prepare(sql).run(...args)})});return{prepare,batch:async statements=>{sqlite.exec('BEGIN');try{const result=[];for(const s of statements)result.push(await s.run());sqlite.exec('COMMIT');return result;}catch(e){sqlite.exec('ROLLBACK');throw e;}},close:()=>sqlite.close()};}

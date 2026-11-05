@@ -29,6 +29,7 @@ jobs:
             node --check "$f"
           done
           node --check _web_worker.js
+          node cad-source/tests/bridge-api.mjs
           node --check sim/pksk/simulator/js/app.js
           node tests/payment-toyyibpay-flow.mjs
           node tests/payment-billplz-flow.mjs
