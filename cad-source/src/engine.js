@@ -7,6 +7,7 @@ import {WORLD_AXES,rotateFrame,concentricPlacement} from './transform-frames.js'
 import {alignmentDelta} from './snapping.js';
 import {solveSketch} from './constraints.js';
 import {normalizedCenter,resolveReference} from './topology.js';
+let meshSerial=0;
 export const TYPES=['sketch','faceSketch','sketchProfile','imprint','sketchOffset','sketchFillet','sketchMirror','box','cylinder','sphere','torus','extrude','hole','revolve','loft','sweep','union','subtract','intersect','fillet','chamfer','thread','shell','offsetFace','draft','move','rotate','scale','mirror','pattern','circularPattern','duplicate','align','split','import','plane','axis','delete'];
 const V=(v,d=0)=>v===undefined?d:Number(v);
 export function number(v,name,min=-2000,max=2000){const n=Number(v);if(!Number.isFinite(n)||n<min||n>max)throw Error(name+' must be between '+min+' and '+max);return n;}
@@ -164,15 +165,16 @@ export async function buildModel(doc,{base=null,preview=false}={}){
  }
  const items=[];
  for(const [id,m]of meta){if(!visible.has(id))continue;if(reuse&&base.shapes.get(id)===shapes.get(id)){const cached=base.items.find(i=>i.id===id);if(cached){items.push(cached);continue;}}metrics.meshedItems++;const s=shapes.get(id),faces=s.faces,edges=s.edges;for(const f of faces)own(f);for(const e of edges)own(e);
+  const cacheKey='mesh-'+(++meshSerial);
   const faceMesh=m.kind==='axis'||(m.kind==='sketch'&&(profiles.get(id)?.closed===false||profiles.get(id)?.construction))?{triangles:[],vertices:[],normals:[],faceGroups:[]}:s.mesh({tolerance:preview?.12:.02,angularTolerance:preview?.2:.08});
   const groups=faceMesh.faceGroups.map(g=>({...g,faceIndex:faces.findIndex(f=>f.hashCode===g.faceId)}));
   const edgeFaces=new Map();faces.forEach((f,j)=>{for(const e of f.edges){own(e);const key=e.hashCode;if(!edgeFaces.has(key))edgeFaces.set(key,[]);edgeFaces.get(key).push(j);}});
-  const lineMeshes=edges.slice(0,600).map((e,i)=>({index:i,faceIndices:edgeFaces.get(e.hashCode)||[],length:length(e),type:e.geomType,reference:edgeDescriptor(s,e),center:e.boundingBox.center,lines:e.meshEdges({tolerance:preview?.12:.02,angularTolerance:preview?.2:.08}).lines}));
+  const lineMeshes=edges.slice(0,600).map((e,i)=>({index:i,cacheKey:cacheKey+':edge:'+i,faceIndices:edgeFaces.get(e.hashCode)||[],length:length(e),type:e.geomType,reference:edgeDescriptor(s,e),center:e.boundingBox.center,lines:e.meshEdges({tolerance:preview?.12:.02,angularTolerance:preview?.2:.08}).lines}));
   const bb=s.boundingBox.bounds;
-  items.push({...m,construction:profiles.get(id)?.construction||false,sketchPlane:profiles.has(id)?basis(profiles.get(id)):null,profileClosed:profiles.has(id)?profiles.get(id).closed!==false&&!profiles.get(id).construction:null,mesh:{...faceMesh,faceGroups:groups},edges:lineMeshes,faceInfo:faces.map((f,i)=>{let normal=[0,0,1],center=[0,0,0];try{const n=f.normalAt(),c=f.center;const len=Math.hypot(...n.toTuple());normal=n.toTuple().map(v=>v/(len||1));center=c.toTuple();n.delete();c.delete();}catch{}return{index:i,type:f.geomType,normal,center,cylinder:cylinderInfo(f),reference:faceDescriptor(s,f),area:area(f)};}),edgeCount:edges.length,bounds:bb,volume:m.kind==='body'?volume(s):0,area:m.kind==='body'||faces.length?area(s):0});
+  items.push({...m,construction:profiles.get(id)?.construction||false,sketchPlane:profiles.has(id)?basis(profiles.get(id)):null,profileClosed:profiles.has(id)?profiles.get(id).closed!==false&&!profiles.get(id).construction:null,mesh:{...faceMesh,cacheKey,faceGroups:groups},edges:lineMeshes,faceInfo:faces.map((f,i)=>{let normal=[0,0,1],center=[0,0,0];try{const n=f.normalAt(),c=f.center;const len=Math.hypot(...n.toTuple());normal=n.toTuple().map(v=>v/(len||1));center=c.toTuple();n.delete();c.delete();}catch{}return{index:i,type:f.geomType,normal,center,cylinder:cylinderInfo(f),reference:faceDescriptor(s,f),area:area(f)};}),edgeCount:edges.length,bounds:bb,volume:m.kind==='body'?volume(s):0,area:m.kind==='body'||faces.length?area(s):0});
  }
  if(items.filter(i=>i.kind==='body').length>50)throw Error('Limit is 50 visible bodies');
- return{items,shapes,profiles,meta,visible,metrics,featureCount:doc.features.length,featureSignature:JSON.stringify(doc.features),release,export:async(format,ids)=>{
+ return{items,shapes,profiles,meta,visible,metrics,transferOwnershipTo(target){if(released)throw Error('Native cache has been released');for(const shape of arena)target.add(shape);arena.clear();released=true;},adoptBase(){if(reuse&&base){base.transferOwnershipTo(arena);base=null;}},featureCount:doc.features.length,featureSignature:JSON.stringify(doc.features),release,export:async(format,ids)=>{
   const chosen=(ids?.length?ids:[...visible]).map(id=>{if(meta.get(id)?.kind!=='body')throw Error('Export needs solid bodies');return shapes.get(id);});
   if(!chosen.length)throw Error('Select a solid body to export');const combined=chosen.length===1?chosen[0]:own(R.makeCompound(chosen.map(s=>own(s.clone()))));
   return format==='step'?combined.blobSTEP():combined.blobSTL({binary:true,tolerance:.03,angularTolerance:.1});

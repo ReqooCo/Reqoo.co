@@ -36,6 +36,7 @@ jobs:
         if: matrix.suite == 'core'
         working-directory: cad-source
         run: |
+          node tests/native-cache.mjs
           node tests/multi-profile.mjs
           node tests/visualization.mjs
           node tests/smart-dimensions.mjs
@@ -51,6 +52,7 @@ jobs:
         run: |
           case "${{ matrix.suite }}" in
             core)
+              node tests/display-performance-ui.mjs
               node tests/active-sketch-edit-ui.mjs
               node tests/multi-profile-ui.mjs
               node tests/r3ds-ux-ui.mjs
