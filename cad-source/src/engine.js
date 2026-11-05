@@ -53,7 +53,7 @@ function edgeDescriptor(shape,e){const bounds=shape.boundingBox.bounds,edgeBound
 
 
 
-export async function buildModel(doc,{base=null,preview=false}={}){
+export async function buildModel(doc,{base=null,preview=false,onProgress=()=>{}}={}){
  validateProject(doc);doc=resolveDimensionDocument(doc,basis);const shapes=new Map(),profiles=new Map(),meta=new Map(),visible=new Set(),arena=new Set();let released=false,currentFeature=null,featureFrame=WORLD_AXES;
  const reuse=base&&base.featureCount<=doc.features.length&&base.featureSignature===JSON.stringify(doc.features.slice(0,base.featureCount));
  if(reuse){for(const [k,v]of base.shapes)shapes.set(k,v);for(const [k,v]of base.profiles)profiles.set(k,v);for(const [k,v]of base.meta)meta.set(k,v);for(const k of base.visible)visible.add(k);}
@@ -65,7 +65,7 @@ export async function buildModel(doc,{base=null,preview=false}={}){
  function face(s,p){const faces=s.faces;for(const f of faces)own(f);const i=resolveReference(p.faceRef,faces.map(f=>faceDescriptor(s,f)),p.face);return faces[i];}
  function save(f,s,kind='body',id=f.id,name=f.name||f.type){own(s);if(s.isNull)throw Error('Empty shape');if(kind==='body'&&(!R.isShape3D(s)||volume(s)<1e-8))throw Error('Operation did not create a closed solid');shapes.set(id,s);meta.set(id,{id,name,kind,featureId:f.id,...(kind==='body'?{imprintProfiles:[...new Set(f.inputs.flatMap(id=>meta.get(id)?.imprintProfiles||[]))]}:{}),localFrame:featureFrame.map(v=>[...v])});visible.add(id);}
  try{
- for(const f of doc.features.slice(reuse?base.featureCount:0)){currentFeature=f;metrics.builtFeatures++;if(f.suppressed)continue;const p=f.params,ins=f.inputs;featureFrame=meta.get(ins[0])?.localFrame||WORLD_AXES;let s=null,kind='body';
+ for(const f of doc.features.slice(reuse?base.featureCount:0)){currentFeature=f;onProgress({phase:'feature',index:doc.features.indexOf(f)+1,total:doc.features.length,name:f.name||f.type});metrics.builtFeatures++;if(f.suppressed)continue;const p=f.params,ins=f.inputs;featureFrame=meta.get(ins[0])?.localFrame||WORLD_AXES;let s=null,kind='body';
   if(f.type==='sketch'){const b=basis(p),x=b.x,n=b.normal;featureFrame=[x,[n[1]*x[2]-n[2]*x[1],n[2]*x[0]-n[0]*x[2],n[0]*x[1]-n[1]*x[0]],n];profiles.set(f.id,p);const sk=sketch(p);s=own(p.closed===false||p.construction?sk.wire.clone():sk.face());sk.delete();save(f,s,'sketch');continue;}
   if(f.type==='sketchProfile'){if(ins.length<2||ins.length>25)throw Error('Choose two or more closed sketches');const recipes=ins.map(id=>profiles.get(id));if(recipes.some(p=>!p||p.closed===false||p.construction||p.nativeSketch))throw Error('Profile needs closed planar sketch recipes');const first=basis(recipes[0]);if(recipes.some(p=>{const b=basis(p);return b.origin.some((v,i)=>Math.abs(v-first.origin[i])>1e-6)||b.x.some((v,i)=>Math.abs(v-first.x[i])>1e-6)||b.normal.some((v,i)=>Math.abs(v-first.normal[i])>1e-6);}))throw Error('Choose profiles on the same sketch plane');const operation=p.operation||'Join';if(!['Join','Cut','Intersect'].includes(operation))throw Error('Invalid profile operation');let drawing=profile(recipes[0]);for(const recipe of recipes.slice(1))drawing=operation==='Join'?drawing.fuse(profile(recipe)):operation==='Cut'?drawing.cut(profile(recipe)):drawing.intersect(profile(recipe));const recipe={shape:'profile',closed:true,basis:first,serializedDrawing:drawing.serialize()};profiles.set(f.id,recipe);const sk=sketch(recipe);try{save(f,sk.face(),'sketch');}finally{sk.delete();}if(!p.keepInputs)for(const id of ins)consume(id);continue;}
   if(f.type==='faceSketch'){const source=body(ins[0]),selected=face(source,p);if(selected.geomType!=='PLANE')throw Error('Offset Sketch needs a planar face');const d=number(p.distance??0,'Sketch offset',-500,500),normal=own(selected.normalAt()).toTuple(),origin=own(selected.center).toTuple(),seed=Math.abs(normal[0])<.9?[1,0,0]:[0,1,0],dot=seed.reduce((sum,v,i)=>sum+v*normal[i],0),x=seed.map((v,i)=>v-dot*normal[i]),len=Math.hypot(...x);for(let i=0;i<3;i++)x[i]/=len;
@@ -164,7 +164,8 @@ export async function buildModel(doc,{base=null,preview=false}={}){
   if(!['box','cylinder','sphere','torus','import'].includes(f.type)&&f.type!=='duplicate'&&!p.keepInputs&&!(f.type==='extrude'&&!profiles.has(ins[0])&&(p.operation||'New body')==='New body'))for(const id of ins)if(f.type!=='align'||id===ins[0])consume(id);
  }
  const items=[];
- for(const [id,m]of meta){if(!visible.has(id))continue;if(reuse&&base.shapes.get(id)===shapes.get(id)){const cached=base.items.find(i=>i.id===id);if(cached){items.push(cached);continue;}}metrics.meshedItems++;const s=shapes.get(id),faces=s.faces,edges=s.edges;for(const f of faces)own(f);for(const e of edges)own(e);
+ onProgress({phase:'mesh',total:visible.size});
+ for(const [id,m]of meta){if(!visible.has(id))continue;if(reuse&&base.shapes.get(id)===shapes.get(id)){const cached=base.items.find(i=>i.id===id);if(cached){items.push(cached);continue;}}metrics.meshedItems++;onProgress({phase:'mesh',index:metrics.meshedItems,total:visible.size,name:m.name});const s=shapes.get(id),faces=s.faces,edges=s.edges;for(const f of faces)own(f);for(const e of edges)own(e);
   const cacheKey='mesh-'+(++meshSerial);
   const faceMesh=m.kind==='axis'||(m.kind==='sketch'&&(profiles.get(id)?.closed===false||profiles.get(id)?.construction))?{triangles:[],vertices:[],normals:[],faceGroups:[]}:s.mesh({tolerance:preview?.12:.02,angularTolerance:preview?.2:.08});
   const groups=faceMesh.faceGroups.map(g=>({...g,faceIndex:faces.findIndex(f=>f.hashCode===g.faceId)}));
