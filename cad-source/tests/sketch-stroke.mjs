@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';import {appendStrokePoint} from '../src/sketch-stroke.js';
 import {createRequire} from 'node:module';import init from 'replicad-opencascadejs';import * as R from 'replicad';import {buildModel} from '../src/engine.js';import {parseProject,serializeProject} from '../src/project-io.js';
+assert.equal(appendStrokePoint([[0,0],[.1,0],[.1,.1]],[.1,.1],2).close,false,'Repeating the last point must not close a tiny profile');
 let points=[];for(const p of [[-10,-10],[10,-10],[10,10]])points=appendStrokePoint(points,p,.2).points;
 const closing=appendStrokePoint(points,[-9.95,-9.95],.2);assert.equal(closing.close,true);assert.equal(closing.points.length,3);assert.deepEqual(points,[[-10,-10],[10,-10],[10,10]]);
 assert.equal(appendStrokePoint([[0,0]],[.1,0],2).changed,true,'Short intentional segments remain possible');assert.equal(appendStrokePoint(points,[10,10],.2).changed,false);assert.equal(appendStrokePoint(points.slice(0,2),[-10,-10],.2).close,false);assert.throws(()=>appendStrokePoint(points,[NaN,0],.2),/Invalid/);
