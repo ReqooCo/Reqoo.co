@@ -12,6 +12,10 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [core, modeling, product]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,6 +33,7 @@ jobs:
         working-directory: cad-source
         run: npx playwright install --with-deps chromium
       - name: Validate constraints
+        if: matrix.suite == 'core'
         working-directory: cad-source
         run: |
           node tests/multi-profile.mjs
@@ -44,28 +49,36 @@ jobs:
       - name: Browser integration tests
         working-directory: cad-source
         run: |
-          node tests/multi-profile-ui.mjs
-          node tests/r3ds-ux-ui.mjs
-          node tests/visualization-ui.mjs
-          node tests/smart-dimensions-ui.mjs
-          node tests/bridge-ui.mjs
-          node tests/motion-continuity-ui.mjs
-          node tests/sketch-regions-ui.mjs
-          node tests/direct-sketch-ui.mjs
-          node tests/rotation-ui.mjs
-          node tests/extrude-modes-ui.mjs
-          node tests/cad.mjs
-          node tests/acceptance.mjs
-          node tests/product.mjs
-          node tests/transform-ui.mjs
-          node tests/pattern-thread-ui.mjs
-          node tests/precision-ui.mjs
-          node tests/workspace-reference-ui.mjs
-          node tests/input.mjs
+          case "${{ matrix.suite }}" in
+            core)
+              node tests/multi-profile-ui.mjs
+              node tests/r3ds-ux-ui.mjs
+              node tests/visualization-ui.mjs
+              node tests/smart-dimensions-ui.mjs
+              node tests/bridge-ui.mjs
+              node tests/motion-continuity-ui.mjs
+              ;;
+            modeling)
+              node tests/sketch-regions-ui.mjs
+              node tests/direct-sketch-ui.mjs
+              node tests/rotation-ui.mjs
+              node tests/extrude-modes-ui.mjs
+              node tests/cad.mjs
+              node tests/acceptance.mjs
+              ;;
+            product)
+              node tests/product.mjs
+              node tests/transform-ui.mjs
+              node tests/pattern-thread-ui.mjs
+              node tests/precision-ui.mjs
+              node tests/workspace-reference-ui.mjs
+              node tests/input.mjs
+              ;;
+          esac
       - name: Upload screenshots and QA output
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cad-pr-qa
+          name: cad-pr-qa-${{ matrix.suite }}
           path: cad-source/test-results/
           retention-days: 7

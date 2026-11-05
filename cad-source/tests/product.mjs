@@ -135,7 +135,9 @@ try{
  await page.touchscreen.tap(tapPoint.x,tapPoint.y);
  assert.equal(await page.evaluate(()=>window.__cad.selection.at(-1)?.kind),'face');
  assert.equal(await page.evaluate(()=>window.__cad.selection.at(-1)?.index),sides[0].index);
- await page.touchscreen.tap(tapPoint.x,tapPoint.y);
+ // Test a separate double-tap gesture without inspection round trips between taps.
+ await page.waitForTimeout(400);await page.evaluate(()=>window.__cad.select([]));
+ await page.touchscreen.tap(tapPoint.x,tapPoint.y);await page.touchscreen.tap(tapPoint.x,tapPoint.y);
  assert.deepEqual(await page.evaluate(()=>window.__cad.selection.map(s=>({id:s.id,kind:s.kind}))),[{id:cylinder.id,kind:'body'}]);
  assert.equal(await page.locator('#faceDistance').isVisible(),false);
  await page.waitForTimeout(400);await page.evaluate(()=>window.__cad.select([]));
