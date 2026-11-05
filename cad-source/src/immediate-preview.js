@@ -14,7 +14,7 @@ export function simpleSource(doc,item){
 // to finished solids: their fixed fillet/chamfer radius must be rebuilt by OCC.
 export function diameterSource(doc,item){
  let f=doc.features.find(f=>f.id===item?.featureId),seen=new Set();
- while(f&&['fillet','chamfer','offsetFace'].includes(f.type)&&f.inputs.length===1&&!seen.has(f.id)){seen.add(f.id);f=doc.features.find(v=>v.id===f.inputs[0]);}
+ while(f&&['fillet','chamfer','offsetFace','imprint'].includes(f.type)&&(f.inputs.length===1||f.type==='imprint')&&!seen.has(f.id)){seen.add(f.id);f=doc.features.find(v=>v.id===f.inputs[0]);}
  return f?simpleSource(doc,{featureId:f.id}):null;
 }
 export function immediateTransform(doc,item,ref,operation,value){

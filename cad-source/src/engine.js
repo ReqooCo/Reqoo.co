@@ -1,10 +1,11 @@
+import {imprintPlanarRegions} from './planar-regions.js';
 import * as R from 'replicad';
 import {cylinderInfo,cutThread} from './thread-solid.js';
 import {WORLD_AXES,rotateFrame,concentricPlacement} from './transform-frames.js';
 import {alignmentDelta} from './snapping.js';
 import {solveSketch} from './constraints.js';
 import {normalizedCenter,resolveReference} from './topology.js';
-export const TYPES=['sketch','sketchOffset','sketchFillet','sketchMirror','box','cylinder','sphere','torus','extrude','hole','revolve','loft','sweep','union','subtract','intersect','fillet','chamfer','thread','shell','offsetFace','draft','move','rotate','scale','mirror','pattern','circularPattern','duplicate','align','split','import','plane','axis','delete'];
+export const TYPES=['sketch','imprint','sketchOffset','sketchFillet','sketchMirror','box','cylinder','sphere','torus','extrude','hole','revolve','loft','sweep','union','subtract','intersect','fillet','chamfer','thread','shell','offsetFace','draft','move','rotate','scale','mirror','pattern','circularPattern','duplicate','align','split','import','plane','axis','delete'];
 const V=(v,d=0)=>v===undefined?d:Number(v);
 export function number(v,name,min=-2000,max=2000){const n=Number(v);if(!Number.isFinite(n)||n<min||n>max)throw Error(name+' must be between '+min+' and '+max);return n;}
 export function basis(p={}){
@@ -40,7 +41,7 @@ function volume(s){const v=R.measureShapeVolumeProperties(s);const value=Math.ab
 function length(s){const p=R.measureShapeLinearProperties(s);const v=p.length;p.delete();return v;}
 function area(s){const v=R.measureShapeSurfaceProperties(s);const value=Math.abs(v.area);v.delete();return value;}
 
-function faceDescriptor(shape,f){const n=f.normalAt(),c=f.center,normal=n.toTuple(),len=Math.hypot(...normal),center=c.toTuple();n.delete();c.delete();return{kind:'face',type:f.geomType,center:normalizedCenter(shape.boundingBox.bounds,center),normal:normal.map(v=>v/(len||1))};}
+function faceDescriptor(shape,f){const n=f.normalAt(),c=f.center,normal=n.toTuple(),len=Math.hypot(...normal),center=c.toTuple();n.delete();c.delete();const wires=f.wires,loops=wires.map(w=>{const edges=w.edges;try{return edges.map(e=>e.geomType).sort().join(',');}finally{edges.forEach(e=>e.delete());}}).sort();wires.forEach(w=>w.delete());const bounds=shape.boundingBox.bounds,scale=Math.max(1e-7,bounds[0].reduce((sum,v,i)=>sum+(bounds[1][i]-v)**2,0));return{kind:'face',type:f.geomType,center:normalizedCenter(bounds,center),normal:normal.map(v=>v/(len||1)),loops:loops.join('|'),measure:area(f)/scale};}
 function edgeDescriptor(shape,e){const bounds=shape.boundingBox.bounds,edgeBounds=e.boundingBox.bounds;return{kind:'edge',type:e.geomType,center:normalizedCenter(bounds,e.boundingBox.center),span:edgeBounds[0].map((v,i)=>(edgeBounds[1][i]-v)/Math.max(1e-7,bounds[1][i]-bounds[0][i])),measure:e.length/Math.max(1e-7,Math.hypot(...bounds[0].map((v,i)=>bounds[1][i]-v)))};}
 
 
@@ -55,7 +56,7 @@ export async function buildModel(doc,{base=null,preview=false}={}){
  function body(id){const s=shapes.get(id);if(!s||meta.get(id)?.kind!=='body')throw Error('Select a solid body');return s;}
  function clone(id){return own(body(id).clone());}
  function face(s,p){const faces=s.faces;for(const f of faces)own(f);const i=resolveReference(p.faceRef,faces.map(f=>faceDescriptor(s,f)),p.face);return faces[i];}
- function save(f,s,kind='body',id=f.id,name=f.name||f.type){own(s);if(s.isNull)throw Error('Empty shape');if(kind==='body'&&(!R.isShape3D(s)||volume(s)<1e-8))throw Error('Operation did not create a closed solid');shapes.set(id,s);meta.set(id,{id,name,kind,featureId:f.id,localFrame:featureFrame.map(v=>[...v])});visible.add(id);}
+ function save(f,s,kind='body',id=f.id,name=f.name||f.type){own(s);if(s.isNull)throw Error('Empty shape');if(kind==='body'&&(!R.isShape3D(s)||volume(s)<1e-8))throw Error('Operation did not create a closed solid');shapes.set(id,s);meta.set(id,{id,name,kind,featureId:f.id,...(kind==='body'?{imprintProfiles:[...new Set(f.inputs.flatMap(id=>meta.get(id)?.imprintProfiles||[]))]}:{}),localFrame:featureFrame.map(v=>[...v])});visible.add(id);}
  try{
  for(const f of doc.features.slice(reuse?base.featureCount:0)){currentFeature=f;metrics.builtFeatures++;if(f.suppressed)continue;const p=f.params,ins=f.inputs;featureFrame=meta.get(ins[0])?.localFrame||WORLD_AXES;let s=null,kind='body';
   if(f.type==='sketch'){const b=basis(p),x=b.x,n=b.normal;featureFrame=[x,[n[1]*x[2]-n[2]*x[1],n[2]*x[0]-n[0]*x[2],n[0]*x[1]-n[1]*x[0]],n];profiles.set(f.id,p);const sk=sketch(p);s=own(p.closed===false||p.construction?sk.wire.clone():sk.face());sk.delete();save(f,s,'sketch');continue;}
@@ -70,6 +71,7 @@ export async function buildModel(doc,{base=null,preview=false}={}){
   }
  }
  if(!p.keepInputs)consume(ins[0]);continue;}
+  if(f.type==='imprint'){const host=body(ins[0]),entries=ins.slice(1).map(id=>{const recipe=profiles.get(id);if(!recipe||recipe.closed===false||recipe.construction)throw Error('Face regions need closed non-construction sketches');return{id,shape:shapes.get(id),plane:basis(recipe)};});if(!entries.length)throw Error('Choose at least one closed sketch');const result=imprintPlanarRegions(host,entries);save(f,result.shape);meta.set(f.id,{...meta.get(f.id),imprintProfiles:[...new Set([...(meta.get(ins[0])?.imprintProfiles||[]),...result.used])]});consume(ins[0]);continue;}
   if(f.type==='delete'){for(const id of ins)visible.delete(id);continue;}
   if(f.type==='plane'){const b=basis(p),pl=new R.Plane(b.origin,b.x,b.normal),sk=R.drawRectangle(80,80).sketchOnPlane(pl);s=sk.face();sk.delete();save(f,s,'plane');continue;}
   if(f.type==='axis'){const x=number(p.x??0,'X'),y=number(p.y??0,'Y'),z=number(p.z??0,'Z'),axis=p.axis||'Z';s=R.makeLine([x,y,z],[x+(axis==='X'?80:0),y+(axis==='Y'?80:0),z+(axis==='Z'?80:0)]);save(f,s,'axis');continue;}

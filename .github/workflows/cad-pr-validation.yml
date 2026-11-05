@@ -36,10 +36,12 @@ jobs:
           node tests/transform-snapping.mjs
           node tests/pattern-thread.mjs
           node tests/precision-modeling.mjs
+          node tests/planar-regions.mjs
       - name: Browser integration tests
         working-directory: cad-source
         run: |
           node tests/motion-continuity-ui.mjs
+          node tests/sketch-regions-ui.mjs
           node tests/direct-sketch-ui.mjs
           node tests/rotation-ui.mjs
           node tests/extrude-modes-ui.mjs

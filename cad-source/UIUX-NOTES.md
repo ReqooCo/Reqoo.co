@@ -50,3 +50,13 @@ Release QA adds actual touch/pointer sketch creation on all three planes, exact 
 Commit now keeps the displayed Move/Scale/Rotate/Pattern or direct-edit preview until the exact worker result arrives, then swaps the model synchronously. Other edits are blocked during that transaction; a failed kernel build restores the last valid model/history. The latency regression holds delivery of actual native worker results and checks multiple rendered frames; no geometry is mocked.
 
 Orbit navigation synchronizes OrbitControls' cached up-frame with named views, sketch planes and cube rotation. Camera inertia is disabled for immediate finger/mouse response and a predictable stop on release. Planar pull/extrude anchors use the native face centre rather than the picked point; extrusion handles follow the signed endpoint. Cylinder diameter handles retain a geometry-owned radial direction at mid-height. Grid visibility is available in the right toolbar, Settings and the G shortcut, with persistent preference storage.
+
+
+## Closed sketches on solid faces
+
+- Dark-mode dimension overlays remain transparent; only the editable labels paint a panel background.
+- Rectangle and ellipse drawing offers Center/Corner start modes. Circles offer Center/Diameter. The outline, native profile and exact size editor use the same drag recipe; tool preferences persist.
+- Finishing closed sketches on a planar host imprints their boundaries into the native B-rep. Solid mode selects the inner disk or outer remainder independently. Source sketches remain editable through Items, Sketch selection and history.
+- Imprints preserve volume and solid count, validate the native result, rebuild after parent edits and survive STEP export. Non-overlapping sketches remain independent. Planar face references include boundary-loop signatures to distinguish concentric disk/remainder regions; ambiguous topology changes fail safely.
+- Saved projects with a closed sketch attached to a currently visible planar host are migrated on opening. Consumed or missing hosts are not revived.
+- QA: `planar-regions.mjs` covers exact native regions, independent extrusion, upstream radius changes and STEP roundtrip; `sketch-regions-ui.mjs` covers touch drawing modes, dark overlay focus, real face-region pointer picks, extrusion, Undo/Redo, reopening and migration.
