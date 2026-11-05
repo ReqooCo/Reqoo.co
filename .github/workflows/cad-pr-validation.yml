@@ -43,6 +43,7 @@ jobs:
       - name: Browser integration tests
         working-directory: cad-source
         run: |
+          node tests/r3ds-ux-ui.mjs
           node tests/visualization-ui.mjs
           node tests/smart-dimensions-ui.mjs
           node tests/bridge-ui.mjs

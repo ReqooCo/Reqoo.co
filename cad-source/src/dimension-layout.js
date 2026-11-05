@@ -20,7 +20,7 @@ export function layoutDimensions({THREE,basis,camera,stage,overlay,svg,params:p}
   const desiredX=(ax+bx)/2+nx*labelOffset+dx/len*along,desiredY=(ay+by)/2+ny*labelOffset;
   const hw=Math.max(40,label.offsetWidth/2),hh=Math.max(18,label.offsetHeight/2);
   let lx=Math.max(hw+8,Math.min(rect.width-hw-8,desiredX)),ly=Math.max(60+hh,Math.min(rect.height-hh-12,desiredY));
-  for(const id of ['context','selectionBar','viewCube','rail']){
+  for(const id of ['context','selectionBar','viewCube','rail','quickSketchTools','sketchBar','utilityRail','worldReference [data-origin]']){
    const element=stage.querySelector('#'+id);if(!element||element.hidden)continue;const box=element.getBoundingClientRect();if(!box.width||!box.height)continue;
    const left=box.left-rect.left,right=box.right-rect.left,top=box.top-rect.top,bottom=box.bottom-rect.top;
    if(lx+hw>left-6&&lx-hw<right+6&&ly+hh>top-6&&ly-hh<bottom+6){
