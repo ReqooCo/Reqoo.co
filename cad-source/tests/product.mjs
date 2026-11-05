@@ -60,7 +60,7 @@ try{
  // Geometry-attached annotation editing and orientation controls.
  await fresh();source=await op('sketch',{shape:'rectangle',width:30,height:20,plane:'XY'});
  await page.evaluate(()=>window.__cad.view('top'));await page.locator('#fit').click();
- point=await projection(0,0,0);await page.touchscreen.tap(point.x,point.y);
+ await page.evaluate(()=>window.__cad.select([]));point=await projection(0,0,0);await page.touchscreen.tap(point.x,point.y);
  assert.equal(await page.locator('#sketchDimensionLines .dimensionMeasure').count(),2);
  const beforePath=await page.locator('[data-measure=width]').getAttribute('d');
  await page.evaluate(()=>window.__cad.view('iso'));await page.waitForFunction(old=>document.querySelector('[data-measure=width]')?.getAttribute('d')!==old,beforePath);
