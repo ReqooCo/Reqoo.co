@@ -1,5 +1,7 @@
 # Smart Dimension
 
+Select two coplanar editable sketches with Multi-select: horizontal, vertical and direct-distance values appear immediately on the canvas. Tap a value to enter an exact distance in the compact editor; the first sketch stays fixed and the second moves. **More options** opens the full anchor/reference controls. Merely selecting sketches never changes the document or history. Values disappear when selection changes or another modeling tool starts.
+
 Select one editable sketch and choose **Measure** (or **Smart Dimension**) to reference its plane origin. Select two sketches with Multi-select to measure between them.
 
 Choose the fixed reference, its anchor, the moving sketch and its anchor. Horizontal and vertical values are signed in the moving sketch's local plane; direct distance is non-negative. The sketches must be coplanar, including sketches started on planar faces.
