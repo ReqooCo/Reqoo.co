@@ -54,6 +54,7 @@ jobs:
         working-directory: cad-source
         run: |
           npm ci
+          node tests/visualization.mjs
           node tests/smart-dimensions.mjs
           npm run build
           node -e "const fs=require('fs');fs.rmSync('../cad',{recursive:true,force:true});fs.cpSync('dist','../cad',{recursive:true})"
