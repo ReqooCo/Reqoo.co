@@ -51,6 +51,7 @@ jobs:
         run: |
           case "${{ matrix.suite }}" in
             core)
+              node tests/active-sketch-edit-ui.mjs
               node tests/multi-profile-ui.mjs
               node tests/r3ds-ux-ui.mjs
               node tests/visualization-ui.mjs

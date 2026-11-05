@@ -42,6 +42,7 @@ jobs:
       - name: Test the deployed CAD application
         working-directory: cad-source
         run: |
+          node tests/active-sketch-edit-ui.mjs
           node tests/multi-profile-ui.mjs
           node tests/r3ds-ux-ui.mjs
           node tests/visualization-ui.mjs
