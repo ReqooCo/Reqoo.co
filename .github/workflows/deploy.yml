@@ -54,6 +54,7 @@ jobs:
         working-directory: cad-source
         run: |
           npm ci
+          node tests/multi-profile.mjs
           node tests/visualization.mjs
           node tests/smart-dimensions.mjs
           npm run build

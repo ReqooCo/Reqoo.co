@@ -31,6 +31,7 @@ jobs:
       - name: Validate constraints
         working-directory: cad-source
         run: |
+          node tests/multi-profile.mjs
           node tests/visualization.mjs
           node tests/smart-dimensions.mjs
           node tests/bridge-api.mjs
@@ -43,6 +44,7 @@ jobs:
       - name: Browser integration tests
         working-directory: cad-source
         run: |
+          node tests/multi-profile-ui.mjs
           node tests/r3ds-ux-ui.mjs
           node tests/visualization-ui.mjs
           node tests/smart-dimensions-ui.mjs

@@ -35,15 +35,15 @@ export function createDirectModeling(api){
   if(t.edge){const adjacent=t.item.faceInfo.filter(f=>t.edge.faceIndices?.includes(f.index));if(adjacent.length){normal=new THREE.Vector3();for(const f of adjacent)normal.add(radial(f));}}
   if(normal.lengthSq()<1e-10)normal.set(0,0,1);normal.normalize();
   const rect=stage.getBoundingClientRect(),p=origin.clone().project(camera),q=origin.clone().addScaledVector(normal,20).project(camera);
-  const sx=(q.x-p.x)*rect.width/2,sy=(p.y-q.y)*rect.height/2,len=Math.hypot(sx,sy),dx=len>1e-5?sx/len:0,dy=len>1e-5?sy/len:0;
-  return{...t,origin,normal,rect,p,dx,dy,pixelsPerUnit:len/20};
+  const sx=(q.x-p.x)*rect.width/2,sy=(p.y-q.y)*rect.height/2,len=Math.hypot(sx,sy),dx=len>1?sx/len:0,dy=len>1?sy/len:-1;
+  return{...t,origin,normal,rect,p,dx,dy,pixelsPerUnit:len>1?len/20:20/((camera.top-camera.bottom)/camera.zoom/rect.height*20),endOn:len<=1};
  }
 
- function params(){if(operation==='extrude')return{distance:value,...(session.kind==='face'?{face:session.index}:{}),operation:extrudeOperation.value,...(extrudeOperation.value!=='New body'?{target:extrudeTarget.value}:{})};if(operation==='diameter')return{diameter:value};return operation==='fillet'||operation==='chamfer'?{radius:Math.abs(value),edges:[session.index],allEdges:false}:operation==='draft'?{angle:value,face:session.index,plane:'XY',offset:0}:{distance:value,...(session.kind==='face'?{face:session.index}:{})};}
+ function params(){if(operation==='extrude')return{distance:value,...(session.kind==='face'?{face:session.index}:{}),operation:extrudeOperation.value,...(extrudeOperation.value!=='New body'?{target:extrudeTarget.value}:{})};if(operation==='diameter')return{diameter:value};return operation==='fillet'||operation==='chamfer'?{radius:Math.abs(value),edges:[...new Set((session.refs||[session]).map(r=>r.index))],allEdges:false}:operation==='draft'?{angle:value,face:session.index,plane:'XY',offset:0}:{distance:value,...(session.kind==='face'?{face:session.index}:{})};}
  function displayValue(){const factor=operation==='draft'?1:(api.getUnits?.().factor||1);return value/factor;}
  async function drain(){
   if(inFlight||!wanted)return;const task=wanted;wanted=null;inFlight=true;
-  try{await api.onPreview(task.operation,task.params,task.ref,()=>task.epoch===previewEpoch);if(task.epoch===previewEpoch&&task.token===sequence)feedback.textContent='Solid verified';}
+  try{await api.onPreview(task.operation,task.params,task.ref,()=>task.epoch===previewEpoch&&task.token===sequence);if(task.epoch===previewEpoch&&task.token===sequence)feedback.textContent='Solid verified';}
   catch(e){if(task.epoch===previewEpoch&&!wanted){api.onResetPreview();feedback.textContent=e.message;feedback.dataset.error='true';}}
   finally{inFlight=false;if(wanted)drain();}
  }
@@ -57,7 +57,7 @@ export function createDirectModeling(api){
  }
  function cancel(){api.onSnap?.(null);drag=null;handle.classList.remove('dragging');api.onNavigation(true);clearTimeout(timer);sequence++;previewEpoch++;wanted=null;session=null;value=0;dimensions.hidden=true;api.onResetPreview();feedback.textContent='';}
  function begin(initial=0,requested){
-  const t=target();if(!t)return;previewEpoch++;operation=requested||(t.diameter?'diameter':t.edge?'fillet':t.sketch?'extrude':'offsetFace');session={...t.ref};value=operation==='diameter'?(t.diameter.diameter+initial):initial;
+  const t=target();if(!t)return;previewEpoch++;operation=requested||(t.diameter?'diameter':t.edge?'fillet':t.sketch?'extrude':'offsetFace');let refs;try{refs=api.getOperationRefs?.(operation)||[t.ref];if(['fillet','chamfer'].includes(operation)&&refs.some(r=>r.kind!=='edge'||r.id!==t.ref.id))throw Error('Select edges from one body');}catch(e){api.onStatus(e.message);return;}session={...t.ref,refs};value=operation==='diameter'?(t.diameter.diameter+initial):initial;
   extrudeChoices.hidden=operation!=='extrude';if(operation==='extrude'){const targets=api.getExtrudeTargets?.(session)||[];extrudeTarget.replaceChildren(...targets.map(item=>{const option=document.createElement('option');option.value=item.id;option.textContent=item.name;return option;}));extrudeOperation.value='New body';extrudeTarget.hidden=true;for(const option of extrudeOperation.options)option.disabled=option.value!=='New body'&&!targets.length;}
   label.textContent=operation==='diameter'?'Diameter':operation==='fillet'?'Radius':operation==='chamfer'?'Chamfer':operation==='draft'?'Draft':'Distance';
   unit.textContent=operation==='draft'?'°':api.getUnits?.().label||'mm';input.value=String(Number(displayValue().toFixed(4)));dimensions.hidden=false;update();if(initial)schedule();
@@ -73,7 +73,7 @@ export function createDirectModeling(api){
   else if(session&&operation==='diameter'&&t.diameter)origin.addScaledVector(d.normal,(value-t.diameter.diameter)/2);
   arrow.position.copy(origin);arrow.setDirection(d.normal);arrow.setLength(length,length*.3,length*.14);shaft.scale.set(unit*1.4,length*.7,unit*1.4);shaft.position.y=length*.35;
   const projected=origin.clone().addScaledVector(d.normal,length*.82).project(camera),hx=(projected.x+1)*d.rect.width/2,hy=(1-projected.y)*d.rect.height/2;
-  handle.style.pointerEvents=d.pixelsPerUnit<.02?'none':'auto';handle.style.left=hx+'px';handle.style.top=hy+'px';handle.dataset.normal=d.normal.toArray().join(',');handle.dataset.origin=origin.toArray().join(',');handle.dataset.target=t.ref.kind;handle.title=t.edge?'Drag edge radius / chamfer':t.sketch?'Drag to extrude profile':'Drag along face normal';
+  handle.style.pointerEvents='auto';handle.dataset.endOn=String(d.endOn);handle.style.left=hx+'px';handle.style.top=(hy+(d.endOn?-48:0))+'px';handle.dataset.normal=d.normal.toArray().join(',');handle.dataset.origin=origin.toArray().join(',');handle.dataset.target=t.ref.kind;handle.setAttribute('aria-label',d.endOn?'Drag up or down to pull':'Drag arrow along geometry');handle.title=t.edge?'Drag edge radius / chamfer':t.sketch?'Drag to extrude profile':'Drag along face normal';
   if(session){dimensions.hidden=false;dimensions.style.left=Math.max(7,Math.min(d.rect.width-196,hx+22))+'px';dimensions.style.top=Math.max(12,Math.min(d.rect.height-100,hy-24))+'px';}
  }
  handle.addEventListener('pointerdown',e=>{if(api.isBusy())return;e.preventDefault();e.stopPropagation();const d=direction();if(!d)return;if(!session)begin(0);drag={id:e.pointerId,x:e.clientX,y:e.clientY,dx:d.dx,dy:d.dy,pixelsPerUnit:d.pixelsPerUnit,start:value};handle.setPointerCapture(e.pointerId);handle.classList.add('dragging');api.onNavigation(false);});
