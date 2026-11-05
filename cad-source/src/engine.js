@@ -7,7 +7,7 @@ import {WORLD_AXES,rotateFrame,concentricPlacement} from './transform-frames.js'
 import {alignmentDelta} from './snapping.js';
 import {solveSketch} from './constraints.js';
 import {normalizedCenter,resolveReference} from './topology.js';
-export const TYPES=['sketch','imprint','sketchOffset','sketchFillet','sketchMirror','box','cylinder','sphere','torus','extrude','hole','revolve','loft','sweep','union','subtract','intersect','fillet','chamfer','thread','shell','offsetFace','draft','move','rotate','scale','mirror','pattern','circularPattern','duplicate','align','split','import','plane','axis','delete'];
+export const TYPES=['sketch','faceSketch','sketchProfile','imprint','sketchOffset','sketchFillet','sketchMirror','box','cylinder','sphere','torus','extrude','hole','revolve','loft','sweep','union','subtract','intersect','fillet','chamfer','thread','shell','offsetFace','draft','move','rotate','scale','mirror','pattern','circularPattern','duplicate','align','split','import','plane','axis','delete'];
 const V=(v,d=0)=>v===undefined?d:Number(v);
 export function number(v,name,min=-2000,max=2000){const n=Number(v);if(!Number.isFinite(n)||n<min||n>max)throw Error(name+' must be between '+min+' and '+max);return n;}
 export function basis(p={}){
@@ -27,6 +27,7 @@ export function validateProject(doc){
  return doc;
 }
 export function profile(p){
+ if(p.serializedDrawing)return R.deserializeDrawing(p.serializedDrawing);
  const x=number(p.x??0,'Sketch X'),y=number(p.y??0,'Sketch Y');let d;
  if(p.shape==='annulus'){const outer=number(p.radius,'Outer radius',.01,1000),inner=number(p.innerRadius,'Inner radius',.001,999);if(inner>=outer)throw Error('Inner radius must be smaller than outer radius');d=R.drawCircle(outer).cut(R.drawCircle(inner));}
  else if(p.shape==='circle')d=R.drawCircle(number(p.radius,'Radius',.01,1000));
@@ -41,7 +42,7 @@ export function profile(p){
  if(p.operations!==undefined){if(!Array.isArray(p.operations)||p.operations.length>20)throw Error('Too many derived sketch operations');for(const op of p.operations){if(op.type==='offset')d=d.offset(number(op.distance,'Sketch offset',-500,500));else if(op.type==='fillet')d=d.fillet(number(op.radius,'Sketch fillet radius',.001,500));else if(op.type==='mirror')d=d.mirror(op.axis==='X'?[1,0]:[0,1],[0,0],'plane');else throw Error('Unsupported sketch operation');}}
  return d.translate([x,y]);
 }
-function sketch(p){const b=basis(p),result=profile(p).sketchOnPlane(new R.Plane(b.origin,b.x,b.normal));return typeof result.face!=='function'&&result.sketches?.length===1?result.sketches[0]:result;}
+function sketch(p){if(p.nativeSketch)return p.nativeSketch.clone?p.nativeSketch.clone():new R.CompoundSketch(p.nativeSketch.sketches.map(s=>s.clone()));const b=basis(p),result=profile(p).sketchOnPlane(new R.Plane(b.origin,b.x,b.normal));return typeof result.face!=='function'&&result.sketches?.length===1?result.sketches[0]:result;}
 function volume(s){const v=R.measureShapeVolumeProperties(s);const value=Math.abs(v.volume);v.delete();return value;}
 function length(s){const p=R.measureShapeLinearProperties(s);const v=p.length;p.delete();return v;}
 function area(s){const v=R.measureShapeSurfaceProperties(s);const value=Math.abs(v.area);v.delete();return value;}
@@ -65,7 +66,14 @@ export async function buildModel(doc,{base=null,preview=false}={}){
  try{
  for(const f of doc.features.slice(reuse?base.featureCount:0)){currentFeature=f;metrics.builtFeatures++;if(f.suppressed)continue;const p=f.params,ins=f.inputs;featureFrame=meta.get(ins[0])?.localFrame||WORLD_AXES;let s=null,kind='body';
   if(f.type==='sketch'){const b=basis(p),x=b.x,n=b.normal;featureFrame=[x,[n[1]*x[2]-n[2]*x[1],n[2]*x[0]-n[0]*x[2],n[0]*x[1]-n[1]*x[0]],n];profiles.set(f.id,p);const sk=sketch(p);s=own(p.closed===false||p.construction?sk.wire.clone():sk.face());sk.delete();save(f,s,'sketch');continue;}
-  if(['sketchOffset','sketchFillet','sketchMirror'].includes(f.type)){const original=profiles.get(ins[0]);if(!original)throw Error('Select a sketch first');const op=f.type==='sketchOffset'?{type:'offset',distance:number(p.distance,'Offset distance',-500,500)}:f.type==='sketchFillet'?{type:'fillet',radius:number(p.radius,'Corner radius',.001,500)}:{type:'mirror',axis:p.axis==='X'?'X':'Y'},recipe={...original,operations:[...(original.operations||[]),op]};profiles.set(f.id,recipe);const sk=sketch(recipe);s=own(recipe.closed===false||recipe.construction?sk.wire.clone():sk.face());sk.delete();save(f,s,'sketch');
+  if(f.type==='sketchProfile'){if(ins.length<2||ins.length>25)throw Error('Choose two or more closed sketches');const recipes=ins.map(id=>profiles.get(id));if(recipes.some(p=>!p||p.closed===false||p.construction||p.nativeSketch))throw Error('Profile needs closed planar sketch recipes');const first=basis(recipes[0]);if(recipes.some(p=>{const b=basis(p);return b.origin.some((v,i)=>Math.abs(v-first.origin[i])>1e-6)||b.x.some((v,i)=>Math.abs(v-first.x[i])>1e-6)||b.normal.some((v,i)=>Math.abs(v-first.normal[i])>1e-6);}))throw Error('Choose profiles on the same sketch plane');const operation=p.operation||'Join';if(!['Join','Cut','Intersect'].includes(operation))throw Error('Invalid profile operation');let drawing=profile(recipes[0]);for(const recipe of recipes.slice(1))drawing=operation==='Join'?drawing.fuse(profile(recipe)):operation==='Cut'?drawing.cut(profile(recipe)):drawing.intersect(profile(recipe));const recipe={shape:'profile',closed:true,basis:first,serializedDrawing:drawing.serialize()};profiles.set(f.id,recipe);const sk=sketch(recipe);try{save(f,sk.face(),'sketch');}finally{sk.delete();}if(!p.keepInputs)for(const id of ins)consume(id);continue;}
+  if(f.type==='faceSketch'){const source=body(ins[0]),selected=face(source,p);if(selected.geomType!=='PLANE')throw Error('Offset Sketch needs a planar face');const d=number(p.distance??0,'Sketch offset',-500,500),normal=own(selected.normalAt()).toTuple(),origin=own(selected.center).toTuple(),seed=Math.abs(normal[0])<.9?[1,0,0]:[0,1,0],dot=seed.reduce((sum,v,i)=>sum+v*normal[i],0),x=seed.map((v,i)=>v-dot*normal[i]),len=Math.hypot(...x);for(let i=0;i<3;i++)x[i]/=len;
+   const wires=selected.wires.map(own),outer=own(selected.outerWire()),loops=[];
+   const offsetLoop=(wire,delta)=>{if(Math.abs(delta)<1e-8)return new R.Sketch(wire.clone(),{defaultOrigin:origin,defaultDirection:normal});const base=own(R.makeFace(wire.clone())),area=R.measureArea(base);let candidate=null;for(const signed of [delta,-delta]){candidate=R.sketchFaceOffset(base.clone(),signed);const candidateFace=own(candidate.face()),nextArea=R.measureArea(candidateFace);if((nextArea-area)*delta>1e-8){const result=new R.Sketch(candidate.wire.clone(),{defaultOrigin:origin,defaultDirection:normal});candidate.delete();return result;}candidate.delete();}throw Error('Offset Sketch would collapse or invert a contour');};
+   loops.push(offsetLoop(outer,d));for(const wire of wires){if(wire.isSame(outer))continue;loops.push(offsetLoop(wire,-d));}
+   const native=own(loops.length===1?loops[0]:new R.CompoundSketch(loops)),recipe={shape:'faceOutline',closed:true,basis:{origin,x,normal},nativeSketch:native};profiles.set(f.id,recipe);featureFrame=[x,[normal[1]*x[2]-normal[2]*x[1],normal[2]*x[0]-normal[0]*x[2],normal[0]*x[1]-normal[1]*x[0]],normal];save(f,native.face(),'sketch');continue;
+  }
+  if(['sketchOffset','sketchFillet','sketchMirror'].includes(f.type)){const original=profiles.get(ins[0]);if(original?.nativeSketch)throw Error('Edit the Offset Sketch distance in History');if(!original)throw Error('Select a sketch first');const op=f.type==='sketchOffset'?{type:'offset',distance:number(p.distance,'Offset distance',-500,500)}:f.type==='sketchFillet'?{type:'fillet',radius:number(p.radius,'Corner radius',.001,500)}:{type:'mirror',axis:p.axis==='X'?'X':'Y'},recipe={...original,operations:[...(original.operations||[]),op]};profiles.set(f.id,recipe);const sk=sketch(recipe);s=own(recipe.closed===false||recipe.construction?sk.wire.clone():sk.face());sk.delete();save(f,s,'sketch');
  if(f.type==='sketchOffset'&&original.shape==='circle'&&!original.operations?.length&&!original.construction&&Math.abs(p.distance)>.001){
   const r0=original.radius,r1=r0+Number(p.distance),inner=Math.min(r0,r1),outer=Math.max(r0,r1);
   if(inner>.001){
@@ -94,6 +102,14 @@ export async function buildModel(doc,{base=null,preview=false}={}){
    const span=target.boundingBox.bounds,reach=Math.hypot(...span[0].map((v,i)=>span[1][i]-v))+Math.hypot(...origin.map((v,i)=>v-(span[0][i]+span[1][i])/2))+2;
    const through=p.extent!=='Blind',depth=through?reach*2:number(p.depth??10,'Hole depth',.01,2000),start=origin.map((v,i)=>v+normal[i]*(through?reach:.02)),tool=own(R.makeCylinder(radius,depth+(through?0:.02),start,normal.map(v=>-v)));
    s=target.cut(tool);if(Math.abs(volume(s)-volume(target))<1e-6)throw Error('The hole does not intersect the target body. Check centre, depth or reverse direction.');
+  }
+  else if(f.type==='extrude'&&p.profileIds!==undefined){
+   const ids=p.profileIds,mode=p.operation||'New body',distance=number(p.distance,'Distance');if(!Array.isArray(ids)||!ids.length||ids.length>25||new Set(ids).size!==ids.length||ids.some(id=>!ins.includes(id))||Math.abs(distance)<.001)throw Error('Choose up to 25 distinct closed profiles and a non-zero distance');
+   if(!['New body','Add','Subtract','Intersect'].includes(mode))throw Error('Invalid extrude operation');const extrusions=[];
+   for(const id of ids){const recipe=profiles.get(id);if(!recipe||recipe.closed===false||recipe.construction)throw Error('Extrude needs closed non-construction profiles');const sk=sketch(recipe);let solid;try{solid=own(sk.extrude(distance));}finally{sk.delete();}extrusions.push(own(solid.simplify()));}
+   if(mode==='New body'){for(const [i,solid]of extrusions.entries()){featureFrame=meta.get(ids[i])?.localFrame||WORLD_AXES;save(f,solid,'body',f.id+':'+i,(f.name||'Extrude')+' · '+(i+1));}}
+   else{if(!p.target||!ins.includes(p.target)||ids.includes(p.target))throw Error('Choose a target body');const target=body(p.target),tool=own(extrusions.length===1?extrusions[0].clone():R.makeCompound(extrusions));const result=mode==='Add'?target.fuse(tool):mode==='Subtract'?target.cut(tool):target.intersect(tool);featureFrame=meta.get(p.target)?.localFrame||WORLD_AXES;save(f,result);if(!p.keepInputs)consume(p.target);}
+   if(!p.keepInputs)for(const id of ids)consume(id);continue;
   }
   else if(f.type==='extrude'||f.type==='revolve'||f.type==='sweep'||f.type==='loft'){
    const a=profiles.get(ins[0]);if(!a&&!(f.type==='extrude'&&shapes.has(ins[0])&&p.face!==undefined))throw Error('Select a sketch profile');

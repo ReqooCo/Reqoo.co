@@ -1,5 +1,5 @@
 // Apply the supplied tablet-CAD layout to the existing, functional controls.
-export function createWorkspaceChrome({stage,icon,getState,onQuickSketch,onExitSketch,onSelectionTools,onMoreTools,getGridLabel,onGridSettings}){
+export function createWorkspaceChrome({stage,icon,getState,onQuickSketch,onSketchEdit,onExitSketch,onSelectionTools,onMoreTools,getGridLabel,onGridSettings}){
  const $=id=>document.getElementById(id);document.body.classList.add('cadWorkspace');
  const capsule=document.createElement('div');capsule.id='projectCapsule';$('projectName').before(capsule);capsule.append($('projectName'),$('saveState'));
  const dock=document.createElement('div');dock.id='undoDock';dock.setAttribute('aria-label','History navigation');dock.append($('undo'),$('redo'));stage.append(dock);
@@ -11,14 +11,16 @@ export function createWorkspaceChrome({stage,icon,getState,onQuickSketch,onExitS
  const sketchTools=document.createElement('nav');sketchTools.id='quickSketchTools';sketchTools.setAttribute('aria-label','Quick sketch tools');
  const exit=document.createElement('button');exit.id='exitSketch';exit.setAttribute('aria-label','Exit sketch');exit.type='button';exit.dataset.control='chrome';exit.innerHTML=icon('close')+'<span>Exit sketch</span>';exit.onclick=onExitSketch;rail.append(exit);
  for(const [shape,label]of [['polyline','Line'],['arc','Arc'],['spline','Spline'],['rectangle','Rectangle'],['circle','Circle'],['ellipse','Ellipse'],['polygon','Polygon']]){const b=document.createElement('button');b.type='button';b.dataset.control='chrome';b.dataset.quickSketch=shape;b.setAttribute('aria-label','Draw '+label.toLowerCase());b.innerHTML=icon(shape)+'<span>'+label+'</span>';b.onclick=()=>onQuickSketch(shape);sketchTools.append(b);}stage.append(sketchTools);
+ const edits=[];for(const [action,label,glyph]of [['offset','Offset','sketchOffset'],['profile','Profile','union'],['trim','Trim region','subtract']]){const b=document.createElement('button');b.type='button';b.dataset.control='chrome';b.dataset.sketchEdit=action;b.setAttribute('aria-label',label+' in sketch');b.innerHTML=icon(glyph)+'<span>'+label+'</span>';b.onclick=()=>onSketchEdit(action);edits.push(b);}sketchTools.querySelector('[data-quick-sketch=circle]').after(...edits);
  const coach=document.createElement('output');coach.id='toolCoach';coach.hidden=true;coach.setAttribute('aria-live','polite');const coachTitle=document.createElement('strong'),coachText=document.createElement('span');coach.append(coachTitle,coachText);stage.append(coach);
  function update(){const state=getState(),sketchContext=state.workspaceMode==='sketch'&&state.selectedKind==='sketch'&&!state.drawing&&!$('context').hidden,contextual=!$('context').hidden&&(state.workspaceMode!=='sketch'||sketchContext),transforming=!!state.moveMode||state.aligning||state.rotating;
   stage.dataset.contextual=String(contextual);stage.dataset.sketchContext=String(sketchContext);exit.hidden=state.workspaceMode!=='sketch';stage.dataset.transforming=String(transforming);stage.dataset.drawing=String(state.drawing);if(!contextual)stage.dataset.moreTools='false';
   sketchTools.hidden=state.workspaceMode!=='sketch'||sketchContext||!$('menu').hidden||!$('toolPanel').hidden;
   const text=state.rotating?'Rotate · Drag a ring or enter degrees':state.moveMode?(state.moveMode==='scale'?'Scale · Drag an arrow or enter a factor':state.moveMode==='pattern'?'Pattern · Choose a direction, spacing and count':'Move · Drag an arrow or enter a distance'):state.aligning?'Align · Moving geometry → fixed target → preview':state.directMode?(state.directMode==='diameter'?'Diameter · Drag the arrow or enter an exact size':state.directMode==='offsetFace'?'Offset face · Pull along the face normal':'Edge / face tool · Drag the arrow or enter a value'):'';
-  coach.hidden=!text||state.drawing||!$('toolPanel').hidden;const [title,...description]=text.split(' · ');if(coachTitle.textContent!==title)coachTitle.textContent=title;if(coachText.textContent!==description.join(' · '))coachText.textContent=description.join(' · ');
+  coach.hidden=true;const [title,...description]=text.split(' · ');if(coachTitle.textContent!==title)coachTitle.textContent=title;if(coachText.textContent!==description.join(' · '))coachText.textContent=description.join(' · ');
   for(const b of $('context').querySelectorAll('[data-context-tool]'))b.setAttribute('aria-pressed',String(state.directMode===b.dataset.contextTool));
   for(const b of sketchTools.querySelectorAll('[data-quick-sketch]'))b.setAttribute('aria-pressed',String(state.shape===b.dataset.quickSketch&&state.drawing));
+  for(const b of sketchTools.querySelectorAll('[data-sketch-edit]'))b.setAttribute('aria-pressed',String(state.sketchEdit===b.dataset.sketchEdit));
   const gridText=getGridLabel();if(readout.textContent!==gridText)readout.textContent=gridText;
  }
  return{update};

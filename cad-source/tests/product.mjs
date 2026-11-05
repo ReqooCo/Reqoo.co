@@ -41,11 +41,11 @@ try{
  await page.locator('#settingsToggle').click();await page.locator('#cadUnits').selectOption('mm');await page.locator('#settingsToggle').click();
  await fresh();source=await op('sketch',{shape:'circle',radius:10,plane:'XY'});offset=await op('sketchOffset',{distance:2,keepInputs:false},[source]);
  await page.locator('#modeSolid').click();await page.evaluate(()=>window.__cad.view('top'));await page.locator('#fit').click();
- let point=await projection(0,0,0);await page.touchscreen.tap(point.x,point.y);
+ await page.evaluate(()=>window.__cad.select([]));let point=await projection(0,0,0);await page.touchscreen.tap(point.x,point.y);
  assert.equal(await page.evaluate(()=>window.__cad.selection.at(-1).id),offset+':core');
  point=await projection(11,0,0);await page.touchscreen.tap(point.x,point.y);
  assert.equal(await page.evaluate(()=>window.__cad.selection.at(-1).id),offset+':band');
- assert.equal(await page.evaluate(()=>window.__cad.selection.length),1);
+ assert.equal(await page.evaluate(()=>window.__cad.selection.length),2);const corePoint=await projection(0,0,0);await page.touchscreen.tap(corePoint.x,corePoint.y);assert.equal(await page.evaluate(()=>window.__cad.selection.length),1);assert.equal(await page.evaluate(()=>window.__cad.selection[0].id),offset+':band');
  await page.screenshot({path:path.join(out,'product-ring-region-dark.png')});
  await page.locator('#context').getByRole('button',{name:'Extrude',exact:true}).click();await page.locator('#faceDistanceValue').fill('5');await page.locator('#faceDistanceValue').dispatchEvent('input');await page.waitForFunction(()=>!window.__cad.direct.state.inFlight&&!window.__cad.direct.state.pending);await preview();
  near(await page.evaluate(()=>window.__cad.previewItems.find(i=>i.kind==='body').volume),220*Math.PI,.03);
@@ -60,7 +60,7 @@ try{
  // Geometry-attached annotation editing and orientation controls.
  await fresh();source=await op('sketch',{shape:'rectangle',width:30,height:20,plane:'XY'});
  await page.evaluate(()=>window.__cad.view('top'));await page.locator('#fit').click();
- point=await projection(0,0,0);await page.touchscreen.tap(point.x,point.y);
+ await page.evaluate(()=>window.__cad.select([]));point=await projection(0,0,0);await page.touchscreen.tap(point.x,point.y);
  assert.equal(await page.locator('#sketchDimensionLines .dimensionMeasure').count(),2);
  const beforePath=await page.locator('[data-measure=width]').getAttribute('d');
  await page.evaluate(()=>window.__cad.view('iso'));await page.waitForFunction(old=>document.querySelector('[data-measure=width]')?.getAttribute('d')!==old,beforePath);
@@ -135,7 +135,9 @@ try{
  await page.touchscreen.tap(tapPoint.x,tapPoint.y);
  assert.equal(await page.evaluate(()=>window.__cad.selection.at(-1)?.kind),'face');
  assert.equal(await page.evaluate(()=>window.__cad.selection.at(-1)?.index),sides[0].index);
- await page.touchscreen.tap(tapPoint.x,tapPoint.y);
+ // Test a separate double-tap gesture without inspection round trips between taps.
+ await page.waitForTimeout(400);await page.evaluate(()=>window.__cad.select([]));
+ await page.touchscreen.tap(tapPoint.x,tapPoint.y);await page.touchscreen.tap(tapPoint.x,tapPoint.y);
  assert.deepEqual(await page.evaluate(()=>window.__cad.selection.map(s=>({id:s.id,kind:s.kind}))),[{id:cylinder.id,kind:'body'}]);
  assert.equal(await page.locator('#faceDistance').isVisible(),false);
  await page.waitForTimeout(400);await page.evaluate(()=>window.__cad.select([]));
