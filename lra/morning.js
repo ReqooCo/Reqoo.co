@@ -145,7 +145,7 @@ function reportText(format){
    '_i) Intake C to WTP           : '+mld('rwAbst')+'_',
    '_ii) SJAM C to SS Intake  : '+mld('sjamCActual')+'_',
    '_Total : '+outflow+'_','',
-   '*Total volume pumped to Pond C : '+inflow+' - '+outflow+' = '+valueOr(r.net,3,'ML/day')+'*','',
+   '*Total volume pumped to Pond C : '+inflow+' - '+outflow+' = '+valueOr(r.net,3,'ML')+'*','',
    'Critical WL : '+critLevel+'('+critPct+')',
    '_i) Outflow to WTP : '+hours('intakeCHourly')+' ('+valueOr(r.forecastWtp,3,'Mld')+')_',
    '_ii) Outflow SJAM C to SS Intake : '+hours('sjamCHourly')+' ('+valueOr(r.forecastSjam,0,'Mld')+')_',
