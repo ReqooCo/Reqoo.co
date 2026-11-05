@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {createDisplayCache} from '../src/display-cache.js';
+const cache=createDisplayCache();let disposed=0;
+const resource=()=>({dispose(){disposed++;}}),mesh={cacheKey:'one'},edge={cacheKey:'edge-one'};
+const face=cache.face(mesh,'plain',resource);assert.equal(face,cache.face({cacheKey:'one'},'plain',resource));assert.equal(face.userData.cadShared,true);
+cache.face(mesh,'rotated-uv',resource);assert.equal(disposed,1);
+assert.equal(cache.edge(edge,resource),cache.edge({cacheKey:'edge-one'},resource));
+for(let i=0;i<5;i++)cache.material(mesh,String(i),()=>[resource(),resource()]);assert.equal(cache.stats.materials,4);assert.equal(disposed,3);
+const line=cache.line('blue',resource);assert.equal(line,cache.line('blue',resource));cache.prune([{mesh:{cacheKey:'one'},edges:[{cacheKey:'edge-one'}]}]);assert.equal(cache.stats.faces,1);
+cache.prune([]);assert.equal(disposed,13);assert.equal(cache.stats.faces,0);assert.equal(cache.stats.edges,0);assert.equal(cache.stats.materials,0);assert.equal(cache.stats.lineMaterials,1);
+cache.clear();assert.equal(disposed,14);assert.equal(cache.stats.lineMaterials,0);cache.clear();assert.equal(disposed,14);
+console.log('DISPLAY CACHE PASS: clone identities, UV replacement, bounded materials, visible-owner pruning, shared-line lifetime and idempotent disposal');
