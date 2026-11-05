@@ -41,11 +41,11 @@ try{
  await page.locator('#settingsToggle').click();await page.locator('#cadUnits').selectOption('mm');await page.locator('#settingsToggle').click();
  await fresh();source=await op('sketch',{shape:'circle',radius:10,plane:'XY'});offset=await op('sketchOffset',{distance:2,keepInputs:false},[source]);
  await page.locator('#modeSolid').click();await page.evaluate(()=>window.__cad.view('top'));await page.locator('#fit').click();
- let point=await projection(0,0,0);await page.touchscreen.tap(point.x,point.y);
+ await page.evaluate(()=>window.__cad.select([]));let point=await projection(0,0,0);await page.touchscreen.tap(point.x,point.y);
  assert.equal(await page.evaluate(()=>window.__cad.selection.at(-1).id),offset+':core');
  point=await projection(11,0,0);await page.touchscreen.tap(point.x,point.y);
  assert.equal(await page.evaluate(()=>window.__cad.selection.at(-1).id),offset+':band');
- assert.equal(await page.evaluate(()=>window.__cad.selection.length),1);
+ assert.equal(await page.evaluate(()=>window.__cad.selection.length),2);const corePoint=await projection(0,0,0);await page.touchscreen.tap(corePoint.x,corePoint.y);assert.equal(await page.evaluate(()=>window.__cad.selection.length),1);assert.equal(await page.evaluate(()=>window.__cad.selection[0].id),offset+':band');
  await page.screenshot({path:path.join(out,'product-ring-region-dark.png')});
  await page.locator('#context').getByRole('button',{name:'Extrude',exact:true}).click();await page.locator('#faceDistanceValue').fill('5');await page.locator('#faceDistanceValue').dispatchEvent('input');await page.waitForFunction(()=>!window.__cad.direct.state.inFlight&&!window.__cad.direct.state.pending);await preview();
  near(await page.evaluate(()=>window.__cad.previewItems.find(i=>i.kind==='body').volume),220*Math.PI,.03);
