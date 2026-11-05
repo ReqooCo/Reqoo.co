@@ -1,3 +1,4 @@
+import {mountChatBridge} from './chat-bridge.js';
 import {dragRecipe,startChoices,defaultStart} from './sketch-drag.js';
 import {createRotationGizmo} from './rotation-gizmo.js';
 import {createSketchPlanePicker} from './sketch-planes.js';
@@ -566,6 +567,7 @@ displayMenu.onkeydown=e=>{e.stopPropagation();if(e.key==='Escape'){closeDisplay(
 document.addEventListener('pointerdown',e=>{if(!e.target.closest('#displayModeButton,#displayPopover'))closeDisplay();});
 syncDisplay();
 
+const chatBridge=mountChatBridge({getDocument:()=>doc,getItems:()=>items,canRun:()=>ready&&!busy&&!sketchMode&&!planePicker.active&&!moveGizmo.active&&!rotationGizmo.active&&!alignGizmo.active&&!direct.state.preview&&$('toolPanel').hidden&&$('menu').hidden&&!document.querySelector('dialog[open]:not(#chatBridge)'),commit:async(next,id)=>{await rebuild(next,{selectId:id});setWorkspaceMode('solid');fit();},onError:error});
 workspaceChrome=createWorkspaceChrome({stage:$('stage'),icon:ico,getState:()=>({workspaceMode,drawing:!!sketchMode,shape:sketchMode?.params.shape,selectedKind:selection.at(-1)?.kind,rotating:rotationGizmo?.active,moveMode:moveGizmo?.state?.mode,aligning:alignGizmo?.active,directMode:direct.state.preview?direct.state.operation:null}),getGridLabel:()=>Number((gridStep/unitFactorValue()).toFixed(Math.max(3,preferences.precision)))+'\n'+preferences.units,onGridSettings:()=>showSidebar('settings'),onQuickSketch:quickSketch,onExitSketch:async()=>{if(sketchMode?.createdId||sketchMode?.points.length>=2)await $('finishSketch').onclick();else endDrawing();if(!sketchMode)setWorkspaceMode('solid');},onSelectionTools:()=>{$('stage').dataset.moreTools='false';}});
 updatePreferences();setWorkspaceMode('solid');decorateButtons();new MutationObserver(decorateButtons).observe(document.body,{childList:true,subtree:true});
 try{await rpc('ready');ready=true;const saved=localStorage.getItem('reqoo-cad-v1');if(saved){try{const parsed=JSON.parse(saved);validateProject(parsed);await rebuild(parsed,{history:false});await ensureSketchRegions();fit();}catch{status('Saved project could not be restored. Open your downloaded backup.');}}status('Ready · create a sketch or add a solid');updateHistoryButtons();}catch(e){error(e);}

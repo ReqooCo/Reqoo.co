@@ -1,3 +1,4 @@
+import {handleCadBridge} from './workers/cad-bridge.js';
 const API_ORIGIN='https://api.reqoo.co';
 const BOTANICAL='<link rel="stylesheet" href="/assets/botanical-atelier-v1.css?v=3">';
 
@@ -144,6 +145,7 @@ function pkskAssetPath(pathname){
 export default{
   async fetch(request,env,ctx){
     const url=new URL(request.url),host=url.hostname.toLowerCase();
+    if(host==='reqoo.co'&&(url.pathname.startsWith('/cad/bridge/')||url.pathname==='/cad/mcp'))return handleCadBridge(request,env);
     if(url.pathname==='/api'||url.pathname.startsWith('/api/'))return proxyApi(request,url);
     if(['reqoo.co','shop.reqoo.co'].includes(host)){
       const routes={'/agents':'/api/commerce/guide','/.well-known/reqoo-commerce.json':'/api/commerce/discovery','/commerce-sitemap.xml':'/api/commerce/sitemap.xml','/products':'/api/commerce/pages'};

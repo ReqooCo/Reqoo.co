@@ -2,9 +2,9 @@ name: CAD PR validation
 on:
   push:
     branches: [main]
-    paths: ['cad-source/**', '.github/workflows/cad-pr-validation.yml']
+    paths: ['cad-source/**', 'workers/cad-bridge.js', '_web_worker.js', 'wrangler-web.toml', 'migrations/*cad_bridge*', '.github/workflows/cad-pr-validation.yml']
   pull_request:
-    paths: ['cad-source/**', '.github/workflows/cad-pr-validation.yml']
+    paths: ['cad-source/**', 'workers/cad-bridge.js', '_web_worker.js', 'wrangler-web.toml', 'migrations/*cad_bridge*', '.github/workflows/cad-pr-validation.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -31,6 +31,7 @@ jobs:
       - name: Validate constraints
         working-directory: cad-source
         run: |
+          node tests/bridge-api.mjs
           node tests/runtime-route.mjs
           node tests/constraints.mjs
           node tests/transform-snapping.mjs
@@ -40,6 +41,7 @@ jobs:
       - name: Browser integration tests
         working-directory: cad-source
         run: |
+          node tests/bridge-ui.mjs
           node tests/motion-continuity-ui.mjs
           node tests/sketch-regions-ui.mjs
           node tests/direct-sketch-ui.mjs
