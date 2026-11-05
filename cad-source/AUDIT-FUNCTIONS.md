@@ -8,6 +8,7 @@ Baseline: main 387234ae. This is an evidence ledger, not a claim of full profess
 - Avoid shader invalidation when the clipping-plane count has not changed.
 - Append-only committed operations reuse the unchanged native feature prefix. Transfer native ownership only after successful construction; previews retain separate ownership. Upstream changes still rebuild the full history.
 - History edits of selected-edge chamfer/fillet preserve the original edge list and do not silently default to all edges when nothing is currently selected.
+- Let users choose a face-outline offset before committing; a 1 mm face can use a valid -0.1 mm offset instead of failing on a hardcoded -2 mm.
 - Remove obsolete instructions to enable a multi-select switch.
 
 ## Functional coverage ledger
@@ -50,7 +51,7 @@ Native regression verifies one appended feature rebuilds only that feature, reta
 
 ## Remaining priorities, not completed fixes
 
-1. Offset Sketch currently applies a fixed -2 mm before editing; tiny faces can fail before users can choose a valid distance. Open an editable preview before committing.
+1. Offset Sketch now accepts a distance before committing; add a dedicated direct-drag preview as a later UX improvement.
 2. Context actions follow the last selected entity in several paths. Resolve capabilities against the complete selection and explain incompatible mixed selections.
 3. Coplanar profile combination needs broader in-plane basis conversion, not merely compatible frame checking.
 4. Stop unnecessary idle rendering and repeated DOM projection after explicit invalidation has been tested. The current animation loop remains continuous.
