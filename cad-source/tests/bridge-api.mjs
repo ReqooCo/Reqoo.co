@@ -12,6 +12,7 @@ try{
  const command={id:'test_one',title:'Make a plate',expectedRevision:revision,features:[{id:'plate',type:'box',params:{width:100,depth:60,height:5},inputs:[]}]};
  r=await call('/cad/bridge/commands','POST',pair.code,command);assert.equal(r.status,202);assert.equal(r.data.status,'queued');assert.equal((await call('/cad/bridge/commands','POST',pair.code,command)).data.commandId,command.id);assert.equal((await call('/cad/bridge/commands','POST',pair.code,{...command,title:'different'})).status,409);
  r=await call('/cad/bridge/poll','GET',pair.consumer);assert.deepEqual(r.data.command,command);assert.equal((await call('/cad/bridge/commands','POST',pair.code,{...command,id:'stale',expectedRevision:'0'.repeat(64)})).status,409);
+ assert.throws(()=>validateBridgeCommand({...command,id:'__proto__'}),/Command needs/);assert.throws(()=>validateBridgeCommand({...command,id:'constructor'}),/Command needs/);
  const next=await applyBridgeCommand(doc,command);assert.equal(next.features.length,1);assert.equal(doc.features.length,0);await assert.rejects(()=>applyBridgeCommand(next,command),/changed/);
  assert.throws(()=>validateBridgeCommand({...command,features:[{...command.features[0],type:'import'}]}),/Invalid/);assert.throws(()=>validateBridgeCommand({...command,features:[{...command.features[0],params:JSON.parse('{"__proto__":{"polluted":true}}')}]}),/Unsupported/);
  assert.equal((await call('/cad/bridge/commands','POST',pair.code,{...command,id:'bad_type',features:[{...command.features[0],type:'import'}]})).status,400);
