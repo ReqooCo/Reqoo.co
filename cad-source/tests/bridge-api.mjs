@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import worker from '../../_web_worker.js';
 import {handleCadBridge,hashToken} from '../../workers/cad-bridge.js';
 import {bridgeDB} from './bridge-db.mjs';
-import {bridgeRevision,applyBridgeCommand,validateBridgeCommand} from '../src/bridge-protocol.js';
+import {bridgeRevision,bridgeSummary,applyBridgeCommand,validateBridgeCommand} from '../src/bridge-protocol.js';
 const db=bridgeDB(),env={CAD_DB:db},url='https://reqoo.co',headers={'Content-Type':'application/json'},request=(path,method='GET',key,payload,extra={})=>new Request(url+path,{method,headers:{...headers,...(key?{Authorization:'Bearer '+key}:{}),...extra},body:payload===undefined?undefined:JSON.stringify(payload)}),call=async(...a)=>{const r=await worker.fetch(request(...a),env,{});return{status:r.status,data:await r.json()};};
 try{
  let r=await call('/cad/bridge/session','POST',null,{});assert.equal(r.status,201);const pair=r.data;assert.equal(pair.code.replaceAll('-','').length,20);assert.notEqual(pair.consumer,pair.code);const row=await db.prepare('SELECT * FROM cad_bridge_sessions WHERE id=?').bind(pair.id).first();assert.equal(row.producer_hash,await hashToken(pair.code.replaceAll('-','').toLowerCase()));assert.ok(!JSON.stringify(row).includes(pair.consumer));
@@ -13,6 +13,7 @@ try{
  r=await call('/cad/bridge/commands','POST',pair.code,command);assert.equal(r.status,202);assert.equal(r.data.status,'queued');assert.equal((await call('/cad/bridge/commands','POST',pair.code,command)).data.commandId,command.id);assert.equal((await call('/cad/bridge/commands','POST',pair.code,{...command,title:'different'})).status,409);
  r=await call('/cad/bridge/poll','GET',pair.consumer);assert.deepEqual(r.data.command,command);assert.equal((await call('/cad/bridge/commands','POST',pair.code,{...command,id:'stale',expectedRevision:'0'.repeat(64)})).status,409);
  assert.throws(()=>validateBridgeCommand({...command,id:'__proto__'}),/Command needs/);assert.throws(()=>validateBridgeCommand({...command,id:'constructor'}),/Command needs/);
+ const huge=bridgeSummary({features:Array.from({length:150},(_,i)=>({id:'f'+i+'a'.repeat(75),type:'box',name:'界'.repeat(80),params:{label:'界'.repeat(2000)},inputs:Array(32).fill('a'.repeat(80))}))},[]);assert.equal(huge.truncated,true);assert.ok(new TextEncoder().encode(JSON.stringify(huge)).byteLength<48000);assert.throws(()=>validateBridgeCommand({...command,features:[{...command.features[0],params:{labels:Array(20).fill('界'.repeat(1000))}}]}),/48 KB/);
  const next=await applyBridgeCommand(doc,command);assert.equal(next.features.length,1);assert.equal(doc.features.length,0);await assert.rejects(()=>applyBridgeCommand(next,command),/changed/);
  assert.throws(()=>validateBridgeCommand({...command,features:[{...command.features[0],type:'import'}]}),/Invalid/);assert.throws(()=>validateBridgeCommand({...command,features:[{...command.features[0],params:JSON.parse('{"__proto__":{"polluted":true}}')}]}),/Unsupported/);
  assert.equal((await call('/cad/bridge/commands','POST',pair.code,{...command,id:'bad_type',features:[{...command.features[0],type:'import'}]})).status,400);
