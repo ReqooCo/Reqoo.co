@@ -1,3 +1,4 @@
+import {validateVisualization} from './visualization-state.js';
 import {resolveDimensionDocument} from './smart-dimensions.js';
 import {imprintPlanarRegions} from './planar-regions.js';
 import * as R from 'replicad';
@@ -15,6 +16,7 @@ export function basis(p={}){
  return plane==='XZ'?{origin:[0,-o,0],x:[1,0,0],normal:[0,-1,0]}:plane==='YZ'?{origin:[o,0,0],x:[0,1,0],normal:[1,0,0]}:{origin:[0,0,o],x:[1,0,0],normal:[0,0,1]};
 }
 export function validateProject(doc){
+ validateVisualization(doc?.ui?.visualization);
  if(!doc||doc.format!=='reqoo-cad'||doc.version!==1||!Array.isArray(doc.features)||doc.features.length>150)throw Error('Not a supported Reqoo CAD project');
  if(doc.title!==undefined&&(typeof doc.title!=='string'||doc.title.length>80))throw Error('Invalid project title');
  if(doc.ui!==undefined){if(!doc.ui||typeof doc.ui!=='object'||Array.isArray(doc.ui))throw Error('Invalid appearance');if(doc.ui.hidden!==undefined&&(!Array.isArray(doc.ui.hidden)||doc.ui.hidden.some(id=>typeof id!=='string')))throw Error('Invalid hidden items');if(doc.ui.colors!==undefined&&(!doc.ui.colors||typeof doc.ui.colors!=='object'||Array.isArray(doc.ui.colors)||Object.values(doc.ui.colors).some(c=>typeof c!=='string'||!/^#[a-fA-F0-9]{6}$/.test(c))))throw Error('Invalid colours');}

@@ -42,6 +42,7 @@ jobs:
       - name: Test the deployed CAD application
         working-directory: cad-source
         run: |
+          node tests/visualization-ui.mjs
           node tests/smart-dimensions-ui.mjs
           node tests/bridge-ui.mjs
           node tests/motion-continuity-ui.mjs
