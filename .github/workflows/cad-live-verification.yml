@@ -50,7 +50,9 @@ jobs:
           node tests/r3ds-ux-ui.mjs
           node tests/visualization-ui.mjs
           node tests/smart-dimensions-ui.mjs
-          node tests/bridge-ui.mjs
+          # Bridge UI exercises a local mocked MCP backend; the static Draft Worker has no /cad/mcp endpoint.
+          # Keep this test, but force its own local server instead of the externally deployed CAD_TEST_URL.
+          env -u CAD_TEST_URL node tests/bridge-ui.mjs
           node tests/motion-continuity-ui.mjs
           node tests/sketch-regions-ui.mjs
           node tests/direct-sketch-ui.mjs
