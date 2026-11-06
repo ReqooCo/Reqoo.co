@@ -52,6 +52,15 @@ try{
  await page.evaluate(async()=>{
   await window.__cad.rebuild({format:'reqoo-cad',version:1,title:'REDS UX Test',features:[],ui:{hidden:[],colors:{}}});
  });
+ const emptyOverlap=await page.evaluate(()=>{
+  const stage=document.querySelector('#stage').getBoundingClientRect();
+  const button=document.querySelector('#empty>button').getBoundingClientRect();
+  const world=window.__cad.worldReference.group.position.clone().project(window.__cad.camera);
+  const x=stage.left+(world.x+1)*stage.width/2,y=stage.top+(1-world.y)*stage.height/2;
+  const nearestX=Math.max(button.left,Math.min(x,button.right)),nearestY=Math.max(button.top,Math.min(y,button.bottom));
+  return Math.hypot(nearestX-x,nearestY-y);
+ });
+ assert.ok(emptyOverlap>=55,'New Sketch CTA must not crowd the world origin');
  assert.equal(await page.locator('#rail').isVisible(),true);
  assert.equal(await page.locator('.utilityLabel').first().evaluate(el=>getComputedStyle(el).display),'none');
  assert.ok((await rect(page.locator('#rail'))).width<=60,'rail must remain icon-sized');
