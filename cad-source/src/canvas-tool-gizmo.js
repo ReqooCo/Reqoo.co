@@ -14,11 +14,11 @@ export function createCanvasToolGizmo(api){
  const keyFor=el=>el.name||el.id.replace(/^p-/,'')||el.getAttribute('aria-label')||el.dataset.smart||'value';
  function labelFor(el){const label=el.labels?.[0]||el.closest('label');return el.getAttribute('aria-label')||(label?Array.from(label.childNodes).filter(n=>n.nodeType===3).map(n=>n.textContent).join(' ').trim():'')||keyFor(el);}
  function available(f){return !f.control?.disabled&&!f.control?.closest('[hidden]');}
- function context(){return state?.source.context?.()||{};}
+ function context(){try{return state?.source.context?.()||{};}catch{return{};}}
  function geometry(f){return parameterGeometry(state.source.type,f.key,state.params||{},context());}
  function notifyControl(control,event='input'){control.dispatchEvent(new Event(event,{bubbles:true}));if(event==='input')control.dispatchEvent(new Event('change',{bubbles:true}));}
  function scan(){
-  const s=state;badges.replaceChildren();choices.replaceChildren();commands.replaceChildren();s.fields=[];s.choiceControls=[];s.commandControls=[];
+  const s=state;badges.replaceChildren();choices.replaceChildren();commands.replaceChildren();s.fields=[];s.choiceControls=[];s.commandControls=[];s.source.status=s.source.host.querySelector('[data-solve-status]')||s.source.status;
   const metadata=new Map((s.source.fields||[]).map(f=>[f.name,f]));
   function register(control,key,label,factor=1,virtual=null){const f={control,key,label:label.replace(/\s+/g,' ').trim(),factor,...virtual};f.get=f.get||(()=>Number(control.value));f.set=f.set||(value=>{control.value=String(value);notifyControl(control);});
    f.badge=document.createElement('button');f.badge.type='button';f.badge.dataset.gizmoField=key;f.badge.setAttribute('aria-label','Edit '+f.label+' on model');f.badge.onclick=()=>activate(key);badges.append(f.badge);s.fields.push(f);
