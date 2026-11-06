@@ -40,6 +40,8 @@ jobs:
           node tests/native-cache.mjs
           node tests/project-io.mjs
           node tests/sketch-stroke.mjs
+          node tests/sketch-edit-geometry.mjs
+          node tests/sketch-native-parity.mjs
           node tests/parameter-geometry.mjs
           node tests/multi-profile.mjs
           node tests/visualization.mjs
@@ -60,6 +62,7 @@ jobs:
             core)
               run_test tests/display-performance-ui.mjs
               run_test tests/active-sketch-edit-ui.mjs
+              run_test tests/reds-sketch-parity-ui.mjs
               run_test tests/multi-profile-ui.mjs
               run_test tests/r3ds-ux-ui.mjs
               run_test tests/visualization-ui.mjs
