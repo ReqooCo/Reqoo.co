@@ -242,3 +242,31 @@ body.cadWorkspace #stage:not([data-workspace=sketch]) #empty{
  body.cadWorkspace #operationGizmo .operationActions{bottom:74px;max-height:32vh;}
  body.cadWorkspace #operationGizmo [data-badges]{bottom:26px;}
 }
+
+/* Sketch-first parity: direct Trim has a minimal instruction chip, not an extra modal panel. */
+body.cadWorkspace #sketchTrimHUD{
+ position:absolute;left:50%;bottom:70px;transform:translateX(-50%);
+ z-index:63;display:flex;align-items:center;gap:12px;
+ max-width:calc(100vw - 140px);padding:8px 10px;
+ background:var(--panel);color:var(--text);
+ border:1px solid var(--border);border-radius:11px;
+ box-shadow:0 8px 25px #0003;pointer-events:auto;
+ font-size:12px;white-space:nowrap;
+}
+body.cadWorkspace #sketchTrimHUD[hidden]{display:none!important;}
+body.cadWorkspace #sketchTrimHUD strong{font-size:13px;}
+body.cadWorkspace #sketchTrimHUD span{color:var(--muted,#a9b1bb);}
+body.cadWorkspace #sketchTrimHUD button{padding:6px 10px;min-height:32px;}
+body.cadWorkspace #stage:has(#sketchTrimHUD:not([hidden])) #selectionBar{display:none!important;}
+body.cadWorkspace #sketchEditHUD [data-offset-type] select{min-width:78px;max-width:100px;}
+body.cadWorkspace #quickSketchTools{scrollbar-width:thin;}
+@media(max-width:760px){
+ body.cadWorkspace #sketchTrimHUD{
+   left:60px;right:54px;bottom:20px;transform:none;
+   max-width:none;gap:7px;padding:7px 8px;justify-content:space-between;
+   white-space:normal;font-size:11px;
+ }
+ body.cadWorkspace #sketchTrimHUD strong{font-size:12px;}
+ body.cadWorkspace #sketchTrimHUD button{min-width:48px;}
+ body.cadWorkspace #stage:has(#sketchTrimHUD:not([hidden])) #sketchEditHUD{display:none!important;}
+}
