@@ -25,7 +25,9 @@
     ],
     "productionFromMergedDraftPR": true,
     "sourceIdentityRequired": true,
-    "liveAccessRestricted": true
+    "liveAccessRestricted": false,
+    "adminEnforcementStatus": "pending-github-rulesets-and-environment-scoped-token-rotation",
+    "note": "Workflow-level checks are active; unrestricted Cloudflare write credentials and unprotected GitHub main remain bypass risks until Issue #278 is completed."
   },
   "archivedCADBranches": "read-only; never deploy from them"
 }
