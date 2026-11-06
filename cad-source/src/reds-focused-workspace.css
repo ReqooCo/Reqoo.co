@@ -293,3 +293,40 @@ body.cadWorkspace #stage[data-workspace=sketch]:not([data-drawing=true]) #rail #
 body.cadWorkspace #stage[data-workspace=sketch]:not([data-drawing=true]) #quickSketchTools{
  display:none!important;
 }
+
+/* Shapr3D-first plane picking: the planes themselves are the controls.
+   Replace large instructional modal with a one-line, keyboard-accessible hint. */
+body.cadWorkspace #sketchPlanePicker .planeInstructions{
+ top:76px;left:50%;right:auto;transform:translateX(-50%);
+ width:max-content;max-width:calc(100% - 230px);
+ min-height:36px;padding:4px 8px;gap:8px;
+ border-radius:10px;box-shadow:0 5px 18px #0002;
+ flex-wrap:nowrap;white-space:nowrap;
+}
+body.cadWorkspace #sketchPlanePicker .planeInstructions strong{
+ font-size:12px;font-weight:600;line-height:1.25;width:auto;
+}
+body.cadWorkspace #sketchPlanePicker .planeInstructions>span{display:none;}
+body.cadWorkspace #sketchPlanePicker .planeInstructions button{
+ min-height:30px;min-width:30px;padding:4px 9px;font-size:11px;
+}
+body.cadWorkspace #sketchPlanePicker [data-cancel]{
+ width:30px;padding:0;font-size:0;
+}
+body.cadWorkspace #sketchPlanePicker [data-cancel]::after{
+ content:"×";font-size:19px;line-height:1;
+}
+body.cadWorkspace #sketchPlanePicker .planeChoice{
+ padding:7px 11px;min-height:38px;border-width:1px;
+ font-size:12px;border-radius:9px;box-shadow:0 4px 12px #0003;
+}
+@media(max-width:760px){
+ body.cadWorkspace #sketchPlanePicker .planeInstructions{
+  left:56px;right:54px;top:105px;transform:none;width:auto;max-width:none;
+  justify-content:space-between;min-height:36px;
+  padding:4px 7px;gap:5px;
+ }
+ body.cadWorkspace #sketchPlanePicker .planeInstructions strong{font-size:11px;}
+ body.cadWorkspace #sketchPlanePicker .planeInstructions [data-face]{font-size:10px;padding:4px 6px;}
+ body.cadWorkspace #sketchPlanePicker .planeChoice{font-size:11px;min-height:36px;padding:7px;}
+}
