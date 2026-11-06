@@ -589,6 +589,117 @@ function worldOnSketch(event){
 function hasSessionProfiles(){return !!sketchMode&&(!!sketchMode.createdId&&doc.features.some(f=>f.id===sketchMode.createdId)||!!sketchMode.startDoc&&doc.features.some(f=>f.type==='sketch'&&!sketchMode.startDoc.features.some(prior=>prior.id===f.id)));}
 function sketchEditRefs(){return selection.filter(ref=>ref.kind==='sketch'&&items.some(item=>{if(item.id!==ref.id)return false;if(item.profileClosed)return true;return sketchMode?.editMode==='offset'&&doc.features.find(f=>f.id===item.featureId)?.params.shape==='polyline';}));}
 function updateSketchEditHUD(){const hud=$('sketchEditHUD');if(!hud||hud.hidden)return;const action=sketchMode?.editMode,refs=sketchEditRefs();hud.querySelector('output').textContent=refs.length+' selected';hud.querySelector('[data-apply]').disabled=busy||(action==='offset'?refs.length!==1:refs.length<2);for(const button of document.querySelectorAll('[data-sketch-edit]'))button.setAttribute('aria-pressed',String(button.dataset.sketchEdit===action));}
+// Sketch coordinates are kept exact in the originating plane. A coplanar
+// sketch may have a different origin and XY basis, e.g. projected body faces.
+const skDot=(a,b)=>a.reduce((sum,v,i)=>sum+v*b[i],0);
+const skCross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+function sameSketchPlane(a,b){
+ const delta=a.origin.map((v,i)=>v-b.origin[i]);
+ return Math.abs(skDot(delta,b.normal))<.0001&&Math.abs(skDot(a.normal,b.normal))>.9999;
+}
+function sketchPointToFrame(point,from,to){
+ const y=skCross(from.normal,from.x),ty=skCross(to.normal,to.x);
+ const world=from.origin.map((v,i)=>v+from.x[i]*point[0]+y[i]*point[1]);
+ const d=world.map((v,i)=>v-to.origin[i]);
+ return[skDot(d,to.x),skDot(d,ty)];
+}
+function nearestLineOnSketch(p,point){
+ const pts=geometryPoints(p),length=closedGeometry(p)?pts.length:pts.length-1;
+ let best={distance:Infinity,index:-1};
+ for(let i=0;i<length;i++){
+  const a=pts[i],b=pts[(i+1)%pts.length],v=[b[0]-a[0],b[1]-a[1]],den=skDot(v,v);
+  if(den<1e-10)continue;
+  const t=Math.max(0,Math.min(1,skDot([point[0]-a[0],point[1]-a[1]],v)/den));
+  const d=Math.hypot(point[0]-a[0]-v[0]*t,point[1]-a[1]-v[1]*t);
+  if(d<best.distance)best={distance:d,index:i};
+ }
+ return best;
+}
+function sketchEditableCandidates(event){
+ if(!sketchMode)return[];
+ const active=basis(sketchMode.params),at=worldOnSketch({...event,altKey:true});
+ if(!at)return[];
+ const tolerance=(camera.top-camera.bottom)/camera.zoom/renderer.domElement.clientHeight*(event.pointerType==='touch'?18:12);
+ return doc.features.filter(f=>f.type==='sketch'&&['polyline','rectangle'].includes(f.params.shape)&&!(doc.ui.hidden||[]).includes(f.id))
+ .flatMap(f=>{try{
+  const b=basis(f.params);if(!sameSketchPlane(b,active))return[];
+  const p=sketchPointToFrame(at,active,b),near=nearestLineOnSketch(f.params,p);
+  return near.distance<=tolerance?[{f,p,b,near}]:[];
+ }catch{return[];} }).sort((a,b)=>a.near.distance-b.near.distance);
+}
+function sketchBoundaryInFrame(feature,targetFrame){
+ const p=feature.params,source=basis(p);
+ if(!sameSketchPlane(source,targetFrame))return null;
+ if(['polyline','rectangle'].includes(p.shape)){
+  const points=geometryPoints(p).map(q=>sketchPointToFrame(q,source,targetFrame));
+  return{shape:'polyline',points,closed:closedGeometry(p),x:0,y:0};
+ }
+ if(['circle','ellipse'].includes(p.shape)){
+  // A circle is invariant to in-plane frame rotations. An ellipse is not.
+  const translated=sketchPointToFrame([p.x||0,p.y||0],source,targetFrame);
+  const aligned=skDot(source.x,targetFrame.x);
+  if(p.shape==='ellipse'&&Math.abs(Math.abs(aligned)-1)>.0001)return null;
+  return{...p,x:translated[0],y:translated[1]};
+ }
+ return null;
+}
+async function trimSketchAt(event){
+ const candidates=sketchEditableCandidates(event);
+ if(!candidates.length){status('Trim: tap a straight line or rectangle edge');return;}
+ const {f,p,b,near}=candidates[0];
+ if(f.params.constraints?.length)throw Error('This line has constraints. Edit/remove its constraints before trimming.');
+ const boundaries=doc.features.filter(other=>other.id!==f.id&&other.type==='sketch').map(other=>{try{return sketchBoundaryInFrame(other,b);}catch{return null;}}).filter(Boolean);
+ const result=trimSketchSegment(f.params,p,boundaries,near.distance+1e-6);
+ const next=snapshot(),index=next.features.findIndex(feature=>feature.id===f.id);
+ if(index<0)throw Error('Selected sketch is no longer available');
+ if(!result.parts.length){
+  if(next.features.some(other=>other.id!==f.id&&other.inputs.includes(f.id)))throw Error('This sketch has dependent features. Edit dependencies before deleting its final segment.');
+  next.features.splice(index,1);
+ }else{
+  const original=next.features[index],parts=result.parts;
+  original.params={...original.params,...parts[0]};
+  if(parts.length>1)next.features.splice(index+1,0,...parts.slice(1).map((part,i)=>({id:uid(),type:'sketch',name:'Trim segment '+(i+1),params:{...f.params,...part},inputs:[]})));
+ }
+ await rebuild(next,{selectId:result.parts.length?f.id:null});
+ if(sketchMode){sketchMode.editMode='trimEdge';sketchMode.createdId=result.parts.length?f.id:null;}
+ status('Trimmed sketch segment · tap another segment or Exit sketch');
+}
+async function activateSketchTrim(){
+ if(busy)return;
+ parameterGizmo?.cancel();
+ try{
+  if(!sketchMode){
+   const item=selectedItem(),f=doc.features.find(f=>f.id===item?.featureId);
+   if(item?.kind!=='sketch'||f?.type!=='sketch'){status('Start Sketch or select a straight sketch profile before Trim');return;}
+   beginDrawing({...f.params,basis:item.sketchPlane},{direct:true,preserveView:true});
+   sketchMode.createdId=f.id;
+  }
+  await commitSketchPath();draft=null;clear(preview);drawingMeasure.hidden=true;
+  if($('sketchEditHUD'))$('sketchEditHUD').hidden=true;
+  sketchMode.editMode='trimEdge';
+  let hud=$('sketchTrimHUD');
+  if(!hud){hud=document.createElement('div');hud.id='sketchTrimHUD';hud.dataset.control='sketch-trim';
+   hud.innerHTML='<strong>Trim</strong><span>Tap a line segment to remove</span><button type="button" aria-label="Exit Trim">Exit</button>';
+   hud.querySelector('button').onclick=stopSketchTrim;$('stage').append(hud);
+  }
+  hud.hidden=false;render(true);workspaceChrome?.update();
+  status('Trim · tap the segment between intersections; Escape exits Trim');
+ }catch(e){error(e);}
+}
+function stopSketchTrim(){
+ if($('sketchTrimHUD'))$('sketchTrimHUD').hidden=true;
+ if(sketchMode?.editMode==='trimEdge')sketchMode.editMode='select';
+ render(true);workspaceChrome?.update();
+}
+function chooseSingleOffsetEdge(event){
+ const candidates=sketchEditableCandidates(event);
+ if(!candidates.length){status('Single offset: tap a straight sketch edge');return;}
+ const {f,near}=candidates[0],hud=$('sketchEditHUD');
+ if(!hud)return;
+ hud.dataset.edgeIndex=String(near.index);
+ hud.querySelector('output').textContent='Edge '+(near.index+1)+' selected';
+ select([{id:f.id,kind:'sketch'}]);parameterGizmo?.changed();
+}
 async function activateSketchEdit(action){if(busy)return;parameterGizmo?.cancel();try{if(!sketchMode){const ref=selection.at(-1),item=items.find(i=>i.id===ref?.id);if(item?.kind!=='sketch'||action!=='offset'&&!item.profileClosed){status('Start a sketch or select a suitable sketch profile');return;}const feature=doc.features.find(f=>f.id===item.featureId);beginDrawing({...feature.params,basis:item.sketchPlane,shape:feature.params.shape||'rectangle'},{direct:true,preserveView:true});sketchMode.createdId=item.id;}
  await commitSketchPath();draft=null;clear(preview);drawingMeasure.hidden=true;sketchMode.editMode=action;controls.enabled=false;
  let hud=$('sketchEditHUD');if(!hud){hud=document.createElement('section');hud.id='sketchEditHUD';hud.dataset.control='sketch-edit';hud.setAttribute('aria-label','Sketch profile editing');hud.innerHTML='<strong></strong><output aria-live="polite"></output><label data-offset-type>Type <select aria-label="Offset edge type"><option>Chain</option><option>Single</option></select></label><label data-offset>Offset <input aria-label="Sketch offset distance" type="number" value="1" min="-500" max="500" step="any"> <span data-unit></span></label><label data-operation>Profile <select aria-label="Profile operation"><option>Join</option><option value="Cut">Trim region</option><option>Intersect</option></select></label><button type="button" data-apply aria-label="Apply sketch edit">✓</button><button type="button" data-close aria-label="Close sketch edit">×</button>';$('stage').append(hud);hud.querySelector('[data-close]').onclick=()=>{hud.hidden=true;if(sketchMode)sketchMode.editMode=null;render(true);};hud.querySelector('[data-offset-type] select').onchange=()=>{hud.dataset.edgeIndex='0';hud.querySelector('output').textContent=hud.querySelector('[data-offset-type] select').value==='Single'?'Tap a straight sketch edge':'Choose one sketch profile';};hud.querySelector('[data-apply]').onclick=async()=>{try{const mode=sketchMode?.editMode,refs=sketchEditRefs(),ids=[...new Set(refs.map(r=>r.id))];if(mode==='offset'&&ids.length!==1||mode!=='offset'&&ids.length<2)throw Error(mode==='offset'?'Select one closed profile':'Select at least two closed profiles');const id=await apply(mode==='offset'?'sketchOffset':'sketchProfile',mode==='offset'?{distance:Number(hud.querySelector('input').value)*unitFactorValue(),mode:hud.querySelector('[data-offset-type] select').value,edgeIndex:Number(hud.dataset.edgeIndex||0),keepInputs:true}:{operation:hud.querySelector('select').value},ids);sketchMode.createdId=id;sketchMode.editMode=null;hud.hidden=true;render(true);}catch(e){error(e);}};}
