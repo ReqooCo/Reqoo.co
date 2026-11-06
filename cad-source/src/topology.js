@@ -16,7 +16,7 @@ function uniqueAnalyticFace(reference,candidates){
  if(reference?.kind!=='face'||!['CYLINDER','CONE','TORUS'].includes(reference.type))return -1;
  if(!Array.isArray(reference.center)||reference.center.length!==3||
     !Array.isArray(reference.normal)||reference.normal.length!==3)return -1;
- const matches=[];
+ const compatible=[];
  for(let index=0;index<candidates.length;index++){
   const c=candidates[index];
   if(!c||c.kind!=='face'||c.type!==reference.type||c.loops!==reference.loops||
@@ -24,9 +24,13 @@ function uniqueAnalyticFace(reference,candidates){
      !Array.isArray(c.normal)||c.normal.length!==3)continue;
   const distance=Math.hypot(...reference.center.map((v,i)=>v-c.center[i]));
   const dot=reference.normal.reduce((sum,v,i)=>sum+v*c.normal[i],0);
-  if(Number.isFinite(distance)&&distance<.075&&dot>=.99)matches.push(index);
+  // Count even loosely aligned alternatives, so we never silently switch
+  // between two faces of the same analytic family after a topology change.
+  if(dot>=.95)compatible.push({index,distance,dot});
  }
- return matches.length===1?matches[0]:-1;
+ if(compatible.length!==1)return -1;
+ const match=compatible[0];
+ return Number.isFinite(match.distance)&&match.distance<.075&&match.dot>=.99?match.index:-1;
 }
 export function resolveReference(reference,candidates,legacyIndex){
  if(!reference){if(!Number.isInteger(legacyIndex)||!candidates[legacyIndex])throw Error('Selected geometry no longer exists');return legacyIndex;}
