@@ -224,3 +224,21 @@ body.cadWorkspace #stage:not([data-workspace=sketch]) #empty{
 @media(max-height:620px){
  body.cadWorkspace #stage:not([data-workspace=sketch]) #empty{top:27%;}
 }
+
+/* Phone modeling focuses one task at a time: toolbar modes remain discoverable,
+   while the operation editor gains the unused selection-bar space. */
+@media(max-width:760px){
+ body.cadWorkspace #top .brand{font-size:0;justify-content:center;}
+ body.cadWorkspace #top .brand em{font-size:0;}
+ body.cadWorkspace #top .brand span{display:none;}
+ body.cadWorkspace #top .brand::after{
+   content:"R3";display:block;font-size:19px;font-weight:760;letter-spacing:-1px;color:var(--text);
+ }
+ body.cadWorkspace #stage:has(#operationGizmo:not([hidden])) #selectionBar{display:none!important;}
+ body.cadWorkspace #operationGizmo .operationActions{bottom:78px;}
+ body.cadWorkspace #operationGizmo [data-badges]{bottom:29px;}
+}
+@media(max-height:620px) and (max-width:760px){
+ body.cadWorkspace #operationGizmo .operationActions{bottom:74px;max-height:32vh;}
+ body.cadWorkspace #operationGizmo [data-badges]{bottom:26px;}
+}
