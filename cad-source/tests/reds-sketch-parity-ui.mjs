@@ -85,6 +85,17 @@ try{
  projected=await page.evaluate(()=>window.__cad.items.find(i=>i.id===window.__cad.doc.features.at(-1).id));
  near(projected.area,240);
  await page.screenshot({path:path.join(out,'reds-project-face-sketch.png')});
+ // Exact overlapping geometry must ask for disambiguation, never trim
+ // whichever sketch happens to be first in the feature history.
+ await fresh();await beginSketch(page,{shape:'polyline'});
+ await op('sketch',{shape:'polyline',points:[[0,0],[20,0]],closed:false,plane:'XY'});
+ await op('sketch',{shape:'polyline',points:[[0,0],[20,0]],closed:false,plane:'XY'});
+ await page.getByRole('button',{name:'Trim sketch segment',exact:true}).click();
+ hit=await projectSketchPoint(page,[10,0]);await page.mouse.click(hit.x,hit.y);
+ await page.waitForFunction(()=>document.querySelector('#status')?.textContent?.includes('Multiple sketch edges overlap'));
+ assert.equal(await page.evaluate(()=>window.__cad.doc.features.length),2,'Ambiguous Trim must preserve the entire history');
+ assert.equal(await page.locator('#sketchTrimHUD').isVisible(),true,'Recoverable ambiguity keeps Trim active');
+ await page.screenshot({path:path.join(out,'reds-trim-overlap-safe.png')});
  assert.deepEqual(errors,[]);
  console.log('REDS SKETCH PARITY UI PASS: tap Trim exact intersections, Undo/Redo/reopen, open Chain/Single Offset, one-tap linked Project Face and upstream rebuild');
 }catch(e){console.error('REDS SKETCH PARITY UI FAILED',e,errors,await page.locator('body').innerText());await page.screenshot({path:path.join(out,'reds-sketch-parity-failure.png')}).catch(()=>{});throw e;}finally{await browser.close();await new Promise(r=>server.close(r));}
