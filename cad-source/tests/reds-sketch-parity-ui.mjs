@@ -44,7 +44,9 @@ try{
  await page.getByRole('button',{name:'Trim sketch segment',exact:true}).click();
  await page.locator('#sketchTrimHUD').waitFor({state:'visible'});
  const blank=await page.locator('#canvas').boundingBox();await page.mouse.click(blank.x+blank.width*.90,blank.y+blank.height*.74);
- assert.equal(await page.locator('#sketchTrimHUD').isVisible(),false,'Empty grid tap exits Trim while retaining Sketch');
+ assert.equal(await page.locator('#sketchTrimHUD').isVisible(),true,'Empty grid tap must keep direct Trim active');
+ assert.equal(await page.getByRole('button',{name:'Trim region in sketch'}).count(),0,'Only one Trim action is exposed');
+ assert.equal(await page.locator('#sketchEditHUD').isVisible(),false,'Legacy profile editing panel must not block Trim');
  assert.equal(await page.evaluate(()=>window.__cad.gizmo.sketchMode),true);
  await page.locator('#finishSketch').click();await page.waitForFunction(()=>!window.__cad.gizmo.sketchMode);
  await page.reload();await ready();assert.equal(await page.evaluate(()=>window.__cad.doc.features.length),3,'Trim survives save/reload');
