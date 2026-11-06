@@ -88,6 +88,8 @@ try{
  await page.screenshot({path:path.join(out,'reds-focused-thread-tablet.png')});
  await page.setViewportSize({width:390,height:844});
  await inspectDock(390,844,'Thread phone');
+ assert.equal(await page.locator('#selectionBar').isVisible(),false,'Phone hides selection bar during active operation to free model space');
+ assert.ok((await page.locator('.brand').boundingBox()).width>=38,'Compact mobile mark remains visible');
  await page.screenshot({path:path.join(out,'reds-focused-thread-phone.png')});
  await page.locator('#operationGizmo [data-cancel]').click();
  assert.deepEqual(errors,[],'no unhandled browser errors');
