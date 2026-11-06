@@ -648,7 +648,7 @@ function sketchBoundaryInFrame(feature,targetFrame){
 }
 async function trimSketchAt(event){
  const candidates=sketchEditableCandidates(event);
- if(!candidates.length){status('Trim: tap a straight line or rectangle edge');return;}
+ if(!candidates.length){stopSketchTrim();status('Trim complete · sketch remains active');return;}
  const {f,p,b,near}=candidates[0];
  if(f.params.constraints?.length)throw Error('This line has constraints. Edit/remove its constraints before trimming.');
  const boundaries=doc.features.filter(other=>other.id!==f.id&&other.type==='sketch').map(other=>{try{return sketchBoundaryInFrame(other,b);}catch{return null;}}).filter(Boolean);
