@@ -2,7 +2,7 @@ name: CAD PR validation
 on:
   push:
     branches: [main]
-    paths: ['scripts/reds-release-gate.mjs', 'cad-source/**', 'workers/cad-bridge.js', '_web_worker.js', 'wrangler-web.toml', 'migrations/*cad_bridge*', '.github/workflows/cad-pr-validation.yml']
+    paths: ['scripts/reds-release-gate.mjs', 'scripts/reds-release-gate.test.mjs', 'cad-source/**', 'workers/cad-bridge.js', '_web_worker.js', 'wrangler-web.toml', 'migrations/*cad_bridge*', '.github/workflows/cad-pr-validation.yml']
   pull_request:
     paths: ['scripts/reds-release-gate.mjs', 'cad-source/**', 'workers/cad-bridge.js', '_web_worker.js', 'wrangler-web.toml', 'migrations/*cad_bridge*', '.github/workflows/cad-pr-validation.yml']
   workflow_dispatch:
@@ -22,6 +22,8 @@ jobs:
         env:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
         run: node scripts/reds-release-gate.mjs check-pr
+      - name: Verify REDS release-gate policy tests
+        run: node scripts/reds-release-gate.test.mjs
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
