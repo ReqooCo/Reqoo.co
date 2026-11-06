@@ -29,5 +29,19 @@ try{
  const preserved=await page.evaluate(()=>JSON.stringify(window.__cad.doc));await page.locator('#openFile').setInputFiles({name:'bad.rqcad',mimeType:'application/json',buffer:Buffer.from('{broken')});await page.locator('#errorDialog').waitFor({state:'visible'});assert.match(await page.locator('#errorText').innerText(),/not valid project JSON/);assert.equal(await page.evaluate(()=>JSON.stringify(window.__cad.doc)),preserved);await page.locator('#closeError').click();
  // Legacy v1 files without ui must open and remain editable.
  await page.locator('#openFile').setInputFiles({name:'legacy.rqcad',mimeType:'application/json',buffer:Buffer.from('\uFEFF'+JSON.stringify({format:'reqoo-cad',version:1,features:[]}))});await page.waitForFunction(()=>!window.__cad.gizmo.busy&&window.__cad.doc.features.length===0);assert.equal(await page.locator('#projectName').inputValue(),'Untitled');
- assert.deepEqual(errors,[]);console.log('SKETCH FILE UX PASS: one Exit, blank exit, tap/tap drawing, switch continuity, Select, touch pan/zoom without orbit, save pending path, real file reopen, failed-open preservation and BOM/legacy files');
+ // Browser storage quota must not destroy the last valid saved project or its backup.
+ const protectedCopy=await page.evaluate(()=>{
+  const before={project:localStorage.getItem('reqoo-cad-v1'),backup:localStorage.getItem('reqoo-cad-v1-backup')};
+  window.__originalStorageSetItem=Storage.prototype.setItem;
+  Storage.prototype.setItem=function(key,value){if(key==='reqoo-cad-v1')throw new DOMException('Storage full','QuotaExceededError');return window.__originalStorageSetItem.call(this,key,value);};
+  return before;
+ });
+ try{
+  await op('box',{width:2,depth:3,height:4});
+  assert.match(await page.locator('#saveState').innerText(),/Local save failed/);
+  assert.deepEqual(await page.evaluate(()=>({project:localStorage.getItem('reqoo-cad-v1'),backup:localStorage.getItem('reqoo-cad-v1-backup')})),protectedCopy);
+ }finally{
+  await page.evaluate(()=>{Storage.prototype.setItem=window.__originalStorageSetItem;delete window.__originalStorageSetItem;});
+ }
+ assert.deepEqual(errors,[]);console.log('SKETCH FILE UX PASS: one Exit, blank exit, tap/tap drawing, switch continuity, Select, touch pan/zoom without orbit, save pending path, real file reopen, failed-open preservation, BOM/legacy files and quota-safe protected backups');
 }catch(e){console.error('SKETCH FILE UX FAILED',e,errors,await page.locator('body').innerText());await page.screenshot({path:path.join(out,'sketch-file-ux-failure.png')}).catch(()=>{});throw e;}finally{await browser.close();await new Promise(r=>server.close(r));}
