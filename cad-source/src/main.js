@@ -26,6 +26,7 @@ import {basis,validateProject} from './engine.js';
 import './style.css';
 import './workspace-chrome.css';
 import './r3ds.css';
+import './reds-focused-workspace.css';
 import {createWorkspaceChrome} from './workspace-chrome.js';
 import {createDirectModeling} from './direct-modeling.js';
 import {threeMF,sketchExport} from './exports.js';
