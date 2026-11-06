@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
-      CAD_TEST_URL: ${{ github.ref == 'refs/heads/main' && 'https://reqoo.co/cad/' || github.ref == 'refs/heads/feature/reds-sketch-foundation-20261106' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/ux/reds-focused-workspace-20261106' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/feature/cad-viewcube-display-20261104' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/fix/cad-sketch-dimensions-view-20261104' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/fix/cad-ring-regions-theme-20261104' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/fix/cad-ipad-face-preview-20261104' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/fix/cad-interactive-preview-ui-20261103' && 'https://fix-cad-interactive-preview.reqoo-co.pages.dev/cad/' || github.ref == 'refs/heads/fix/cad-continuous-drag-diameter-20261103' && 'https://fix-cad-continuous-drag-diam.reqoo-co.pages.dev/cad/' || 'https://feature-cad-professional-202.reqoo-co.pages.dev/cad/' }}
+      CAD_TEST_URL: ${{ github.ref == 'refs/heads/main' && 'https://reqoo.co/cad/' || github.ref == 'refs/heads/feature/reds-sketch-foundation-20261106' && 'https://reqoo-reds-sketch-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/ux/reds-focused-workspace-20261106' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/feature/cad-viewcube-display-20261104' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/fix/cad-sketch-dimensions-view-20261104' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/fix/cad-ring-regions-theme-20261104' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/fix/cad-ipad-face-preview-20261104' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/fix/cad-interactive-preview-ui-20261103' && 'https://fix-cad-interactive-preview.reqoo-co.pages.dev/cad/' || github.ref == 'refs/heads/fix/cad-continuous-drag-diameter-20261103' && 'https://fix-cad-continuous-drag-diam.reqoo-co.pages.dev/cad/' || 'https://feature-cad-professional-202.reqoo-co.pages.dev/cad/' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -32,7 +32,11 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           node -e "const fs=require('fs');fs.mkdirSync('../cad-preview/cad',{recursive:true});fs.cpSync('dist','../cad-preview/cad',{recursive:true})"
-          npx --yes wrangler@4.129.0 deploy --config wrangler.preview.jsonc
+          if [ "$GITHUB_REF" = "refs/heads/feature/reds-sketch-foundation-20261106" ]; then
+            npx --yes wrangler@4.129.0 deploy --config wrangler.sketch-preview.jsonc
+          else
+            npx --yes wrangler@4.129.0 deploy --config wrangler.preview.jsonc
+          fi
       - name: Install Chromium
         working-directory: cad-source
         run: npx playwright install --with-deps chromium
