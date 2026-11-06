@@ -101,3 +101,21 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Verify REDS Live source identity after release
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5 6; do
+            if curl --fail --silent --show-error --header 'Cache-Control: no-cache' "https://reqoo.co/cad/version.json?release=$EXPECTED_SHA" > /tmp/reds-live-version.json; then
+              if node -e "const fs=require('fs');const v=JSON.parse(fs.readFileSync('/tmp/reds-live-version.json','utf8'));if(v.commit!==process.env.EXPECTED_SHA)process.exit(1);"; then
+                echo "REDS Live source verified: $EXPECTED_SHA"
+                exit 0
+              fi
+            fi
+            sleep 4
+          done
+          echo "::error::Production CAD version did not match the released main commit."
+          exit 1
