@@ -6,6 +6,13 @@ import path from 'node:path';
 const scratch=fs.mkdtempSync(path.join(os.tmpdir(),'reds-gate-'));
 const file=path.join(scratch,'event.json');
 const repo='ReqooCo/Reqoo.co';
+// A temporary policy fixture models verified admin controls, never an env
+// override that could unlock the real production policy.
+fs.mkdirSync(path.join(scratch,'scripts'));fs.mkdirSync(path.join(scratch,'cad-source'));
+const fixture=path.join(scratch,'scripts','gate.mjs');
+fs.copyFileSync('scripts/reds-release-gate.mjs',fixture);
+const testPolicy=JSON.parse(fs.readFileSync('cad-source/release-policy.json'));
+fs.writeFileSync(path.join(scratch,'cad-source','release-policy.json'),JSON.stringify({...testPolicy,rules:{...testPolicy.rules,liveAccessRestricted:true}}));
 const run=(mode,eventName,ref,payload,expectPass)=>{
  fs.writeFileSync(file,JSON.stringify(payload));
  const child=spawnSync(process.execPath,['scripts/reds-release-gate.mjs',mode],{
@@ -15,7 +22,7 @@ const run=(mode,eventName,ref,payload,expectPass)=>{
  assert.equal(child.status,expectPass?0:1,[mode,eventName,ref,child.stdout,child.stderr].join(' | '));
 };
 const scenario=(name,ok)=>{
- const child=spawnSync(process.execPath,['--import','./scripts/reds-release-test-fetch.mjs','scripts/reds-release-gate.mjs','check-live'],{
+ const child=spawnSync(process.execPath,['--import','./scripts/reds-release-test-fetch.mjs',name==='admin-pending'?'scripts/reds-release-gate.mjs':fixture,'check-live'],{
   env:{...process.env,GITHUB_EVENT_NAME:'push',GITHUB_REF:'refs/heads/main',GITHUB_REPOSITORY:repo,
    GITHUB_SHA:'dddddddddddddddddddddddddddddddddddddddd',
    GITHUB_TOKEN:'mock-test-token',REDS_TEST_SCENARIO:name,GITHUB_EVENT_PATH:file},
@@ -43,6 +50,7 @@ try{
  }
  scenario('identical',true);
  scenario('valid',true);
+ scenario('admin-pending',false);
  scenario('unreviewed',false);
  for(const name of ['no-review','self-review','bot-review','outside-review','stale-review','dismissed-review','changes-requested'])scenario(name,false);
  scenario('delayed',false);

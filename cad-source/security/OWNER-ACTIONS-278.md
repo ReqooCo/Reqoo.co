@@ -1,6 +1,6 @@
 # Issue #278 — owner administration actions and evidence
 
-Status: **BLOCKED / OPEN**. Inspected 2026-11-06. No production deployment authorised by this report.
+Status: **BLOCKED / OPEN**. The release gate now explicitly refuses CAD production while `liveAccessRestricted` is false; retain false until administrator evidence is verified. Inspected 2026-11-06. No production deployment authorised by this report.
 
 ## Actual observations
 
