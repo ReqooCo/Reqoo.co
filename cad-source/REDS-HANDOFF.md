@@ -18,6 +18,13 @@
 6. Protect existing CAD data: never delete originals, backups or history; preserve OpenCascade B-Rep and the native `.rqcad` project format.
 7. **Production release is not authorised merely because CI is green.** Admin GitHub ruleset + environment secret/token separation are open in [issue #278](https://github.com/ReqooCo/Reqoo.co/issues/278). Do not merge/deploy until these controls are verified and user approval/release policy is satisfied.
 
+## Checkpoint — Offset UI and tablet regression (2026-11-07)
+
+- Draft only. Removed duplicate Offset parameter gizmo; one `#sketchEditHUD` now owns distance, Chain/Single and Apply/Cancel. Added nonzero finite offset-distance validation. Canvas edge tapping now targets the precise selected polyline for both Chain and Single; Single records segment index. Sketch dimensions are hidden while an edit tool is active. Compact selection dock and familiar parallel-line Offset / scissors Trim glyphs replace overlapping controls.
+- Updated Sketch parity Playwright regression to use `#sketchEditHUD [data-apply]`, verify the duplicate `#operationGizmo` is hidden, and exercise touch selection in Chain mode. These changes are committed, but browser CI and physical iPad verification are **not yet confirmed**; do not call them passing.
+- **Known limitation:** Chain offsets segments belonging to one connected polyline feature, not arbitrary independently created lines. Do not claim full Shapr3D Offset parity. Further work: cross-feature chain topology, live drag preview, undo/redo/save/open and actual Draft browser tests.
+- Release lock remains in force: #278, `liveAccessRestricted=false`; no Live merge/deploy.
+
 ## Current checkpoint — circular Sketch Trim (2026-11-06)
 
 - Starting Draft/PR #277 SHA: `8f0c146a22fb3f06befdec1fb9d0c2f6b9fdc11e`. Its exact-head Core/Modeling/Product and full deployed Draft suite all PASS: runs 42241094535 and 42241082718. Scoped Draft token works without account-wide Workers permission.
