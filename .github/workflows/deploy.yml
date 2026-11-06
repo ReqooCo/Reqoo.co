@@ -23,13 +23,13 @@ jobs:
     environment: reds-live
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
       - name: REDS Live single-gate verification
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/reds-release-gate.mjs check-live
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
 
       - name: Validate final runtime
         shell: bash
