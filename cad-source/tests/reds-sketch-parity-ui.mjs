@@ -16,6 +16,13 @@ const op=(type,params,inputs=[])=>page.evaluate(({type,params,inputs})=>window._
 const near=(a,b,t=.02)=>assert.ok(Math.abs(a-b)<t,`${a} != ${b}`);
 try{
  await page.goto(url+'?test=1');await ready();await fresh();
+ await page.locator('#startSketch').click();
+ await page.locator('#sketchPlanePicker').waitFor({state:'visible'});
+ const planeHint=await page.locator('.planeInstructions').boundingBox();
+ assert.ok(planeHint.width<=320&&planeHint.height<=65,'Sketch plane picker uses a compact in-canvas hint, not a large floating modal');
+ for(const plane of ['XY','XZ','YZ'])assert.equal(await page.getByRole('button',{name:'Sketch on '+plane+' plane',exact:true}).isVisible(),true);
+ await page.getByRole('button',{name:'Cancel sketch plane selection'}).click();
+ assert.equal(await page.locator('#sketchPlanePicker').isVisible(),false);
  await beginSketch(page,{shape:'polyline'});
  const line=await op('sketch',{shape:'polyline',points:[[0,0],[20,0]],closed:false,plane:'XY'});
  await op('sketch',{shape:'rectangle',width:8,height:10,x:10,y:0,plane:'XY'});
