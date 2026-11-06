@@ -8,10 +8,32 @@ export function descriptorDistance(a,b){
  else if(Number.isFinite(a.measure)&&Number.isFinite(b.measure))score+=Math.abs(a.measure-b.measure)*(a.kind==='face'?.1:1);
  return score;
 }
+// A unique cylindrical/conical/toroidal face can survive large changes in
+// normalized surface area while retaining its geometric role. This conservative
+// fallback NEVER chooses between multiple similar faces: ambiguous references
+// remain explicit errors rather than silently binding to the wrong topology.
+function uniqueAnalyticFace(reference,candidates){
+ if(reference?.kind!=='face'||!['CYLINDER','CONE','TORUS'].includes(reference.type))return -1;
+ if(!Array.isArray(reference.center)||reference.center.length!==3||
+    !Array.isArray(reference.normal)||reference.normal.length!==3)return -1;
+ const matches=[];
+ for(let index=0;index<candidates.length;index++){
+  const c=candidates[index];
+  if(!c||c.kind!=='face'||c.type!==reference.type||c.loops!==reference.loops||
+     !Array.isArray(c.center)||c.center.length!==3||
+     !Array.isArray(c.normal)||c.normal.length!==3)continue;
+  const distance=Math.hypot(...reference.center.map((v,i)=>v-c.center[i]));
+  const dot=reference.normal.reduce((sum,v,i)=>sum+v*c.normal[i],0);
+  if(Number.isFinite(distance)&&distance<.075&&dot>=.99)matches.push(index);
+ }
+ return matches.length===1?matches[0]:-1;
+}
 export function resolveReference(reference,candidates,legacyIndex){
  if(!reference){if(!Number.isInteger(legacyIndex)||!candidates[legacyIndex])throw Error('Selected geometry no longer exists');return legacyIndex;}
  const ranked=candidates.map((c,index)=>({index,score:descriptorDistance(reference,c)})).sort((a,b)=>a.score-b.score);
- if(!ranked.length||ranked[0].score>.18||ranked[1]&&ranked[1].score-ranked[0].score<.02)throw Error('Geometry reference became ambiguous after an upstream edit. Reselect the face or edge.');
- return ranked[0].index;
+ if(ranked.length&&ranked[0].score<=.18&&(!ranked[1]||ranked[1].score-ranked[0].score>=.02))return ranked[0].index;
+ const analytic=uniqueAnalyticFace(reference,candidates);
+ if(analytic>=0)return analytic;
+ throw Error('Geometry reference became ambiguous after an upstream edit. Reselect the face or edge.');
 }
 export function normalizedCenter(bounds,center){return center.map((v,i)=>(v-bounds[0][i])/Math.max(1e-7,bounds[1][i]-bounds[0][i]));}
