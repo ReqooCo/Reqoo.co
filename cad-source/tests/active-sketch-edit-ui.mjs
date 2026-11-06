@@ -17,7 +17,7 @@ try{
  await page.goto(url+'?test=1');await ready();await fresh();
  await beginSketch(page,{shape:'circle'});await dragSketch(page,[0,0],[10,0],{touch:true});
  for(const name of ['Offset in sketch','Profile in sketch','Trim sketch segment'])assert.equal(await page.getByRole('button',{name,exact:true}).isVisible(),true);
- await page.getByRole('button',{name:'Offset in sketch',exact:true}).click();await setToolValue(page,'Sketch offset distance','2');await page.locator('#operationGizmo [data-apply]').click();await page.waitForFunction(()=>!window.__cad.gizmo.busy&&window.__cad.doc.features.at(-1).type==='sketchOffset');assert.equal(await page.evaluate(()=>window.__cad.gizmo.sketchMode),true);near(await page.evaluate(()=>window.__cad.items.find(i=>i.id.endsWith(':band')).area),44*Math.PI,.03);
+ await page.getByRole('button',{name:'Offset in sketch',exact:true}).click();await page.getByRole('spinbutton',{name:'Sketch offset distance',exact:true}).fill('2');await page.locator('#sketchEditHUD [data-apply]').click();await page.waitForFunction(()=>!window.__cad.gizmo.busy&&window.__cad.doc.features.at(-1).type==='sketchOffset');assert.equal(await page.evaluate(()=>window.__cad.gizmo.sketchMode),true);near(await page.evaluate(()=>window.__cad.items.find(i=>i.id.endsWith(':band')).area),44*Math.PI,.03);
  await page.keyboard.press('Escape');await page.waitForFunction(()=>!window.__cad.gizmo.busy&&!window.__cad.gizmo.sketchMode);assert.equal(await page.evaluate(()=>window.__cad.doc.features.length),0);
  await beginSketch(page,{shape:'rectangle'});await dragSketch(page,[-15,-10],[15,10]);
  await page.locator('#finishSketch').click();await page.waitForFunction(()=>!window.__cad.gizmo.sketchMode);
