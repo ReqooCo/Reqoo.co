@@ -330,3 +330,14 @@ body.cadWorkspace #sketchPlanePicker .planeChoice{
  body.cadWorkspace #sketchPlanePicker .planeInstructions [data-face]{font-size:10px;padding:4px 6px;}
  body.cadWorkspace #sketchPlanePicker .planeChoice{font-size:11px;min-height:36px;padding:7px;}
 }
+
+/* Before drawing, keep BOTH shortcuts: Draw chooses the plane, while the
+   primitive tools are directly discoverable. Stagger them in the same column. */
+body.cadWorkspace #stage[data-workspace=sketch]:not([data-drawing=true]) #quickSketchTools:not([hidden]){
+ display:flex!important;top:218px;
+}
+@media(max-width:760px){
+ body.cadWorkspace #stage[data-workspace=sketch]:not([data-drawing=true]) #quickSketchTools:not([hidden]){
+  top:205px;
+ }
+}
