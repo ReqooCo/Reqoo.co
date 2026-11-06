@@ -631,7 +631,8 @@ function sketchEditableCandidates(event){
  const active=basis(sketchMode.params),at=worldOnSketch({...event,altKey:true});
  if(!at)return[];
  const tolerance=(camera.top-camera.bottom)/camera.zoom/renderer.domElement.clientHeight*(event.pointerType==='touch'?18:12);
- return doc.features.filter(f=>f.type==='sketch'&&['polyline','rectangle'].includes(f.params.shape)&&!(doc.ui.hidden||[]).includes(f.id))
+ const visibleSketches=new Set(items.filter(item=>item.kind==='sketch').map(item=>item.featureId||item.id));
+ return doc.features.filter(f=>visibleSketches.has(f.id)&&f.type==='sketch'&&['polyline','rectangle'].includes(f.params.shape)&&!(doc.ui.hidden||[]).includes(f.id))
  .flatMap(f=>{try{
   const b=basis(f.params);if(!sameSketchPlane(b,active))return[];
   const p=sketchPointToFrame(at,active,b),near=nearestLineOnSketch(f.params,p);
