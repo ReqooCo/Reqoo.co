@@ -6,6 +6,7 @@ import {cylinderInfo,cutThread} from './thread-solid.js';
 import {WORLD_AXES,rotateFrame,concentricPlacement} from './transform-frames.js';
 import {alignmentDelta} from './snapping.js';
 import {solveSketch} from './constraints.js';
+import {offsetSketchPolyline} from './sketch-edit-geometry.js';
 import {normalizedCenter,resolveReference} from './topology.js';
 let meshSerial=0;
 export const TYPES=['sketch','faceSketch','sketchProfile','imprint','sketchOffset','sketchFillet','sketchMirror','box','cylinder','sphere','torus','extrude','hole','revolve','loft','sweep','union','subtract','intersect','fillet','chamfer','thread','shell','offsetFace','draft','move','rotate','scale','mirror','pattern','circularPattern','duplicate','align','split','import','plane','axis','delete'];
@@ -74,7 +75,10 @@ export async function buildModel(doc,{base=null,preview=false,onProgress=()=>{}}
    loops.push(offsetLoop(outer,d));for(const wire of wires){if(wire.isSame(outer))continue;loops.push(offsetLoop(wire,-d));}
    const native=own(loops.length===1?loops[0]:new R.CompoundSketch(loops)),recipe={shape:'faceOutline',closed:true,basis:{origin,x,normal},nativeSketch:native};profiles.set(f.id,recipe);featureFrame=[x,[normal[1]*x[2]-normal[2]*x[1],normal[2]*x[0]-normal[0]*x[2],normal[0]*x[1]-normal[1]*x[0]],normal];save(f,native.face(),'sketch');continue;
   }
-  if(['sketchOffset','sketchFillet','sketchMirror'].includes(f.type)){const original=profiles.get(ins[0]);if(original?.nativeSketch)throw Error('Edit the Offset Sketch distance in History');if(!original)throw Error('Select a sketch first');const op=f.type==='sketchOffset'?{type:'offset',distance:number(p.distance,'Offset distance',-500,500)}:f.type==='sketchFillet'?{type:'fillet',radius:number(p.radius,'Corner radius',.001,500)}:{type:'mirror',axis:p.axis==='X'?'X':'Y'},recipe={...original,operations:[...(original.operations||[]),op]};profiles.set(f.id,recipe);const sk=sketch(recipe);s=own(recipe.closed===false||recipe.construction?sk.wire.clone():sk.face());sk.delete();save(f,s,'sketch');
+  if(['sketchOffset','sketchFillet','sketchMirror'].includes(f.type)){const original=profiles.get(ins[0]);if(original?.nativeSketch)throw Error('Edit the Offset Sketch distance in History');if(!original)throw Error('Select a sketch first');const op=f.type==='sketchOffset'?{type:'offset',distance:number(p.distance,'Offset distance',-500,500)}:f.type==='sketchFillet'?{type:'fillet',radius:number(p.radius,'Corner radius',.001,500)}:{type:'mirror',axis:p.axis==='X'?'X':'Y'};
+  const directOffset=f.type==='sketchOffset'&&(original.shape==='polyline'&&original.closed===false||p.mode==='Single'&&['polyline','rectangle'].includes(original.shape));
+  const recipe=directOffset?{...original,...offsetSketchPolyline(original,op.distance,{mode:p.mode||'Chain',edgeIndex:p.edgeIndex??0}),operations:[]}:{...original,operations:[...(original.operations||[]),op]};
+  profiles.set(f.id,recipe);const sk=sketch(recipe);s=own(recipe.closed===false||recipe.construction?sk.wire.clone():sk.face());sk.delete();save(f,s,'sketch');
  if(f.type==='sketchOffset'&&original.shape==='circle'&&!original.operations?.length&&!original.construction&&Math.abs(p.distance)>.001){
   const r0=original.radius,r1=r0+Number(p.distance),inner=Math.min(r0,r1),outer=Math.max(r0,r1);
   if(inner>.001){
