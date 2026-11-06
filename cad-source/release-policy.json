@@ -1,0 +1,29 @@
+{
+  "product": "REDS",
+  "scope": [
+    "cad-source/**",
+    "workers/cad-bridge.js",
+    "_web_worker.js",
+    "wrangler-web.toml"
+  ],
+  "live": {
+    "branch": "main",
+    "url": "https://reqoo.co/cad/"
+  },
+  "draft": {
+    "branch": "reds/draft",
+    "url": "https://reqoo-reds-draft.abarttrading1.workers.dev/cad/"
+  },
+  "rules": {
+    "cadPRFromDraftOnly": true,
+    "requiredChecks": [
+      "verify (core)",
+      "verify (modeling)",
+      "verify (product)"
+    ],
+    "productionFromMergedDraftPR": true,
+    "sourceIdentityRequired": true,
+    "liveAccessRestricted": true
+  },
+  "archivedCADBranches": "read-only; never deploy from them"
+}
