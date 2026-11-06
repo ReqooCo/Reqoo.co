@@ -191,3 +191,9 @@ body.cadWorkspace #stage:has(.smartDimensionLabel:not([hidden])) #rail :is(#nav-
  body.cadWorkspace #workspaceModes button span{font-size:0;}
  body.cadWorkspace #workspaceModes svg{width:18px;height:18px;}
 }
+
+/* Sketch tools occupy a separate adjacent column; never cover the main Draw button. */
+body.cadWorkspace #quickSketchTools{left:74px;}
+@media(max-width:760px){
+ body.cadWorkspace #quickSketchTools{left:60px;}
+}
