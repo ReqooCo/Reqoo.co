@@ -36,12 +36,12 @@ export function createPartAlignment(api){
   output.textContent='Updating alignment…';pending={source:state.source,target:state.target,params:params(),version};drain();
  }
  function assign(slot,ref){state[slot]=ref.id;const face=available().find(i=>i.id===ref.id).faceInfo.find(f=>f.index===ref.index);state[slot+'Face']={index:face.index,reference:face.reference,cylinder:face.cylinder};}
- function begin(selection=[],options={}){cancel();const items=available();if(items.length<2){api.onStatus('Show at least two solid parts to align');return;}
+ function begin(selection=[],options={}){api.onStart?.();cancel();const items=available();if(items.length<2){api.onStatus('Show at least two solid parts to align');return;}
   for(const select of [sourceSelect,targetSelect]){select.replaceChildren();for(const item of items){const option=document.createElement('option');option.value=item.id;option.textContent=item.name;select.append(option);}}
   const selected=selection.filter(s=>items.some(i=>i.id===s.id)),ids=[...new Set(selected.map(s=>s.id))],cylinders=selected.filter(s=>validFace(s,'concentric')),planes=selected.filter(s=>validFace(s,'faces')),method=options.method|| (cylinders.length?'concentric':planes.length?'faces':'parts'),faces=method==='concentric'?cylinders:planes;
   state={source:ids[0]||items[0].id,target:ids[1]||items.find(i=>i.id!==(ids[0]||items[0].id)).id,method,sourceFace:null,targetFace:null,pick:null};
   for(const [slot,ref]of [['source',faces[0]],['target',faces.find(s=>s.id!==faces[0]?.id)]])if(ref)assign(slot,ref);
-  if(needsFaces())state.pick=!state.sourceFace?'source':!state.targetFace?'target':null;panel.hidden=false;update();
+  if(needsFaces())state.pick=!state.sourceFace?'source':!state.targetFace?'target':null;panel.hidden=false;update();api.onControls?.({type:'align',title:'Align',host:panel,preview:false,read:params,apply,cancel:el('Cancel alignment'),status:output,commit:()=>apply.click(),onCancel:cancel,allowSelection:true,context:()=>{const item=api.getPreviewItem?.(state?.source)||available().find(i=>i.id===state?.source),face=item?.faceInfo.find(f=>f.index===state?.sourceFace?.index),target=available().find(i=>i.id===state?.target)?.faceInfo.find(f=>f.index===state?.targetFace?.index);return{items:item?[item]:[],origin:face?.center,axis:target?.cylinder?.axis||target?.normal||face?.cylinder?.axis||face?.normal||[0,0,1]};}});
  }
  function pick(candidates){if(!state)return;const slot=state.pick||'target',items=available();
   const ref=candidates.find(s=>s.visible!==false&&items.some(i=>i.id===s.id)&&(!needsFaces()||validFace(s,state.method)));

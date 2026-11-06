@@ -40,6 +40,7 @@ jobs:
           node tests/native-cache.mjs
           node tests/project-io.mjs
           node tests/sketch-stroke.mjs
+          node tests/parameter-geometry.mjs
           node tests/multi-profile.mjs
           node tests/visualization.mjs
           node tests/smart-dimensions.mjs
@@ -65,6 +66,7 @@ jobs:
               node tests/motion-continuity-ui.mjs
               ;;
             modeling)
+              node tests/canvas-gizmo-ui.mjs
               node tests/sketch-stroke-ui.mjs
               node tests/sketch-file-ux-ui.mjs
               node tests/sketch-regions-ui.mjs
