@@ -6,7 +6,7 @@ const policy=JSON.parse(fs.readFileSync(new URL('../cad-source/release-policy.js
 const mode=process.argv[2], ref=process.env.GITHUB_REF||'';
 const repo=process.env.GITHUB_REPOSITORY||'ReqooCo/Reqoo.co';
 const live='refs/heads/'+policy.live.branch,draft='refs/heads/'+policy.draft.branch;
-const cadPaths=['cad-source/','workers/cad-bridge.js','_web_worker.js','wrangler-web.toml'];
+const cadPaths=['cad-source/','workers/cad-bridge.js','_web_worker.js','wrangler-web.toml','.github/workflows/deploy.yml','.github/workflows/deploy-web-simple.yml','.github/workflows/cad-pr-validation.yml','.github/workflows/cad-live-verification.yml','scripts/reds-release-gate.mjs','scripts/reds-release-gate.test.mjs'];
 const fail=(message)=>{throw new Error('REDS RELEASE BLOCKED: '+message);};
 const isCAD=file=>cadPaths.some(p=>p.endsWith('/')?file.startsWith(p):file===p);
 const event=()=>JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH,'utf8'));
@@ -37,28 +37,42 @@ async function checkPR(){
 }
 async function checkLive(){
  if(ref!==live)fail('Only main may deploy REDS Live.');
- const sha=process.env.GITHUB_SHA;
- if(!sha||!/^([0-9a-f]{40})$/.test(sha))fail('Invalid release commit.');
+ const sha=process.env.GITHUB_SHA,baseline=policy.live.baselineCommit;
+ if(!sha||!/^([0-9a-f]{40})$/.test(sha)||!/^([0-9a-f]{40})$/.test(baseline))
+  fail('Release SHA or approved baseline is missing.');
  const [owner,name]=repo.split('/');
- const commit=await gh('/repos/'+owner+'/'+name+'/commits/'+sha);
- const files=(commit.files||[]).map(f=>f.filename);
- // Other REQOO products continue to use their existing deployment path;
- // this gate is strictly for CAD-related commits.
- if(!files.some(isCAD))return console.log('REDS gate: non-CAD main commit; existing REQOO release unaffected.');
- const prs=await gh('/repos/'+owner+'/'+name+'/commits/'+sha+'/pulls?per_page=100');
- const authorised=prs.find(p=>p.merged_at&&p.base?.ref===policy.live.branch&&
-  p.head?.ref===policy.draft.branch&&p.head?.repo?.full_name===repo);
- if(!authorised)fail('CAD release commit is not a merged PR from '+policy.draft.branch);
- const head=authorised.head?.sha;
- if(!head||!/^([0-9a-f]{40})$/.test(head))fail('PR source SHA unavailable.');
- const result=await gh('/repos/'+owner+'/'+name+'/commits/'+head+'/check-runs?per_page=100');
- for(const required of policy.rules.requiredChecks){
-  const runs=(result.check_runs||[]).filter(c=>c.name===required)
-   .sort((a,b)=>new Date(b.completed_at||0)-new Date(a.completed_at||0));
-  if(!runs.length||runs[0].status!=='completed'||runs[0].conclusion!=='success')
-   fail('Required CAD validation not green on the exact Draft source SHA: '+required);
+ const compare=await gh('/repos/'+owner+'/'+name+'/compare/'+baseline+'...'+sha+'?per_page=100');
+ if(!['ahead','identical'].includes(compare.status))fail('Main no longer descends from approved release baseline.');
+ // Inspect the entire change history, not only the last commit:
+ // a direct CAD push followed by an unrelated commit must remain blocked.
+ const commits=compare.commits||[];
+ if(!Array.isArray(commits)||compare.total_commits>commits.length||commits.length>=100)
+  fail('Release history exceeds audit window; explicitly rotate the approved baseline via reviewed PR.');
+ const validated=new Set();
+ for(const commit of commits){
+  const item=await gh('/repos/'+owner+'/'+name+'/commits/'+commit.sha);
+  if(!Array.isArray(item.files)||item.files.length>=300)
+   fail('Changed-file list incomplete; refuse deployment for commit '+commit.sha);
+  if(!item.files.some(f=>isCAD(f.filename)))continue;
+  const prs=await gh('/repos/'+owner+'/'+name+'/commits/'+commit.sha+'/pulls?per_page=100');
+  if(!Array.isArray(prs))fail('Associated PR list unavailable for '+commit.sha);
+  const authorised=prs.find(p=>p.merged_at&&p.base?.ref===policy.live.branch&&
+   p.head?.ref===policy.draft.branch&&p.head?.repo?.full_name===repo);
+  if(!authorised)fail('Unreviewed CAD or deployment-policy commit exists on main: '+commit.sha);
+  const head=authorised.head?.sha;
+  if(!head||!/^([0-9a-f]{40})$/.test(head))fail('PR source SHA unavailable.');
+  if(validated.has(head))continue;
+  const result=await gh('/repos/'+owner+'/'+name+'/commits/'+head+'/check-runs?per_page=100');
+  for(const required of policy.rules.requiredChecks){
+   const runs=(result.check_runs||[]).filter(c=>c.name===required)
+    .sort((a,b)=>new Date(b.completed_at||0)-new Date(a.completed_at||0));
+   if(!runs.length||runs[0].status!=='completed'||runs[0].conclusion!=='success')
+    fail('Required CAD validation not green at exact Draft SHA '+head+': '+required);
+  }
+  validated.add(head);
+  console.log('REDS gate accepted merged Draft PR #'+authorised.number+' '+head);
  }
- console.log('REDS gate approved: merged Draft PR #'+authorised.number+', SHA '+head+', all CAD checks green.');
+ console.log('REDS gate approved: main source '+sha+' contains no unauthorised CAD commits since baseline '+baseline);
 }
 try{
  if(mode==='check-pr')await checkPR();
