@@ -18,6 +18,15 @@
 6. Protect existing CAD data: never delete originals, backups or history; preserve OpenCascade B-Rep and the native `.rqcad` project format.
 7. **Production release is not authorised merely because CI is green.** Admin GitHub ruleset + environment secret/token separation are open in [issue #278](https://github.com/ReqooCo/Reqoo.co/issues/278). Do not merge/deploy until these controls are verified and user approval/release policy is satisfied.
 
+## Work checkpoint — tool state relationships and Shapr3D layout research (2026-11-07)
+
+- Baseline Draft/PR #277 `08d0973e43d7fd10fda6a7915a89b5b39837c1b4`: exact-head Core/Modeling/Product PASS 42277531241; full deployed Draft/source identity PASS 42277523268. Live unchanged.
+- Owner screenshot IMG_1341 exposed drawing Start Center leaking into Trim, duplicate top/bottom Trim instructions and ambiguous Exit controls. Research uses official adaptive UI, visual refresh, Trim and Constraint Settings documentation; findings and tool boundaries recorded in `REDS-TOOL-RELATIONS.md`.
+- Shared sketch-state refresh now hides drawing-start and rectangle-size controls during editing, closes old tool HUDs, clears old snapping feedback and restores appropriate navigation. Trim Done lives in the single sketch bar beside the sole visible Exit sketch; Done returns to Select. Offset/Profile Apply or Close returns to Select, avoiding accidental drawing and stale tool hints. Switching Trim→Select clears Trim controls.
+- Added browser transition coverage Draw→Trim→Select→Offset→Close→Draw Circle→Trim→Done→Trim; original native Trim/Undo/Redo/reopen, Single/Chain offsets and upstream linked face projection assertions retained. Added desktop/390px screenshots and non-overlap assertions for Done/Exit.
+- Local validation: production build, active-sketch touch Offset/session cancellation, direct-sketch native Extrude/Chamfer/upstream edits/Undo/Redo/reopen, sketch-edit geometry and native parity, project IO, constraints, sketch stroke and diff checks passed. Enhanced parity run PASS, including desktop/phone control non-overlap and tool transition checks; fresh exact-head CI/Draft still required before declaring ready.
+- Known boundaries: derived Offset/Fillet/Profile Trim remains incomplete; no Shapr3D parity claimed. Symmetric dimension-label congestion and phone rail density remain follow-ups. Physical iPad/Pencil unverified. #278 release lock retained.
+
 ## Work checkpoint — precision snapping browser coverage (2026-11-07)
 
 - Start verified Draft HEAD `aafc21f25890cd420145425ab0f88ce8de372ec9`; PR #277 remains the canonical Draft. CI/Draft runs 42276901522/42276892792 were still in progress at inspection; no green status inferred.
