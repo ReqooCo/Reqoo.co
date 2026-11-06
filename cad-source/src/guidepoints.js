@@ -1,7 +1,8 @@
 import {dot,sub,add,mul} from './transform-frames.js';
+const snapPriority={origin:0,intersection:1,endpoint:2,centre:3,midpoint:4};
 export function sketchGuidepoints(items,plane,{hidden=[],draftPoints=[]}={}){
  const y=[plane.normal[1]*plane.x[2]-plane.normal[2]*plane.x[1],plane.normal[2]*plane.x[0]-plane.normal[0]*plane.x[2],plane.normal[0]*plane.x[1]-plane.normal[1]*plane.x[0]],points=[],seen=new Set(),segments=[];
- function addPoint(world,label,kind){if(points.length>=1800||!world?.every(Number.isFinite))return;const rel=sub(world,plane.origin);if(Math.abs(dot(rel,plane.normal))>.02)return;const point=[dot(rel,plane.x),dot(rel,y)],key=point.map(v=>v.toFixed(6)).join(':');if(seen.has(key)){const existing=points.find(p=>p.point.every((v,i)=>Math.abs(v-point[i])<1e-6));if(existing&&kind==='intersection'&&existing.kind!=='origin'){existing.kind=kind;existing.label=label;}return;}seen.add(key);points.push({point,world,label,kind});}
+ function addPoint(world,label,kind){if(points.length>=1800||!world?.every(Number.isFinite))return;const rel=sub(world,plane.origin);if(Math.abs(dot(rel,plane.normal))>.02)return;const point=[dot(rel,plane.x),dot(rel,y)],key=point.map(v=>v.toFixed(6)).join(':');if(seen.has(key)){const existing=points.find(p=>p.point.every((v,i)=>Math.abs(v-point[i])<1e-6));if(existing&&(snapPriority[kind]??9)<(snapPriority[existing.kind]??9)){existing.kind=kind;existing.label=label;existing.world=world;}return;}seen.add(key);points.push({point,world,label,kind});}
  addPoint(plane.origin,'Origin','origin');for(const p of draftPoints)addPoint(add(plane.origin,add(mul(plane.x,p[0]),mul(y,p[1]))),'Sketch endpoint','endpoint');
  for(const item of items){if(hidden.includes(item.id)||item.regionHost)continue;for(const e of item.edges||[]){if(e.type==='LINE'&&e.lines.length>=6){addPoint(e.lines.slice(0,3),'Endpoint · '+item.name,'endpoint');addPoint(e.lines.slice(-3),'Endpoint · '+item.name,'endpoint');addPoint(e.lines.slice(0,3).map((v,i)=>(v+e.lines.at(-3+i))/2),'Midpoint · '+item.name,'midpoint');segments.push([e.lines.slice(0,3),e.lines.slice(-3)]);}else if(e.type==='CIRCLE'||e.type==='ELLIPSE')addPoint(e.center,'Centre · '+item.name,'centre');}
   for(const f of item.faceInfo||[])if(f.type==='PLANE')addPoint(f.center,'Face centre · '+item.name,'centre');
@@ -22,4 +23,4 @@ export function sketchGuidepoints(items,plane,{hidden=[],draftPoints=[]}={}){
  }
  return points;
 }
-export function nearestGuidepoint(raw,points,threshold){let nearest=null,best=threshold**2;const priority={origin:0,intersection:1,endpoint:2,centre:3,midpoint:4};for(const p of points){const d=p.point.reduce((sum,v,i)=>sum+(v-raw[i])**2,0);if(d>best+1e-10)continue;if(d<best-1e-10||!nearest||(priority[p.kind]??9)<(priority[nearest.kind]??9)){best=d;nearest=p;}}return nearest;}
+export function nearestGuidepoint(raw,points,threshold){let nearest=null,best=threshold**2;const priority=snapPriority;for(const p of points){const d=p.point.reduce((sum,v,i)=>sum+(v-raw[i])**2,0);if(d>best+1e-10)continue;if(d<best-1e-10||!nearest||(priority[p.kind]??9)<(priority[nearest.kind]??9)){best=d;nearest=p;}}return nearest;}

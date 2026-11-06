@@ -18,6 +18,16 @@
 6. Protect existing CAD data: never delete originals, backups or history; preserve OpenCascade B-Rep and the native `.rqcad` project format.
 7. **Production release is not authorised merely because CI is green.** Admin GitHub ruleset + environment secret/token separation are open in [issue #278](https://github.com/ReqooCo/Reqoo.co/issues/278). Do not merge/deploy until these controls are verified and user approval/release policy is satisfied.
 
+## Work checkpoint — snapping priority and failing browser regressions (2026-11-07)
+
+- Started from verified Draft/PR #277 HEAD `b4ee7113d42b42f88a8105df7ee145b00977d736`. Both exact-head workflows failed: CAD matrix 42267926728 and Draft browser 42267916785; these are failures, not pending results.
+- Reproduced `tests/cad.mjs` failing before browser startup: midpoint assertion used the world origin, where the intended origin priority deduplicates the midpoint. Test now checks a separate finite line midpoint at x=30 and retains the origin-priority assertion.
+- Fixed actual snapping bug: coincident guidepoint deduplication now uses the same origin/intersection/endpoint/centre/midpoint priority as nearest-point selection, independent of feature order. Added centre/midpoint/intersection, reordered overlap, hidden/off-plane regression tests to the existing native snapping suite.
+- Reproduced Sketch parity browser failure after successful Trim: Offset tests still searched the removed operationGizmo fields. Updated Chain/Single distance/type interactions to the actual accessible Sketch edit HUD controls; kept duplicate-panel rejection and native bounds assertions.
+- Local PASS: production build; full `tests/cad.mjs` desktop/phone native browser suite; `tests/reds-sketch-parity-ui.mjs` touch Trim + Undo/Redo/reload + Chain/Single Offset + linked face projection/upstream rebuild; transform-snapping/guidepoints; sketch-edit-geometry; sketch-native-parity; project-io; constraints; sketch-stroke; diff whitespace validation.
+- Final commit still needs fresh exact-head Core/Modeling/Product and canonical deployed Draft verification. Other earlier matrix failures have not yet been independently diagnosed. Physical iPad/Pencil remains unverified. Live untouched, #278 remains open and release lock unchanged.
+- Next: inspect fresh exact-head Actions failures, fix remaining real errors, then verify canonical Draft source commit/hash and complete browser run.
+
 ## CI diagnostics 2026-11-07
 
 Draft workflow now records each browser test name, duration, and exit status. A 300-second watchdog limits hung tests while preserving failures. Full CI results remain unverified; no Live release.

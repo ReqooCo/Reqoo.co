@@ -59,7 +59,7 @@ try{
  assert.equal(await page.locator('#operationGizmo').isVisible(),false,'Offset must not create a second floating parameter panel');
  hit=await projectSketchPoint(page,[10,0]);await page.touchscreen.tap(hit.x,hit.y);
  assert.equal(await page.locator('#sketchEditHUD [data-offset-type] select').inputValue(),'Chain','Tapping an edge keeps Chain mode');
- await setToolValue(page,'Sketch offset distance','2');
+ await page.getByRole('spinbutton',{name:'Sketch offset distance',exact:true}).fill('2');
  await page.locator('#sketchEditHUD [data-apply]').click();
  await page.waitForFunction(()=>window.__cad.doc.features.at(-1).type==='sketchOffset'&&!window.__cad.gizmo.busy);
  assert.equal(await page.evaluate(()=>window.__cad.doc.features.at(-1).params.mode),'Chain');
@@ -70,10 +70,10 @@ try{
  const single=await op('sketch',{shape:'polyline',points:[[0,0],[20,0],[20,10]],closed:false,plane:'XY'});
  await page.evaluate(id=>window.__cad.select([{id,kind:'sketch'}]),single);
  await page.getByRole('button',{name:'Offset in sketch',exact:true}).click();
- await setToolChoice(page,'Offset edge type','Single');
+ await page.getByRole('combobox',{name:'Offset edge type',exact:true}).selectOption('Single');
  hit=await projectSketchPoint(page,[20,5]);await page.mouse.click(hit.x,hit.y);
  await page.waitForFunction(()=>document.querySelector('#sketchEditHUD')?.dataset.edgeIndex==='1');
- await setToolValue(page,'Sketch offset distance','2');
+ await page.getByRole('spinbutton',{name:'Sketch offset distance',exact:true}).fill('2');
  await page.locator('#sketchEditHUD [data-apply]').click();
  await page.waitForFunction(()=>window.__cad.doc.features.at(-1).type==='sketchOffset'&&!window.__cad.gizmo.busy);
  assert.equal(await page.evaluate(()=>window.__cad.doc.features.at(-1).params.edgeIndex),1);
