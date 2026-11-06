@@ -657,7 +657,16 @@ function sketchBoundaryInFrame(feature,targetFrame){
 async function trimSketchAt(event){
  const candidates=sketchEditableCandidates(event);
  if(!candidates.length){stopSketchTrim();status('Trim complete · sketch remains active');return;}
+ // An exact crossing may select two lines at the same pointer location.
+ // Do not silently trim whichever feature happens to appear first in History.
+ const proximity=(camera.top-camera.bottom)/camera.zoom/renderer.domElement.clientHeight;
+ if(candidates.length>1&&Math.abs(candidates[0].near.distance-candidates[1].near.distance)<=Math.max(1e-5,proximity*.5))
+  throw Error('Multiple sketch edges overlap here. Tap a point away from the intersection or isolate a sketch.');
  const {f,p,b,near}=candidates[0];
+ // Upstream edits of an already consumed profile can invalidate extrusion and
+ // unrelated descendants. Keep committed history intact until repair exists.
+ const dependent=doc.features.find(other=>!other.suppressed&&other.id!==f.id&&other.inputs?.includes(f.id));
+ if(dependent)throw Error('This sketch drives '+(dependent.name||dependent.type)+'. Edit or repair that dependent feature before trimming.');
  if(f.params.constraints?.length)throw Error('This line has constraints. Edit/remove its constraints before trimming.');
  const boundaries=doc.features.filter(other=>other.id!==f.id&&other.type==='sketch').map(other=>{try{return sketchBoundaryInFrame(other,b);}catch{return null;}}).filter(Boolean);
  const result=trimSketchSegment(f.params,p,boundaries,near.distance+1e-6);
