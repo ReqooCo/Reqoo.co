@@ -18,6 +18,10 @@
 6. Protect existing CAD data: never delete originals, backups or history; preserve OpenCascade B-Rep and the native `.rqcad` project format.
 7. **Production release is not authorised merely because CI is green.** Admin GitHub ruleset + environment secret/token separation are open in [issue #278](https://github.com/ReqooCo/Reqoo.co/issues/278). Do not merge/deploy until these controls are verified and user approval/release policy is satisfied.
 
+## CI diagnostics 2026-11-07
+
+Draft workflow now records each browser test name, duration, and exit status. A 300-second watchdog limits hung tests while preserving failures. Full CI results remain unverified; no Live release.
+
 ## Checkpoint — sketch snapping (2026-11-07)
 
 - Draft-only updates: true finite line midpoints, line-line interior intersection snapping, out-of-plane intersection rejection, deterministic priority at overlapping snap locations, and visible point markers even when optional guide lines are off. Existing centre, endpoint and origin snaps retained.
