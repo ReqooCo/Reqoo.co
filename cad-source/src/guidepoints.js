@@ -10,12 +10,13 @@ export function sketchGuidepoints(items,plane,{hidden=[],draftPoints=[]}={}){
  const cap=Math.min(segments.length,160);
  for(let i=0;i<cap;i++)for(let j=i+1;j<cap;j++){
   const [a,b]=segments[i],[c,d]=segments[j];
+  if([a,b,c,d].some(p=>Math.abs(dot(sub(p,plane.origin),plane.normal))>.02))continue;
   const A=[dot(sub(a,plane.origin),plane.x),dot(sub(a,plane.origin),y)],B=[dot(sub(b,plane.origin),plane.x),dot(sub(b,plane.origin),y)];
   const C=[dot(sub(c,plane.origin),plane.x),dot(sub(c,plane.origin),y)],D=[dot(sub(d,plane.origin),plane.x),dot(sub(d,plane.origin),y)];
   const u=[B[0]-A[0],B[1]-A[1]],v=[D[0]-C[0],D[1]-C[1]],w=[C[0]-A[0],C[1]-A[1]],den=u[0]*v[1]-u[1]*v[0];
   if(Math.abs(den)<1e-9)continue;
   const t=(w[0]*v[1]-w[1]*v[0])/den,q=(w[0]*u[1]-w[1]*u[0])/den;
-  if(t<0||t>1||q<0||q>1)continue;
+  if(t<1e-7||t>1-1e-7||q<1e-7||q>1-1e-7)continue;
   const p=[A[0]+t*u[0],A[1]+t*u[1]];
   addPoint(add(plane.origin,add(mul(plane.x,p[0]),mul(y,p[1]))),'Intersection','intersection');
  }
