@@ -674,7 +674,7 @@ async function activateSketchTrim(){
   if(!sketchMode){
    const item=selectedItem(),f=doc.features.find(f=>f.id===item?.featureId);
    if(item?.kind!=='sketch'||f?.type!=='sketch'){status('Start Sketch or select a straight sketch profile before Trim');return;}
-   beginDrawing({...f.params,basis:item.sketchPlane},{direct:true,preserveView:true});
+   beginDrawing({...f.params,basis:item.sketchPlane},{direct:true,preserveView:false});
    sketchMode.createdId=f.id;
   }
   await commitSketchPath();draft=null;clear(preview);drawingMeasure.hidden=true;
