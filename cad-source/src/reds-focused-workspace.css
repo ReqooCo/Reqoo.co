@@ -172,3 +172,22 @@ html[data-theme=light] body.cadWorkspace #operationGizmo[data-error=true] output
  body.cadWorkspace #operationGizmo [data-badges]{bottom:65px;}
  body.cadWorkspace #rail{max-height:calc(100% - 145px);}
 }
+
+/* Avoid covering driving/reference dimension labels with the contextual bar.
+   Standard rail remains available for tool discovery while dimension labels own the canvas. */
+body.cadWorkspace #stage:has(.smartDimensionLabel:not([hidden])) #context{display:none!important;}
+body.cadWorkspace #stage:has(.smartDimensionLabel:not([hidden])) #rail :is(#nav-add,#nav-construct,#nav-transform,#nav-tools,#nav-sketch){display:flex;}
+/* Three workspace tabs must fit their actual labels at tablet widths. */
+@media(min-width:761px){
+ body.cadWorkspace #workspaceModes{width:232px;min-width:232px;max-width:232px;}
+}
+@media(max-width:760px){
+ body.cadWorkspace #workspaceModes{width:206px;min-width:206px;max-width:206px;}
+ body.cadWorkspace #workspaceModes button{gap:2px;font-size:10px;padding:4px 2px;}
+ body.cadWorkspace #workspaceModes svg{width:13px;height:13px;}
+}
+@media(max-width:360px){
+ body.cadWorkspace #workspaceModes{width:138px;min-width:138px;max-width:138px;}
+ body.cadWorkspace #workspaceModes button span{font-size:0;}
+ body.cadWorkspace #workspaceModes svg{width:18px;height:18px;}
+}
