@@ -270,3 +270,17 @@ body.cadWorkspace #quickSketchTools{scrollbar-width:thin;}
  body.cadWorkspace #sketchTrimHUD button{min-width:48px;}
  body.cadWorkspace #stage:has(#sketchTrimHUD:not([hidden])) #sketchEditHUD{display:none!important;}
 }
+
+/* Sketch mode owns a single compact left rail. General 3D tools are reachable
+   through the Solid workspace, not layered behind Sketch tools. */
+body.cadWorkspace #stage[data-workspace=sketch] #rail :is(#nav-search,#nav-sketch,#nav-add,#nav-construct,#nav-transform,#nav-tools,#nav-selection){display:none!important;}
+body.cadWorkspace #stage[data-workspace=sketch] #quickSketchTools,
+body.cadWorkspace #stage[data-workspace=sketch]:not([data-drawing=true]):not([data-sketch-context=true]) #quickSketchTools{
+ left:12px;top:166px;max-height:calc(100% - 240px);width:var(--reds-rail);
+}
+@media(max-width:760px){
+ body.cadWorkspace #stage[data-workspace=sketch] #quickSketchTools,
+ body.cadWorkspace #stage[data-workspace=sketch]:not([data-drawing=true]):not([data-sketch-context=true]) #quickSketchTools{
+  left:8px;top:153px;max-height:calc(100% - 223px);width:44px;
+ }
+}
