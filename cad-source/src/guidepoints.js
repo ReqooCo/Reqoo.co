@@ -22,4 +22,4 @@ export function sketchGuidepoints(items,plane,{hidden=[],draftPoints=[]}={}){
  }
  return points;
 }
-export function nearestGuidepoint(raw,points,threshold){let nearest=null,best=threshold**2;for(const p of points){const d=p.point.reduce((sum,v,i)=>sum+(v-raw[i])**2,0);if(d<best){best=d;nearest=p;}}return nearest;}
+export function nearestGuidepoint(raw,points,threshold){let nearest=null,best=threshold**2;const priority={origin:0,intersection:1,endpoint:2,centre:3,midpoint:4};for(const p of points){const d=p.point.reduce((sum,v,i)=>sum+(v-raw[i])**2,0);if(d>best+1e-10)continue;if(d<best-1e-10||!nearest||(priority[p.kind]??9)<(priority[nearest.kind]??9)){best=d;nearest=p;}}return nearest;}
