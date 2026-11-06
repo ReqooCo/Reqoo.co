@@ -9,7 +9,7 @@ These rules apply equally to ChatGPT, Work, Codex, local scripts and other autom
 - Historical CAD branches are read-only research sources; cherry-pick useful changes **into `reds/draft`**, not onto `main` or a separate deployed preview.
 
 ## Mandatory engineering workflow
-1. Read `cad-source/release-policy.json` and `cad-source/REDS-RELEASE-GOVERNANCE.md`.
+1. Read `cad-source/REDS-HANDOFF.md`, `cad-source/release-policy.json` and `cad-source/REDS-RELEASE-GOVERNANCE.md`. Before any edit, reconcile the latest `reds/draft` SHA with active PR #277. When finishing, update the handoff checkpoint with test and blocker evidence.
 2. Start from the current `reds/draft` head. Preserve committed work and do not force-push.
 3. Fix the root cause; include feature tests, Playwright UX tests and native geometry tests for changes to sketch/modeling/history/save/open.
 4. Run the CAD PR validation matrix (Core, Modeling, Product). Do not call a Draft ready unless all required checks pass on the exact branch head SHA.
