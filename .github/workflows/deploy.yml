@@ -3,7 +3,7 @@ name: Deploy Reqoo Final
 on:
   push:
     branches: [main]
-  workflow_dispatch:
+  # Deliberately no workflow_dispatch: release only after an approved main merge.
 
 permissions:
   contents: read
