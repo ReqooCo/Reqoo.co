@@ -175,8 +175,8 @@ html[data-theme=light] body.cadWorkspace #operationGizmo[data-error=true] output
 
 /* Avoid covering driving/reference dimension labels with the contextual bar.
    Standard rail remains available for tool discovery while dimension labels own the canvas. */
-body.cadWorkspace #stage:has(.smartDimensionLabel:not([hidden])) #context{display:none!important;}
-body.cadWorkspace #stage:has(.smartDimensionLabel:not([hidden])) #rail :is(#nav-add,#nav-construct,#nav-transform,#nav-tools,#nav-sketch){display:flex;}
+body.cadWorkspace #smartDimensionOverlay{z-index:32;}
+body.cadWorkspace #stage:has(#smartDimensionPanel:not([hidden])) #context{display:none!important;}
 /* Three workspace tabs must fit their actual labels at tablet widths. */
 @media(min-width:761px){
  body.cadWorkspace #workspaceModes{width:232px;min-width:232px;max-width:232px;}
