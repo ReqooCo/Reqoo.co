@@ -2,7 +2,7 @@ name: REDS single Draft preview verification
 on:
   push:
     branches: [reds/draft]
-    paths: ['cad-source/**','workers/cad-bridge.js','wrangler-web.toml','_web_worker.js','.github/workflows/cad-live-verification.yml','.github/workflows/deploy.yml']
+    paths: ['cad-source/**','workers/cad-bridge.js','wrangler-web.toml','_web_worker.js','scripts/reds-release-gate.mjs','scripts/reds-release-gate.test.mjs','.github/workflows/cad-pr-validation.yml','.github/workflows/cad-live-verification.yml','.github/workflows/deploy.yml']
 permissions:
   contents: read
 concurrency:
