@@ -8,6 +8,14 @@ for(const hand of ['Right','Left']){
  model=await buildModel(doc([...base,{...thread,params:{...thread.params,hand}}]));const result=model.items[0];assert.ok(result.volume<stock.volume-10);assert.ok(result.faceInfo.some(f=>f.type==='BSPLINE_SURFACE'),'Real helical flanks are present');near(result.bounds[1][2],6);near(result.bounds[0][2],0);
  if(hand==='Right'){rightVolume=result.volume;const blob=await model.export('step',['thread']),text=await blob.text();assert.match(text,/ISO-10303-21/);assert.match(text,/B_SPLINE_SURFACE/);const imported=await R.importSTEP(blob),props=R.measureShapeVolumeProperties(imported);near(Math.abs(props.volume),result.volume,.02);props.delete();imported.delete();}else near(result.volume,rightVolume,.02);model.release();
 }
+// Rebuilding an upstream cylinder with a different height must preserve a valid
+// analytical thread reference, rather than relying on a transient face index.
+const resized=[f('stock','cylinder',{radius:3,height:18})];
+model=await buildModel(doc([...resized,thread]));
+assert.ok(model.items[0].volume>rightVolume,'Larger parent solid keeps the original thread feature');
+near(model.items[0].bounds[1][2],18);
+assert.ok(model.items[0].faceInfo.some(f=>f.type==='BSPLINE_SURFACE'));
+model.release();
 // A rotated/translated cylindrical face must keep its native axis, not camera/world Z.
 base=[...base,f('rotated','rotate',{axis:'Y',angle:90},['stock']),f('positioned','move',{x:12,y:7,z:8},['rotated'])];model=await buildModel(doc(base));const rotated=model.items[0],face=rotated.faceInfo.find(f=>f.cylinder);model.release();model=await buildModel(doc([...base,f('thread','thread',{...autoThread(face.cylinder,{threadLength:3}),face:face.index,faceRef:face.reference},['positioned'])]));near(model.items[0].volume,rightVolume,.02);assert.ok(model.items[0].bounds[0][0]>11.99);model.release();
 // An inner bore uses the complementary internal basic profile.
