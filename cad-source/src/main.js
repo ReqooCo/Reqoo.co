@@ -448,7 +448,7 @@ function updateSketchDimensions(){
  const item=selectedItem(),ref=selection.at(-1);
  const feature=item?.kind==='sketch'&&ref?.kind==='sketch'?resolvedDimensionDoc().features.find(f=>f.id===item.featureId):null;
  const offsetSource=feature?.type==='sketchOffset'?doc.features.find(f=>f.id===feature.inputs[0]&&f.type==='sketch'&&f.params.shape==='circle'&&!f.params.operations?.length):null;
- if(!feature||(feature.type!=='sketch'&&!offsetSource)||busy||parameterGizmo?.active||direct.state.preview){sketchDimensions.hidden=true;dimensionFeature=null;return;}
+ if(!feature||(feature.type!=='sketch'&&!offsetSource)||busy||parameterGizmo?.active||direct.state.preview||Boolean(sketchMode?.editMode&&sketchMode.editMode!=='select')){sketchDimensions.hidden=true;dimensionFeature=null;return;}
  const p=offsetSource?{...offsetSource.params,shape:'annulus',innerRadius:Math.min(offsetSource.params.radius,offsetSource.params.radius+feature.params.distance),radius:Math.max(offsetSource.params.radius,offsetSource.params.radius+feature.params.distance)}:feature.params||{},shape=p.shape;
  const fields=shape==='annulus'?[['innerDiameter','Ø in',2*p.innerRadius],['outerDiameter','Ø out',2*p.radius]]:shape==='circle'?[['diameter','Ø',2*(p.radius??15)]]:
  ['rectangle','ellipse'].includes(shape)?[['width','W',p.width??40],['height','H',p.height??30]]:
