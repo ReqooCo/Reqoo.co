@@ -197,3 +197,14 @@ body.cadWorkspace #quickSketchTools{left:74px;}
 @media(max-width:760px){
  body.cadWorkspace #quickSketchTools{left:60px;}
 }
+
+/* The same visual hierarchy applies to direct-face and transform tools. */
+body.cadWorkspace :is(#faceDistance,#moveDistance,#rotationGizmo){
+ border-radius:12px;box-shadow:0 8px 26px #0003;
+ font-size:12px;
+}
+body.cadWorkspace #stage:has(#faceDistance:not([hidden])) #worldReference,
+body.cadWorkspace #stage:has(#moveGizmo:not([hidden])) #worldReference,
+body.cadWorkspace #stage:has(#rotationGizmo:not([hidden])) #worldReference{
+ opacity:.18;pointer-events:none;
+}
