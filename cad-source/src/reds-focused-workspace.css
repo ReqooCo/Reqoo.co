@@ -208,3 +208,7 @@ body.cadWorkspace #stage:has(#moveGizmo:not([hidden])) #worldReference,
 body.cadWorkspace #stage:has(#rotationGizmo:not([hidden])) #worldReference{
  opacity:.18;pointer-events:none;
 }
+
+/* Short laptop landscape: utilities scroll instead of covering the selection bar. */
+body.cadWorkspace #utilityRail{max-height:calc(100% - 245px);overflow-y:auto;scrollbar-width:none;}
+body.cadWorkspace #utilityRail::-webkit-scrollbar{display:none;}
