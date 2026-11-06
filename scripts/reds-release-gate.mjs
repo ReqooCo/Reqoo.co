@@ -24,7 +24,7 @@ function assertDraftBranch(){
  if(ref!==draft)fail('Only '+draft+' may publish REDS Draft. Received '+ref);
 }
 async function checkPR(){
- if(process.env.GITHUB_EVENT_NAME==='push'){
+ if(['push','workflow_dispatch'].includes(process.env.GITHUB_EVENT_NAME)){
   if(ref!==live)fail('CAD validation push must target main.');
   return console.log('REDS gate: main branch may run validation (not deployment).');
  }
