@@ -56,7 +56,7 @@ try{
  await page.evaluate(id=>window.__cad.select([{id,kind:'sketch'}]),source);
  await page.getByRole('button',{name:'Offset in sketch',exact:true}).click();
  await setToolValue(page,'Sketch offset distance','2');
- await page.locator('#operationGizmo [data-apply]').click();
+ await page.locator('#sketchEditHUD [data-apply]').click();
  await page.waitForFunction(()=>window.__cad.doc.features.at(-1).type==='sketchOffset'&&!window.__cad.gizmo.busy);
  assert.equal(await page.evaluate(()=>window.__cad.doc.features.at(-1).params.mode),'Chain');
  let offset=await page.evaluate(()=>window.__cad.items.find(i=>i.id===window.__cad.doc.features.at(-1).id));
@@ -70,7 +70,7 @@ try{
  hit=await projectSketchPoint(page,[20,5]);await page.mouse.click(hit.x,hit.y);
  await page.waitForFunction(()=>document.querySelector('#sketchEditHUD')?.dataset.edgeIndex==='1');
  await setToolValue(page,'Sketch offset distance','2');
- await page.locator('#operationGizmo [data-apply]').click();
+ await page.locator('#sketchEditHUD [data-apply]').click();
  await page.waitForFunction(()=>window.__cad.doc.features.at(-1).type==='sketchOffset'&&!window.__cad.gizmo.busy);
  assert.equal(await page.evaluate(()=>window.__cad.doc.features.at(-1).params.edgeIndex),1);
  offset=await page.evaluate(()=>window.__cad.items.find(i=>i.id===window.__cad.doc.features.at(-1).id));
