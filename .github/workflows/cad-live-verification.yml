@@ -2,7 +2,7 @@ name: REDS single Draft preview verification
 on:
   push:
     branches: [reds/draft]
-    paths: ['cad-source/**','workers/cad-bridge.js','wrangler-web.toml','_web_worker.js','scripts/reds-release-gate.mjs','scripts/reds-release-gate.test.mjs','scripts/reds-release-test-fetch.mjs','AGENTS.md','.github/workflows/cad-pr-validation.yml','.github/workflows/cad-live-verification.yml','.github/workflows/deploy.yml']
+    paths: ['cad-source/**','workers/cad-bridge.js','wrangler-web.toml','_web_worker.js','scripts/reds-release-gate.mjs','scripts/reds-release-gate.test.mjs', 'scripts/reds-release-surface-audit.mjs','scripts/reds-release-test-fetch.mjs','AGENTS.md','.github/workflows/cad-pr-validation.yml','.github/workflows/cad-live-verification.yml','.github/workflows/deploy.yml']
 permissions:
   contents: read
 concurrency:
@@ -27,6 +27,8 @@ jobs:
           npm run build
       - name: REDS Draft-only deployment gate
         run: node scripts/reds-release-gate.mjs check-draft
+      - name: Ensure there is no second Live or Draft publisher
+        run: node scripts/reds-release-surface-audit.mjs
       - name: Deploy canonical REDS Draft Worker
         working-directory: cad-source
         env:
