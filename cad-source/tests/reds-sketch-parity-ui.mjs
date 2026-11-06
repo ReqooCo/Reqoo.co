@@ -18,6 +18,7 @@ try{
  await page.goto(url+'?test=1');await ready();await fresh();
  await page.locator('#startSketch').click();
  await page.locator('#sketchPlanePicker').waitFor({state:'visible'});
+ assert.equal(await page.getByRole('button',{name:'Draw circle',exact:true}).isVisible(),false,'No premature drawing tools before a plane is chosen');
  const planeHint=await page.locator('.planeInstructions').boundingBox();
  assert.ok(planeHint.width<=320&&planeHint.height<=65,'Sketch plane picker uses a compact in-canvas hint, not a large floating modal');
  for(const plane of ['XY','XZ','YZ'])assert.equal(await page.getByRole('button',{name:'Sketch on '+plane+' plane',exact:true}).isVisible(),true);
