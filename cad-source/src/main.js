@@ -240,7 +240,7 @@ function mountConstraints(p){
 }
 
 function startTool(type,initial={},editId=null){
- if(!ready||busy)return;
+ if(!ready||busy)return;$('sidebar').hidden=true;
  if(type==='sketch'&&!editId){if(sketchMode||planeFromSelection())quickSketch(initial.shape||'rectangle');else chooseSketchPlane(initial.shape||'rectangle');return;}
  if(type==='rotate'&&!editId){const bodies=items.filter(i=>i.kind==='body'&&selectedIds().includes(i.id)&&!(doc.ui.hidden||[]).includes(i.id));if(!bodies.length){status('Select a solid body to rotate');return;}closePanels();direct.cancel();rotationGizmo.begin(bodies);return;}
  if(['move','scale','pattern'].includes(type)&&!editId){const bodies=items.filter(i=>i.kind==='body'&&selectedIds().includes(i.id)&&!(doc.ui.hidden||[]).includes(i.id));if(!bodies.length){status('Select a solid body to move');return;}closePanels();direct.cancel();moveGizmo.begin(bodies,{mode:type,count:preferences.patternCount,spacing:preferences.patternSpacing});return;}
