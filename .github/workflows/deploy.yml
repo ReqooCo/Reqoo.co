@@ -7,15 +7,26 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
+  checks: read
 
 env:
   WRANGLER_VERSION: 4.129.0
 
+concurrency:
+  group: reqoo-production-release
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: reds-live
     steps:
       - uses: actions/checkout@v4
+      - name: REDS Live single-gate verification
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/reds-release-gate.mjs check-live
       - uses: actions/setup-node@v4
         with:
           node-version: 24
