@@ -22,7 +22,9 @@ try{
  assert.equal(await page.getByRole('button',{name:'Trim sketch segment',exact:true}).isVisible(),true);
  await page.getByRole('button',{name:'Trim sketch segment',exact:true}).click();
  await page.locator('#sketchTrimHUD').waitFor({state:'visible'});
- let hit=await projectSketchPoint(page,[10,0]);await page.mouse.click(hit.x,hit.y);
+ const sketchMid=await projectSketchPoint(page,[10,0]);const canvasBounds=await page.locator('#canvas').boundingBox();
+ assert.ok(sketchMid.x>canvasBounds.x+canvasBounds.width*.25&&sketchMid.x<canvasBounds.x+canvasBounds.width*.75,'Editing an existing sketch must center the profile, Shapr3D-style');
+ let hit=sketchMid;await page.mouse.click(hit.x,hit.y);
  await page.waitForFunction(()=>window.__cad.doc.features.length===3&&!window.__cad.gizmo.busy);
  const parts=await page.evaluate(()=>window.__cad.doc.features.filter(f=>f.params.shape==='polyline').map(f=>f.params.points));
  assert.deepEqual(parts,[[[0,0],[6,0]],[[14,0],[20,0]]]);
