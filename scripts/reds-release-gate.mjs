@@ -80,6 +80,17 @@ async function checkLive(){
      verified.head_sha!==head||verified.head_branch!==policy.draft.branch||
      verified.status!=='completed'||verified.conclusion!=='success')
    fail('CAD checks do not originate from the authorised completed CAD PR validation workflow.');
+  const preview=(result.check_runs||[]).filter(c=>c.name==='verify-live'&&c.app?.slug==='github-actions')
+   .sort((a,b)=>new Date(b.completed_at||0)-new Date(a.completed_at||0));
+  if(!preview.length||preview[0].status!=='completed'||preview[0].conclusion!=='success')
+   fail('Canonical REDS Draft Worker browser validation has not passed for source SHA '+head);
+  const previewRun=/\/actions\/runs\/(\d+)\/job\/\d+/.exec(preview[0].details_url||'')?.[1];
+  if(!previewRun)fail('Draft preview check lacks an identifiable GitHub Actions run.');
+  const verifiedPreview=await gh('/repos/'+owner+'/'+name+'/actions/runs/'+previewRun);
+  if(verifiedPreview.name!=='REDS single Draft preview verification'||verifiedPreview.event!=='push'||
+     verifiedPreview.head_sha!==head||verifiedPreview.head_branch!==policy.draft.branch||
+     verifiedPreview.status!=='completed'||verifiedPreview.conclusion!=='success')
+   fail('Draft preview check is not the successful official Worker source and browser verification.');
   validated.add(head);
   console.log('REDS gate accepted merged Draft PR #'+authorised.number+' '+head);
  }
