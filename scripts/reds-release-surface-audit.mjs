@@ -20,7 +20,7 @@ assert.ok(live.indexOf('check-live')<live.indexOf('wrangler deploy --config wran
 assert.match(draft,/^\s+branches: \[reds\/draft\]\s*$/m);
 assert.match(draft,/environment: reds-draft/);
 assert.match(draft,/node scripts\/reds-release-gate\.mjs check-draft/);
-assert.match(draft,/wrangler deploy --config wrangler\.draft\.jsonc/);
+assert.match(draft,/wrangler(?:@[\d.]+)? deploy --config wrangler\.draft\.jsonc/);
 assert.doesNotMatch(draft,/wrangler\.preview\.jsonc|wrangler\.sketch-preview\.jsonc/);
 assert.match(pr,/node scripts\/reds-release-gate\.mjs check-pr/);
 assert.match(pr,/node scripts\/reds-release-gate\.test\.mjs/);
