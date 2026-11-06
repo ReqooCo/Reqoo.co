@@ -69,7 +69,23 @@ jobs:
         working-directory: cad-source
         run: |
           failed=0
-          run_test() { node "$1" || failed=1; }
+          run_test() {
+            local test_file="$1" start end elapsed exit_code
+            start=$(date +%s)
+            echo "::group::CAD ${{ matrix.suite }} | ${test_file} | started $(date -u +%FT%TZ)"
+            if timeout --signal=TERM --kill-after=15s 300s node "$test_file"; then
+              exit_code=0
+            else
+              exit_code=$?
+              failed=1
+            fi
+            end=$(date +%s)
+            elapsed=$((end - start))
+            echo "CAD_TEST_RESULT suite=${{ matrix.suite }} file=${test_file} seconds=${elapsed} exit=${exit_code}"
+            if [ "$exit_code" -eq 124 ]; then echo "::error file=${test_file}::CAD browser test exceeded 300 seconds"; fi
+            if [ "$exit_code" -ne 0 ]; then echo "::error file=${test_file}::CAD browser test failed (exit ${exit_code})"; fi
+            echo "::endgroup::"
+          }
           case "${{ matrix.suite }}" in
             core)
               run_test tests/display-performance-ui.mjs
