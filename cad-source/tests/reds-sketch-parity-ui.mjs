@@ -33,6 +33,11 @@ try{
  await page.keyboard.press('Escape');
  assert.equal(await page.locator('#sketchTrimHUD').isVisible(),false,'Escape only exits Trim, not whole Sketch');
  assert.equal(await page.evaluate(()=>window.__cad.gizmo.sketchMode),true);
+ await page.getByRole('button',{name:'Trim sketch segment',exact:true}).click();
+ await page.locator('#sketchTrimHUD').waitFor({state:'visible'});
+ const blank=await page.locator('#canvas').boundingBox();await page.mouse.click(blank.x+blank.width*.90,blank.y+blank.height*.74);
+ assert.equal(await page.locator('#sketchTrimHUD').isVisible(),false,'Empty grid tap exits Trim while retaining Sketch');
+ assert.equal(await page.evaluate(()=>window.__cad.gizmo.sketchMode),true);
  await page.locator('#finishSketch').click();await page.waitForFunction(()=>!window.__cad.gizmo.sketchMode);
  await page.reload();await ready();assert.equal(await page.evaluate(()=>window.__cad.doc.features.length),3,'Trim survives save/reload');
  await page.screenshot({path:path.join(out,'reds-trim-sketch.png')});
