@@ -42,5 +42,8 @@ try{
  scenario('failed-check',false);
  scenario('wrong-app',false);
  scenario('wrong-workflow',false);
+ scenario('missing-draft',false);
+ scenario('failed-draft',false);
+ scenario('wrong-preview',false);
  console.log('REDS RELEASE GATE PASS: single Draft source, legacy rejection, baseline history, delayed bypass prevention, exact green checks');
 }finally{fs.rmSync(scratch,{recursive:true,force:true});}
