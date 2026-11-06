@@ -4,7 +4,7 @@ if(!scenario)throw Error('REDS_TEST_SCENARIO is required for mock GitHub network
 const source='bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
 const cadCommit='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const nonCAD='cccccccccccccccccccccccccccccccccccccccc';
-const passed=['verify (core)','verify (modeling)','verify (product)'].map(name=>({name,status:'completed',conclusion:'success',completed_at:'2026-11-06T10:00:00Z'}));
+const passed=['verify (core)','verify (modeling)','verify (product)'].map((name,i)=>({name,status:'completed',conclusion:'success',completed_at:'2026-11-06T10:00:00Z',app:{slug:scenario==='wrong-app'?'other-app':'github-actions'},details_url:'https://github.com/ReqooCo/Reqoo.co/actions/runs/100/job/'+(200+i)}));
 globalThis.fetch=async raw=>{
  const uri=new URL(raw),p=uri.pathname;let body;
  if(p.includes('/compare/')){
@@ -21,6 +21,7 @@ globalThis.fetch=async raw=>{
   }];
  else if(p.endsWith('/commits/'+source+'/check-runs'))
   body={check_runs:scenario==='failed-check'?passed.map((c,i)=>i===2?{...c,conclusion:'failure'}:c):passed};
+ else if(p.endsWith('/actions/runs/100'))body={name:scenario==='wrong-workflow'?'Unrelated fake CI':'CAD PR validation',event:'pull_request',head_sha:source,head_branch:'reds/draft',status:'completed',conclusion:'success'};
  else throw Error('Unexpected mock GitHub API endpoint: '+p);
  return new Response(JSON.stringify(body),{status:200,headers:{'content-type':'application/json'}});
 };
