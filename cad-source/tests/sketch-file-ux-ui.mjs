@@ -38,7 +38,7 @@ try{
  });
  try{
   await op('box',{width:2,depth:3,height:4});
-  assert.match(await page.locator('#saveState').innerText(),/Local save failed/);
+  assert.match(await page.locator('#saveState').innerText(),/Download a project backup/);
   assert.deepEqual(await page.evaluate(()=>({project:localStorage.getItem('reqoo-cad-v1'),backup:localStorage.getItem('reqoo-cad-v1-backup')})),protectedCopy);
  }finally{
   await page.evaluate(()=>{Storage.prototype.setItem=window.__originalStorageSetItem;delete window.__originalStorageSetItem;});
