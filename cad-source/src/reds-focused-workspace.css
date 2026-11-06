@@ -212,3 +212,15 @@ body.cadWorkspace #stage:has(#rotationGizmo:not([hidden])) #worldReference{
 /* Short laptop landscape: utilities scroll instead of covering the selection bar. */
 body.cadWorkspace #utilityRail{max-height:calc(100% - 245px);overflow-y:auto;scrollbar-width:none;}
 body.cadWorkspace #utilityRail::-webkit-scrollbar{display:none;}
+
+/* Empty-state guidance belongs above the 3D origin, not on top of it. */
+body.cadWorkspace #stage:not([data-workspace=sketch]) #empty{
+ left:50%;top:28%;transform:translate(-50%,-50%);
+ max-width:min(340px,calc(100% - 140px));
+}
+@media(max-width:760px){
+ body.cadWorkspace #stage:not([data-workspace=sketch]) #empty{left:50%;top:26%;width:min(245px,calc(100% - 126px));}
+}
+@media(max-height:620px){
+ body.cadWorkspace #stage:not([data-workspace=sketch]) #empty{top:27%;}
+}
