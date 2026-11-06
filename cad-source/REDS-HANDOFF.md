@@ -18,6 +18,16 @@
 6. Protect existing CAD data: never delete originals, backups or history; preserve OpenCascade B-Rep and the native `.rqcad` project format.
 7. **Production release is not authorised merely because CI is green.** Admin GitHub ruleset + environment secret/token separation are open in [issue #278](https://github.com/ReqooCo/Reqoo.co/issues/278). Do not merge/deploy until these controls are verified and user approval/release policy is satisfied.
 
+## Work checkpoint — multi-profile Offset and snapping lag (2026-11-07)
+
+- Baseline Draft/PR #277 `ddd9e07ebda02a5ccb779532b99181bcaf7e149b`: Core/Modeling/Product PASS 42300023496; full canonical Draft PASS 42300018226. Owner IMG_1343/1344 reports multiple Offset unavailable, arc showing zero selected and lag.
+- Root causes: Offset selection replaced the previous profile, only one input was allowed, and open arc eligibility was missing. Chain now expands through endpoint-connected source profiles on the same plane, preserving analytic curves. Disconnected selected groups apply in one rebuild/history transaction. Single mode retains one source. Closed native chain results and standalone open arcs can be offset again.
+- Native chain assembly orders/reverses exact 2D curves, rejects disconnected/branched graphs, and uses OpenCascade offsets for mixed closed and open wires. Closed outputs remain extrudable B-Rep faces. Existing single-profile and annular circle workflows retained. Native outlines with holes reject rather than silently dropping inner contours.
+- Lag: geometric guidepoints/intersections were recalculated for every pointer movement. Added a bounded last-result cache keyed by actual items, sketch plane, visibility, isolate selection and draft points; released on sketch exit. Browser regression requires 20 unchanged pointer moves to reuse cached intersections and geometry edits to invalidate them. This proves removal of repeated work, not physical iPad frame-rate parity.
+- Local PASS: build; native mixed line/arc YZ chain, reversed inputs, open chain, repeated chain, standalone arc, exact extrusion/project roundtrip, hole preservation rejection; existing native Trim/Offset/linked projection; expanded browser suite for touch connected-chain selection, repeated offset/reopen, multi-profile batch/one Undo, cache reuse/invalidation; active-sketch touch Offset; project IO, constraints and sketch-edit geometry; diff checks.
+- Fresh exact-head Core/Modeling/Product and canonical Draft browser verification required after push. No Live change. #278 lock remains. Derived Trim, branching chain choices, multiple hole-loop offsets and physical iPad performance remain incomplete.
+- Next: inspect the new exact-head CI/Draft results, then validate the owner's real model/device before claiming the reported lag fully resolved.
+
 ## Work checkpoint — tool state relationships and Shapr3D layout research (2026-11-07)
 
 - Baseline Draft/PR #277 `08d0973e43d7fd10fda6a7915a89b5b39837c1b4`: exact-head Core/Modeling/Product PASS 42277531241; full deployed Draft/source identity PASS 42277523268. Live unchanged.

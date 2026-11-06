@@ -6,6 +6,7 @@ import {cylinderInfo,cutThread} from './thread-solid.js';
 import {WORLD_AXES,rotateFrame,concentricPlacement} from './transform-frames.js';
 import {alignmentDelta} from './snapping.js';
 import {solveSketch} from './constraints.js';
+import {joinedOffsetDrawing,offsetOpenChain} from './offset-chain.js';
 import {offsetSketchPolyline} from './sketch-edit-geometry.js';
 import {normalizedCenter,resolveReference} from './topology.js';
 let meshSerial=0;
@@ -75,7 +76,16 @@ export async function buildModel(doc,{base=null,preview=false,onProgress=()=>{}}
    loops.push(offsetLoop(outer,d));for(const wire of wires){if(wire.isSame(outer))continue;loops.push(offsetLoop(wire,-d));}
    const native=own(loops.length===1?loops[0]:new R.CompoundSketch(loops)),recipe={shape:'faceOutline',closed:true,basis:{origin,x,normal},nativeSketch:native};profiles.set(f.id,recipe);featureFrame=[x,[normal[1]*x[2]-normal[2]*x[1],normal[2]*x[0]-normal[0]*x[2],normal[0]*x[1]-normal[1]*x[0]],normal];save(f,native.face(),'sketch');continue;
   }
-  if(['sketchOffset','sketchFillet','sketchMirror'].includes(f.type)){const original=profiles.get(ins[0]);if(original?.nativeSketch)throw Error('Edit the Offset Sketch distance in History');if(!original)throw Error('Select a sketch first');const op=f.type==='sketchOffset'?{type:'offset',distance:number(p.distance,'Offset distance',-500,500)}:f.type==='sketchFillet'?{type:'fillet',radius:number(p.radius,'Corner radius',.001,500)}:{type:'mirror',axis:p.axis==='X'?'X':'Y'};
+  if(f.type==='sketchOffset'&&ins.length>1){
+   if(p.mode==='Single')throw Error('Single offset needs one sketch edge');
+   const recipes=ins.map(id=>profiles.get(id));if(recipes.some(r=>!r||r.nativeSketch||r.construction))throw Error('Choose editable sketch curves');
+   const plane=basis(recipes[0]);if(recipes.some(r=>JSON.stringify(basis(r))!==JSON.stringify(plane)))throw Error('Choose sketch curves on the same plane');
+   const drawing=joinedOffsetDrawing(recipes.map(profile)),closed=drawing.blueprint.isClosed(),distance=number(p.distance,'Offset distance',-500,500);
+   if(Math.abs(distance)<1e-7)throw Error('Enter a non-zero offset distance');
+   if(closed){const source=drawing.sketchOnPlane(new R.Plane(plane.origin,plane.x,plane.normal));let native;try{const face=own(source.face());native=own(R.sketchFaceOffset(face,distance));}finally{source.delete();}profiles.set(f.id,{shape:'chain',closed:true,basis:plane,nativeSketch:native});save(f,native.face(),'sketch');}
+   else{const source=drawing.sketchOnPlane(new R.Plane(plane.origin,plane.x,plane.normal));let native;try{native=own(offsetOpenChain(source,distance,plane));}finally{source.delete();}profiles.set(f.id,{shape:'chain',closed:false,basis:plane,nativeSketch:native});save(f,native.wire.clone(),'sketch');}if(!p.keepInputs)ins.forEach(consume);continue;
+  }
+  if(['sketchOffset','sketchFillet','sketchMirror'].includes(f.type)){let original=profiles.get(ins[0]);if(f.type==='sketchOffset'&&original?.shape==='arc'&&original.closed===false&&!original.nativeSketch)original={...original,nativeSketch:own(sketch(original))};if(original?.nativeSketch&&f.type==='sketchOffset'){const distance=number(p.distance,'Offset distance',-500,500);if(p.mode==='Single'&&original.closed!==false)throw Error('Choose Chain for this closed sketch');if(Math.abs(distance)<1e-7)throw Error('Enter a non-zero offset distance');let native;if(original.closed===false)native=own(offsetOpenChain(original.nativeSketch,distance,basis(original)));else{const face=own(original.nativeSketch.face()),loops=face.wires,hasHoles=loops.length>1;loops.forEach(w=>w.delete());if(hasHoles)throw Error('Offset contours with holes separately');native=own(R.sketchFaceOffset(face,distance));}profiles.set(f.id,{...original,nativeSketch:native});save(f,original.closed===false?native.wire.clone():native.face(),'sketch');if(!p.keepInputs)consume(ins[0]);continue;}if(original?.nativeSketch)throw Error('Edit the original sketch in History');if(!original)throw Error('Select a sketch first');const op=f.type==='sketchOffset'?{type:'offset',distance:number(p.distance,'Offset distance',-500,500)}:f.type==='sketchFillet'?{type:'fillet',radius:number(p.radius,'Corner radius',.001,500)}:{type:'mirror',axis:p.axis==='X'?'X':'Y'};
   const directOffset=f.type==='sketchOffset'&&(original.shape==='polyline'&&original.closed===false||p.mode==='Single'&&['polyline','rectangle'].includes(original.shape));
   const source=directOffset&&original.shape==='polyline'&&original.constraints?.length?{...original,points:solveSketch(original.points,original.constraints).points,constraints:[]}:original;
   const recipe=directOffset?{...original,...offsetSketchPolyline(source,op.distance,{mode:p.mode||'Chain',edgeIndex:p.edgeIndex??0}),operations:[]}:{...original,operations:[...(original.operations||[]),op]};

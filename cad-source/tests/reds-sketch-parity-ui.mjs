@@ -149,6 +149,31 @@ try{
  assert.equal(await page.evaluate(()=>window.__cad.doc.features.length),2,'Ambiguous Trim must preserve the entire history');
  assert.equal(await page.locator('#sketchTrimHUD').isVisible(),true,'Recoverable ambiguity keeps Trim active');
  await page.screenshot({path:path.join(out,'reds-trim-overlap-safe.png')});
+
+ // Reported mixed chain: several straight edges plus a separately trimmed arc on YZ.
+ await page.locator('#finishSketch').click();await fresh();await beginSketch(page,{plane:'YZ',shape:'polyline'});
+ const chainLine=await op('sketch',{shape:'polyline',points:[[0,0],[20,0],[20,20],[0,20]],closed:false,plane:'YZ'});
+ const chainArc=await op('sketch',{shape:'arc',points:[[0,20],[0,0]],sagitta:10,closed:false,plane:'YZ'});
+ await page.evaluate(()=>window.__cad.select([]));await page.getByRole('button',{name:'Offset in sketch',exact:true}).click();
+ hit=await projectSketchPoint(page,[20,10]);await page.touchscreen.tap(hit.x,hit.y);
+ assert.equal(await page.evaluate(()=>window.__cad.selection.length),2,'Chain selects connected source line and arc');
+ await page.getByRole('spinbutton',{name:'Sketch offset distance',exact:true}).fill('1');await page.locator('#sketchEditHUD [data-apply]').click();
+ await page.waitForFunction(()=>window.__cad.doc.features.at(-1).type==='sketchOffset'&&!window.__cad.gizmo.busy);
+ const chainId=await page.evaluate(()=>window.__cad.doc.features.at(-1).id),chainItem=await page.evaluate(id=>window.__cad.items.find(i=>i.id===id),chainId);
+ assert.equal(chainItem.profileClosed,true);assert.ok(chainItem.edges.some(e=>e.type==='CIRCLE'));
+ await page.locator('#undo').click();await page.waitForFunction(()=>window.__cad.doc.features.length===2&&!window.__cad.gizmo.busy);
+ await page.locator('#redo').click();await page.waitForFunction(()=>window.__cad.doc.features.length===3&&!window.__cad.gizmo.busy);
+ await page.evaluate(id=>window.__cad.select([{id,kind:'sketch'}]),chainId);await page.getByRole('button',{name:'Offset in sketch',exact:true}).click();await page.locator('#sketchEditHUD [data-apply]').click();await page.waitForFunction(()=>window.__cad.doc.features.length===4&&!window.__cad.gizmo.busy);
+ await page.locator('#finishSketch').click();await page.reload();await ready();assert.equal(await page.evaluate(()=>window.__cad.doc.features.length),4,'Repeated mixed offset survives reopen');
+ await fresh();await beginSketch(page,{shape:'polyline'});
+ const manyA=await op('sketch',{shape:'rectangle',width:10,height:10,x:-20,plane:'XY'}),manyB=await op('sketch',{shape:'circle',radius:5,x:20,plane:'XY'});
+ await page.evaluate(ids=>window.__cad.select(ids.map(id=>({id,kind:'sketch'}))),[manyA,manyB]);await page.getByRole('button',{name:'Offset in sketch',exact:true}).click();await page.locator('#sketchEditHUD [data-apply]').click();await page.waitForFunction(()=>window.__cad.doc.features.length===4&&!window.__cad.gizmo.busy);
+ await page.locator('#undo').click();await page.waitForFunction(()=>window.__cad.doc.features.length===2&&!window.__cad.gizmo.busy);
+ await page.getByRole('button',{name:'Draw line',exact:true}).click();hit=await projectSketchPoint(page,[0,-15]);await page.mouse.move(hit.x,hit.y);
+ const cacheBefore=await page.evaluate(()=>window.__cad.snapCacheStats);for(let n=0;n<20;n++)await page.mouse.move(hit.x+n,hit.y);
+ const cacheAfter=await page.evaluate(()=>window.__cad.snapCacheStats);assert.equal(cacheAfter.builds,cacheBefore.builds,'Hover reuses geometric intersection cache');assert.ok(cacheAfter.hits-cacheBefore.hits>=15,'Pointer movement hits the cache');
+ await op('sketch',{shape:'polyline',points:[[60,60],[70,60]],closed:false,plane:'XY'});await page.mouse.move(hit.x+25,hit.y);assert.equal((await page.evaluate(()=>window.__cad.snapCacheStats)).builds,cacheAfter.builds+1,'Geometry edits invalidate cached guidepoints');
+ await page.locator('#finishSketch').click();
  assert.deepEqual(errors,[]);
- console.log('REDS SKETCH PARITY UI PASS: tap Trim exact intersections, Undo/Redo/reopen, open Chain/Single Offset, one-tap linked Project Face and upstream rebuild');
+ console.log('REDS SKETCH PARITY UI PASS: tap Trim exact intersections, Undo/Redo/reopen, open Chain/Single Offset, one-tap linked Project Face and upstream rebuild; mixed line/arc Chain, repeated/batch offsets and cached snapping');
 }catch(e){console.error('REDS SKETCH PARITY UI FAILED',e,errors,await page.locator('body').innerText());await page.screenshot({path:path.join(out,'reds-sketch-parity-failure.png')}).catch(()=>{});throw e;}finally{await browser.close();await new Promise(r=>server.close(r));}
