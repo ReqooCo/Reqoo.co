@@ -545,7 +545,7 @@ renderer.domElement.addEventListener('pointerdown',e=>{
 renderer.domElement.addEventListener('pointermove',e=>{if(sketchMode&&e.buttons&&!(e.buttons&1))return;if(sketchTouch(e,'move'))return;if(e.pointerType==='touch'&&penActive){e.preventDefault();e.stopImmediatePropagation();return;}if(e.pointerType==='pen'){e.preventDefault();e.stopImmediatePropagation();lastPenAt=performance.now();}if(pointerStart&&Math.hypot(e.clientX-pointerStart.x,e.clientY-pointerStart.y)>5){pointerStart.moved=true;lastCanvasTap=null;}if(sketchMode&&!sketchMode.editMode&&touchCount<=1){cast(e);if(draft)drawingMove(e);else worldOnSketch(e);}},true);
 renderer.domElement.addEventListener('pointerup',e=>{if(sketchMode&&e.button!==0)return;if(busy){pointerStart=null;touchCount=0;return;}if(e.pointerType==='touch'&&penActive){e.preventDefault();e.stopImmediatePropagation();return;}if(e.pointerType==='pen'){e.preventDefault();e.stopImmediatePropagation();penActive=false;lastPenAt=performance.now();}if(sketchTouch(e,'up'))return;const tap=pointerStart&&!pointerStart.moved&&touchCount<=1;if(sketchMode&&!sketchMode.editMode){if(tap&&draft&&!draft.poly){cast(e);const hit=ray.intersectObjects(root.children,true).find(h=>h.object.userData.kind==='sketch'||h.object.userData.itemKind==='sketch');if(draft.secondTap){finishDrag(e);}else if(hit){const id=hit.object.userData.id;sketchMode.createdId=id;select([{id,kind:'sketch'}]);draft=null;drawingMeasure.hidden=true;clear(preview);}else{draft.anchored=true;updateHistoryButtons();status('Tap the end point · drag also works');}}else if(draft)finishDrag(e);}else if(tap){cast(e);if(planePicker?.active){planePicker.pick(ray);pointerStart=null;if(e.pointerType==='touch')touchCount=Math.max(0,touchCount-1);return;}
  if(sketchMode?.editMode==='trimEdge'){trimSketchAt(e).catch(err=>status(err.message));pointerStart=null;if(e.pointerType==='touch')touchCount=Math.max(0,touchCount-1);return;}
- if(sketchMode?.editMode==='offset'&&$('sketchEditHUD')?.querySelector('[data-offset-type] select')?.value==='Single'){chooseSingleOffsetEdge(e);pointerStart=null;if(e.pointerType==='touch')touchCount=Math.max(0,touchCount-1);return;}
+ if(sketchMode?.editMode==='offset'){chooseOffsetSketchEdge(e);pointerStart=null;if(e.pointerType==='touch')touchCount=Math.max(0,touchCount-1);return;}
  const mode=sketchMode?.editMode?'sketch':visualizer?.active?'body':$('pickMode').value,hits=ray.intersectObjects(root.children,true),front=hits.find(h=>h.object.isMesh&&h.object.userData.kind==='body'),tolerance=(camera.top-camera.bottom)/camera.zoom/renderer.domElement.clientHeight*3;
  const isSketch=h=>h.object.userData.kind==='sketch'||h.object.userData.itemKind==='sketch',visible=h=>preferences.displayMode==='wireframe'||!front||h.distance<=front.distance+tolerance;
  let eligible=mode==='edge'?hits.filter(h=>h.object.isLineSegments&&h.object.userData.itemKind==='body'&&visible(h)):mode==='body'?hits.filter(h=>h.object.isMesh&&h.object.userData.kind==='body'):mode==='face'?hits.filter(h=>h.object.isMesh&&h.object.userData.kind==='body'):mode==='sketch'?hits.filter(h=>isSketch(h)&&visible(h)):hits.filter(h=>(isSketch(h)||h.object.isMesh||h.object.isLineSegments&&h.object.userData.itemKind==='body'&&(h.distanceToRay||0)<=(200/camera.zoom/renderer.domElement.clientHeight*(e.pointerType==='touch'?9:5)))&&visible(h));
@@ -719,14 +719,15 @@ function stopSketchTrim(){
  if(sketchMode?.editMode==='trimEdge')sketchMode.editMode='select';refreshSketchHint();
  render(true);workspaceChrome?.update();
 }
-function chooseSingleOffsetEdge(event){
+function chooseOffsetSketchEdge(event){
+ const hud=$('sketchEditHUD');if(!hud)return;
  const candidates=sketchEditableCandidates(event);
- if(!candidates.length){status('Single offset: tap a straight sketch edge');return;}
- const {f,near}=candidates[0],hud=$('sketchEditHUD');
- if(!hud)return;
+ if(!candidates.length){status('Offset · tap a sketch edge');return;}
+ const {f,near}=candidates[0],mode=hud.querySelector('[data-offset-type] select').value;
  hud.dataset.edgeIndex=String(near.index);
- hud.querySelector('output').textContent='Edge '+(near.index+1)+' selected';
- select([{id:f.id,kind:'sketch'}]);parameterGizmo?.changed();
+ select([{id:f.id,kind:'sketch'}]);
+ hud.querySelector('output').textContent=mode==='Single'?'Edge '+(near.index+1)+' selected':'Chain selected · '+(f.name||'sketch');
+ parameterGizmo?.changed();
 }
 async function activateSketchEdit(action){if(action==='trim')return activateSketchTrim();if(busy)return;parameterGizmo?.cancel();if($('sketchTrimHUD'))$('sketchTrimHUD').hidden=true;try{if(!sketchMode){const ref=selection.at(-1),item=items.find(i=>i.id===ref?.id);if(item?.kind!=='sketch'||action!=='offset'&&!item.profileClosed){status('Start a sketch or select a suitable sketch profile');return;}const feature=doc.features.find(f=>f.id===item.featureId);beginDrawing({...feature.params,basis:item.sketchPlane,shape:feature.params.shape||'rectangle'},{direct:true,preserveView:true});sketchMode.createdId=item.id;}
  await commitSketchPath();draft=null;clear(preview);drawingMeasure.hidden=true;sketchMode.editMode=action;refreshSketchHint();controls.enabled=false;
