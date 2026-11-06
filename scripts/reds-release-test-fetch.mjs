@@ -5,6 +5,7 @@ const source='bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
 const cadCommit='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const nonCAD='cccccccccccccccccccccccccccccccccccccccc';
 const passed=['verify (core)','verify (modeling)','verify (product)'].map((name,i)=>({name,status:'completed',conclusion:'success',completed_at:'2026-11-06T10:00:00Z',app:{slug:scenario==='wrong-app'?'other-app':'github-actions'},details_url:'https://github.com/ReqooCo/Reqoo.co/actions/runs/100/job/'+(200+i)}));
+const preview={name:'verify-live',status:'completed',conclusion:scenario==='failed-draft'?'failure':'success',completed_at:'2026-11-06T10:01:00Z',app:{slug:'github-actions'},details_url:'https://github.com/ReqooCo/Reqoo.co/actions/runs/101/job/300'};
 globalThis.fetch=async raw=>{
  const uri=new URL(raw),p=uri.pathname;let body;
  if(p.includes('/compare/')){
@@ -20,8 +21,9 @@ globalThis.fetch=async raw=>{
    base:{ref:'main'},head:{ref:'reds/draft',repo:{full_name:'ReqooCo/Reqoo.co'},sha:source}
   }];
  else if(p.endsWith('/commits/'+source+'/check-runs'))
-  body={check_runs:scenario==='failed-check'?passed.map((c,i)=>i===2?{...c,conclusion:'failure'}:c):passed};
+  body={check_runs:[...(scenario==='failed-check'?passed.map((c,i)=>i===2?{...c,conclusion:'failure'}:c):passed),...(scenario==='missing-draft'?[]:[preview])]};
  else if(p.endsWith('/actions/runs/100'))body={name:scenario==='wrong-workflow'?'Unrelated fake CI':'CAD PR validation',event:'pull_request',head_sha:source,head_branch:'reds/draft',status:'completed',conclusion:'success'};
+ else if(p.endsWith('/actions/runs/101'))body={name:scenario==='wrong-preview'?'Not REDS Draft':'REDS single Draft preview verification',event:'push',head_sha:source,head_branch:'reds/draft',status:'completed',conclusion:'success'};
  else throw Error('Unexpected mock GitHub API endpoint: '+p);
  return new Response(JSON.stringify(body),{status:200,headers:{'content-type':'application/json'}});
 };
