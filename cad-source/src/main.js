@@ -1,6 +1,6 @@
 import {createCanvasToolGizmo} from './canvas-tool-gizmo.js';
 import {appendStrokePoint} from './sketch-stroke.js';
-import {geometryPoints,closedGeometry,trimSketchSegment} from './sketch-edit-geometry.js';
+import {geometryPoints,closedGeometry,trimSketchSegment,nearestCircularSketch} from './sketch-edit-geometry.js';
 import {parseProject,serializeProject} from './project-io.js';
 import {createDisplayCache} from './display-cache.js';
 import {LineSegments2} from 'three/addons/lines/LineSegments2.js';
@@ -632,19 +632,25 @@ function sketchEditableCandidates(event){
  if(!at)return[];
  const tolerance=(camera.top-camera.bottom)/camera.zoom/renderer.domElement.clientHeight*(event.pointerType==='touch'?18:12);
  const visibleSketches=new Set(items.filter(item=>item.kind==='sketch').map(item=>item.featureId||item.id));
- return doc.features.filter(f=>visibleSketches.has(f.id)&&f.type==='sketch'&&['polyline','rectangle'].includes(f.params.shape)&&!(doc.ui.hidden||[]).includes(f.id))
+ return doc.features.filter(f=>visibleSketches.has(f.id)&&f.type==='sketch'&&(sketchMode.editMode==='trimEdge'?['polyline','rectangle','circle','arc']:['polyline','rectangle']).includes(f.params.shape)&&!(doc.ui.hidden||[]).includes(f.id))
  .flatMap(f=>{try{
   const b=basis(f.params);if(!sameSketchPlane(b,active))return[];
-  const p=sketchPointToFrame(at,active,b),near=nearestLineOnSketch(f.params,p);
+  const p=sketchPointToFrame(at,active,b),near=['circle','arc'].includes(f.params.shape)?nearestCircularSketch(f.params,p):nearestLineOnSketch(f.params,p);
   return near.distance<=tolerance?[{f,p,b,near}]:[];
  }catch{return[];} }).sort((a,b)=>a.near.distance-b.near.distance);
 }
 function sketchBoundaryInFrame(feature,targetFrame){
  const p=feature.params,source=basis(p);
  if(!sameSketchPlane(source,targetFrame))return null;
+ if(p.operations?.length||!['polyline','rectangle','circle','arc','ellipse'].includes(p.shape))return {shape:'unsupported'};
  if(['polyline','rectangle'].includes(p.shape)){
   const points=geometryPoints(p).map(q=>sketchPointToFrame(q,source,targetFrame));
   return{shape:'polyline',points,closed:closedGeometry(p),x:0,y:0};
+ }
+ if(p.shape==='arc'){
+  const points=p.points.map(q=>sketchPointToFrame([q[0]+(p.x||0),q[1]+(p.y||0)],source,targetFrame));
+  if(skDot(source.normal,targetFrame.normal)<0)points.reverse();
+  return {...p,points,x:0,y:0};
  }
  if(['circle','ellipse'].includes(p.shape)){
   // A circle is invariant to in-plane frame rotations. An ellipse is not.
@@ -669,7 +675,7 @@ async function trimSketchAt(event){
  const dependent=doc.features.find(other=>!other.suppressed&&other.id!==f.id&&other.inputs?.includes(f.id));
  if(dependent)throw Error('This sketch drives '+(dependent.name||dependent.type)+'. Edit or repair that dependent feature before trimming.');
  if(f.params.constraints?.length)throw Error('This line has constraints. Edit/remove its constraints before trimming.');
- const boundaries=doc.features.filter(other=>other.id!==f.id&&other.type==='sketch').map(other=>{try{return sketchBoundaryInFrame(other,b);}catch{return null;}}).filter(Boolean);
+ const boundaries=doc.features.filter(other=>other.id!==f.id&&other.type==='sketch'&&!other.suppressed&&!(doc.ui.hidden||[]).includes(other.id)).map(other=>{try{return sketchBoundaryInFrame(other,b);}catch{return null;}}).filter(Boolean);
  const result=trimSketchSegment(f.params,p,boundaries,near.distance+1e-6);
  const next=snapshot(),index=next.features.findIndex(feature=>feature.id===f.id);
  if(index<0)throw Error('Selected sketch is no longer available');
@@ -700,7 +706,7 @@ async function activateSketchTrim(){
   sketchMode.editMode='trimEdge';
   let hud=$('sketchTrimHUD');
   if(!hud){hud=document.createElement('div');hud.id='sketchTrimHUD';hud.dataset.control='sketch-trim';
-   hud.innerHTML='<strong>Trim</strong><span>Tap a line segment to remove</span><button type="button" aria-label="Exit Trim">Exit</button>';
+   hud.innerHTML='<strong>Trim</strong><span>Tap a line or circular edge to remove</span><button type="button" aria-label="Exit Trim">Exit</button>';
    hud.querySelector('button').onclick=stopSketchTrim;$('stage').append(hud);
   }
   hud.hidden=false;render(true);workspaceChrome?.update();

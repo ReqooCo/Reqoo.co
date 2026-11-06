@@ -17,7 +17,7 @@ Legend: **Implemented** means code and test are present but still require latest
 | 5. Circle | Center/radius/diameter | `sketch-drag.js`, sketch dimension overlays | Implemented |
 | 6. Ellipse/polygon | Direct sketch | Native recipes | Implemented |
 | 7. Arc/spline | Interactive drawing/edit | Initial primitives, limited curve editing | Partial |
-| 8. Trim edge | Tap line/arc segment between intersections | New `sketch-edit-geometry.js` + `Trim sketch segment` button; exact straight segment cutting and line/rectangle/circle/ellipse intersections | Partial |
+| 8. Trim edge | Tap line/arc segment between intersections | New `sketch-edit-geometry.js` + `Trim sketch segment` button; exact straight segment cutting plus circular/arc Trim against line/rectangle/circle/arc boundaries; native circular arc remainders; ellipse/spline curve Trim still incomplete | Partial |
 | 9. Trim closed region | Trim area/cut | Existing `sketchProfile` Cut, separate from Trim Edge | Implemented |
 | 10. Offset Single | Select edge, drag/enter distance | New mode: straight line/rectangle segment, source edge index | Partial |
 | 11. Offset Chain | Select chain/profile, drag/enter distance | Native closed profile offset; new open polyline offset with precise miter geometry | Partial |

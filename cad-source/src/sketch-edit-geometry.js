@@ -22,6 +22,7 @@ export function geometryPoints(p){
 }
 export function closedGeometry(p){return p.shape==='rectangle'||p.shape==='polyline'&&p.closed!==false;}
 export function sketchSegments(p){
+ if(p.shape==='arc'){try{return [{curve:sketchCircularCurve(p)}];}catch{return[];}}
  if(p.shape==='circle'){
   const x=Number(p.x||0),y=Number(p.y||0),r=Number(p.radius);
   if(!(r>0))return[];
@@ -44,18 +45,83 @@ function intersections(a,b,other){
   if(Math.abs(den)<EPS)return ans;
   const t=cross(sub(q,a),w)/den,u=cross(sub(q,a),v)/den;
   if(t>EPS&&t<1-EPS&&u>=-EPS&&u<=1+EPS)ans.push(t);
- } else if(other.circle||other.ellipse){
-  const g=other.circle||other.ellipse,[cx,cy,ra,rb=ra]=g;
+ } else if(other.circle||other.ellipse||other.curve){
+  const g=other.curve?[...other.curve.center,other.curve.radius]:other.circle||other.ellipse,[cx,cy,ra,rb=ra]=g;
   const x=(a[0]-cx)/ra,y=(a[1]-cy)/rb,dx=v[0]/ra,dy=v[1]/rb;
   const A=dx*dx+dy*dy,B=2*(x*dx+y*dy),C=x*x+y*y-1,D=B*B-4*A*C;
   if(A<EPS||D<0)return ans;
   for(const t of [(-B-Math.sqrt(Math.max(0,D)))/(2*A),(-B+Math.sqrt(Math.max(0,D)))/(2*A)])
-   if(t>EPS&&t<1-EPS&&!ans.some(k=>Math.abs(k-t)<EPS))ans.push(t);
+   if(t>EPS&&t<1-EPS&&(!other.curve||curveParameter(other.curve,lerp(a,b,t))<=1+EPS)&&!ans.some(k=>Math.abs(k-t)<EPS))ans.push(t);
  }
  return ans;
 }
 const recipe=points=>({shape:'polyline',points:clean(points),closed:false,x:0,y:0,constraints:[],operations:[]});
+const TAU=2*Math.PI;
+const angle=a=>(a%TAU+TAU)%TAU;
+export function sketchCircularCurve(p){
+ if(p.operations?.length)throw Error('Edit the original sketch before trimming derived operations');
+ const offset=[Number(p.x||0),Number(p.y||0)];
+ if(p.shape==='circle'){
+  if(!(Number.isFinite(p.radius)&&p.radius>0))throw Error('Circle needs a positive radius');
+  return {center:offset,radius:p.radius,start:0,sweep:TAU,closed:true};
+ }
+ if(p.shape!=='arc'||p.closed!==false)throw Error('Select an open circular arc');
+ const [a,b]=p.points.map(q=>add(q,offset)),v=sub(b,a),length=Math.hypot(...v),h=Number(p.sagitta??10);
+ if(!(length>EPS&&h>EPS&&Number.isFinite(h)))throw Error('Arc needs distinct endpoints and positive height');
+ const n=[-v[1]/length,v[0]/length],mid=mul(add(a,b),.5),center=add(mid,mul(n,(h*h-length*length/4)/(2*h)));
+ const start=Math.atan2(a[1]-center[1],a[0]-center[0]),end=Math.atan2(b[1]-center[1],b[0]-center[0]);
+ return {center,radius:dist(a,center),start,sweep:-angle(start-end),closed:false};
+}
+const curvePoint=(c,t)=>add(c.center,[c.radius*Math.cos(c.start+c.sweep*t),c.radius*Math.sin(c.start+c.sweep*t)]);
+function curveParameter(c,p){const a=Math.atan2(p[1]-c.center[1],p[0]-c.center[0]);return (c.sweep>0?angle(a-c.start):angle(c.start-a))/Math.abs(c.sweep);}
+export function nearestCircularSketch(p,point){
+ const c=sketchCircularCurve(p),t=curveParameter(c,point);
+ if(c.closed||t<=1+EPS)return {distance:Math.abs(dist(point,c.center)-c.radius),index:0};
+ return {distance:Math.min(dist(point,curvePoint(c,0)),dist(point,curvePoint(c,1))),index:0};
+}
+function curveRecipe(c,left,right){
+ let a=curvePoint(c,left),b=curvePoint(c,right);const mid=curvePoint(c,(left+right)/2),v=sub(b,a),length=Math.hypot(...v);
+ let h=cross(v,sub(mid,mul(add(a,b),.5)))/length;
+ if(h<0){[a,b]=[b,a];h=-h;}
+ return {shape:'arc',points:[a,b],sagitta:h,closed:false,x:0,y:0,constraints:[],operations:[]};
+}
+function circularIntersections(c,other){
+ if(other.ellipse)throw Error('Trim against ellipse boundaries is not supported for circular edges yet');
+ if(other.a){
+  const v=sub(other.b,other.a),A=v[0]*v[0]+v[1]*v[1],q=sub(other.a,c.center),B=2*(q[0]*v[0]+q[1]*v[1]),C=q[0]*q[0]+q[1]*q[1]-c.radius*c.radius,D=B*B-4*A*C;
+  if(A<EPS||D<=EPS)return []; // Tangency does not divide a curve.
+  return [(-B-Math.sqrt(D))/(2*A),(-B+Math.sqrt(D))/(2*A)].filter(t=>t>=-EPS&&t<=1+EPS).map(t=>lerp(other.a,other.b,t));
+ }
+ const g=other.curve||(other.circle?{center:other.circle.slice(0,2),radius:other.circle[2],closed:true}:null);
+ if(!g)return[];
+ const d=dist(c.center,g.center),r=c.radius,R=g.radius;
+ if(d<EPS){if(Math.abs(r-R)<EPS)throw Error('Coincident circular edges overlap. Isolate or remove the duplicate before Trim');return[];}
+ if(d>=r+R-EPS||d<=Math.abs(r-R)+EPS)return[];
+ const x=(r*r-R*R+d*d)/(2*d),h=Math.sqrt(Math.max(0,r*r-x*x)),u=mul(sub(g.center,c.center),1/d),base=add(c.center,mul(u,x));
+ return [add(base,[-u[1]*h,u[0]*h]),add(base,[u[1]*h,-u[0]*h])].filter(p=>g.closed||curveParameter(g,p)<=1+EPS);
+}
+function trimCircularSketch(source,point,boundaries,hitTolerance){
+ const c=sketchCircularCurve(source);
+ if(nearestCircularSketch(source,point).distance>hitTolerance)throw Error('Tap directly on the circular sketch edge to trim');
+ if(boundaries.some(p=>p.operations?.length||!['polyline','rectangle','circle','arc','ellipse'].includes(p.shape)))throw Error('Trim against this curve boundary is not supported yet');
+ const cuts=[];
+ for(const other of boundaries.flatMap(sketchSegments))for(const p of circularIntersections(c,other)){
+  const t=curveParameter(c,p);if(c.closed||t>EPS&&t<1-EPS)cuts.push(t);
+ }
+ cuts.sort((a,b)=>a-b);const unique=cuts.filter((t,i)=>i===0||t-cuts[i-1]>EPS);
+ const tap=curveParameter(c,point);
+ if(c.closed){
+  if(unique.length<2)return {segmentIndex:0,cut:[0,1],parts:[]};
+  let left=unique.at(-1),right=unique[0]+1,t=tap;if(t<unique[0])t+=1;
+  for(let i=0;i<unique.length-1;i++)if(t>=unique[i]&&t<=unique[i+1]){left=unique[i];right=unique[i+1];break;}
+  return {segmentIndex:0,cut:[left,right],parts:[curveRecipe(c,right,left+1)]};
+ }
+ const limits=[0,...unique,1];let i=limits.findIndex((v,i)=>i<limits.length-1&&tap>=v-EPS&&tap<=limits[i+1]+EPS);if(i<0)i=limits.length-2;
+ const left=limits[i],right=limits[i+1];
+ return {segmentIndex:0,cut:[left,right],parts:[[0,left],[right,1]].filter(([a,b])=>b-a>EPS).map(([a,b])=>curveRecipe(c,a,b))};
+}
 export function trimSketchSegment(source,point,boundaries,hitTolerance=1){
+ if(['circle','arc'].includes(source.shape))return trimCircularSketch(source,point,boundaries,hitTolerance);
  const pts=geometryPoints(source),closed=closedGeometry(source);
  const n=closed?pts.length:pts.length-1;
  let index=-1,tap=0,best=Infinity;

@@ -85,6 +85,28 @@ try{
  projected=await page.evaluate(()=>window.__cad.items.find(i=>i.id===window.__cad.doc.features.at(-1).id));
  near(projected.area,240);
  await page.screenshot({path:path.join(out,'reds-project-face-sketch.png')});
+ // Circular edges stay exact native arcs and survive Undo/Redo/reopen.
+ await fresh();await beginSketch(page,{shape:'polyline'});
+ const circleId=await op('sketch',{shape:'circle',radius:10,x:0,y:0,plane:'XY'});
+ await op('sketch',{shape:'polyline',points:[[-20,0],[20,0]],closed:false,plane:'XY'});
+ await page.getByRole('button',{name:'Trim sketch segment',exact:true}).click();
+ hit=await projectSketchPoint(page,[0,10]);await page.touchscreen.tap(hit.x,hit.y);
+ await page.waitForFunction(id=>window.__cad.doc.features.find(f=>f.id===id)?.params.shape==='arc'&&!window.__cad.gizmo.busy,circleId);
+ let arcItem=await page.evaluate(id=>window.__cad.items.find(i=>i.id===id),circleId);
+ assert.equal(arcItem.edgeCount,1);near(arcItem.bounds[0][1],-10);near(arcItem.bounds[1][1],0);
+ await page.locator('#undo').click();await page.waitForFunction(id=>window.__cad.doc.features.find(f=>f.id===id)?.params.shape==='circle'&&!window.__cad.gizmo.busy,circleId);
+ await page.locator('#redo').click();await page.waitForFunction(id=>window.__cad.doc.features.find(f=>f.id===id)?.params.shape==='arc'&&!window.__cad.gizmo.busy,circleId);
+ await page.locator('#finishSketch').click();await page.waitForFunction(()=>!window.__cad.gizmo.sketchMode);
+ await page.reload();await ready();
+ assert.equal(await page.evaluate(id=>window.__cad.doc.features.find(f=>f.id===id)?.params.shape,circleId),'arc');
+ await beginSketch(page,{shape:'polyline'});
+ await op('sketch',{shape:'polyline',points:[[0,-20],[0,20]],closed:false,plane:'XY'});
+ await page.getByRole('button',{name:'Trim sketch segment',exact:true}).click();
+ hit=await projectSketchPoint(page,[Math.SQRT1_2*10,-Math.SQRT1_2*10]);await page.mouse.click(hit.x,hit.y);
+ await page.waitForFunction(id=>{const f=window.__cad.doc.features.find(f=>f.id===id);return f?.params.sagitta<5&&!window.__cad.gizmo.busy;},circleId);
+ arcItem=await page.evaluate(id=>window.__cad.items.find(i=>i.id===id),circleId);assert.equal(arcItem.edgeCount,1);
+ await page.locator('#finishSketch').click();await page.waitForFunction(()=>!window.__cad.gizmo.sketchMode);
+ await page.screenshot({path:path.join(out,'reds-trim-native-arc.png')});
  // Exact overlapping geometry must ask for disambiguation, never trim
  // whichever sketch happens to be first in the feature history.
  await fresh();await beginSketch(page,{shape:'polyline'});
