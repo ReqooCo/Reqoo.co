@@ -8,7 +8,13 @@ const passed=['verify (core)','verify (modeling)','verify (product)'].map((name,
 const preview={name:'verify-live',status:'completed',conclusion:scenario==='failed-draft'?'failure':'success',completed_at:'2026-11-06T10:01:00Z',app:{slug:'github-actions'},details_url:'https://github.com/ReqooCo/Reqoo.co/actions/runs/101/job/300'};
 globalThis.fetch=async raw=>{
  const uri=new URL(raw),p=uri.pathname;let body;
- if(p.endsWith('/pulls/279/files'))body=scenario==='noncad-pr'?[{filename:'shop/index.html'}]:scenario==='renamed-cad-pr'?[{filename:'docs/moved.md',previous_filename:'cad-source/src/main.js'}]:scenario==='policy-pr'?[{filename:'scripts/reds-release-surface-audit.mjs'}]:[{filename:'cad-source/src/main.js'}];
+ if(p==='/repos/ReqooCo/Reqoo.co')body={owner:{login:'ReqooCo',id:scenario==='wrong-policy-owner'?999:315183885}};
+ else if(p.endsWith('/actions/runs/900/approvals')){
+  if(scenario==='approval-api-denied')return new Response('{}',{status:403});
+  body=scenario==='no-owner-approval'?[]:[{state:scenario==='rejected-owner'?'rejected':'approved',environments:[{name:scenario==='wrong-environment'?'reds-draft':'reds-live'}],user:{login:scenario==='wrong-owner-login'?'other':'ReqooCo',id:scenario==='wrong-owner-id'?999:315183885,type:scenario==='bot-owner'?'Bot':'User'}}];
+ }
+ else if(p.endsWith('/actions/runs/900'))body={id:900,name:'Deploy Reqoo Final',path:scenario==='wrong-live-workflow'?'.github/workflows/fake.yml':'.github/workflows/deploy.yml',event:scenario==='wrong-live-event'?'workflow_dispatch':'push',head_branch:'main',head_sha:scenario==='wrong-live-run-sha'?source:'dddddddddddddddddddddddddddddddddddddddd',repository:{full_name:scenario==='wrong-live-repo'?'other/repo':'ReqooCo/Reqoo.co'}};
+ else if(p.endsWith('/pulls/279/files'))body=scenario==='noncad-pr'?[{filename:'shop/index.html'}]:scenario==='renamed-cad-pr'?[{filename:'docs/moved.md',previous_filename:'cad-source/src/main.js'}]:scenario==='policy-pr'?[{filename:'scripts/reds-release-surface-audit.mjs'}]:[{filename:'cad-source/src/main.js'}];
  else if(p.includes('/compare/')){
   const commits=scenario==='identical'?[]:scenario==='delayed'?[
    {sha:cadCommit},{sha:nonCAD}

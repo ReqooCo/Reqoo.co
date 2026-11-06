@@ -6,7 +6,7 @@ const policy=JSON.parse(fs.readFileSync(new URL('../cad-source/release-policy.js
 const mode=process.argv[2], ref=process.env.GITHUB_REF||'';
 const repo=process.env.GITHUB_REPOSITORY||'ReqooCo/Reqoo.co';
 const live='refs/heads/'+policy.live.branch,draft='refs/heads/'+policy.draft.branch;
-const cadPaths=['cad-source/','workers/cad-bridge.js','_web_worker.js','wrangler-web.toml','.github/workflows/deploy.yml','.github/workflows/deploy-web-simple.yml','.github/workflows/cad-pr-validation.yml','.github/workflows/cad-live-verification.yml','scripts/reds-release-gate.mjs','scripts/reds-release-gate.test.mjs','scripts/reds-release-surface-audit.mjs','scripts/reds-release-test-fetch.mjs','AGENTS.md'];
+const cadPaths=['cad-source/','workers/cad-bridge.js','_web_worker.js','wrangler-web.toml','.github/workflows/deploy.yml','.github/workflows/deploy-web-simple.yml','.github/workflows/cad-pr-validation.yml','.github/workflows/cad-live-verification.yml','.github/workflows/provision-rebuild-d1.yml','scripts/reds-release-gate.mjs','scripts/reds-release-gate.test.mjs','scripts/reds-release-surface-audit.mjs','scripts/reds-release-test-fetch.mjs','AGENTS.md'];
 const fail=(message)=>{throw new Error('REDS RELEASE BLOCKED: '+message);};
 const isCAD=file=>file.startsWith('scripts/reds-')||cadPaths.some(p=>p.endsWith('/')?file.startsWith(p):file===p)||(file.startsWith('migrations/')&&file.includes('cad_bridge'));
 const event=()=>JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH,'utf8'));
@@ -52,7 +52,28 @@ async function checkPR(){
  }
  console.log('REDS gate: authorised single Draft PR '+p.number+' → main.');
 }
-async function checkLive(){
+async function checkOwnerDeploymentApproval(){
+ const runId=process.env.GITHUB_RUN_ID;
+ if(!/^\d+$/.test(runId||''))fail('GitHub run ID is required for owner deployment approval.');
+ const repository=await gh('/repos/'+repo);
+ const expected=policy.rules.releaseApproval;
+ if(expected?.ownerLogin!==repository.owner?.login||expected?.ownerId!==repository.owner?.id)
+  fail('Release approver must be the actual repository owner.');
+ const run=await gh('/repos/'+repo+'/actions/runs/'+runId);
+ if(run.id!==Number(runId)||run.repository?.full_name!==repo||run.event!=='push'||
+    run.head_branch!==policy.live.branch||run.head_sha!==process.env.GITHUB_SHA||
+    run.path?.split('@')[0]!=='.github/workflows/deploy.yml'||run.name!=='Deploy Reqoo Final')
+  fail('Owner approval must belong to this exact canonical production run and SHA.');
+ const reviews=await gh('/repos/'+repo+'/actions/runs/'+runId+'/approvals');
+ if(!Array.isArray(reviews))fail('Deployment approval history is unavailable.');
+ const liveReviews=reviews.filter(r=>r.environments?.some(e=>e.name==='reds-live'));
+ if(liveReviews.some(r=>r.state==='rejected'))fail('A rejected Live approval blocks this run; start a new reviewed run.');
+ if(!liveReviews.some(r=>r.state==='approved'&&r.user?.id===expected.ownerId&&
+    r.user?.login===expected.ownerLogin&&r.user?.type==='User'))
+  fail('Explicit repository-owner approval of reds-live is required for this run.');
+ console.log('REDS owner approval verified for run '+runId+' and commit '+process.env.GITHUB_SHA);
+}
+async function checkLive({requireOwnerApproval=true}={}){
  if(ref!==live)fail('Only main may deploy REDS Live.');
  const sha=process.env.GITHUB_SHA,baseline=policy.live.baselineCommit;
  if(!sha||!/^([0-9a-f]{40})$/.test(sha)||!/^([0-9a-f]{40})$/.test(baseline))
@@ -81,8 +102,8 @@ async function checkLive(){
   const head=authorised.head?.sha;
   if(!head||!/^([0-9a-f]{40})$/.test(head))fail('PR source SHA unavailable.');
   if(validated.has(head))continue;
-  // A merged PR is not proof of review. Require an independent approval of
-  // the exact source; a later dismissal/request for changes invalidates it.
+  // Preserve review history and unresolved change requests. Team mode needs
+  // an independent exact-head review; solo mode uses owner deployment approval.
   const reviews=await gh('/repos/'+owner+'/'+name+'/pulls/'+authorised.number+'/reviews?per_page=100');
   if(!Array.isArray(reviews)||reviews.length>=100)
    fail('PR review history unavailable or incomplete.');
@@ -94,9 +115,9 @@ async function checkLive(){
    if(!previous||Number(review.id)>Number(previous.id))latestReviews.set(key,review);
   }
   const author=authorised.user?.login?.toLowerCase();
-  if(!author||![...latestReviews.values()].some(r=>r.state==='APPROVED'&&r.commit_id===head&&
+  if(policy.rules.releaseApproval?.mode!=='owner-environment'&&(!author||![...latestReviews.values()].some(r=>r.state==='APPROVED'&&r.commit_id===head&&
      r.user.login.toLowerCase()!==author&&r.user.type==='User'&&['OWNER','MEMBER','COLLABORATOR'].includes(r.author_association)))
-   fail('Independent PR approval of exact Draft SHA is required: '+head);
+   )fail('Independent PR approval of exact Draft SHA is required: '+head);
   if([...latestReviews.values()].some(r=>r.state==='CHANGES_REQUESTED'))
    fail('Unresolved changes-requested review blocks release.');
   const result=await gh('/repos/'+owner+'/'+name+'/commits/'+head+'/check-runs?per_page=100');
@@ -131,11 +152,13 @@ async function checkLive(){
   validated.add(head);
   console.log('REDS gate accepted merged Draft PR #'+authorised.number+' '+head);
  }
+ if(policy.rules.releaseApproval?.mode==='owner-environment'&&requireOwnerApproval)await checkOwnerDeploymentApproval();
  console.log('REDS gate approved: main source '+sha+' contains no unauthorised CAD commits since baseline '+baseline);
 }
 try{
  if(mode==='check-pr')await checkPR();
  else if(mode==='check-draft'){assertDraftBranch();console.log('REDS gate: dedicated Draft Worker allowed.');}
  else if(mode==='check-live')await checkLive();
+ else if(mode==='check-live-source')await checkLive({requireOwnerApproval:false});
  else fail('Unknown policy command: '+mode);
 }catch(e){console.error(e.message);process.exitCode=1;}

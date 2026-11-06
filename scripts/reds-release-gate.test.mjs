@@ -12,7 +12,7 @@ fs.mkdirSync(path.join(scratch,'scripts'));fs.mkdirSync(path.join(scratch,'cad-s
 const fixture=path.join(scratch,'scripts','gate.mjs');
 fs.copyFileSync('scripts/reds-release-gate.mjs',fixture);
 const testPolicy=JSON.parse(fs.readFileSync('cad-source/release-policy.json'));
-fs.writeFileSync(path.join(scratch,'cad-source','release-policy.json'),JSON.stringify({...testPolicy,rules:{...testPolicy.rules,liveAccessRestricted:true}}));
+fs.writeFileSync(path.join(scratch,'cad-source','release-policy.json'),JSON.stringify({...testPolicy,rules:{...testPolicy.rules,liveAccessRestricted:true,releaseApproval:{mode:"independent-pr"}}}));
 const run=(mode,eventName,ref,payload,expectPass)=>{
  fs.writeFileSync(file,JSON.stringify(payload));
  const child=spawnSync(process.execPath,['scripts/reds-release-gate.mjs',mode],{
@@ -21,11 +21,13 @@ const run=(mode,eventName,ref,payload,expectPass)=>{
  });
  assert.equal(child.status,expectPass?0:1,[mode,eventName,ref,child.stdout,child.stderr].join(' | '));
 };
-const scenario=(name,ok)=>{
- const child=spawnSync(process.execPath,['--import','./scripts/reds-release-test-fetch.mjs',name==='admin-pending'?'scripts/reds-release-gate.mjs':fixture,'check-live'],{
+const scenario=(name,ok,{solo=false,command='check-live',omitRun=false}={})=>{
+ const fixturePolicy={...testPolicy,rules:{...testPolicy.rules,liveAccessRestricted:true,releaseApproval:solo?testPolicy.rules.releaseApproval:{mode:'independent-pr'}}};
+ fs.writeFileSync(path.join(scratch,'cad-source','release-policy.json'),JSON.stringify(fixturePolicy));
+ const child=spawnSync(process.execPath,['--import','./scripts/reds-release-test-fetch.mjs',name==='admin-pending'?'scripts/reds-release-gate.mjs':fixture,command],{
   env:{...process.env,GITHUB_EVENT_NAME:'push',GITHUB_REF:'refs/heads/main',GITHUB_REPOSITORY:repo,
    GITHUB_SHA:'dddddddddddddddddddddddddddddddddddddddd',
-   GITHUB_TOKEN:'mock-test-token',REDS_TEST_SCENARIO:name,GITHUB_EVENT_PATH:file},
+   GITHUB_TOKEN:'mock-test-token',GITHUB_RUN_ID:omitRun?'':'900',REDS_TEST_SCENARIO:name,GITHUB_EVENT_PATH:file},
   encoding:'utf8'
  });
  assert.equal(child.status,ok?0:1,[name,child.stdout,child.stderr].join(' | '));
@@ -60,5 +62,13 @@ try{
  scenario('missing-draft',false);
  scenario('failed-draft',false);
  scenario('wrong-preview',false);
+ scenario('no-review',true,{solo:true});
+ scenario('valid',true,{solo:true});
+ scenario('changes-requested',false,{solo:true});
+ for(const name of ['no-owner-approval','wrong-owner-id','wrong-owner-login','bot-owner','wrong-environment','rejected-owner','wrong-live-run-sha','wrong-live-workflow','wrong-live-event','wrong-live-repo','wrong-policy-owner','approval-api-denied'])scenario(name,false,{solo:true});
+ scenario('valid',false,{solo:true,omitRun:true});
+ scenario('no-owner-approval',true,{solo:true,command:'check-live-source'});
+ scenario('failed-check',false,{solo:true,command:'check-live-source'});
+ scenario('missing-draft',false,{solo:true,command:'check-live-source'});
  console.log('REDS RELEASE GATE PASS: single Draft source, legacy rejection, baseline history, delayed bypass prevention, exact green checks');
 }finally{fs.rmSync(scratch,{recursive:true,force:true});}

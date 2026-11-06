@@ -4,7 +4,7 @@
 
 | Role | Single authorized branch | URL | Authority |
 |---|---|---|---|
-| Live | `main` | https://reqoo.co/cad/ | Protected PR + three checks → Deploy Reqoo Final |
+| Live | `main` | https://reqoo.co/cad/ | Protected PR + three checks + owner deployment approval → Deploy Reqoo Final |
 | Draft | `reds/draft` | https://reqoo-reds-draft.abarttrading1.workers.dev/cad/ | Push to one Draft branch → isolated preview and tests |
 | Archived work | All old CAD branches | No live preview or release | Read-only source for review/cherry-pick |
 
@@ -21,10 +21,11 @@ ChatGPT / Work / Codex / local development
                     ↓
      Draft preview + exact source identity
                     ↓
-           Protected PR approval
+           Protected PR merge
                     ↓
                    main
                     ↓
+      Source preflight → owner approves reds-live
         Deploy Reqoo Final release gate
                     ↓
                 reqoo-web LIVE
@@ -60,3 +61,12 @@ ChatGPT / Work / Codex / local development
 ## Operator command
 
 Whenever a user says "go", "sambung", "deploy" or delegates development to a coding agent, interpret REDS changes as **continue in `reds/draft`, test in Draft, review PR, then release to `main`**. Never create a second live or draft publishing route.
+
+
+## Solo operator policy — owner-confirmed 2026-11-06
+
+`ReqooCo` is the sole operator. Human approval is the `reds-live` deployment approval, after automated source preflight. The author does not need a second account to approve their own PR. Main still requires a PR, three strict GitHub Actions checks, resolved conversations and no deletion/force-push/bypass; set the approval count to 0 and disable most-recent-push approval. Required reviewer on `reds-live` is only the actual repository owner, self-review is permitted, administrator bypass is disabled, and only branch `main` may deploy.
+
+The deploy gate reads GitHub's workflow approval history and verifies owner user ID/login, canonical workflow file/event/repository, exact run ID, `reds-live` environment and exact main SHA. Missing, rejected or mismatched approval fails closed. Existing changes-requested PR reviews also block release. Automated preflight receives no Cloudflare credentials and completes before the approval job becomes available. This is owner authorization, **not independent code review**. Agents must not submit the owner's final approval themselves.
+
+`provision-rebuild-d1.yml` is retired in Draft; normal D1 migrations stay inside the canonical owner-approved release. Historical copies cannot be neutralised until broad old credentials are migrated/revoked. #278 remains open and the real release-lock flag remains false.

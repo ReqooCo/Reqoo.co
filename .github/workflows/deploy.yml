@@ -19,7 +19,28 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify release source before asking the owner to approve
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/reds-release-gate.mjs check-live-source
+      - name: Audit canonical deployment surfaces
+        run: node scripts/reds-release-surface-audit.mjs
+      - name: Summarize the release for the owner
+        env:
+          RELEASE_SHA: ${{ github.sha }}
+        run: |
+          echo "## REQOO Live release" >> "$GITHUB_STEP_SUMMARY"
+          echo "Commit: $RELEASE_SHA" >> "$GITHUB_STEP_SUMMARY"
+          echo "Required CAD checks and canonical Draft validation were verified. Approve reds-live to publish this release." >> "$GITHUB_STEP_SUMMARY"
   deploy:
+    needs: preflight
     runs-on: ubuntu-latest
     environment: reds-live
     steps:

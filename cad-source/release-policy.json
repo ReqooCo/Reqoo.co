@@ -26,8 +26,15 @@
     "productionFromMergedDraftPR": true,
     "sourceIdentityRequired": true,
     "liveAccessRestricted": false,
-    "adminEnforcementStatus": "pending-github-rulesets-and-environment-scoped-token-rotation",
-    "note": "Workflow-level checks are active; unrestricted Cloudflare write credentials and unprotected GitHub main remain bypass risks until Issue #278 is completed."
+    "adminEnforcementStatus": "branch-rulesets-verified-environments-owner-configured-token-isolation-pending",
+    "note": "Solo owner workflow: protected Draft PR, all exact-SHA CAD checks and Draft browser validation, then explicit ReqooCo approval of the canonical reds-live run. Keep liveAccessRestricted=false until remaining token and alternative publisher controls in #278 are verified.",
+    "releaseApproval": {
+      "mode": "owner-environment",
+      "ownerLogin": "ReqooCo",
+      "ownerId": 315183885,
+      "environment": "reds-live",
+      "independentPRReviewRequired": false
+    }
   },
   "archivedCADBranches": "read-only; never deploy from them"
 }

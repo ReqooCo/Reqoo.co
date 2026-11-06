@@ -18,6 +18,21 @@
 6. Protect existing CAD data: never delete originals, backups or history; preserve OpenCascade B-Rep and the native `.rqcad` project format.
 7. **Production release is not authorised merely because CI is green.** Admin GitHub ruleset + environment secret/token separation are open in [issue #278](https://github.com/ReqooCo/Reqoo.co/issues/278). Do not merge/deploy until these controls are verified and user approval/release policy is satisfied.
 
+## Current checkpoint — solo operator continuation (2026-11-06)
+
+- Starting/current inspected remote HEAD: `3a282fb58deda6b554e12d75b36defc95b2693da`; PR #277 open Draft, no merge. Its Core/Modeling/Product and actual Draft suite passed at https://github.com/ReqooCo/Reqoo.co/actions/runs/42226818598 and https://github.com/ReqooCo/Reqoo.co/actions/runs/42226808947.
+- Owner confirmed only `ReqooCo` operates the repository and authorised continuation after choosing automated validation + final owner deployment approval. Updated code/policy/docs to the **solo-owner** model, replacing the earlier independent-human-review plan. This is an explicit policy change for solo use, not equivalent independent review and not a test bypass.
+- Added real GitHub approval-history verification for the exact canonical Live workflow run, repository, owner user ID/login, environment and SHA. Preflight is a separate no-secrets job before the protected owner-approval job. Production job retains the full gate and source/CI/Draft checks; unresolved requested changes still block it.
+- Retired `provision-rebuild-d1.yml` remote provisioning path in Draft; normal migrations remain in deploy.yml. Historical branch copies still require credential migration/revocation; source history preserved.
+- Branch rulesets are now API-verified: main 26698974 and Draft 26699119, active, exact branch targets, no bypass, force/deletion blocked. Main currently retains approvals=1 and last-push approval; sole-owner follow-up requires approvals=0 and last-push approval=false while retaining required PR, strict three checks and other protections.
+- Owner screenshots show configured Live environment main-only, sole reviewer ReqooCo, self-review permitted, no admin bypass; Draft environment reds/draft-only, no reviewer/timer/admin bypass. Environment admin API and secrets are still inaccessible to this connector. Owner screenshot save banners are evidence, not a complete independent API audit.
+- `release-policy.json.rules.liveAccessRestricted` remains **false**. #278 still open. No Live deploy, token creation/revocation, or main push in this session.
+- Local release-gate tests cover absent/wrong-owner/wrong-user-type/wrong-environment/rejected/forged-run/wrong-SHA/wrong-workflow/API-denied approvals, missing run ID, successful solo approval without PR self-review, source preflight, legacy independent review and all previous checks. New commit requires fresh exact-head matrix + Draft verification; final results will be recorded on #278 to avoid a documentation-only commit cycle.
+- Consolidated owner-only operations in `cad-source/security/OWNER-ACTIONS-278.md`: solo PR settings, two least-privilege environment tokens, then migration/revocation of broad old credentials. Other unresolved agent/security work includes gated Pages production replacement, external-client permissions and real negative enforcement evidence. Do not mark #278 complete or flip the lock merely because checks pass.
+- Next concrete action: owner completes only the consolidated admin/secret tasks, while agents preserve one Draft and finish the remaining deployment-boundary audit. Sketch curves/editable linked projection and physical iPad/Pencil parity remain unfinished; native geometry is unchanged by this security session.
+
+## Historical checkpoint — superseded where it conflicts with current checkpoint
+
 ## Latest verified context (2026-11-06, before this handoff commit)
 
 | Item | Evidence / status |

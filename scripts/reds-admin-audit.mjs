@@ -1,5 +1,8 @@
 // Owner-run, read-only GitHub administration audit. Never logs token values.
 // Supply GITHUB_ADMIN_TOKEN via the owner's secure shell, never in chat or CI.
+import fs from 'node:fs';
+const policy=JSON.parse(fs.readFileSync(new URL('../cad-source/release-policy.json',import.meta.url)));
+const solo=policy.rules.releaseApproval?.mode==='owner-environment';
 const token=process.env.GITHUB_ADMIN_TOKEN;
 if(!token){console.error('BLOCKED: GITHUB_ADMIN_TOKEN with repository Administration read and Environments/Secrets read is required.');process.exit(1);}
 const base='https://api.github.com/repos/ReqooCo/Reqoo.co';
@@ -30,7 +33,9 @@ try{
   const types=applicable.flatMap(r=>r.rules||[]);
   for(const type of ['deletion','non_fast_forward'])check(types.some(r=>r.type===type),`${branch}: ${type}`);
   if(branch==='main'){
-   check(types.some(r=>r.type==='pull_request'&&r.parameters?.required_approving_review_count>=1&&
+   if(solo)check(types.some(r=>r.type==='pull_request'&&r.parameters?.required_approving_review_count===0&&
+    r.parameters?.require_last_push_approval===false&&r.parameters?.required_review_thread_resolution===true), 'main: PR required, solo approval count 0, no second-person latest-push lock, resolve review threads');
+   else check(types.some(r=>r.type==='pull_request'&&r.parameters?.required_approving_review_count>=1&&
     r.parameters?.dismiss_stale_reviews_on_push&&r.parameters?.require_last_push_approval), 'main: independent latest-push approval and stale dismissal');
    const status=types.filter(r=>r.type==='required_status_checks');
    for(const name of ['verify (core)','verify (modeling)','verify (product)'])check(status.some(r=>r.parameters?.strict_required_status_checks_policy&&
@@ -42,7 +47,14 @@ try{
   check(env.deployment_branch_policy?.custom_branch_policies===true&&env.deployment_branch_policy?.protected_branches===false,`${name}: explicit custom branch restrictions`);
   const policies=await all(`/environments/${name}/deployment-branch-policies`,'branch_policies');
   check(policies.length===1&&policies[0].name===branch&&policies[0].type==='branch',`${name}: only ${branch}, no tag/wildcard deployment`);
-  if(name==='reds-live')check(env.protection_rules?.some(r=>r.type==='required_reviewers'&&r.prevent_self_review&&r.reviewers?.length)&&env.can_admins_bypass===false,`${name}: reviewers, prevent self approval, no admin bypass`);
+  if(name==='reds-live'){
+   const reviewer=env.protection_rules?.find(r=>r.type==='required_reviewers');
+   if(solo)check(reviewer?.prevent_self_review===false&&reviewer.reviewers?.length===1&&
+    reviewer.reviewers[0].type==='User'&&reviewer.reviewers[0].reviewer?.id===policy.rules.releaseApproval.ownerId&&
+    reviewer.reviewers[0].reviewer?.login===policy.rules.releaseApproval.ownerLogin&&env.can_admins_bypass===false,
+    `${name}: sole owner approves deployment, self approval permitted, no admin bypass`);
+   else check(reviewer?.prevent_self_review&&reviewer.reviewers?.length&&env.can_admins_bypass===false,`${name}: reviewers, prevent self approval, no admin bypass`);
+  }
   const secrets=await all(`/environments/${name}/secrets`,'secrets');
   check(secrets.some(s=>s.name==='CLOUDFLARE_API_TOKEN'),`${name}: environment deployment token exists (scope and distinctness require Cloudflare evidence)`);
  }

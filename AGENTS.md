@@ -14,7 +14,7 @@ These rules apply equally to ChatGPT, Work, Codex, local scripts and other autom
 3. Fix the root cause; include feature tests, Playwright UX tests and native geometry tests for changes to sketch/modeling/history/save/open.
 4. Run the CAD PR validation matrix (Core, Modeling, Product). Do not call a Draft ready unless all required checks pass on the exact branch head SHA.
 5. GitHub Actions alone deploys `reds/draft` to the dedicated Draft Worker. Check build identity and the actual browser workflow.
-6. Release only via reviewed `reds/draft` PR merge into protected `main`. `deploy.yml` must pass the centralized release gate before touching Workers or D1.
+6. For the owner-confirmed solo setup, release via `reds/draft` PR merge into protected `main`, automated preflight and final `ReqooCo` approval of the `reds-live` deployment. Agents must never submit that owner approval themselves. `deploy.yml` must pass the centralized release gate before touching Workers or D1.
 7. Verify production source SHA and critical user flows; keep a rollback path.
 
 ## Do not bypass

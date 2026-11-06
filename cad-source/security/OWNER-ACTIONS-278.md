@@ -1,3 +1,39 @@
+# Issue #278 — current owner actions (solo REQOO setup)
+
+**Release remains locked.** The owner confirmed only the `ReqooCo` account is used and authorised a solo workflow: automated tests + protected PR + final owner deployment approval. This intentionally replaces the earlier second-person PR-review plan; it does not provide independent human review.
+
+## Completed settings
+
+- Live ruleset **26698974**, API-verified active on exactly `main`, no bypass, deletion/force-push blocked, strict Core/Modeling/Product checks pinned to GitHub Actions.
+- Draft ruleset **26699119**, API-verified active on exactly `reds/draft`, no bypass, deletion/force-push blocked.
+- Owner screenshots show `reds-live` branch `main` only, required reviewer `ReqooCo`, self-review permitted and administrator bypass disabled; `reds-draft` branch `reds/draft` only, no reviewer/timer and administrator bypass disabled. Branch-save success banners were shown. Environment settings have not been independently read through the GitHub admin API.
+- Code now verifies the real GitHub approval history for the exact canonical Live workflow run and source SHA. A label, PR comment or successful CI run cannot substitute for approval. Preflight runs before the owner is asked to approve. The old D1 provisioning workflow is retired in Draft; history remains in Git.
+
+## Remaining owner-only actions — no repeated screenshots needed
+
+1. **Make the main ruleset usable by its sole owner.** In `REDS Live Protection`, keep PR required, all three strict GitHub Actions checks, conversation resolution, deletion/force-push protection and empty bypass. Change **Required approvals to 0**, and turn off **Require approval of the most recent reviewable push**. An author cannot approve their own PR; leaving these enabled locks the sole operator out. Final human approval instead happens in `reds-live`. Dismiss-stale-review may remain enabled. Do not disable the ruleset or add a bypass.
+2. **Install two separate Cloudflare credentials securely.** Under GitHub Environment secrets, use the existing secret name `CLOUDFLARE_API_TOKEN` in each environment (environment secrets shadow the same-named repository secret). Draft token: per-Worker **Editor**, only `reqoo-reds-draft`; no Live Workers, D1, Routes, Pages or token administration. Live token: per-Worker Editor only `reqoo-web` and `reqoo-catalog-api`, plus strictly necessary D1 migration/API-secret-name read/zone route capabilities for the existing canonical workflow. Existing wrangler route/custom-domain configuration must be tested with its actual scope before switch-over. Keep token values out of chat/screenshots.
+3. **Complete migration before revocation.** After the new credentials work in their normal protected workflows, remove the broad repository/organization deployment secret and revoke the identified old token. Audit historical branch workflow copies, external CI and connected agents first; preserve unrelated REQOO consumers. The D1-only account token discovered earlier is not the broad Worker deployment token and must not be revoked by guesswork.
+
+The connected GitHub tools cannot write Environment secrets/admin settings; Cloudflare OAuth cannot inspect/manage user-owned token inventory. Code, tests and read-only audits are handled by the agent. These owner operations cannot be replaced with a GitHub commit.
+
+## Further release blockers the agent must resolve/verify
+
+- Cloudflare Pages `reqoo-co` still has automatic production deployment on main. It must be safely put behind the same gate with a replacement publisher before claiming one protected release route; the project also serves other REQOO domains. Do not blanket-disable it without a working replacement.
+- Connected Cloudflare clients with direct production write access must be restricted/read-only; GitHub rules cannot restrain a separate broad Cloudflare credential.
+- Actual token scopes/distinctness/revocation, safe unauthorized-action denial, rollback readiness and final source identity remain required evidence. Mock tests and screenshots alone do not prove the full security boundary.
+- `release-policy.json.rules.liveAccessRestricted` stays **false** until all remaining controls are genuinely verified. Do not close #278 or merge/release #277 on green CI alone.
+
+Read-only owner audit: `node scripts/reds-admin-audit.mjs` with `GITHUB_ADMIN_TOKEN` already provided securely in the owner's shell. It now checks the solo settings above and prints no token values. A passing GitHub audit does not verify Cloudflare token policies.
+
+Official references:
+- https://developers.cloudflare.com/workers/authorization/workers/
+- https://docs.github.com/en/rest/actions/workflow-runs#get-the-review-history-for-a-workflow-run
+
+---
+
+## Historical audit and original team-review plan (superseded by solo settings above)
+
 # Issue #278 — owner administration actions and evidence
 
 Status: **BLOCKED / OPEN**. The release gate now explicitly refuses CAD production while `liveAccessRestricted` is false; retain false until administrator evidence is verified. Inspected 2026-11-06. No production deployment authorised by this report.
