@@ -18,6 +18,15 @@
 6. Protect existing CAD data: never delete originals, backups or history; preserve OpenCascade B-Rep and the native `.rqcad` project format.
 7. **Production release is not authorised merely because CI is green.** Admin GitHub ruleset + environment secret/token separation are open in [issue #278](https://github.com/ReqooCo/Reqoo.co/issues/278). Do not merge/deploy until these controls are verified and user approval/release policy is satisfied.
 
+## Work checkpoint — precision snapping browser coverage (2026-11-07)
+
+- Start verified Draft HEAD `aafc21f25890cd420145425ab0f88ce8de372ec9`; PR #277 remains the canonical Draft. CI/Draft runs 42276901522/42276892792 were still in progress at inspection; no green status inferred.
+- Reproduced the Product precision failure from prior run 42276664145: old assertion expected the entire snap marker group hidden when Show guides is off. Updated it to require a visible point marker with the optional guide line hidden and hint independently hidden. Actual coordinate snapping and preference reload assertions retained.
+- Added real canvas hover checks for circle centre, finite line midpoint and interior line intersection, requiring correct snap kind plus visible marker/hint. Crossing fixture is asymmetric to avoid editable dimension labels occupying the pointer target; dimension-label congestion around symmetric intersections remains a UX follow-up.
+- Local PASS: complete precision UI (snap settings, hidden targets, local/world transforms, face pivot scaling, concentric native alignment, Undo/Redo/reload, anchors, tablet/phone); transform UI; pattern/thread UI; pen/touch input; workspace reference UI; focused workspace UI; direct sketch UI; guidepoints and native sketch-edit/trim/offset/projection regression suites; diff whitespace check. Existing previous-session CAD/Product/file/active-sketch tests remain passed locally.
+- Fresh final-head Core/Modeling/Product and deployed Draft still required after this commit. Physical iPad/Pencil unverified. Live untouched, #278 lock unchanged.
+- Next: inspect exact final-head CI and Draft browser results; fix any remaining failures before declaring Draft ready.
+
 ## Work checkpoint — snapping priority and failing browser regressions (2026-11-07)
 
 - Started from verified Draft/PR #277 HEAD `b4ee7113d42b42f88a8105df7ee145b00977d736`. Both exact-head workflows failed: CAD matrix 42267926728 and Draft browser 42267916785; these are failures, not pending results.
