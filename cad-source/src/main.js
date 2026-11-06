@@ -721,7 +721,28 @@ async function quickSketch(shape){
   await commitSketchPath();const createdId=previous?.createdId;endDrawing();beginDrawing({...base,shape,closed:!['polyline','arc','spline'].includes(shape),sides:6,sagitta:10},{direct:true,preserveView:!!previous});if(previous?.direct){sketchMode.startDoc=previous.startDoc;sketchMode.startUndo=previous.startUndo;sketchMode.startRedo=previous.startRedo;sketchMode.createdId=createdId;}
  }catch(e){error(e);}
 }
-function beginDrawing(p,{direct:directSession=false,preserveView=false}={}){p={...p,startMode:p.startMode||preferences.sketchStartModes?.[p.shape]||defaultStart(p.shape)};if(!preserveView&&!p.basis&&p.plane!=='Selected face'){camera.zoom=Math.min(camera.zoom,5);camera.updateProjectionMatrix();}setWorkspaceMode('sketch');if(p.shape==='polyline')p={...p,constraints:[]};closePanels();sketchMode={params:p,points:[],redoPoints:[],direct:directSession,createdId:null,startDoc:directSession?snapshot():null,startUndo:[...undo],startRedo:[...redo]};renderContext();controls.enabled=true;controls.enableRotate=false;controls.mouseButtons.LEFT=null;$('sketchBar').hidden=false;syncSketchStart();$('sketchHint').textContent=p.shape+' · '+(p.plane||'selected face')+' · '+(['polyline','spline'].includes(p.shape)?'Tap points · tap first to close':'Drag or tap start → end');const b=basis(p),n=new THREE.Vector3(...b.normal),origin=new THREE.Vector3(...b.origin);grid.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),n);grid.position.copy(origin).addScaledVector(n,-.03);if(!preserveView){controls.target.copy(origin);camera.up.set(0,0,1);if(Math.abs(n.z)>.9)camera.up.set(0,1,0);camera.position.copy(origin).addScaledVector(n,300);controls.syncPose();}camera.updateMatrixWorld(true);render(true);status('Sketch active · snap '+gridStep+' mm');}
+function beginDrawing(p,{direct:directSession=false,preserveView=false}={}){p={...p,startMode:p.startMode||preferences.sketchStartModes?.[p.shape]||defaultStart(p.shape)};if(!preserveView&&!p.basis&&p.plane!=='Selected face'){camera.zoom=Math.min(camera.zoom,5);camera.updateProjectionMatrix();}setWorkspaceMode('sketch');if(p.shape==='polyline')p={...p,constraints:[]};closePanels();sketchMode={params:p,points:[],redoPoints:[],direct:directSession,createdId:null,startDoc:directSession?snapshot():null,startUndo:[...undo],startRedo:[...redo]};renderContext();controls.enabled=true;controls.enableRotate=false;controls.mouseButtons.LEFT=null;$('sketchBar').hidden=false;syncSketchStart();$('sketchHint').textContent=p.shape+' · '+(p.plane||'selected face')+' · '+(['polyline','spline'].includes(p.shape)?'Tap points · tap first to close':'Drag or tap start → end');const b=basis(p),n=new THREE.Vector3(...b.normal),origin=new THREE.Vector3(...b.origin);grid.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),n);grid.position.copy(origin).addScaledVector(n,-.03);if(!preserveView){
+  const bx=new THREE.Vector3(...b.x),by=n.clone().cross(bx).normalize(),ranges=[Infinity,-Infinity,Infinity,-Infinity];
+  for(const item of items){if(item.kind!=='sketch'||!item.bounds||!item.sketchPlane||!sameSketchPlane(item.sketchPlane,b))continue;
+   for(const wx of item.bounds[0][0]===item.bounds[1][0]?[item.bounds[0][0]]:[item.bounds[0][0],item.bounds[1][0]])
+   for(const wy of item.bounds[0][1]===item.bounds[1][1]?[item.bounds[0][1]]:[item.bounds[0][1],item.bounds[1][1]])
+   for(const wz of item.bounds[0][2]===item.bounds[1][2]?[item.bounds[0][2]]:[item.bounds[0][2],item.bounds[1][2]]){
+    const delta=new THREE.Vector3(wx,wy,wz).sub(origin),u=delta.dot(bx),v=delta.dot(by);
+    ranges[0]=Math.min(ranges[0],u);ranges[1]=Math.max(ranges[1],u);
+    ranges[2]=Math.min(ranges[2],v);ranges[3]=Math.max(ranges[3],v);
+   }
+  }
+  const focus=origin.clone();
+  if(Number.isFinite(ranges[0])){
+   focus.addScaledVector(bx,(ranges[0]+ranges[1])/2).addScaledVector(by,(ranges[2]+ranges[3])/2);
+   const width=Math.max(10,ranges[1]-ranges[0]),height=Math.max(10,ranges[3]-ranges[2]),margin=1.65;
+   const fitZoom=Math.min((camera.right-camera.left)/(width*margin),(camera.top-camera.bottom)/(height*margin));
+   camera.zoom=Math.max(.05,Math.min(12,fitZoom));
+   camera.updateProjectionMatrix();
+  }
+  controls.target.copy(focus);camera.up.set(0,0,1);if(Math.abs(n.z)>.9)camera.up.set(0,1,0);
+  camera.position.copy(focus).addScaledVector(n,300);controls.syncPose();
+ }camera.updateMatrixWorld(true);render(true);status('Sketch active · snap '+gridStep+' mm');}
 function drawingDown(event){const p=worldOnSketch(event);if(!p)return;if(!draft&&!sketchMode.points.length&&selection.length)select([]);if(draft?.anchored){draft.end=p;draft.secondTap=true;drawDraft();return;}if(['polyline','spline'].includes(sketchMode.params.shape)){
  try{const tolerance=(camera.top-camera.bottom)/camera.zoom/renderer.domElement.clientHeight*(event.pointerType==='touch'?14:8),next=appendStrokePoint(sketchMode.points,p,tolerance);if(next.changed){sketchMode.points=next.points;sketchMode.redoPoints=[];}const last=sketchMode.points.at(-1);if(!last)return;draft={start:last,end:next.close?sketchMode.points[0]:p,poly:true,closePath:next.close};drawDraft();updateHistoryButtons();if(next.close)status('Release to close this profile');}catch(e){status(e.message);}
  }else{draft={start:p,end:p};updateHistoryButtons();}}
