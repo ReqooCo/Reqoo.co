@@ -2,12 +2,13 @@ name: CAD PR validation
 on:
   push:
     branches: [main]
-    paths: ['scripts/reds-release-gate.mjs', 'scripts/reds-release-gate.test.mjs', 'scripts/reds-release-surface-audit.mjs', 'scripts/reds-release-test-fetch.mjs', 'AGENTS.md', 'cad-source/**', 'workers/cad-bridge.js', '_web_worker.js', 'wrangler-web.toml', 'migrations/*cad_bridge*', '.github/workflows/cad-pr-validation.yml']
+    paths: ['scripts/reds-*', 'scripts/reds-release-gate.test.mjs', 'scripts/reds-release-surface-audit.mjs', 'scripts/reds-release-test-fetch.mjs', 'AGENTS.md', 'cad-source/**', 'workers/cad-bridge.js', '_web_worker.js', 'wrangler-web.toml', 'migrations/*cad_bridge*', '.github/workflows/cad-pr-validation.yml']
   pull_request:
-    paths: ['scripts/reds-release-gate.mjs', 'cad-source/**', 'workers/cad-bridge.js', '_web_worker.js', 'wrangler-web.toml', 'migrations/*cad_bridge*', '.github/workflows/cad-pr-validation.yml']
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
+  pull-requests: read
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -21,6 +22,7 @@ jobs:
       - name: REDS single-draft PR entry gate
         env:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/reds-release-gate.mjs check-pr
       - name: Verify REDS release-gate policy tests
         run: node scripts/reds-release-gate.test.mjs

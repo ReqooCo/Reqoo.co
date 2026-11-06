@@ -8,7 +8,8 @@ const passed=['verify (core)','verify (modeling)','verify (product)'].map((name,
 const preview={name:'verify-live',status:'completed',conclusion:scenario==='failed-draft'?'failure':'success',completed_at:'2026-11-06T10:01:00Z',app:{slug:'github-actions'},details_url:'https://github.com/ReqooCo/Reqoo.co/actions/runs/101/job/300'};
 globalThis.fetch=async raw=>{
  const uri=new URL(raw),p=uri.pathname;let body;
- if(p.includes('/compare/')){
+ if(p.endsWith('/pulls/279/files'))body=scenario==='noncad-pr'?[{filename:'shop/index.html'}]:scenario==='renamed-cad-pr'?[{filename:'docs/moved.md',previous_filename:'cad-source/src/main.js'}]:scenario==='policy-pr'?[{filename:'scripts/reds-release-surface-audit.mjs'}]:[{filename:'cad-source/src/main.js'}];
+ else if(p.includes('/compare/')){
   const commits=scenario==='identical'?[]:scenario==='delayed'?[
    {sha:cadCommit},{sha:nonCAD}
   ]:[{sha:cadCommit}];
@@ -17,9 +18,15 @@ globalThis.fetch=async raw=>{
  else if(p.endsWith('/commits/'+nonCAD))body={files:[{filename:'docs/README.md'}]};
  else if(p.endsWith('/commits/'+cadCommit+'/pulls'))
   body=scenario==='unreviewed'||scenario==='delayed'?[]:[{
-   number:277,merged_at:'2026-11-06T10:05:00Z',
+   number:277,user:{login:'author'},merged_at:'2026-11-06T10:05:00Z',
    base:{ref:'main'},head:{ref:'reds/draft',repo:{full_name:'ReqooCo/Reqoo.co'},sha:source}
   }];
+ else if(p.endsWith('/pulls/277/reviews')) {
+  const approval={id:1,state:'APPROVED',author_association:scenario==='outside-review'?'NONE':'COLLABORATOR',commit_id:source,user:{login:scenario==='self-review'?'author':'reviewer',type:scenario==='bot-review'?'Bot':'User'}};
+  body=scenario==='no-review'?[]:scenario==='stale-review'?[{...approval,commit_id:nonCAD}]:
+   scenario==='dismissed-review'?[approval,{...approval,id:2,state:'DISMISSED'}]:
+   scenario==='changes-requested'?[approval,{...approval,id:2,state:'CHANGES_REQUESTED'}]:[approval];
+ }
  else if(p.endsWith('/commits/'+source+'/check-runs'))
   body={check_runs:[...(scenario==='failed-check'?passed.map((c,i)=>i===2?{...c,conclusion:'failure'}:c):passed),...(scenario==='missing-draft'?[]:[preview])]};
  else if(p.endsWith('/actions/runs/100'))body={name:scenario==='wrong-workflow'?'Unrelated fake CI':'CAD PR validation',event:'pull_request',head_sha:source,head_branch:'reds/draft',status:'completed',conclusion:'success'};

@@ -6,9 +6,9 @@ const policy=JSON.parse(fs.readFileSync(new URL('../cad-source/release-policy.js
 const mode=process.argv[2], ref=process.env.GITHUB_REF||'';
 const repo=process.env.GITHUB_REPOSITORY||'ReqooCo/Reqoo.co';
 const live='refs/heads/'+policy.live.branch,draft='refs/heads/'+policy.draft.branch;
-const cadPaths=['cad-source/','workers/cad-bridge.js','_web_worker.js','wrangler-web.toml','.github/workflows/deploy.yml','.github/workflows/deploy-web-simple.yml','.github/workflows/cad-pr-validation.yml','.github/workflows/cad-live-verification.yml','scripts/reds-release-gate.mjs','scripts/reds-release-gate.test.mjs','scripts/reds-release-test-fetch.mjs','AGENTS.md'];
+const cadPaths=['cad-source/','workers/cad-bridge.js','_web_worker.js','wrangler-web.toml','.github/workflows/deploy.yml','.github/workflows/deploy-web-simple.yml','.github/workflows/cad-pr-validation.yml','.github/workflows/cad-live-verification.yml','scripts/reds-release-gate.mjs','scripts/reds-release-gate.test.mjs','scripts/reds-release-surface-audit.mjs','scripts/reds-release-test-fetch.mjs','AGENTS.md'];
 const fail=(message)=>{throw new Error('REDS RELEASE BLOCKED: '+message);};
-const isCAD=file=>cadPaths.some(p=>p.endsWith('/')?file.startsWith(p):file===p)||(file.startsWith('migrations/')&&file.includes('cad_bridge'));
+const isCAD=file=>file.startsWith('scripts/reds-')||cadPaths.some(p=>p.endsWith('/')?file.startsWith(p):file===p)||(file.startsWith('migrations/')&&file.includes('cad_bridge'));
 const event=()=>JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH,'utf8'));
 async function gh(pathname){
  const token=process.env.GITHUB_TOKEN;
@@ -31,8 +31,25 @@ async function checkPR(){
  if(process.env.GITHUB_EVENT_NAME!=='pull_request')fail('Unexpected CAD PR event.');
  const p=event().pull_request;
  if(!p)fail('Missing pull_request event details.');
- if(p.base?.ref!==policy.live.branch||p.head?.ref!==policy.draft.branch||
-    p.head?.repo?.full_name!==repo)fail('CAD changes require PR '+policy.draft.branch+' → '+policy.live.branch+' in '+repo);
+ if(p.base?.ref!==policy.live.branch)fail('Release PR must target main.');
+ if(p.head?.ref!==policy.draft.branch||p.head?.repo?.full_name!==repo){
+  // Required named checks must report on unrelated REQOO PRs too. Inspect
+  // every changed file before permitting a non-CAD source; never trust labels.
+  if(!Number.isSafeInteger(p.number)||p.number<=0)fail('Invalid PR number.');
+  let count=0;
+  for(let page=1;page<=31;page++){
+   const files=await gh('/repos/'+repo+'/pulls/'+p.number+'/files?per_page=100&page='+page);
+   if(!Array.isArray(files)||files.some(f=>typeof f.filename!=='string'))fail('PR file list unavailable.');
+   if(files.some(f=>isCAD(f.filename)||(f.previous_filename&&isCAD(f.previous_filename))))
+    fail('CAD changes require PR '+policy.draft.branch+' → '+policy.live.branch+' in '+repo);
+   count+=files.length;
+   if(files.length<100){
+    if(count!==p.changed_files)fail('PR changed-file count changed or is incomplete.');
+    console.log('REDS gate: non-CAD PR; named checks may report without a Draft release.');return;
+   }
+  }
+  fail('PR exceeds complete changed-file audit limit.');
+ }
  console.log('REDS gate: authorised single Draft PR '+p.number+' → main.');
 }
 async function checkLive(){
@@ -62,6 +79,24 @@ async function checkLive(){
   const head=authorised.head?.sha;
   if(!head||!/^([0-9a-f]{40})$/.test(head))fail('PR source SHA unavailable.');
   if(validated.has(head))continue;
+  // A merged PR is not proof of review. Require an independent approval of
+  // the exact source; a later dismissal/request for changes invalidates it.
+  const reviews=await gh('/repos/'+owner+'/'+name+'/pulls/'+authorised.number+'/reviews?per_page=100');
+  if(!Array.isArray(reviews)||reviews.length>=100)
+   fail('PR review history unavailable or incomplete.');
+  const latestReviews=new Map();
+  for(const review of reviews){
+   if(!review.user?.login||!['APPROVED','CHANGES_REQUESTED','DISMISSED'].includes(review.state))continue;
+   const key=review.user.login.toLowerCase();
+   const previous=latestReviews.get(key);
+   if(!previous||Number(review.id)>Number(previous.id))latestReviews.set(key,review);
+  }
+  const author=authorised.user?.login?.toLowerCase();
+  if(!author||![...latestReviews.values()].some(r=>r.state==='APPROVED'&&r.commit_id===head&&
+     r.user.login.toLowerCase()!==author&&r.user.type==='User'&&['OWNER','MEMBER','COLLABORATOR'].includes(r.author_association)))
+   fail('Independent PR approval of exact Draft SHA is required: '+head);
+  if([...latestReviews.values()].some(r=>r.state==='CHANGES_REQUESTED'))
+   fail('Unresolved changes-requested review blocks release.');
   const result=await gh('/repos/'+owner+'/'+name+'/commits/'+head+'/check-runs?per_page=100');
   const verifiedRunIds=new Set();
   for(const required of policy.rules.requiredChecks){

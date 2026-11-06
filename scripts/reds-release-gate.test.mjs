@@ -35,9 +35,16 @@ try{
  run('check-draft','push','refs/heads/reds/draft',{},true);
  run('check-draft','push','refs/heads/main',{},false);
  run('check-live','push','refs/heads/feature/old-branch',{},false);
+ for(const name of ['noncad-pr','cad-pr','renamed-cad-pr','policy-pr']){
+  fs.writeFileSync(file,JSON.stringify({pull_request:{number:279,changed_files:1,base:{ref:'main'},head:{ref:'shop/fix',repo:{full_name:repo}}}}));
+  const c=spawnSync(process.execPath,['--import','./scripts/reds-release-test-fetch.mjs','scripts/reds-release-gate.mjs','check-pr'],{
+   env:{...process.env,GITHUB_EVENT_NAME:'pull_request',GITHUB_REF:'refs/pull/279/merge',GITHUB_REPOSITORY:repo,GITHUB_EVENT_PATH:file,GITHUB_TOKEN:'mock-test-token',REDS_TEST_SCENARIO:name},encoding:'utf8'});
+  assert.equal(c.status,name==='noncad-pr'?0:1,[name,c.stdout,c.stderr].join(' | '));
+ }
  scenario('identical',true);
  scenario('valid',true);
  scenario('unreviewed',false);
+ for(const name of ['no-review','self-review','bot-review','outside-review','stale-review','dismissed-review','changes-requested'])scenario(name,false);
  scenario('delayed',false);
  scenario('failed-check',false);
  scenario('wrong-app',false);
