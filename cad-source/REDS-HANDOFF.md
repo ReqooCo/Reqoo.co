@@ -18,6 +18,12 @@
 6. Protect existing CAD data: never delete originals, backups or history; preserve OpenCascade B-Rep and the native `.rqcad` project format.
 7. **Production release is not authorised merely because CI is green.** Admin GitHub ruleset + environment secret/token separation are open in [issue #278](https://github.com/ReqooCo/Reqoo.co/issues/278). Do not merge/deploy until these controls are verified and user approval/release policy is satisfied.
 
+## Checkpoint — sketch snapping (2026-11-07)
+
+- Draft-only updates: true finite line midpoints, line-line interior intersection snapping, out-of-plane intersection rejection, deterministic priority at overlapping snap locations, and visible point markers even when optional guide lines are off. Existing centre, endpoint and origin snaps retained.
+- Browser/native tests and deployed Draft identity have **not yet been verified** for these changes. Follow-up: regression coverage for centre/midpoint/intersection, save/reopen, touch and performance; exact-head Core/Modeling/Product and Draft browser checks. Do not claim completed Shapr3D snapping parity.
+- Release issue #278 remains open; `liveAccessRestricted=false`. No production merge or deploy.
+
 ## Checkpoint — Offset UI and tablet regression (2026-11-07)
 
 - Draft only. Removed duplicate Offset parameter gizmo; one `#sketchEditHUD` now owns distance, Chain/Single and Apply/Cancel. Added nonzero finite offset-distance validation. Canvas edge tapping now targets the precise selected polyline for both Chain and Single; Single records segment index. Sketch dimensions are hidden while an edit tool is active. Compact selection dock and familiar parallel-line Offset / scissors Trim glyphs replace overlapping controls.
