@@ -6,7 +6,7 @@ const policy=JSON.parse(fs.readFileSync(new URL('../cad-source/release-policy.js
 const mode=process.argv[2], ref=process.env.GITHUB_REF||'';
 const repo=process.env.GITHUB_REPOSITORY||'ReqooCo/Reqoo.co';
 const live='refs/heads/'+policy.live.branch,draft='refs/heads/'+policy.draft.branch;
-const cadPaths=['cad-source/','workers/cad-bridge.js','_web_worker.js','wrangler-web.toml','.github/workflows/deploy.yml','.github/workflows/deploy-web-simple.yml','.github/workflows/cad-pr-validation.yml','.github/workflows/cad-live-verification.yml','scripts/reds-release-gate.mjs','scripts/reds-release-gate.test.mjs'];
+const cadPaths=['cad-source/','workers/cad-bridge.js','_web_worker.js','wrangler-web.toml','.github/workflows/deploy.yml','.github/workflows/deploy-web-simple.yml','.github/workflows/cad-pr-validation.yml','.github/workflows/cad-live-verification.yml','scripts/reds-release-gate.mjs','scripts/reds-release-gate.test.mjs','scripts/reds-release-test-fetch.mjs','AGENTS.md','migrations/'];
 const fail=(message)=>{throw new Error('REDS RELEASE BLOCKED: '+message);};
 const isCAD=file=>cadPaths.some(p=>p.endsWith('/')?file.startsWith(p):file===p);
 const event=()=>JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH,'utf8'));
