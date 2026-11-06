@@ -63,12 +63,23 @@ async function checkLive(){
   if(!head||!/^([0-9a-f]{40})$/.test(head))fail('PR source SHA unavailable.');
   if(validated.has(head))continue;
   const result=await gh('/repos/'+owner+'/'+name+'/commits/'+head+'/check-runs?per_page=100');
+  const verifiedRunIds=new Set();
   for(const required of policy.rules.requiredChecks){
-   const runs=(result.check_runs||[]).filter(c=>c.name===required)
+   const runs=(result.check_runs||[]).filter(c=>c.name===required&&c.app?.slug==='github-actions')
     .sort((a,b)=>new Date(b.completed_at||0)-new Date(a.completed_at||0));
    if(!runs.length||runs[0].status!=='completed'||runs[0].conclusion!=='success')
-    fail('Required CAD validation not green at exact Draft SHA '+head+': '+required);
+    fail('Required GitHub Actions CAD validation not green at exact Draft SHA '+head+': '+required);
+   const parsed=/\/actions\/runs\/(\d+)\/job\/\d+/.exec(runs[0].details_url||'');
+   if(!parsed)fail('CAD check has no verifiable GitHub Actions run URL: '+required);
+   verifiedRunIds.add(parsed[1]);
   }
+  if(verifiedRunIds.size!==1)fail('CAD checks must belong to the same workflow run and exact Draft SHA.');
+  const runId=[...verifiedRunIds][0];
+  const verified=await gh('/repos/'+owner+'/'+name+'/actions/runs/'+runId);
+  if(verified.name!=='CAD PR validation'||verified.event!=='pull_request'||
+     verified.head_sha!==head||verified.head_branch!==policy.draft.branch||
+     verified.status!=='completed'||verified.conclusion!=='success')
+   fail('CAD checks do not originate from the authorised completed CAD PR validation workflow.');
   validated.add(head);
   console.log('REDS gate accepted merged Draft PR #'+authorised.number+' '+head);
  }
