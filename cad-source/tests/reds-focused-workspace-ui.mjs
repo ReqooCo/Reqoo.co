@@ -71,6 +71,9 @@ try{
  await inspectDock(1180,820,'Thread desktop');
  assert.equal(await page.locator('#p-kind').inputValue(),'External');
  await page.screenshot({path:path.join(out,'reds-focused-thread-desktop.png')});
+ await page.setViewportSize({width:1666,height:896});
+ await inspectDock(1666,896,'Thread wide desktop');
+ await page.screenshot({path:path.join(out,'reds-focused-thread-wide.png')});
  await page.setViewportSize({width:820,height:1180});
  await inspectDock(820,1180,'Thread tablet portrait');
  await page.screenshot({path:path.join(out,'reds-focused-thread-tablet.png')});
