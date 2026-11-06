@@ -2,7 +2,7 @@ name: CAD PR validation
 on:
   push:
     branches: [main]
-    paths: ['scripts/reds-release-gate.mjs', 'scripts/reds-release-gate.test.mjs', 'cad-source/**', 'workers/cad-bridge.js', '_web_worker.js', 'wrangler-web.toml', 'migrations/*cad_bridge*', '.github/workflows/cad-pr-validation.yml']
+    paths: ['scripts/reds-release-gate.mjs', 'scripts/reds-release-gate.test.mjs', 'scripts/reds-release-test-fetch.mjs', 'AGENTS.md', 'cad-source/**', 'workers/cad-bridge.js', '_web_worker.js', 'wrangler-web.toml', 'migrations/*cad_bridge*', '.github/workflows/cad-pr-validation.yml']
   pull_request:
     paths: ['scripts/reds-release-gate.mjs', 'cad-source/**', 'workers/cad-bridge.js', '_web_worker.js', 'wrangler-web.toml', 'migrations/*cad_bridge*', '.github/workflows/cad-pr-validation.yml']
   workflow_dispatch:
