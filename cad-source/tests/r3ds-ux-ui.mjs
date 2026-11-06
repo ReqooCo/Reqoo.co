@@ -14,6 +14,19 @@ const fresh=()=>page.evaluate(async()=>{window.__cad.alignGizmo.cancel();window.
 const item=id=>page.evaluate(id=>window.__cad.items.find(i=>i.id===id),id),select=id=>page.evaluate(id=>window.__cad.select([{id,kind:'body'}]),id),project=(p)=>page.evaluate(p=>{const v=window.__cad.camera.position.clone().set(...p).project(window.__cad.camera),r=document.querySelector('#canvas').getBoundingClientRect();return{x:r.left+(v.x+1)*r.width/2,y:r.top+(1-v.y)*r.height/2};},p);
 try{
  await page.goto(url+'?test=1');await ready();assert.match(await page.title(),/R3ds/);assert.match(await page.locator('.brand').getAttribute('aria-label'),/REQOO 3D Studios/);
+
+ // Welcome, world axes and action surfaces stay distinct in both themes and sizes.
+ for(const size of [{width:1920,height:946},{width:1024,height:768},{width:390,height:844},{width:375,height:812}]){
+  await page.setViewportSize(size);
+  for(const theme of ['light','dark']){
+   if(await page.evaluate(()=>document.documentElement.dataset.theme)!==theme)await page.locator('#themeToggle').click();
+   await page.waitForTimeout(100);
+   const layout=await page.evaluate(()=>{const rect=el=>{const b=el.getBoundingClientRect();return{x:b.x,y:b.y,w:b.width,h:b.height};},overlap=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;const hero=rect(document.querySelector('#empty')),labels=[...document.querySelectorAll('#worldReference span')].filter(e=>!e.hidden).map(rect),brand=rect(document.querySelector('.brand')),file=rect(document.querySelector('#fileMenu')),project=rect(document.querySelector('#projectCapsule'));return{axisOverlap:labels.some(b=>overlap(hero,b)),headerOverlap:overlap(brand,project)||overlap(file,project),overflow:document.documentElement.scrollWidth>innerWidth+1,hero,text:getComputedStyle(document.querySelector('#empty h1')).color};});
+   assert.equal(layout.axisOverlap,false,JSON.stringify({size,theme,layout}));assert.equal(layout.headerOverlap,false,JSON.stringify({size,theme,layout}));assert.equal(layout.overflow,false);assert.ok(layout.hero.x>=0&&layout.hero.x+layout.hero.w<=size.width);
+   await page.screenshot({path:path.join(out,'workspace-welcome-'+size.width+'-'+theme+'.png')});
+  }
+ }
+ await page.setViewportSize({width:1180,height:820});checks.push('Welcome and XYZ annotations never overlap; phone brand/file/project fit; light/dark desktop, tablet and phone hierarchy');
  await op('box',{width:20,depth:10,height:10});const good=await page.evaluate(()=>JSON.stringify(window.__cad.doc)),bad='{"invalid":';
  await page.evaluate(({good,bad})=>{localStorage.setItem('reqoo-cad-v1',bad);localStorage.setItem('reqoo-cad-v1-backup',good);},{good,bad});await page.reload();await ready();await page.locator('#projectRecovery').waitFor({state:'visible'});assert.match(await page.locator('#saveState').innerText(),/Recovery required/);assert.match(await page.locator('#status').innerText(),/could not be restored/);
  await op('box',{width:5,depth:5,height:5});assert.equal(await page.evaluate(()=>localStorage.getItem('reqoo-cad-v1')),bad);assert.equal(await page.evaluate(()=>localStorage.getItem('reqoo-cad-v1-backup')),good);
