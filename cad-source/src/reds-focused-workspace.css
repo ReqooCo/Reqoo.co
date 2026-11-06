@@ -284,3 +284,12 @@ body.cadWorkspace #stage[data-workspace=sketch]:not([data-drawing=true]):not([da
   left:8px;top:153px;max-height:calc(100% - 223px);width:44px;
  }
 }
+
+/* Before a plane is chosen, the primary Draw action remains available.
+   The single-rail Sketch palette replaces Draw only after sketch entry. */
+body.cadWorkspace #stage[data-workspace=sketch]:not([data-drawing=true]) #rail #nav-sketch{
+ display:flex!important;
+}
+body.cadWorkspace #stage[data-workspace=sketch]:not([data-drawing=true]) #quickSketchTools{
+ display:none!important;
+}
