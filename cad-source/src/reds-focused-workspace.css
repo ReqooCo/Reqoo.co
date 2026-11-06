@@ -1,0 +1,174 @@
+/* REDS Focused Workspace — single final layout layer.
+   Geometry, keyboard shortcuts, and existing buttons stay unchanged.
+   Shapr3D-inspired progressive disclosure; original REDS controls. */
+body.cadWorkspace{
+  --reds-rail:52px;
+  --reds-safe-side:12px;
+  --reds-panel-width:310px;
+}
+body.cadWorkspace #top{inset:10px 12px auto;gap:7px;}
+body.cadWorkspace #top .brand{height:40px;min-height:40px;padding:0 10px;border-radius:10px;}
+body.cadWorkspace #fileMenu{width:40px;min-width:40px;height:40px;border-radius:10px;}
+body.cadWorkspace #projectCapsule{width:194px;min-height:40px;padding:2px 9px;border-radius:10px;}
+body.cadWorkspace #projectName{font-size:14px;min-height:22px;line-height:1.25;}
+body.cadWorkspace #saveState{font-size:10px;}
+body.cadWorkspace #workspaceModes{
+ left:12px;top:61px;width:176px;min-width:176px;max-width:176px;
+ transform:none;padding:2px;border-radius:10px;
+}
+body.cadWorkspace #workspaceModes button{font-size:11px;padding:5px 3px;min-height:34px;}
+body.cadWorkspace #workspaceModes svg{width:15px;height:15px;}
+/* Compact primary rail: all actions remain accessible by their native labels. */
+body.cadWorkspace #rail,body.cadWorkspace #quickSketchTools{
+ left:12px;width:var(--reds-rail);gap:6px;max-height:calc(100% - 206px);overflow-y:auto;
+}
+body.cadWorkspace #rail{top:113px;}
+body.cadWorkspace #rail button,body.cadWorkspace #quickSketchTools button{
+ width:var(--reds-rail);min-width:var(--reds-rail);min-height:46px;
+ padding:10px;justify-content:center;gap:0;border-radius:11px;
+ font-size:0;box-shadow:0 2px 8px #0000000a;
+}
+body.cadWorkspace #rail button>span,body.cadWorkspace #quickSketchTools button>span{display:none;}
+body.cadWorkspace #rail button svg,body.cadWorkspace #quickSketchTools button svg{width:22px;height:22px;}
+body.cadWorkspace #rail button:focus-visible,body.cadWorkspace #quickSketchTools button:focus-visible{
+ outline:2px solid var(--blue);outline-offset:2px;
+}
+/* Selection remains contextual, but does not become a second full-height tool rail. */
+body.cadWorkspace #context{
+ left:74px;right:auto;top:117px;bottom:auto;transform:none;
+ width:max-content;max-width:min(530px,calc(100% - 166px));max-height:110px;
+ display:flex;flex-flow:row wrap;align-items:center;gap:5px;
+ padding:6px;background:var(--panel)!important;
+ border:1px solid var(--border);border-radius:11px;box-shadow:0 8px 22px #00000016;
+ overflow-y:auto;overflow-x:hidden;
+}
+body.cadWorkspace #context button{
+ width:auto;min-width:40px;min-height:38px;padding:6px 9px;
+ flex:0 0 auto;font-size:11px;display:inline-flex;flex-direction:row;gap:5px;
+ border-radius:8px;
+}
+body.cadWorkspace #context button svg{width:17px;height:17px;}
+body.cadWorkspace #context .selectionSummary{align-self:center;padding:0 8px;font-size:11px;}
+body.cadWorkspace #stage[data-contextual=true]:not([data-more-tools=true]) #rail :is(#nav-add,#nav-construct,#nav-transform,#nav-tools,#nav-sketch){display:none;}
+body.cadWorkspace #quickSketchTools{top:215px;}
+body.cadWorkspace #stage[data-workspace=sketch] #quickSketchTools,
+body.cadWorkspace #stage[data-workspace=sketch]:not([data-drawing=true]):not([data-sketch-context=true]) #quickSketchTools{top:236px;max-height:calc(100% - 320px);}
+body.cadWorkspace #stage[data-workspace=sketch][data-sketch-context=true] #context{top:117px;max-height:110px;}
+body.cadWorkspace #menu,body.cadWorkspace #toolPanel{
+ left:74px;top:117px;max-height:calc(100% - 165px);
+}
+body.cadWorkspace #sidebar[data-type=items]{left:74px;right:auto;top:117px;}
+body.cadWorkspace #sketchBar{top:117px;left:50%;max-width:calc(100% - 300px);}
+body.cadWorkspace #toolCoach{top:118px;left:50%;max-width:calc(100% - 300px);}
+/* Utility actions are icon-only, with accessible labels retained on buttons. */
+body.cadWorkspace #utilityRail{right:12px;top:171px;gap:6px;}
+body.cadWorkspace .utilityLabel{display:none!important;}
+body.cadWorkspace .utilityAction>button{
+ width:40px;min-width:40px;height:40px;min-height:40px;padding:8px;
+ border-radius:10px;
+}
+body.cadWorkspace .utilityAction>button svg{width:21px;height:21px;}
+body.cadWorkspace #navigationCard{right:12px;top:12px;width:40px;}
+body.cadWorkspace #viewCube{right:66px;top:17px;width:84px;height:84px;}
+body.cadWorkspace #selectionBar{bottom:22px;max-width:calc(100% - 164px);min-height:38px;}
+body.cadWorkspace #selectionBar label,body.cadWorkspace #selectionBar button{font-size:11px;}
+/* One compact operation dock. Parameters are not scattered across the model.
+   The active on-canvas handle and its exact numeric editor remain in the scene. */
+body.cadWorkspace #operationGizmo .operationActions{
+ top:auto;left:auto;right:70px;bottom:136px;
+ width:min(var(--reds-panel-width),calc(100% - 168px));max-height:38vh;
+ display:grid;grid-template-columns:minmax(0,1fr) repeat(3,36px);
+ align-items:center;justify-content:stretch;gap:6px;
+ padding:10px;background:var(--panel);border:1px solid var(--border);
+ border-radius:12px;box-shadow:0 12px 30px #0003;
+ pointer-events:auto;overflow-y:auto;overscroll-behavior:contain;
+}
+body.cadWorkspace #operationGizmo .operationActions strong{
+ grid-column:1/-1;font-size:13px;font-weight:650;padding:0 2px 5px;
+ background:transparent;border:0;border-bottom:1px solid var(--border);border-radius:0;
+}
+body.cadWorkspace #operationGizmo [data-choices],
+body.cadWorkspace #operationGizmo [data-commands]{
+ grid-column:1/-1;display:flex;gap:5px;width:100%;max-width:100%;
+ padding:2px 0 6px;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:thin;
+}
+body.cadWorkspace #operationGizmo .operationChoice{min-width:0;flex:0 0 auto;}
+body.cadWorkspace #operationGizmo .operationChoice select{max-width:128px;}
+body.cadWorkspace #operationGizmo .operationActions [data-fit]{grid-column:2;}
+body.cadWorkspace #operationGizmo .operationActions [data-apply]{grid-column:3;background:var(--blue);color:#fff;border-color:var(--blue);}
+body.cadWorkspace #operationGizmo .operationActions [data-cancel]{grid-column:4;}
+body.cadWorkspace #operationGizmo .operationActions output{
+ grid-column:1/-1;flex-basis:auto;text-align:left;min-height:0;
+ padding:0 2px;overflow-wrap:anywhere;line-height:1.4;
+}
+body.cadWorkspace #operationGizmo [data-badges]{
+ position:absolute;right:70px;bottom:80px;
+ width:min(var(--reds-panel-width),calc(100% - 168px));
+ display:flex;align-items:center;gap:5px;overflow-x:auto;overflow-y:hidden;
+ padding:5px;background:var(--panel);border:1px solid var(--border);
+ border-radius:10px;box-shadow:0 7px 20px #0002;pointer-events:auto;
+ scrollbar-width:thin;
+}
+body.cadWorkspace #operationGizmo [data-gizmo-field]{
+ position:static!important;left:auto!important;top:auto!important;
+ width:max-content;min-width:max-content;max-width:none;min-height:34px;
+ padding:6px 9px;font-size:11px;box-shadow:none;
+}
+body.cadWorkspace #operationGizmo [data-gizmo-field][aria-pressed=true]{
+ border-color:#d59b47;background:#d59b4728;
+}
+body.cadWorkspace #operationGizmo .operationValue{
+ z-index:2;box-shadow:0 5px 18px #0004;max-width:218px;
+}
+body.cadWorkspace #stage:has(#operationGizmo:not([hidden])) #worldReference{opacity:.18;pointer-events:none;}
+body.cadWorkspace #stage:has(#operationGizmo:not([hidden])) #toolCoach{display:none!important;}
+/* Keep failure messages legible and avoid a phantom "ready" when invalid. */
+body.cadWorkspace #operationGizmo[data-error=true] .operationActions{border-color:#bd6666;}
+body.cadWorkspace #operationGizmo[data-error=true] output{color:#ef9b9b;}
+html[data-theme=light] body.cadWorkspace #operationGizmo[data-error=true] output{color:#a82e2e;}
+@media(max-width:1100px){
+ body.cadWorkspace #context{max-width:calc(100% - 142px);}
+ body.cadWorkspace #toolCoach,body.cadWorkspace #sketchBar{max-width:calc(100% - 160px);}
+}
+@media(max-width:760px){
+ body.cadWorkspace{--reds-rail:44px;}
+ body.cadWorkspace #top{inset:8px 8px auto;}
+ body.cadWorkspace #top .brand{height:38px;min-height:38px;}
+ body.cadWorkspace #projectCapsule{width:min(160px,38vw);min-height:38px;}
+ body.cadWorkspace #workspaceModes{left:8px;top:58px;transform:none;width:150px;min-width:150px;max-width:150px;}
+ body.cadWorkspace #workspaceModes button{font-size:10px;min-height:33px;}
+ body.cadWorkspace #rail{left:8px;top:102px;max-height:calc(100% - 178px);}
+ body.cadWorkspace #rail button,body.cadWorkspace #quickSketchTools button{width:44px;min-width:44px;min-height:44px;padding:9px;}
+ body.cadWorkspace #quickSketchTools,
+ body.cadWorkspace #stage[data-workspace=sketch] #quickSketchTools,
+ body.cadWorkspace #stage[data-workspace=sketch]:not([data-drawing=true]):not([data-sketch-context=true]) #quickSketchTools{
+   left:8px;top:179px;max-height:calc(100% - 268px);
+ }
+ body.cadWorkspace #context,body.cadWorkspace #stage[data-workspace=sketch][data-sketch-context=true] #context{
+   left:60px;right:55px;top:102px;bottom:auto;transform:none;
+   width:auto;max-width:none;max-height:94px;padding:5px;
+ }
+ body.cadWorkspace #context button{min-height:36px;font-size:10px;padding:5px;}
+ body.cadWorkspace #menu,body.cadWorkspace #toolPanel{left:60px;right:54px;top:102px;bottom:auto;width:auto;max-height:calc(100% - 168px);}
+ body.cadWorkspace #sidebar[data-type=items]{left:60px;right:54px;top:102px;width:auto;}
+ body.cadWorkspace #utilityRail{right:8px;top:146px;gap:5px;}
+ body.cadWorkspace .utilityAction>button{width:38px;min-width:38px;height:38px;min-height:38px;}
+ body.cadWorkspace #navigationCard{right:8px;top:8px;width:38px;}
+ body.cadWorkspace #viewCube{right:53px;top:52px;width:66px;height:66px;}
+ body.cadWorkspace #sketchBar,body.cadWorkspace #toolCoach{left:60px;right:55px;top:101px;max-width:none;transform:none;}
+ body.cadWorkspace #selectionBar{left:8px;right:8px;bottom:18px;max-width:none;}
+ body.cadWorkspace #operationGizmo .operationActions{
+   left:60px;right:55px;bottom:145px;width:auto;max-height:32vh;gap:4px;padding:8px;
+ }
+ body.cadWorkspace #operationGizmo [data-badges]{
+   left:60px;right:55px;bottom:88px;width:auto;
+ }
+ body.cadWorkspace #operationGizmo .operationValue{max-width:calc(100vw - 124px);}
+ body.cadWorkspace #operationGizmo .operationActions [data-choices],
+ body.cadWorkspace #operationGizmo .operationActions [data-commands]{max-height:62px;}
+}
+@media(max-height:620px){
+ body.cadWorkspace #operationGizmo .operationActions{max-height:30vh;bottom:115px;}
+ body.cadWorkspace #operationGizmo [data-badges]{bottom:65px;}
+ body.cadWorkspace #rail{max-height:calc(100% - 145px);}
+}
