@@ -1,7 +1,7 @@
 name: CAD live preview and production verification
 on:
   push:
-    branches: [main, ux/reds-focused-workspace-20261106, feature/cad-professional-20261103, fix/cad-continuous-drag-diameter-20261103, fix/cad-interactive-preview-ui-20261103, fix/cad-ipad-face-preview-20261104, fix/cad-ring-regions-theme-20261104, fix/cad-sketch-dimensions-view-20261104, feature/cad-viewcube-display-20261104]
+    branches: [main, feature/reds-sketch-foundation-20261106, ux/reds-focused-workspace-20261106, feature/cad-professional-20261103, fix/cad-continuous-drag-diameter-20261103, fix/cad-interactive-preview-ui-20261103, fix/cad-ipad-face-preview-20261104, fix/cad-ring-regions-theme-20261104, fix/cad-sketch-dimensions-view-20261104, feature/cad-viewcube-display-20261104]
     paths: ['cad-source/**','workers/cad-bridge.js','wrangler-web.toml','_web_worker.js','.github/workflows/cad-live-verification.yml','.github/workflows/deploy.yml']
 permissions:
   contents: read
@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
-      CAD_TEST_URL: ${{ github.ref == 'refs/heads/main' && 'https://reqoo.co/cad/' || github.ref == 'refs/heads/ux/reds-focused-workspace-20261106' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/feature/cad-viewcube-display-20261104' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/fix/cad-sketch-dimensions-view-20261104' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/fix/cad-ring-regions-theme-20261104' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/fix/cad-ipad-face-preview-20261104' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/fix/cad-interactive-preview-ui-20261103' && 'https://fix-cad-interactive-preview.reqoo-co.pages.dev/cad/' || github.ref == 'refs/heads/fix/cad-continuous-drag-diameter-20261103' && 'https://fix-cad-continuous-drag-diam.reqoo-co.pages.dev/cad/' || 'https://feature-cad-professional-202.reqoo-co.pages.dev/cad/' }}
+      CAD_TEST_URL: ${{ github.ref == 'refs/heads/main' && 'https://reqoo.co/cad/' || github.ref == 'refs/heads/feature/reds-sketch-foundation-20261106' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/ux/reds-focused-workspace-20261106' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/feature/cad-viewcube-display-20261104' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/fix/cad-sketch-dimensions-view-20261104' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/fix/cad-ring-regions-theme-20261104' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/fix/cad-ipad-face-preview-20261104' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/fix/cad-interactive-preview-ui-20261103' && 'https://fix-cad-interactive-preview.reqoo-co.pages.dev/cad/' || github.ref == 'refs/heads/fix/cad-continuous-drag-diameter-20261103' && 'https://fix-cad-continuous-drag-diam.reqoo-co.pages.dev/cad/' || 'https://feature-cad-professional-202.reqoo-co.pages.dev/cad/' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -25,7 +25,7 @@ jobs:
           npm ci
           npm run build
       - name: Deploy isolated CAD preview using the existing Workers deployment access
-        if: github.ref == 'refs/heads/ux/reds-focused-workspace-20261106' || github.ref == 'refs/heads/feature/cad-viewcube-display-20261104' || github.ref == 'refs/heads/fix/cad-ipad-face-preview-20261104' || github.ref == 'refs/heads/fix/cad-ring-regions-theme-20261104' || github.ref == 'refs/heads/fix/cad-sketch-dimensions-view-20261104'
+        if: github.ref == 'refs/heads/feature/reds-sketch-foundation-20261106' || github.ref == 'refs/heads/ux/reds-focused-workspace-20261106' || github.ref == 'refs/heads/feature/cad-viewcube-display-20261104' || github.ref == 'refs/heads/fix/cad-ipad-face-preview-20261104' || github.ref == 'refs/heads/fix/cad-ring-regions-theme-20261104' || github.ref == 'refs/heads/fix/cad-sketch-dimensions-view-20261104'
         working-directory: cad-source
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -43,6 +43,7 @@ jobs:
         working-directory: cad-source
         run: |
           node tests/active-sketch-edit-ui.mjs
+          node tests/reds-sketch-parity-ui.mjs
           node tests/multi-profile-ui.mjs
           node tests/r3ds-ux-ui.mjs
           node tests/visualization-ui.mjs
