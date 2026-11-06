@@ -92,3 +92,8 @@
 - **Negative testing limits:** code-level denied attempts verified with mocks only. No destructive direct push, production write, force-push or branch deletion attempted. Real permissions enforcement tests require owner configuration and a safe probe.
 - **Next action:** owner applies and verifies GitHub rulesets/environments and per-Worker Cloudflare token migration using `security/OWNER-ACTIONS-278.md`, then runs admin audit and provides nonsecret evidence. Do not flip `liveAccessRestricted` until #278 controls are genuinely verified.
 - **Live changes:** none; PR #277 stays Draft, #278 stays open. Sketch curve/constraint/physical iPad improvements remain pending behind P0; #273 topology and #274 failing user file fixture remain outstanding.
+
+
+### Exact Draft commit identity follow-up
+
+While waiting for CI at `38142ff33ae6965d83c39cb3f5543d1317742865`, inspection found `tests/live-identity.mjs` checked sourceHash but not version.json.commit. Documentation/security-only commits share the same CAD asset hash, so an older deployed commit could falsely satisfy exact-head identity. This checkpoint additionally requires the deployed version commit to match the built commit in CI (local builds retain local mode). The final commit containing this follow-up must receive a fresh full matrix and Draft browser run. Local 17 native suites, Sketch parity, file UX, active sketch editing and desktop/tablet/phone focused workspace all passed before this identity-only change. No Live deploy; admin blockers remain unchanged. Fetch final run evidence from #278 and the current PR checks.
