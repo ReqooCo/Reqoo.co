@@ -25,7 +25,9 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/reds-release-gate.mjs check-pr
       - name: Verify REDS release-gate policy tests
-        run: node scripts/reds-release-gate.test.mjs
+        run: |
+          node scripts/reds-release-gate.test.mjs
+          node scripts/reds-draft-deploy.test.mjs
       - name: Verify all REDS deploy workflow surfaces
         run: node scripts/reds-release-surface-audit.mjs
       - uses: actions/setup-node@v4

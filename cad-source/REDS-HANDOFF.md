@@ -18,7 +18,17 @@
 6. Protect existing CAD data: never delete originals, backups or history; preserve OpenCascade B-Rep and the native `.rqcad` project format.
 7. **Production release is not authorised merely because CI is green.** Admin GitHub ruleset + environment secret/token separation are open in [issue #278](https://github.com/ReqooCo/Reqoo.co/issues/278). Do not merge/deploy until these controls are verified and user approval/release policy is satisfied.
 
-## Current checkpoint — solo operator continuation (2026-11-06)
+## Current checkpoint — scoped Draft token verification (2026-11-06)
+
+- Inspected PR #277 HEAD `ebf7f53a7e117743eb3a5148e1a736a7ee7a67a0`. Core/Modeling/Product passed: run 42235356677. Draft full browser suite passed in run 42235349989 attempt 1 using the older credential.
+- Owner created Account token `REDS Draft Deploy` (ID `9b46b904c086abe5aa4f15364af0693b`), independently verified active and restricted to the exact Draft Worker tag `5d3251aa17374233a6745c476020e555`, Individual Workers Editor only. Owner stored it in reds-draft environment as CLOUDFLARE_API_TOKEN. No token value captured in chat/source.
+- Real rerun 42235349989 attempt 2, job 127967828174: scoped token uploaded Draft successfully, but Wrangler 4.129.0 deploy failed on account-wide /workers/subdomain lookup (10000). Browser tests did not run. This is NOT a green scoped-token deployment.
+- This commit replaces Draft full deploy with supported versions upload + exact version 100% deployment. Canonical Actions helper touches only the existing Draft script, keeps workers.dev enabled, disables per-version preview URLs, verifies active version and subdomain settings, then existing exact-commit browser suite runs. No account-wide permission added; upload/deploy failures remain fatal. Mock regression tests cover wrong branch/repo/event/client, denied API, failed upload and wrong active version.
+- Main ruleset now independently verified approvals=0 and last-push approval=false for owner-confirmed solo mode; required PR, strict three Actions checks, force/deletion restrictions and empty bypass remain. Live still requires final owner environment approval.
+- No Live deployment or credential revocation. #278 remains OPEN, liveAccessRestricted=false. Still pending: Live credentials, broad-token consumer migration/revocation, Pages alternative publisher and external-client boundaries, real negative enforcement tests. Do not broaden Draft token or flip the policy lock to pass CI.
+- Local scoped-deploy tests, release-gate tests and surface audit run for this change; fresh exact-head Core/Modeling/Product and canonical Draft browser results must be checked after commit. Final observed run evidence goes in #278 to avoid recursive handoff commits. Next action: verify new pipeline with the actual scoped token, then complete remaining owner-only credential work.
+
+## Previous checkpoint — solo operator continuation (2026-11-06)
 
 - Starting/current inspected remote HEAD: `3a282fb58deda6b554e12d75b36defc95b2693da`; PR #277 open Draft, no merge. Its Core/Modeling/Product and actual Draft suite passed at https://github.com/ReqooCo/Reqoo.co/actions/runs/42226818598 and https://github.com/ReqooCo/Reqoo.co/actions/runs/42226808947.
 - Owner confirmed only `ReqooCo` operates the repository and authorised continuation after choosing automated validation + final owner deployment approval. Updated code/policy/docs to the **solo-owner** model, replacing the earlier independent-human-review plan. This is an explicit policy change for solo use, not equivalent independent review and not a test bypass.

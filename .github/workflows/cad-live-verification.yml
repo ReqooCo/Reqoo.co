@@ -36,7 +36,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           node -e "const fs=require('fs');fs.mkdirSync('../cad-preview/cad',{recursive:true});fs.cpSync('dist','../cad-preview/cad',{recursive:true})"
-          npx --yes wrangler@4.129.0 deploy --config wrangler.draft.jsonc
+          node ../scripts/reds-draft-deploy.mjs
       - name: Install Chromium
         working-directory: cad-source
         run: npx playwright install --with-deps chromium
