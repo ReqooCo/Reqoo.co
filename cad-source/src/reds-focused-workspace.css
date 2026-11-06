@@ -341,3 +341,17 @@ body.cadWorkspace #stage[data-workspace=sketch]:not([data-drawing=true]) #quickS
   top:205px;
  }
 }
+
+/* Plane-first Sketch: do not show an unrelated column of drawing tools
+   before an XY/XZ/YZ plane is chosen. A selected planar face still
+   exposes its direct drawing shortcuts, like Shapr3D adaptive tools. */
+body.cadWorkspace #stage[data-workspace=sketch]:not([data-drawing=true]):not([data-sketch-target-kind=face]) #quickSketchTools{
+ display:none!important;
+}
+body.cadWorkspace #sketchPlanePicker .planeInstructions button[data-cancel]{
+ font-size:0!important;min-width:30px;max-width:30px;overflow:hidden;
+ display:inline-flex;align-items:center;justify-content:center;
+}
+body.cadWorkspace #sketchPlanePicker .planeInstructions button[data-cancel]::after{
+ content:"×";font-size:19px;line-height:1;
+}
