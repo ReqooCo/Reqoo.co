@@ -20,7 +20,7 @@ try{
  await page.goto(url+'?test=1');await ready();await page.locator('#openFile').setInputFiles(path.resolve('tests/fixtures/patterned-peg-assembly.json'));await page.waitForFunction(()=>!window.__cad.gizmo.busy&&window.__cad.doc.features.length===11);
  // Round-trip the actual owner assembly through the browser download and file picker.
  const original=await page.evaluate(()=>({ids:window.__cad.doc.features.map(f=>f.id),bodies:window.__cad.items.filter(i=>i.kind==='body').map(i=>({id:i.id,volume:i.volume})).sort((a,b)=>a.id.localeCompare(b.id))}));
- const savedDownload=page.waitForEvent('download');await page.evaluate(()=>window.__cad.saveProject());const saved=await savedDownload;assert.match(saved.suggestedFilename(),/\\.rqcad$/i);
+ const savedDownload=page.waitForEvent('download');await page.evaluate(()=>window.__cad.saveProject());const saved=await savedDownload;assert.match(saved.suggestedFilename(),/\.rqcad$/i);
  const savedPath=await saved.path();const savedJSON=JSON.parse(await fs.readFile(savedPath,'utf8'));assert.deepEqual(savedJSON.features.map(f=>f.id),original.ids,'Download must preserve feature IDs');
  await fresh();await page.waitForFunction(()=>window.__cad.doc.features.length===0);
  await page.locator('#openFile').setInputFiles(savedPath);await page.waitForFunction(()=>!window.__cad.gizmo.busy&&window.__cad.doc.features.length===11,{},{timeout:90000});
