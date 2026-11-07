@@ -2,6 +2,11 @@ import assert from 'node:assert/strict';import {createRequire} from 'node:module
 const req=createRequire(import.meta.url);R.setOC(await init({locateFile:()=>req.resolve('replicad-opencascadejs/wasm')}));
 const doc=features=>({format:'reqoo-cad',version:1,features}),f=(id,type,params,inputs=[])=>({id,type,params,inputs}),near=(a,b,t=.001)=>assert.ok(Math.abs(a-b)<t,`${a} != ${b}`);
 let base=[f('stock','cylinder',{radius:3,height:6})],model=await buildModel(doc(base)),stock=model.items[0],side=stock.faceInfo.find(f=>f.cylinder),spec=autoThread(side.cylinder,{threadLength:3});assert.equal(spec.size,'M6');assert.equal(spec.pitch,1);assert.equal(side.cylinder.internal,false);model.release();
+// Cosmetic threads retain exact stock geometry while preserving editable specifications.
+model=await buildModel(doc([...base,f('cosmetic','thread',{...spec,mode:'Cosmetic',face:side.index,faceRef:side.reference},['stock'])]));
+near(model.items[0].volume,stock.volume);assert.equal(model.items[0].faceInfo.some(x=>x.type==='BSPLINE_SURFACE'),false);
+const cosmeticSTEP=await (await model.export('step',['cosmetic'])).text();assert.match(cosmeticSTEP,/ISO-10303-21/);model.release();
+await assert.rejects(()=>buildModel(doc([...base,f('invalid','thread',{...spec,mode:'Cosmetic',diameter:8,face:side.index,faceRef:side.reference},['stock'])])),/listed metric/);
 const thread=f('thread','thread',{...spec,face:side.index,faceRef:side.reference},['stock']);
 let rightVolume;
 for(const hand of ['Right','Left']){
