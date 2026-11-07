@@ -32,7 +32,12 @@ export function cutThread(body,face,p){
  }
  try{
   const before=volume(body);let result;
-  try{result=cutSpan(body,d.start,d.length);if(valid(result,before))return result.clone();}catch(error){console.warn('[REDS Thread] Full-span B-rep cut failed; retrying shorter spans:',error instanceof Error?error.message:String(error));}
+  if(d.length<=8*d.pitch){
+   try{result=cutSpan(body,d.start,d.length);if(valid(result,before))return result.clone();}
+   catch(error){console.warn('[REDS Thread] Full-span B-rep cut failed; retrying shorter spans:',error instanceof Error?error.message:String(error));}
+  }
+  // Avoid an expensive full-length helical sweep/Boolean for long threads.
+  // Native segment cuts are still validated individually below.
   // Long pipe-shell booleans can return empty or unchanged solids at cylindrical
   // seams. Short, phase-aligned spans retain the same helix and overlap internally.
   result=body;const step=3*d.pitch;
