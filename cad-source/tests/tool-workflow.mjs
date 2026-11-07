@@ -22,6 +22,11 @@ assert.throws(()=>resolveReference(original,[plane([.5,.5,0]),plane([.5,.5,0])],
 assert.throws(()=>resolveReference(original,[plane([.5,.5,0],[0,0,-1])],0),/ambiguous/,'Opposite-facing geometry must not be matched');
 assert.throws(()=>resolveReference(original,[],0),/ambiguous/,'Missing geometry must not silently bind');
 assert.equal(descriptorDistance(original,{...original,kind:'edge'}),Infinity,'Cross-domain reference must be rejected');
+for(const malformed of [{...original,center:null},{...original,center:[0,0,NaN]},{...original,normal:[0,1]}]){
+ assert.equal(descriptorDistance(original,malformed),Infinity,'Malformed imported topology must not match');
+ assert.throws(()=>resolveReference(original,[malformed],0),/ambiguous/,'Malformed candidate must fail safely');
+}
+assert.throws(()=>resolveReference({...original,center:null},[original],0),/ambiguous/,'Malformed saved reference must fail safely');
 assert.equal(toolSelectionError('union',[ref('b','body'),ref('b','body')],items,doc)!=='',true,'Boolean requires two unique bodies');
 assert.equal(toolSelectionError('union',[ref('b','body'),ref('c','body')],items,doc),'','Boolean accepts two distinct bodies');
 console.log('DEPENDENCY CONTRACT PASS: topology reorder/ambiguity/missing/opposite normals and unique-body Boolean selection');
