@@ -8,7 +8,8 @@ export function createWorldReference({THREE,scene,camera,stage}){
  const dot=new THREE.Mesh(new THREE.SphereGeometry(1,12,8),new THREE.MeshBasicMaterial({color:0xffffff,depthTest:false}));dot.renderOrder=9;group.add(dot);
  const labels=document.createElement('div');labels.id='worldReference';labels.innerHTML='<span data-origin>0, 0, 0</span><span data-axis="X">X</span><span data-axis="Y">Y</span><span data-axis="Z">Z</span>';stage.append(labels);
  function update(){const r=stage.getBoundingClientRect(),unit=(camera.top-camera.bottom)/camera.zoom/r.height,length=unit*76;axes.scale.setScalar(length);dot.scale.setScalar(unit*2.5);
-  for(const [i,el]of [...labels.children].entries()){const p=new THREE.Vector3(...(i===0?[0,0,0]:i===1?[length,0,0]:i===2?[0,length,0]:[0,0,length])).project(camera);el.hidden=Math.abs(p.x)>1||Math.abs(p.y)>1||Math.abs(p.z)>1;el.style.left=((p.x+1)*r.width/2+6)+'px';el.style.top=((1-p.y)*r.height/2+5)+'px';}
+  const screenOrigin=new THREE.Vector3(0,0,0).project(camera);
+  for(const [i,el]of [...labels.children].entries()){const p=new THREE.Vector3(...(i===0?[0,0,0]:i===1?[length,0,0]:i===2?[0,length,0]:[0,0,length])).project(camera);el.hidden=Math.abs(p.x)>1||Math.abs(p.y)>1||Math.abs(p.z)>1||i>0&&Math.hypot((p.x-screenOrigin.x)*r.width/2,(p.y-screenOrigin.y)*r.height/2)<14;el.style.left=((p.x+1)*r.width/2+6)+'px';el.style.top=((1-p.y)*r.height/2+5)+'px';}
  }
  return{update,group};
 }

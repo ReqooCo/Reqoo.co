@@ -361,3 +361,29 @@ body.cadWorkspace #sketchBar #sketchTrimHUD{position:static;transform:none;inset
 
 body.cadWorkspace #stage{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
 body.cadWorkspace #stage input,body.cadWorkspace #stage textarea{-webkit-user-select:text;user-select:text;}
+
+/* One task strip and one set of attached dimension editors. */
+body.cadWorkspace #sketchBar{top:62px;left:50%;right:auto;bottom:auto;transform:translateX(-50%);width:max-content;max-width:calc(100% - 540px);min-height:42px;padding:4px 6px;gap:8px;flex-wrap:nowrap;border-radius:9px;box-shadow:0 3px 12px #0002;}
+body.cadWorkspace #sketchBar strong{width:auto;max-width:150px;font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+body.cadWorkspace #sketchStart{display:flex;align-items:center;gap:4px;font-size:11px;white-space:nowrap;}
+body.cadWorkspace #sketchStart>span{display:none;}
+body.cadWorkspace #sketchStart select{min-height:32px;max-width:108px;font-size:12px;padding:4px 7px;}
+body.cadWorkspace #sketchBar button{flex:none;min-height:34px;padding:5px 10px;font-size:12px;}
+body.cadWorkspace #stage[data-drawing=true] #selectionBar{display:none!important;}
+body.cadWorkspace #sketchDimensions>label{min-height:34px;padding:0 4px;gap:2px;border-radius:6px;font-size:10px;font-weight:500;box-shadow:none;background:var(--panel);border-color:var(--border);color:var(--text);}
+body.cadWorkspace #sketchDimensions input{width:46px;min-height:32px;font-size:16px;font-weight:500;padding:0 2px;color:inherit;}
+body.cadWorkspace #sketchDimensions>label:focus-within{border-color:var(--blue);box-shadow:0 0 0 2px #3387e025;}
+body.cadWorkspace #sketchDimensionLines{opacity:.7;}
+body.cadWorkspace #snapFeedback{padding:3px 6px;font-size:10px;border-radius:5px;box-shadow:none;background:var(--panel);color:var(--text);border-color:var(--border);max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+body.cadWorkspace #snapGuides circle{stroke-width:1.5;filter:none;}
+@media(max-width:1050px){body.cadWorkspace #sketchBar{top:109px;max-width:calc(100% - 170px);}}
+@media(max-width:760px){
+ body.cadWorkspace #sketchBar{left:60px;right:55px;top:106px;transform:none;width:auto;max-width:none;justify-content:space-between;gap:5px;}
+ body.cadWorkspace #sketchBar strong{display:none;}
+ body.cadWorkspace #sketchBar #sketchTrimHUD{flex:1;justify-content:flex-end;}
+ body.cadWorkspace #sketchStart select{max-width:100px;}
+}
+
+@media(max-width:760px){
+ body.cadWorkspace #stage[data-workspace=sketch] #quickSketchTools{max-height:calc(100% - 330px);}
+}

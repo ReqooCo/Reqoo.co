@@ -18,6 +18,17 @@
 6. Protect existing CAD data: never delete originals, backups or history; preserve OpenCascade B-Rep and the native `.rqcad` project format.
 7. **Production release is not authorised merely because CI is green.** Admin GitHub ruleset + environment secret/token separation are open in [issue #278](https://github.com/ReqooCo/Reqoo.co/issues/278). Do not merge/deploy until these controls are verified and user approval/release policy is satisfied.
 
+## Work checkpoint — compact Sketch presentation (2026-11-07)
+
+- Baseline verified `f574c71472850dae370390e24cf92d7fd7edf802`, PR #277 still the sole open Draft; its CAD matrix passed (42316050907). Owner screenshot F7C5F01C shows duplicate W/H controls, wide instruction panel, persistent snap badge and origin/axis label congestion.
+- Removed the separate rectangle exact-size HUD and its per-frame synchronization. The attached native sketch dimension inputs now own size editing for both newly drawn and reselected profiles. Existing geometry validation, rebuild, history and constraints path retained; UI tests target this real editor.
+- Sketch task strip now shows only tool/plane, start-mode dropdown when relevant, and Exit (plus existing Trim Done). Full instruction remains available in the strip accessible label/title. Drawing hides the unrelated Selection dock. Attached editors and snap feedback use smaller neutral surfaces with 16px editable input text for touch usability; completed primitive drag clears stale snap feedback.
+- Dimension layout now moves labels sideways away from vertical rails and to the nearest side of horizontal obstacles, rather than lifting every collision above the whole toolbar. Sketch tools scroll above phone Undo/Redo. A world-axis label pointing into the camera hides when it projects onto origin; the actual origin and all world axes remain.
+- Local validation: production build; project IO; expanded native Sketch parity (25 curve pairs, derived/linked Trim and Offset); Sketch parity browser (Trim/Offset/Undo/Redo/reopen); direct Sketch browser (three planes, touch size edits, native Extrude/Chamfer/upstream edits, Undo/Redo/reopen); R3ds UX; Sketch regions; Product browser; release gate/surface tests. Final responsive screenshot assertions cover the reported 23 x 19 rectangle at 1180, 820 and 390 pixels, one-row task strip, one pair of dimensions, rail/control separation and projected axis labels.
+- Publication blocked: automatic approval review rejected the combined fetch/commit/push command as a consequential remote mutation requiring explicit user authorization. No remote write or deployment occurred. Changes are prepared locally; obtain explicit approval before pushing to the existing reds/draft branch.
+- Fresh exact-head matrix and canonical deployed Draft identity/browser verification required after push. Do not infer new-commit success from baseline. No production changes; #278 release lock retained. Physical iPad/Pencil testing remains pending; no complete-tool/Shapr3D parity claim.
+- Next: inspect this commit's CI and Draft screenshot/source identity, then continue remaining native Sketch audit items.
+
 ## Work checkpoint — unified native Trim and deep sketch audit (2026-11-07)
 
 - Baseline `9dd0699efaac87ed173fbea3de8956750c456f3f`: exact-head Core/Modeling/Product PASS 42305090178; canonical Draft PASS 42305080892. Owner IMG_1346 reports Arc/Spline mismatch and unsupported curve boundary Trim.
