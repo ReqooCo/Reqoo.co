@@ -9,7 +9,7 @@ const root=path.resolve(process.env.CAD_BUILD_DIR||'dist'),out=path.resolve('tes
 const server=http.createServer(async(req,res)=>{try{let p=new URL(req.url,'http://localhost').pathname;if(p.startsWith('/cad/'))p=p.slice(4);const f=path.resolve(root,'.'+(p.endsWith('/')?p+'index.html':p));if(!f.startsWith(root+path.sep))throw Error();res.writeHead(200,{'Content-Type':({'.html':'text/html','.js':'text/javascript','.css':'text/css','.wasm':'application/wasm','.json':'application/json'})[path.extname(f)]||'application/octet-stream'});res.end(await fs.readFile(f));}catch{res.writeHead(404);res.end();}});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));const url=process.env.CAD_TEST_URL||('http://127.0.0.1:'+server.address().port+'/');
 const browser=await chromium.launch({headless:true}),context=await browser.newContext({viewport:{width:1180,height:820},hasTouch:true}),page=await context.newPage(),errors=[];
-page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'||m.type()==='warning')console.log('OWNER THREAD BROWSER',m.type(),m.text());});page.setDefaultTimeout(30000);
+page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'||m.type()==='warning'||m.text().includes('[REDS Thread]'))console.log('OWNER THREAD BROWSER',m.type(),m.text());});page.setDefaultTimeout(30000);
 const ready=()=>page.waitForFunction(()=>window.__cad?.ready());
 const fresh=()=>page.evaluate(()=>window.__cad.rebuild({format:'reqoo-cad',version:1,title:'Sketch Parity QA',features:[],ui:{hidden:[],colors:{}}}));
 const op=(type,params,inputs=[])=>page.evaluate(({type,params,inputs})=>window.__cad.apply(type,params,inputs),{type,params,inputs});
