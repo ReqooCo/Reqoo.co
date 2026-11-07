@@ -1,4 +1,4 @@
-import assert from 'node:assert/strict';import{TOOL_WORKFLOWS,toolSelectionError,extendCanvasSelection}from'../src/tool-workflow.js';import{TYPES}from'../src/engine.js';
+import assert from 'node:assert/strict';import{promoteBodySelection,TOOL_WORKFLOWS,toolSelectionError,extendCanvasSelection}from'../src/tool-workflow.js';import{TYPES}from'../src/engine.js';
 for(const type of TYPES)assert.ok(TOOL_WORKFLOWS[type],'Missing tool workflow: '+type);
 const b={id:'b',kind:'body',faceInfo:[{index:0,type:'PLANE'},{index:1,type:'CYLINDER',cylinder:{full:true}}]},c={...b,id:'c'},s={id:'s',kind:'sketch',featureId:'s',profileClosed:true,sketchPlane:{normal:[0,0,1]}},q={...s,id:'q'},open={...s,id:'open',profileClosed:false},construction={...s,id:'construction',construction:true},items=[b,c,s,q,open,construction],ref=(id,kind='sketch',index)=>({id,kind,...(index===undefined?{}:{index})}),doc={features:[{id:'s',params:{shape:'circle'}}]};
 assert.equal(extendCanvasSelection([ref('b','body')],ref('s')),false);assert.equal(extendCanvasSelection([ref('s')],ref('b','face',0)),false);assert.equal(extendCanvasSelection([ref('s')],ref('q')),true);assert.equal(extendCanvasSelection([ref('b','face',0)],ref('b','face',1)),false);assert.equal(extendCanvasSelection([ref('b','face',0)],ref('c','face',0),{filter:'face'}),true);assert.equal(extendCanvasSelection([ref('s')],ref('b','face',0),{explicit:true}),true);
@@ -8,3 +8,6 @@ for(const type of TYPES.filter(t=>TOOL_WORKFLOWS[t]!=='create'))assert.ok(toolSe
 for(const type of ['mirror','duplicate','circularPattern'])assert.ok(toolSelectionError(type,[ref('b','body'),ref('c','body')],items,doc),'Single-source '+type+' cannot silently ignore a second body');
 for(const type of ['extrude','move','fillet','hole'])assert.ok(toolSelectionError(type,[ref('missing','body')],items,doc),'Stale reference: '+type);
 console.log('TOOL WORKFLOW PASS: every native tool has an entry contract; mixed/stale domains, open/construction extrusion, profile/path ordering, body count, edge ownership and face requirements');
+
+assert.deepEqual(promoteBodySelection([ref('b','body'),ref('c','face',1)],'c'),[ref('b','body'),ref('c','body')]);
+assert.deepEqual(promoteBodySelection([ref('b','body')],'b'),[ref('b','body')]);

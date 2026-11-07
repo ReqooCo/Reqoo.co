@@ -1,3 +1,5 @@
+// A double-tap promotes a face without losing bodies selected before its first tap.
+export function promoteBodySelection(before,id){return [...before.filter(r=>r.kind==='body'&&r.id!==id),{id,kind:'body'}];}
 // Common entry contracts; native geometry validation still owns commit validity.
 export function extendCanvasSelection(current,next,{explicit=false,filter='auto'}={}){
  if(explicit)return true;if(!current.length||!next)return false;

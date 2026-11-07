@@ -24,3 +24,5 @@ const pegs=plate.faces,peg=pegs.find(f=>f.geomType==='CYLINDRE'),c=cylinderInfo(
 assert.equal(p.size,'Custom');near(p.diameter,6.325);assert.ok(R.isShape3D(threaded));const before=R.measureShapeVolumeProperties(plate),after=R.measureShapeVolumeProperties(threaded);assert.ok(after.volume>before.volume-200&&after.volume<before.volume-1,'Thread removes only local peg material');
 const roundTrip=await R.importSTEP(await threaded.blobSTEP()),props=R.measureShapeVolumeProperties(roundTrip);near(props.volume,after.volume,.02);props.delete();roundTrip.delete();before.delete();after.delete();pegs.forEach(f=>f.delete());threaded.delete();plate.delete();
 console.log('CUSTOM PEG THREAD PASS: 6.325 mm four-post base, full-length pitch 1 thread, bounded material removal and STEP roundtrip');
+
+await import('./owner-assembly.mjs');
