@@ -6,6 +6,7 @@ import {resolveDimensionDocument} from './smart-dimensions.js';
 import {imprintPlanarRegions} from './planar-regions.js';
 import * as R from 'replicad';
 import {cylinderInfo,cutThread} from './thread-solid.js';
+import {threadDimensions} from './thread-specs.js';
 import {WORLD_AXES,rotateFrame,concentricPlacement} from './transform-frames.js';
 import {alignmentDelta} from './snapping.js';
 import {solveSketch} from './constraints.js';
@@ -190,7 +191,7 @@ export async function buildModel(doc,{base=null,preview=false,onProgress=()=>{}}
    if(chosen&&!chosen.length)throw Error('Select an edge, or enable All edges');
    s=b[f.type](chosen?(e=>chosen.includes(e.hashCode)?r:0):r);
   }
-  else if(f.type==='thread'){const b=body(ins[0]);s=cutThread(b,face(b,p),p);}
+  else if(f.type==='thread'){const b=body(ins[0]),selected=face(b,p);if(p.mode==='Cosmetic'){const cylinder=cylinderInfo(selected);if(!cylinder?.full)throw Error('Select a complete cylindrical side face for Thread');threadDimensions(p,cylinder);s=clone(ins[0]);}else{s=cutThread(b,selected,p);}}
   else if(f.type==='shell'){const b=clone(ins[0]),selected=face(b,p);s=b.shell({thickness:number(p.thickness,'Wall thickness',.01,500),filter:new R.FaceFinder().inList([selected])});}
   else if(f.type==='draft'){const b=clone(ins[0]),selected=face(b,p),pl=new R.Plane(basis(p).origin,basis(p).x,basis(p).normal);s=b.draft(number(p.angle,'Draft angle',-75,75),(finder)=>finder.inList([selected]),pl);pl.delete();}
   else if(f.type==='offsetFace'){const b=clone(ins[0]),selected=face(b,p);if(selected.geomType!=='PLANE')throw Error('Offset Face currently supports planar faces');const d=number(p.distance,'Distance'),rawNormal=selected.normalAt(),n=rawNormal.normalized(),v=new R.Vector(n.toTuple()).multiply(d),prism=own(R.basicFaceExtrusion(selected,v));v.delete();n.delete();rawNormal.delete();s=d>0?b.fuse(prism):b.cut(prism);}
