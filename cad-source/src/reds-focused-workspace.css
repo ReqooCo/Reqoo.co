@@ -461,3 +461,7 @@ body.cadWorkspace #stage #selectionBar{transform:none;}
 body.cadWorkspace #stage #context:not([hidden]),body.cadWorkspace #stage[data-workspace=sketch][data-sketch-context=true] #context:not([hidden]){bottom:auto;height:max-content;max-height:max(80px,calc(100% - 350px));}
 @media(max-height:500px){body.cadWorkspace #stage #selectionBar{left:134px;} }
 @media(max-height:500px) and (max-width:760px){body.cadWorkspace #stage #selectionBar{left:116px;} }
+
+/* Pattern parameters stay beside their model directions, with no numeric menu. */
+body.cadWorkspace #operationGizmo[data-model-badges=true] [data-badges]{display:block;position:absolute;inset:0;width:auto;padding:0;border:0;background:none;box-shadow:none;overflow:visible;pointer-events:none;}
+body.cadWorkspace #operationGizmo[data-model-badges=true] [data-gizmo-field]{position:absolute!important;left:var(--model-x)!important;top:var(--model-y)!important;min-height:36px;pointer-events:auto;touch-action:none;}

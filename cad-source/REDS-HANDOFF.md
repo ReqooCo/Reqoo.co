@@ -18,6 +18,15 @@
 6. Protect existing CAD data: never delete originals, backups or history; preserve OpenCascade B-Rep and the native `.rqcad` project format.
 7. **Production release is not authorised merely because CI is green.** Admin GitHub ruleset + environment secret/token separation are open in [issue #278](https://github.com/ReqooCo/Reqoo.co/issues/278). Do not merge/deploy until these controls are verified and user approval/release policy is satisfied.
 
+## Work checkpoint — Pattern badges and Sketch-to-3D transition (2026-11-07)
+
+- Reconciled PR #277 and remote `reds/draft` at `12285b94a115aac9a72534a727a41c78718dee18`. Owner screenshots request Shapr3D-style Pattern, Thread failure on a 6.325 mm peg, and automatic Solid mode after sketch camera rotation.
+- Sketch Pattern exposes directly draggable direction distance badges and quantity/centre/angle badges on the model instead of the numeric parameter dropdown. Linear supports Spacing/Total distance; Circular supports Total/Spacing angle with duplicate-turn rejection. Existing recipes without definition retain their original geometry.
+- Named off-plane/corner/ISO views finish Sketch and enter Solid, retaining selected derived profiles for immediate multi-profile Extrude. Cube orbit performs the same handoff on pointer release; cancelled drags restore the camera. Pending operations and one-point unfinished paths block transition instead of silently dropping edits. Same-plane views stay in Sketch.
+- Native and real UI coverage includes Total distribution on all principal planes, pending-operation protection, four patterned profiles → ISO → four immediate native Extrudes, and cube drag selection retention. Existing direct Sketch, rotation and parameter contracts passed locally; exact-head Core/Modeling/Product and canonical deployed browser evidence must be recorded in PR #277 before calling Draft ready.
+- Thread remains OPEN: native four-post fused base with Custom 6.325 mm diameter, pitch 1 and full-height thread succeeds; previous standard/internal/axis/STEP cases also covered. Persistent four-post regression and STEP export/import passed locally. No geometry-validation bypass or speculative Thread fix. Current uploaded Untitled.rqcad contains only the older Trim/Offset case, not the screenshot's threaded model. Need the failing model's original .rqcad to reproduce its actual topology/history. No claim Thread is fixed; owner screenshots and original file preserved.
+- No Live change; #278 release lock retained. Final checks and source fingerprint belong in the PR evidence comment.
+
 ## Work checkpoint — repeated Extrude and tool workflow audit (2026-11-07)
 
 - Baseline reconciled with PR #277/remote `reds/draft`: `6e256808be3f3f72b777e4eb42f07ec4adad7eab`, exact-head matrix 42366093978 and canonical deployed suite 42366090330 passed. Owner AF8FD151 screenshot reports second Extrude failing and shows mixed Sketch/solid selection plus clipped/overlapping left controls.

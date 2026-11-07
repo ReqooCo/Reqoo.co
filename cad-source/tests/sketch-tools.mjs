@@ -8,6 +8,7 @@ for(const plane of ['XY','XZ','YZ']){
  }
  let m=await buildModel(project([source,f('m','sketchMirror',{axis:'Y',keepInputs:true},['s'])]));near(m.items.find(i=>i.id==='m').area,200);const expected=plane==='YZ'?1:0;near(m.items.find(i=>i.id==='m').bounds[1][expected],-5);m.release();
  m=await buildModel(project([source,f('p','sketchPattern',{countX:3,countY:2,spacingX:30,spacingY:20},['s'])]));assert.equal(m.items.length,6);m.items.forEach(i=>{near(i.area,200);assert.equal(i.profileClosed,true);});m.release();
+ m=await buildModel(project([source,f('p','sketchPattern',{definition:'Total',countX:3,countY:1,spacingX:60},['s'])]));assert.equal(m.items.length,3);const axis=plane==='YZ'?1:0;near(Math.max(...m.items.map(i=>i.bounds[1][axis]))-Math.min(...m.items.map(i=>i.bounds[0][axis])),80);m.release();
  m=await buildModel(project([source,f('p','sketchPattern',{kind:'Circular',count:4,angle:360},['s'])]));assert.equal(m.items.length,4);near(m.items.reduce((a,i)=>a+i.area,0),800);m.release();
  m=await buildModel(project([source,f('t','sketchTransform',{x:10,y:-5,angle:37},['s'])]));near(m.items[0].area,200);m.release();
 }

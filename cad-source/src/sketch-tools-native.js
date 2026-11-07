@@ -22,9 +22,10 @@ export function derivedSketchDrawings(type,p,drawing){
  if(type!=='sketchPattern')throw Error('Unsupported sketch tool');
  if(p.kind==='Circular'){
   const count=finite(p.count??4,'Count',2,25),angle=finite(p.angle??360,'Pattern angle',.1,360),centre=[finite(p.cx??0,'Centre X'),finite(p.cy??0,'Centre Y')];if(!Number.isInteger(count))throw Error('Count must be an integer');
-  return Array.from({length:count},(_,i)=>drawing.rotate(i*angle/(Math.abs(angle-360)<1e-8?count:count-1),centre));
+  if(p.definition==='Spacing'&&angle*(count-1)>=360-1e-8)throw Error('Circular spacing must keep copies within one turn');
+  return Array.from({length:count},(_,i)=>drawing.rotate(p.definition==='Spacing'?i*angle:i*angle/(Math.abs(angle-360)<1e-8?count:count-1),centre));
  }
- const nx=finite(p.countX??3,'X count',1,25),ny=finite(p.countY??1,'Y count',1,25),dx=finite(p.spacingX??20,'X spacing'),dy=finite(p.spacingY??20,'Y spacing');
+ const nx=finite(p.countX??3,'X count',1,25),ny=finite(p.countY??1,'Y count',1,25),dx=finite(p.spacingX??20,'X spacing')/(p.definition==='Total'?Math.max(1,nx-1):1),dy=finite(p.spacingY??20,'Y spacing')/(p.definition==='Total'?Math.max(1,ny-1):1);
  if(!Number.isInteger(nx)||!Number.isInteger(ny)||nx*ny<2||nx*ny>25)throw Error('Use 2–25 total pattern copies');
  if(nx>1&&Math.abs(dx)<1e-7||ny>1&&Math.abs(dy)<1e-7)throw Error('Pattern spacing must be non-zero');
  return Array.from({length:nx*ny},(_,i)=>drawing.translate([i%nx*dx,Math.floor(i/nx)*dy]));
