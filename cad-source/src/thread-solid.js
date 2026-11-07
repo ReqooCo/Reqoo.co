@@ -30,11 +30,11 @@ export function cutThread(body,face,p){
   phase='clip';const clip=keep(R.makeCylinder(outer+eps,length+lead+trail,[0,0,start-lead]));cutter=keep(cutter.intersect(clip,{simplify:false}));
   const [x,y,zAxis]=axis,angle=Math.acos(Math.max(-1,Math.min(1,zAxis)))*180/Math.PI;
   if(angle>1e-7)cutter=keep(cutter.rotate(angle,[0,0,0],Math.hypot(x,y)<1e-8?[1,0,0]:[-y,x,0]));cutter=keep(cutter.translate(c.origin));
-  const prepMs=Math.round(performance.now()-started);phase='boolean';const builder=keep(new (R.getOC().BRepAlgoAPI_Cut)(stock.wrapped,cutter.wrapped));builder.SetFuzzyValue(1e-6);builder.SetNonDestructive(true);builder.Build();console.info('[REDS Thread] timings',JSON.stringify({start,length,prepMs,booleanMs:Math.round(performance.now()-started)-prepMs}));return keep(R.cast(builder.Shape()));
+  const prepMs=Math.round(performance.now()-started);phase='boolean';const builder=keep(new (R.getOC().BRepAlgoAPI_Cut)(stock.wrapped,cutter.wrapped));builder.SetFuzzyValue(1e-6);builder.SetNonDestructive(true);builder.Build();const booleanMs=Math.round(performance.now()-started)-prepMs;spanCount++;prepMsTotal+=prepMs;booleanMsTotal+=booleanMs;console.info('[REDS Thread] timings',JSON.stringify({start,length,prepMs,booleanMs}));return keep(R.cast(builder.Shape()));
   }finally{console.info('[REDS Thread] span',JSON.stringify({start,length,phase,elapsedMs:Math.round(performance.now()-started)}));}
  }
  try{
-  const before=volume(body);let result;
+  const totalStarted=performance.now();let spanCount=0,booleanMsTotal=0,prepMsTotal=0;const before=volume(body);let result;
   if(d.length<=8*d.pitch){
    try{result=cutSpan(body,d.start,d.length);if(valid(result,before))return result.clone();}
    catch(error){console.warn('[REDS Thread] Full-span B-rep cut failed; retrying shorter spans:',error instanceof Error?error.message:String(error));}
@@ -48,5 +48,5 @@ export function cutThread(body,face,p){
   result=body;const step=4*d.pitch;
   for(let offset=0;offset<d.length-1e-8;offset+=step){const length=Math.min(step,d.length-offset),prior=volume(result),next=cutSpan(result,d.start+offset,length,offset===0,offset+length>=d.length-1e-8);if(!valid(next,prior,length))throw Error('Thread could not create valid helical flanks on this cylinder');result=next;}
   return result.clone();
- }finally{for(const s of temps.reverse())try{s.delete();}catch{}}
+ }finally{console.info('[REDS Thread] total',JSON.stringify({length:d.length,pitch:d.pitch,spans:spanCount,prepMs:prepMsTotal,booleanMs:booleanMsTotal,totalMs:Math.round(performance.now()-totalStarted)}));for(const s of temps.reverse())try{s.delete();}catch{}}
 }
