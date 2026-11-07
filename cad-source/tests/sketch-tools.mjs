@@ -17,3 +17,5 @@ const projection=project([f('b','box',{width:20,depth:10,height:5}),f('p','sketc
 const open=project([f('l','sketch',{shape:'polyline',points:[[0,0],[10,0]],closed:false}),f('p','sketchPattern',{countX:3,countY:1,spacingX:20},['l'])]);m=await buildModel(open);assert.equal(m.items.length,3);assert.ok(m.items.every(i=>i.profileClosed===false&&i.edges.every(e=>e.type==='LINE')));m.release();
 for(const params of [{countX:6,countY:6},{kind:'Circular',count:2.5},{countX:3,countY:1,spacingX:0}])await assert.rejects(()=>buildModel(project([f('s','sketch',{shape:'circle',radius:3}),f('p','sketchPattern',params,['s'])])),/copies|integer|spacing/);
 console.log('SKETCH TOOLS NATIVE PASS: all principal planes; selected-corner Fillet/Chamfer exact volumes; Mirror/Move/linear and circular Pattern; open profiles; real text counters/height/extrusion; linked Project/upstream edits; native project roundtrip and invalid-pattern rejection');
+
+await import("./curve-recipes-native.mjs");

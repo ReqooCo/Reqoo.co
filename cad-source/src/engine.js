@@ -1,3 +1,4 @@
+import {controlSplineDrawing} from './control-spline.js';
 import {derivedSketchDrawings,projectedSketchDrawing,drawingIsClosed,drawingInFrame} from './sketch-tools-native.js';
 import {ensureSketchFont,SKETCH_FONT} from './text-font.js';
 import {validateVisualization} from './visualization-state.js';
@@ -32,6 +33,7 @@ export function validateProject(doc){
  if(JSON.stringify(doc).length>24e6)throw Error('Project is too large');
  return doc;
 }
+function signedArcHeight(value){const h=number(value,'Arc height',-1000,1000);if(Math.abs(h)<.001)throw Error('Arc height must be non-zero');return h;}
 export function profile(p){
  const x=number(p.x??0,'Sketch X'),y=number(p.y??0,'Sketch Y');let d;
  if(p.serializedDrawing)d=R.deserializeDrawing(p.serializedDrawing);
@@ -47,8 +49,8 @@ export function profile(p){
  else if(p.shape==='polyline'||p.shape==='spline'||p.shape==='arc'){
   const pts=p.shape==='polyline'?solveSketch(p.points,p.constraints||[]).points:p.points;if(!Array.isArray(pts)||pts.length<2||pts.length>100||pts.some(q=>!Array.isArray(q)||q.length!==2||q.some(v=>!Number.isFinite(v)||Math.abs(v)>2000)))throw Error('Use 2–100 finite sketch points');
   if(p.closed!==false&&pts.length<3)throw Error('A closed profile needs at least three points');
-  if(p.shape==='spline')d=R.drawPointsInterpolation(pts,{}, {closeShape:p.closed!==false});
-  else{let pen=R.draw(pts[0]);if(p.shape==='arc')pen=pen.sagittaArc(pts[1][0]-pts[0][0],pts[1][1]-pts[0][1],number(p.sagitta??10,'Arc height',.01,1000));else for(const q of pts.slice(1))pen=pen.lineTo(q);d=p.closed===false?pen.done():pen.close();}
+  if(p.shape==='spline'){if(p.splineMode!==undefined&&!['Fit','Control'].includes(p.splineMode))throw Error('Choose Fit or Control spline');d=p.splineMode==='Control'?controlSplineDrawing(pts,p.closed!==false):R.drawPointsInterpolation(pts,{}, {closeShape:p.closed!==false});}
+  else{let pen=R.draw(pts[0]);if(p.shape==='arc')pen=pen.sagittaArc(pts[1][0]-pts[0][0],pts[1][1]-pts[0][1],signedArcHeight(p.sagitta??10));else for(const q of pts.slice(1))pen=pen.lineTo(q);d=p.closed===false?pen.done():pen.close();}
  }else d=R.drawRectangle(number(p.width,'Width',.02,2000),number(p.height,'Height',.02,2000));
  if(p.operations!==undefined){if(!Array.isArray(p.operations)||p.operations.length>20)throw Error('Too many derived sketch operations');for(const op of p.operations){if(op.type==='offset')d=d.offset(number(op.distance,'Sketch offset',-500,500));else if(op.type==='fillet')d=d.fillet(number(op.radius,'Sketch fillet radius',.001,500));else if(op.type==='mirror')d=d.mirror(op.axis==='X'?[1,0]:[0,1],[0,0],'plane');else throw Error('Unsupported sketch operation');}}
  return d.translate([x,y]);

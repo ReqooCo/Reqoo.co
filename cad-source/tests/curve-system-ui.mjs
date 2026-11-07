@@ -1,3 +1,4 @@
+import './curve-handles-ui.mjs';
 import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
 import {beginSketch,projectSketchPoint} from './sketch-flow.mjs';

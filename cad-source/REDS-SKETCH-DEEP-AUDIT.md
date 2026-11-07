@@ -28,8 +28,8 @@ Date: 2026-11-07. Starting Draft: 9dd0699. This is a source, native-geometry and
 | Line / Polyline | Tap/drag, closure, draft Undo, dimensions/constraints; native Trim and Chain Offset regressions | Richer automatic connectivity/constraints across independent entities |
 | Rectangle | Corner/Center, exact W/H, native Extrude; Trim against spline tested without erasing other edges | Three-point/rotated rectangle creation; dense dimension placement |
 | Circle | Center/Diameter, editable diameter, ring selection and downstream rebuild | More crowded-circle selection cases and persistent constraint relationships |
-| Arc | Correct curved preview, editable height, native curve Trim, open-arc Offset | Three-point/center workflows, direct endpoint/bulge handles, tangent continuation |
-| Spline | Native Fit interpolation and preview, native Trim as source/boundary, self-intersections, open Offset | Control Point mode, direct fit/control-handle editing, point insertion/removal, smooth closed-spline behavior |
+| Arc | Height/3-point/Center construction, signed height, direct planar endpoint/bulge handles, native preview/Trim/Offset and history | Tangent continuation and cross-entity constraints |
+| Spline | Fit/Control modes, direct defining-point handles, insertion/removal, exact periodic closed Control spline, native preview/Trim/Offset and Save/Open | Fit tangent/curvature handles, smooth Fit closure, shape-preserving knot insertion |
 | Ellipse | W/H and native Trim target/boundary; native closed Offset path | Direct rotation/axis handles and more offset-collapse cases |
 | Polygon | Radius and side-count recipe; straight-edge representation | Direct side-count interaction and a wider dedicated polygon workflow matrix |
 | Trim | One shared native curve kernel for all sketch Trim; source-preserving history, exact retained curves | Persistent normalized topology references after upstream size edits |
@@ -50,7 +50,7 @@ Browser coverage checks Arc preview and attached height editing, native Spline p
 ## Next engineering priorities
 
 1. One explicit sketch/entity state model and normalized geometry references for all edits; do not keep adding shape-name exceptions.
-2. Direct Arc endpoint/bulge controls and Spline fit/control handles using the same native geometry as preview and commit.
+2. Extend completed Arc endpoint/bulge and Spline defining-point controls with tangent/curvature handles, connected-entity constraints and shape-preserving insertion.
 3. Persist endpoint/tangent/constraint relationships separately from visual snap suggestions.
 4. Profile actual iPad gestures/frame timing on the owner's crowded sketch, including selection ambiguity and keyboard/callout behavior.
 
@@ -65,3 +65,5 @@ Browser coverage checks Arc preview and attached height editing, native Spline p
 History remains capped by the existing project limits; larger sketch histories need separate performance and recovery work.
 
 Production remains unchanged; #278 release lock is retained.
+
+2026-11-07 continuation: Arc/Spline modes and direct-point controls are implemented; latest exact-head validation is recorded in PR #277 and REDS-HANDOFF.md. Defining-point insertion may reshape a spline. Control closure is periodic; legacy Fit closure remains unchanged.

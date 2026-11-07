@@ -431,3 +431,14 @@ body.cadWorkspace #sketchBar .operationActions[data-compact=true] button,
 body.cadWorkspace #sketchBar .operationActions[data-compact=true] select{flex:0 0 auto;white-space:nowrap;}
 body.cadWorkspace #sketchBar .operationActions[data-compact=true] [hidden],
 body.cadWorkspace #sketchBar .operationActions[data-compact=true] [data-commands]:empty{display:none!important;}
+#curvePointHandles{position:absolute;inset:0;z-index:36;pointer-events:none;}
+#curvePointHandles[hidden],#curvePointHandles [hidden]{display:none!important;}
+#curvePointHandles svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;}
+#curvePointHandles polyline{fill:none;stroke:#d0aa6890;stroke-width:1;stroke-dasharray:5 4;}
+#curvePointHandles button{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;touch-action:none;min-height:26px;min-width:26px;width:26px;height:26px;padding:0;border:1px solid #e6ad55;border-radius:50%;background:var(--panel);color:var(--text);font-size:10px;box-shadow:0 0 0 4px #e6ad5518;}
+#curvePointHandles button.active{background:#e6ad55;color:#17191b;}
+#curvePointHandles button[data-curve-point=sagitta]{width:20px;min-width:20px;height:20px;min-height:20px;border-radius:4px;}
+body.cadWorkspace #operationGizmo[data-compact=true] .operationValue{max-width:min(280px,calc(100vw - 125px));}
+body.cadWorkspace #operationGizmo[data-compact=true] .operationValue input{flex:0 0 62px;min-width:62px;}
+body.cadWorkspace #operationGizmo[data-compact=true] [data-parameter-select]{width:84px;min-width:65px;flex:0 1 84px;}
+body.cadWorkspace #operationGizmo[data-compact=true] .operationValue:has([data-parameter-select]:not([hidden])) [data-point-axes]{display:none;}

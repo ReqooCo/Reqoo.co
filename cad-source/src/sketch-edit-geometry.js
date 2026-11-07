@@ -67,10 +67,10 @@ export function sketchCircularCurve(p){
  }
  if(p.shape!=='arc'||p.closed!==false)throw Error('Select an open circular arc');
  const [a,b]=p.points.map(q=>add(q,offset)),v=sub(b,a),length=Math.hypot(...v),h=Number(p.sagitta??10);
- if(!(length>EPS&&h>EPS&&Number.isFinite(h)))throw Error('Arc needs distinct endpoints and positive height');
+ if(!(length>EPS&&Math.abs(h)>EPS&&Number.isFinite(h)))throw Error('Arc needs distinct endpoints and non-zero height');
  const n=[-v[1]/length,v[0]/length],mid=mul(add(a,b),.5),center=add(mid,mul(n,(h*h-length*length/4)/(2*h)));
  const start=Math.atan2(a[1]-center[1],a[0]-center[0]),end=Math.atan2(b[1]-center[1],b[0]-center[0]);
- return {center,radius:dist(a,center),start,sweep:-angle(start-end),closed:false};
+ return {center,radius:dist(a,center),start,sweep:h>0?-angle(start-end):angle(end-start),closed:false};
 }
 const curvePoint=(c,t)=>add(c.center,[c.radius*Math.cos(c.start+c.sweep*t),c.radius*Math.sin(c.start+c.sweep*t)]);
 function curveParameter(c,p){const a=Math.atan2(p[1]-c.center[1],p[0]-c.center[0]);return (c.sweep>0?angle(a-c.start):angle(c.start-a))/Math.abs(c.sweep);}
