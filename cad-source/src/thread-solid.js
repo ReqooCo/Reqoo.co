@@ -30,7 +30,7 @@ export function cutThread(body,face,p){
   phase='clip';const clip=keep(R.makeCylinder(outer+eps,length+lead+trail,[0,0,start-lead]));cutter=keep(cutter.intersect(clip,{simplify:false}));
   const [x,y,zAxis]=axis,angle=Math.acos(Math.max(-1,Math.min(1,zAxis)))*180/Math.PI;
   if(angle>1e-7)cutter=keep(cutter.rotate(angle,[0,0,0],Math.hypot(x,y)<1e-8?[1,0,0]:[-y,x,0]));cutter=keep(cutter.translate(c.origin));
-  phase='boolean';const builder=keep(new (R.getOC().BRepAlgoAPI_Cut)(stock.wrapped,cutter.wrapped));builder.SetFuzzyValue(1e-6);builder.SetNonDestructive(true);builder.Build();return keep(R.cast(builder.Shape()));
+  const prepMs=Math.round(performance.now()-started);phase='boolean';const builder=keep(new (R.getOC().BRepAlgoAPI_Cut)(stock.wrapped,cutter.wrapped));builder.SetFuzzyValue(1e-6);builder.SetNonDestructive(true);builder.Build();console.info('[REDS Thread] timings',JSON.stringify({start,length,prepMs,booleanMs:Math.round(performance.now()-started)-prepMs}));return keep(R.cast(builder.Shape()));
   }finally{console.info('[REDS Thread] span',JSON.stringify({start,length,phase,elapsedMs:Math.round(performance.now()-started)}));}
  }
  try{
