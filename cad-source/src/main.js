@@ -27,7 +27,7 @@ import {createSnapOptions,mountSnapSettings} from './snap-options.js';
 import * as THREE from 'three';
 import {CADNavigation} from './cad-navigation.js';
 import {mountThreadForm,mountModelSettings} from './thread-ui.js';
-import {METRIC_THREADS,autoThread} from './thread-specs.js';
+import {METRIC_THREADS,autoThread,threadDimensions} from './thread-specs.js';
 import {basis,validateProject} from './engine.js';
 import './style.css';
 import './workspace-chrome.css';
@@ -306,6 +306,34 @@ let showEdges=preferences.displayMode!=='shaded',sectionEnabled=false,sectionHei
 function updateClip(){const planes=sectionEnabled?[new THREE.Plane(new THREE.Vector3(0,0,-1),sectionHeight)]:[];root.traverse(o=>{if(o.material){const mats=Array.isArray(o.material)?o.material:[o.material];for(const m of mats){const changed=(m.clippingPlanes?.length||0)!==planes.length;m.clippingPlanes=planes;if(changed)m.needsUpdate=true;}}});}
 function clear(g){for(const o of [...g.children]){g.remove(o);o.traverse(n=>{if(!n.geometry?.userData?.cadShared)n.geometry?.dispose();for(const m of Array.isArray(n.material)?n.material:[n.material])if(!m?.userData?.cadShared)m?.dispose();});}}
 const displayCache=createDisplayCache();
+
+function drawCosmeticThreads(shown){
+ const visible=new Set(shown.filter(i=>i.kind==='body').map(i=>i.id));
+ for(const feature of doc.features||[]){
+  const p=feature.params||{},c=p.threadStock;
+  if(feature.type!=='thread'||p.mode!=='Cosmetic'||!c||!visible.has(feature.id))continue;
+  try{
+   const spec=threadDimensions(p,c),axis=new THREE.Vector3(...c.axis).normalize();
+   const radial=new THREE.Vector3(1,0,0);
+   if(Math.abs(radial.dot(axis))>.9)radial.set(0,1,0);
+   radial.addScaledVector(axis,-radial.dot(axis)).normalize();
+   const tangent=new THREE.Vector3().crossVectors(axis,radial).normalize();
+   const origin=new THREE.Vector3(...c.origin),points=[];
+   const turns=spec.length/spec.pitch,steps=Math.max(24,Math.min(1600,Math.ceil(turns*48)));
+   const radius=c.radius+(c.internal?-.012:.012);
+   for(let i=0;i<=steps;i++){
+    const t=i/steps,angle=(spec.left?-1:1)*2*Math.PI*turns*t;
+    points.push(origin.clone().addScaledVector(axis,spec.start+spec.length*t)
+     .addScaledVector(radial,radius*Math.cos(angle)).addScaledVector(tangent,radius*Math.sin(angle)));
+   }
+   const geometry=new THREE.BufferGeometry().setFromPoints(points);
+   const material=new THREE.LineBasicMaterial({color:0xd6a24d,transparent:true,opacity:.95,depthTest:true,depthWrite:false});
+   const line=new THREE.Line(geometry,material);line.name='Cosmetic thread · visual only';line.userData.cosmeticThread=true;line.renderOrder=3;
+   root.add(line);
+  }catch(error){console.warn('[REDS Thread] Cosmetic display skipped:',error.message);}
+ }
+}
+
 function render(previewOnly=false){
  if(holdingModel)return;
  visualizer?.syncScene();grid.visible=!visualizer?.active&&preferences.gridVisible!==false;worldReference.group.visible=!visualizer?.active&&!captureMode;
@@ -329,6 +357,7 @@ function render(previewOnly=false){
   for(const edge of item.edges){const selected=itemSelection.some(s=>s.kind==='edge'?s.index===edge.index:s.kind==='sketch'||s.kind==='body'),faceBoundary=itemSelection.some(s=>s.kind==='face'&&edge.faceIndices?.includes(s.index)),color=alignGizmo?.roles?.target===item.id?'#ffca71':selected||faceBoundary?'#f1ad58':item.kind==='sketch'?'#4883c8':item.kind==='axis'?'#c89143':preferences.theme==='dark'?(preferences.displayMode==='wireframe'?'#a7c3df':'#222328'):'#52687d',colorWrite=item.kind!=='body'||!visualizer?.active&&showEdges||selected||faceBoundary||selection.some(s=>s.id===item.id&&s.kind==='edge'&&s.index===edge.index);if(item.kind==='sketch'){const wideGeometry=displayCache.edge(edge,()=>{const geometry=new LineSegmentsGeometry();geometry.setPositions(Array.from(edge.lines));return geometry;}),wideMaterial=displayCache.line('wide:'+color+':'+selected,()=>new LineMaterial({color,linewidth:selected?2.8:2,transparent:true,opacity:1,depthTest:false}));wideMaterial.resolution.set(renderer.domElement.clientWidth,renderer.domElement.clientHeight);const wide=new LineSegments2(wideGeometry,wideMaterial);if(!wideGeometry.hasAttribute('instanceDistanceStart'))wide.computeLineDistances();wide.renderOrder=4;wide.userData={id:item.id,kind:'edge',index:edge.index,itemKind:item.kind};node.add(wide);continue;}const geometry=displayCache.edge(edge,()=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(edge.lines,3));return g;}),material=displayCache.line('line:'+color+':'+colorWrite+':'+item.kind,()=>{const m=new THREE.LineBasicMaterial({color,transparent:true,opacity:item.kind==='plane'?.4:.9});m.colorWrite=colorWrite;return m;}),line=new THREE.LineSegments(geometry,material);line.renderOrder=1;line.userData={id:item.id,kind:'edge',index:edge.index,itemKind:item.kind};node.add(line);}
 
  }
+ drawCosmeticThreads(shown);
  $('empty').hidden=items.length>0||!!parameterGizmo?.active||!!sketchMode;if(previewOnly!==true){renderSidebar();renderContext();updateSketchDimensions();}updateClip();updateFaceHandle();smartDimensions?.update();visualizer?.update();
 }
 
