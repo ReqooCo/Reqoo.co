@@ -233,3 +233,9 @@ Draft workflow now records each browser test name, duration, and exit status. A 
 ### Exact Draft commit identity follow-up
 
 While waiting for CI at `38142ff33ae6965d83c39cb3f5543d1317742865`, inspection found `tests/live-identity.mjs` checked sourceHash but not version.json.commit. Documentation/security-only commits share the same CAD asset hash, so an older deployed commit could falsely satisfy exact-head identity. This checkpoint additionally requires the deployed version commit to match the built commit in CI (local builds retain local mode). The final commit containing this follow-up must receive a fresh full matrix and Draft browser run. Local 17 native suites, Sketch parity, file UX, active sketch editing and desktop/tablet/phone focused workspace all passed before this identity-only change. No Live deploy; admin blockers remain unchanged. Fetch final run evidence from #278 and the current PR checks.
+
+## 2026-11-07 ChatGPT continuation — snap lookup
+
+- Confirmed PR #277 previous head `1eaebb5`: Core, Modeling and Product CI success (run 42351702173); PR remains Draft, release lock #278 active.
+- Changed `src/guidepoints.js` duplicate coordinate lookup from a linear `points.find` scan to an indexed Map; preserves snap priority, labels and world positions. Intended to reduce repeated scanning on dense sketches; no performance benchmark claimed.
+- New commit `cfeb5d2` requires its own exact-head CI and deployed Draft verification before calling it passed. Live unchanged.
