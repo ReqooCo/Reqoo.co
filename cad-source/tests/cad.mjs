@@ -3,6 +3,23 @@ import {openToolMenu} from './sketch-flow.mjs';
 import {beginSketch,createSketch} from './sketch-flow.mjs';
 import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
+import {sketchGuidepoints,nearestGuidepoint} from '../src/guidepoints.js';
+// Geometry snap regressions run before browser startup.
+{
+ const plane={origin:[0,0,0],x:[1,0,0],normal:[0,0,1]};
+ const edge=(a,b)=>({type:'LINE',lines:[...a,...b],center:[0,0,0]});
+ const item={id:'test',name:'Lines',edges:[edge([-10,0,0],[10,0,0]),edge([5,-10,0],[5,10,0]),edge([2,2,3],[8,8,3])],faceInfo:[]};
+ const pts=sketchGuidepoints([item],plane);
+ const midpointOnly=sketchGuidepoints([{...item,edges:[edge([20,0,0],[40,0,0])]}],plane);
+ assert.ok(pts.some(p=>p.kind==='intersection'&&Math.abs(p.point[0]-5)<1e-8&&Math.abs(p.point[1])<1e-8),'Coplanar crossing must snap');
+ assert.ok(midpointOnly.some(p=>p.kind==='midpoint'&&Math.abs(p.point[0]-30)<1e-8&&Math.abs(p.point[1])<1e-8),'Midpoint must use edge endpoints');
+ assert.ok(!pts.some(p=>p.kind==='intersection'&&Math.abs(p.point[0]-5)<1e-8&&Math.abs(p.point[1]-5)<1e-8),'Out-of-plane lines must not intersect the sketch');
+ assert.equal(nearestGuidepoint([0,0],pts,1)?.kind,'origin','Origin wins coincident snap priority');
+ const originless=pts.filter(p=>p.kind!=='origin');
+ assert.equal(nearestGuidepoint([5,0],originless,1)?.kind,'intersection','Crossing is selected as intersection');
+ assert.equal(nearestGuidepoint([100,100],pts,1),null,'Distant point must not snap');
+}
+
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import http from 'node:http';
@@ -51,7 +68,7 @@ try{
  await reset();const editable=await apply('sketch',{shape:'polyline',plane:'XY',closed:true,points:[[0,0],[29,1],[31,19],[-1,21]],constraints:[]});await page.evaluate(id=>window.__cad.startTool('sketch',{},id),editable);
  await setToolToggle(page,'lock:0',true);
  for(const [i,dir]of [[0,'horizontal'],[1,'vertical'],[2,'horizontal'],[3,'vertical']])await setToolChoice(page,'segment:'+i+':direction',dir);
- await setToolValue(page,'segment:0:length','30');await setToolValue(page,'segment:1:length','20');await page.getByRole('button',{name:'Solve constraints',exact:true}).click();
+ await setToolValue(page,'segment:0:length','30');await setToolValue(page,'segment:1:length','20');assert.equal(await page.locator('[data-gizmo-choice="segment:1:direction"]').isVisible(),true,'Segment length selection exposes constraints for the same segment');await page.getByRole('button',{name:'Solve constraints',exact:true}).click();
  assert.equal(await page.locator('[data-solve-status]').textContent(),'Fully constrained');await page.screenshot({path:path.join(out,'07-sketch-constraints.png')});
  await page.getByRole('button',{name:'Update feature',exact:true}).click();await page.waitForFunction(()=>window.__cad.items.some(i=>i.kind==='sketch'));
  assert.equal(await page.locator('#nav-tools').isVisible(),false);assert.equal(await page.locator('#exitSketch').isVisible(),true);assert.equal(await page.locator('#context').getByRole('button',{name:'Extrude',exact:true}).isVisible(),true);const sketchId=await page.evaluate(()=>window.__cad.doc.features[0].id);

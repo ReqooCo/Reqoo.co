@@ -1,3 +1,4 @@
+import './tool-workflow-ui.mjs';
 import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';

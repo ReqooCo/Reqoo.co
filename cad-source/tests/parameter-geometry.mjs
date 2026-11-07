@@ -6,3 +6,5 @@ const sketch={bounds:[[10,-10,0],[30,10,0]],sketchPlane:{origin:[0,0,0],x:[1,0,0
 assert.deepEqual(g('thread','length',{threadStock:{axis:[1,0,0],origin:[0,0,0],min:0,max:10,radius:3},end:'Start',offset:1,length:4}).origin,[5,0,0]);
 assert.equal(drag(10,20,.5,g('box','width',{})),30);assert.equal(drag(0,61,1,g('revolve','angle',{}),{step:5}),30);assert.equal(drag(3,-200,1,g('circularPattern','count',{}),{min:2,max:25}),2);
 console.log('PARAMETER GEOMETRY PASS: world/plane/face frames, physical dimensions, hole normals, thread axis, angle and count drags');
+
+await import("./tool-workflow.mjs");

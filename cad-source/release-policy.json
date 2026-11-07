@@ -1,0 +1,40 @@
+{
+  "product": "REDS",
+  "scope": [
+    "cad-source/**",
+    "workers/cad-bridge.js",
+    "_web_worker.js",
+    "wrangler-web.toml"
+  ],
+  "live": {
+    "branch": "main",
+    "url": "https://reqoo.co/cad/",
+    "baselineCommit": "4dc03801c94a27cdbde4a28238ff5ab59820135a",
+    "baselineMeaning": "Existing approved REDS UI release before unified gate; all newer CAD commits must originate from authorised Draft PRs."
+  },
+  "draft": {
+    "branch": "reds/draft",
+    "url": "https://reqoo-reds-draft.abarttrading1.workers.dev/cad/"
+  },
+  "rules": {
+    "cadPRFromDraftOnly": true,
+    "requiredChecks": [
+      "verify (core)",
+      "verify (modeling)",
+      "verify (product)"
+    ],
+    "productionFromMergedDraftPR": true,
+    "sourceIdentityRequired": true,
+    "liveAccessRestricted": false,
+    "adminEnforcementStatus": "branch-rulesets-verified-environments-owner-configured-token-isolation-pending",
+    "note": "Solo owner workflow: protected Draft PR, all exact-SHA CAD checks and Draft browser validation, then explicit ReqooCo approval of the canonical reds-live run. Keep liveAccessRestricted=false until remaining token and alternative publisher controls in #278 are verified.",
+    "releaseApproval": {
+      "mode": "owner-environment",
+      "ownerLogin": "ReqooCo",
+      "ownerId": 315183885,
+      "environment": "reds-live",
+      "independentPRReviewRequired": false
+    }
+  },
+  "archivedCADBranches": "read-only; never deploy from them"
+}

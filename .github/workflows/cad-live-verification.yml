@@ -1,19 +1,20 @@
-name: CAD live preview and production verification
+name: REDS single Draft preview verification
 on:
   push:
-    branches: [main, ux/reds-focused-workspace-20261106, feature/cad-professional-20261103, fix/cad-continuous-drag-diameter-20261103, fix/cad-interactive-preview-ui-20261103, fix/cad-ipad-face-preview-20261104, fix/cad-ring-regions-theme-20261104, fix/cad-sketch-dimensions-view-20261104, feature/cad-viewcube-display-20261104]
-    paths: ['cad-source/**','workers/cad-bridge.js','wrangler-web.toml','_web_worker.js','.github/workflows/cad-live-verification.yml','.github/workflows/deploy.yml']
+    branches: [reds/draft]
+    paths: ['.github/workflows/provision-rebuild-d1.yml','scripts/reds-*','cad-source/**','workers/cad-bridge.js','wrangler-web.toml','_web_worker.js','scripts/reds-release-gate.mjs','scripts/reds-release-gate.test.mjs', 'scripts/reds-release-surface-audit.mjs','scripts/reds-release-test-fetch.mjs','AGENTS.md','.github/workflows/cad-pr-validation.yml','.github/workflows/cad-live-verification.yml','.github/workflows/deploy.yml']
 permissions:
   contents: read
 concurrency:
-  group: cad-live-${{ github.ref }}
+  group: reds-draft-preview
   cancel-in-progress: true
 jobs:
   verify-live:
     runs-on: ubuntu-latest
+    environment: reds-draft
     timeout-minutes: 25
     env:
-      CAD_TEST_URL: ${{ github.ref == 'refs/heads/main' && 'https://reqoo.co/cad/' || github.ref == 'refs/heads/ux/reds-focused-workspace-20261106' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/feature/cad-viewcube-display-20261104' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/fix/cad-sketch-dimensions-view-20261104' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/fix/cad-ring-regions-theme-20261104' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/fix/cad-ipad-face-preview-20261104' && 'https://reqoo-cad-preview.abarttrading1.workers.dev/cad/' || github.ref == 'refs/heads/fix/cad-interactive-preview-ui-20261103' && 'https://fix-cad-interactive-preview.reqoo-co.pages.dev/cad/' || github.ref == 'refs/heads/fix/cad-continuous-drag-diameter-20261103' && 'https://fix-cad-continuous-drag-diam.reqoo-co.pages.dev/cad/' || 'https://feature-cad-professional-202.reqoo-co.pages.dev/cad/' }}
+      CAD_TEST_URL: https://reqoo-reds-draft.abarttrading1.workers.dev/cad/
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -24,15 +25,18 @@ jobs:
         run: |
           npm ci
           npm run build
-      - name: Deploy isolated CAD preview using the existing Workers deployment access
-        if: github.ref == 'refs/heads/ux/reds-focused-workspace-20261106' || github.ref == 'refs/heads/feature/cad-viewcube-display-20261104' || github.ref == 'refs/heads/fix/cad-ipad-face-preview-20261104' || github.ref == 'refs/heads/fix/cad-ring-regions-theme-20261104' || github.ref == 'refs/heads/fix/cad-sketch-dimensions-view-20261104'
+      - name: REDS Draft-only deployment gate
+        run: node scripts/reds-release-gate.mjs check-draft
+      - name: Ensure there is no second Live or Draft publisher
+        run: node scripts/reds-release-surface-audit.mjs
+      - name: Deploy canonical REDS Draft Worker
         working-directory: cad-source
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           node -e "const fs=require('fs');fs.mkdirSync('../cad-preview/cad',{recursive:true});fs.cpSync('dist','../cad-preview/cad',{recursive:true})"
-          npx --yes wrangler@4.129.0 deploy --config wrangler.preview.jsonc
+          node ../scripts/reds-draft-deploy.mjs
       - name: Install Chromium
         working-directory: cad-source
         run: npx playwright install --with-deps chromium
@@ -43,11 +47,14 @@ jobs:
         working-directory: cad-source
         run: |
           node tests/active-sketch-edit-ui.mjs
+          node tests/reds-sketch-parity-ui.mjs
           node tests/multi-profile-ui.mjs
           node tests/r3ds-ux-ui.mjs
           node tests/visualization-ui.mjs
           node tests/smart-dimensions-ui.mjs
-          node tests/bridge-ui.mjs
+          # Bridge UI exercises a local mocked MCP backend; the static Draft Worker has no /cad/mcp endpoint.
+          # Keep this test, but force its own local server instead of the externally deployed CAD_TEST_URL.
+          env -u CAD_TEST_URL node tests/bridge-ui.mjs
           node tests/motion-continuity-ui.mjs
           node tests/sketch-regions-ui.mjs
           node tests/direct-sketch-ui.mjs

@@ -1,0 +1,315 @@
+{
+  "format": "reqoo-cad",
+  "version": 1,
+  "title": "Regression: patterned pegs and offset ring",
+  "features": [
+    {
+      "id": "fmw60r99v1e",
+      "type": "sketch",
+      "name": "polyline 1",
+      "params": {
+        "plane": "XY",
+        "offset": 0,
+        "shape": "polyline",
+        "closed": false,
+        "sides": 6,
+        "sagitta": 10,
+        "startMode": "center",
+        "constraints": [],
+        "points": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            22
+          ]
+        ],
+        "x": 0,
+        "y": 0
+      },
+      "inputs": []
+    },
+    {
+      "id": "fmw60rdnm1f",
+      "type": "sketch",
+      "name": "circle 2",
+      "params": {
+        "plane": "XY",
+        "offset": 0,
+        "shape": "circle",
+        "closed": true,
+        "sides": 6,
+        "sagitta": 10,
+        "startMode": "center",
+        "x": -18,
+        "y": 8,
+        "radius": 19.697715603592208
+      },
+      "inputs": []
+    },
+    {
+      "id": "fmw6dapgv2",
+      "type": "sketchOffset",
+      "name": "Offset chain",
+      "params": {
+        "distance": 1,
+        "mode": "Chain",
+        "edgeIndex": 0,
+        "keepInputs": true
+      },
+      "inputs": [
+        "fmw60rdnm1f"
+      ]
+    },
+    {
+      "id": "fmw6db19v3",
+      "type": "extrude",
+      "name": "Extrude 1",
+      "params": {
+        "distance": 20,
+        "operation": "New body"
+      },
+      "inputs": [
+        "fmw6dapgv2:band"
+      ]
+    },
+    {
+      "id": "fmw6dbhbk4",
+      "type": "sketch",
+      "name": "rectangle 3",
+      "params": {
+        "plane": "Selected face",
+        "basis": {
+          "origin": [
+            -18.00000000000001,
+            8.000000000000064,
+            20
+          ],
+          "x": [
+            1,
+            0,
+            0
+          ],
+          "normal": [
+            0,
+            0,
+            1
+          ]
+        },
+        "hostBody": "fmw6db19v3",
+        "hostFace": 3,
+        "shape": "rectangle",
+        "closed": true,
+        "sides": 6,
+        "sagitta": 10,
+        "startMode": "center",
+        "x": 0,
+        "y": 2,
+        "width": 52,
+        "height": 48
+      },
+      "inputs": []
+    },
+    {
+      "id": "fmw6dbj5c5",
+      "type": "imprint",
+      "name": "Sketch regions",
+      "params": {},
+      "inputs": [
+        "fmw6db19v3",
+        "fmw6dbhbk4"
+      ]
+    },
+    {
+      "id": "fmw6fgbih1",
+      "type": "extrude",
+      "name": "Extrude 2",
+      "params": {
+        "distance": 3,
+        "operation": "New body"
+      },
+      "inputs": [
+        "fmw6dbhbk4"
+      ]
+    },
+    {
+      "id": "fmw6fgyxi2",
+      "type": "fillet",
+      "name": "Fillet 1",
+      "params": {
+        "radius": 10,
+        "edges": [
+          1,
+          0,
+          7,
+          4
+        ],
+        "allEdges": false,
+        "edgeRefs": [
+          {
+            "kind": "edge",
+            "type": "LINE",
+            "center": [
+              1,
+              0,
+              0.5
+            ],
+            "span": [
+              0,
+              0,
+              1
+            ],
+            "measure": 0.04235446537842882
+          },
+          {
+            "kind": "edge",
+            "type": "LINE",
+            "center": [
+              0,
+              0,
+              0.5
+            ],
+            "span": [
+              0,
+              0,
+              1
+            ],
+            "measure": 0.04235446537842882
+          },
+          {
+            "kind": "edge",
+            "type": "LINE",
+            "center": [
+              0,
+              1,
+              0.5
+            ],
+            "span": [
+              0,
+              0,
+              1
+            ],
+            "measure": 0.04235446537842882
+          },
+          {
+            "kind": "edge",
+            "type": "LINE",
+            "center": [
+              1,
+              1,
+              0.5
+            ],
+            "span": [
+              0,
+              0,
+              1
+            ],
+            "measure": 0.04235446537842882
+          }
+        ]
+      },
+      "inputs": [
+        "fmw6fgbih1"
+      ]
+    },
+    {
+      "id": "fmw6fiiaa3",
+      "type": "sketch",
+      "name": "circle 4",
+      "params": {
+        "plane": "Selected face",
+        "basis": {
+          "origin": [
+            -18.000000000000014,
+            10.000000000000064,
+            23
+          ],
+          "x": [
+            1,
+            0,
+            0
+          ],
+          "normal": [
+            0,
+            0,
+            1
+          ]
+        },
+        "hostBody": "fmw6fgyxi2",
+        "hostFace": 4,
+        "shape": "circle",
+        "closed": true,
+        "sides": 6,
+        "sagitta": 10,
+        "startMode": "center",
+        "x": -20,
+        "y": 17,
+        "radius": 3.1622776601683795
+      },
+      "inputs": []
+    },
+    {
+      "id": "fmw6fjxff4",
+      "type": "sketchPattern",
+      "name": "Pattern 1",
+      "params": {
+        "kind": "Linear",
+        "spacingX": 39,
+        "spacingY": -33,
+        "countX": 2,
+        "countY": 2,
+        "count": 4,
+        "angle": 360,
+        "cx": 0,
+        "cy": 0,
+        "basis": {
+          "origin": [
+            -18.000000000000014,
+            10.000000000000064,
+            23
+          ],
+          "x": [
+            1,
+            0,
+            0
+          ],
+          "normal": [
+            0,
+            0,
+            1
+          ]
+        }
+      },
+      "inputs": [
+        "fmw6fiiaa3"
+      ]
+    },
+    {
+      "id": "fmw6flbh05",
+      "type": "extrude",
+      "name": "Extrude",
+      "params": {
+        "distance": 11,
+        "operation": "New body",
+        "profileIds": [
+          "fmw6fjxff4",
+          "fmw6fjxff4_part2",
+          "fmw6fjxff4_part1",
+          "fmw6fjxff4_part3"
+        ]
+      },
+      "inputs": [
+        "fmw6fjxff4",
+        "fmw6fjxff4_part2",
+        "fmw6fjxff4_part1",
+        "fmw6fjxff4_part3"
+      ]
+    }
+  ],
+  "ui": {
+    "hidden": [],
+    "colors": {}
+  }
+}

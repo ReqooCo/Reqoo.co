@@ -2,12 +2,13 @@ name: CAD PR validation
 on:
   push:
     branches: [main]
-    paths: ['cad-source/**', 'workers/cad-bridge.js', '_web_worker.js', 'wrangler-web.toml', 'migrations/*cad_bridge*', '.github/workflows/cad-pr-validation.yml']
+    paths: ['.github/workflows/deploy.yml','.github/workflows/provision-rebuild-d1.yml','scripts/reds-*', 'scripts/reds-release-gate.test.mjs', 'scripts/reds-release-surface-audit.mjs', 'scripts/reds-release-test-fetch.mjs', 'AGENTS.md', 'cad-source/**', 'workers/cad-bridge.js', '_web_worker.js', 'wrangler-web.toml', 'migrations/*cad_bridge*', '.github/workflows/cad-pr-validation.yml']
   pull_request:
-    paths: ['cad-source/**', 'workers/cad-bridge.js', '_web_worker.js', 'wrangler-web.toml', 'migrations/*cad_bridge*', '.github/workflows/cad-pr-validation.yml']
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
+  pull-requests: read
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -18,6 +19,17 @@ jobs:
         suite: [core, modeling, product]
     steps:
       - uses: actions/checkout@v4
+      - name: REDS single-draft PR entry gate
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/reds-release-gate.mjs check-pr
+      - name: Verify REDS release-gate policy tests
+        run: |
+          node scripts/reds-release-gate.test.mjs
+          node scripts/reds-draft-deploy.test.mjs
+      - name: Verify all REDS deploy workflow surfaces
+        run: node scripts/reds-release-surface-audit.mjs
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -40,6 +52,8 @@ jobs:
           node tests/native-cache.mjs
           node tests/project-io.mjs
           node tests/sketch-stroke.mjs
+          node tests/sketch-edit-geometry.mjs
+          node tests/sketch-native-parity.mjs
           node tests/parameter-geometry.mjs
           node tests/multi-profile.mjs
           node tests/visualization.mjs
@@ -55,11 +69,28 @@ jobs:
         working-directory: cad-source
         run: |
           failed=0
-          run_test() { node "$1" || failed=1; }
+          run_test() {
+            local test_file="$1" start end elapsed exit_code
+            start=$(date +%s)
+            echo "::group::CAD ${{ matrix.suite }} | ${test_file} | started $(date -u +%FT%TZ)"
+            if timeout --signal=TERM --kill-after=15s 300s node "$test_file"; then
+              exit_code=0
+            else
+              exit_code=$?
+              failed=1
+            fi
+            end=$(date +%s)
+            elapsed=$((end - start))
+            echo "CAD_TEST_RESULT suite=${{ matrix.suite }} file=${test_file} seconds=${elapsed} exit=${exit_code}"
+            if [ "$exit_code" -eq 124 ]; then echo "::error file=${test_file}::CAD browser test exceeded 300 seconds"; fi
+            if [ "$exit_code" -ne 0 ]; then echo "::error file=${test_file}::CAD browser test failed (exit ${exit_code})"; fi
+            echo "::endgroup::"
+          }
           case "${{ matrix.suite }}" in
             core)
               run_test tests/display-performance-ui.mjs
               run_test tests/active-sketch-edit-ui.mjs
+              run_test tests/reds-sketch-parity-ui.mjs
               run_test tests/multi-profile-ui.mjs
               run_test tests/r3ds-ux-ui.mjs
               run_test tests/visualization-ui.mjs

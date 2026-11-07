@@ -11,6 +11,7 @@ export function createDirectModeling(api){
  dimensions.innerHTML='<label><span id="directDimensionLabel">Distance</span><input id="faceDistanceValue" aria-label="Direct modeling value" type="number" step="any"><span id="directUnit">mm</span></label><button id="faceDistanceApply" data-control="direct" aria-label="Apply direct edit" type="button">✓</button><button id="faceDistanceCancel" data-control="direct" aria-label="Cancel direct edit" type="button">×</button><div class="extrudeChoices" hidden><select aria-label="Extrude operation"><option>New body</option><option value="Add">Union</option><option>Subtract</option><option>Intersect</option></select><select aria-label="Extrude target body"></select></div><output id="directPreviewStatus" aria-live="polite"></output>';
  const guide=document.createElementNS('http://www.w3.org/2000/svg','svg');guide.id='directGuide';guide.innerHTML='<path fill="none" stroke="#1676df" stroke-width="2" stroke-dasharray="4 4"/>';stage.append(guide,handle,dimensions);
  const input=dimensions.querySelector('input'),label=dimensions.querySelector('#directDimensionLabel'),unit=dimensions.querySelector('#directUnit'),feedback=dimensions.querySelector('output');
+ const applyButton=dimensions.querySelector('#faceDistanceApply');
  const extrudeChoices=dimensions.querySelector('.extrudeChoices'),extrudeOperation=dimensions.querySelector('[aria-label="Extrude operation"]'),extrudeTarget=dimensions.querySelector('[aria-label="Extrude target body"]');
  extrudeOperation.onchange=()=>{extrudeTarget.hidden=extrudeOperation.value==='New body';schedule();};extrudeTarget.onchange=()=>schedule();
  let session=null,drag=null,value=0,operation='offsetFace',timer=null,sequence=0,inFlight=false,wanted=null,lastTarget='',previewEpoch=0;
@@ -22,7 +23,7 @@ export function createDirectModeling(api){
   const edge=ref.kind==='edge'&&item.kind==='body'?item.edges.find(e=>e.index===ref.index):null;
   const sketch=ref.kind==='sketch'&&item.kind==='sketch'?api.getDoc().features.find(f=>f.id===item.featureId)?.params:null;
   const diameter=['CYLINDRE','CYLINDER'].includes(face?.type)?api.getDiameterTarget?.(ref):null;
-  if(face?.type!=='PLANE'&&!diameter&&!edge&&!(sketch&&sketch.closed!==false&&!item.construction))return null;
+  if(face?.type!=='PLANE'&&!diameter&&!edge&&!(sketch&&item.profileClosed&&!item.construction))return null;
   return{ref,item,face,edge,sketch,diameter};
  }
  function direction(){
@@ -43,12 +44,12 @@ export function createDirectModeling(api){
  function displayValue(){const factor=operation==='draft'?1:(api.getUnits?.().factor||1);return value/factor;}
  async function drain(){
   if(inFlight||!wanted)return;const task=wanted;wanted=null;inFlight=true;
-  try{await api.onPreview(task.operation,task.params,task.ref,()=>task.epoch===previewEpoch&&task.token===sequence);if(task.epoch===previewEpoch&&task.token===sequence)feedback.textContent='Solid verified';}
-  catch(e){if(task.epoch===previewEpoch&&!wanted){api.onResetPreview();feedback.textContent=e.message;feedback.dataset.error='true';}}
+  try{await api.onPreview(task.operation,task.params,task.ref,()=>task.epoch===previewEpoch&&!!session);if(task.epoch===previewEpoch&&task.token===sequence){feedback.textContent='Solid verified';applyButton.disabled=false;}}
+  catch(e){if(task.epoch===previewEpoch&&!wanted){api.onResetPreview();feedback.textContent=e.message;feedback.dataset.error='true';applyButton.disabled=true;}}
   finally{inFlight=false;if(wanted)drain();}
  }
  function schedule(){
-  const token=++sequence;
+  const token=++sequence;applyButton.disabled=true;
   if(!session||!Number.isFinite(value)||(operation==='diameter'?value<=.001:Math.abs(value)<.001)){previewEpoch++;wanted=null;api.onResetPreview();feedback.textContent='Enter a value or drag the arrow';return;}
   const immediate=api.onImmediate?.(operation,params(),session);feedback.textContent=immediate?'Live preview · checking solid…':'Updating solid…';feedback.dataset.error='false';
   // Latest-value queue: start immediately, replace pending work, and display
@@ -60,7 +61,7 @@ export function createDirectModeling(api){
   const t=target();if(!t)return;previewEpoch++;operation=requested||(t.diameter?'diameter':t.edge?'fillet':t.sketch?'extrude':'offsetFace');let refs;try{refs=api.getOperationRefs?.(operation)||[t.ref];if(['fillet','chamfer'].includes(operation)&&refs.some(r=>r.kind!=='edge'||r.id!==t.ref.id))throw Error('Select edges from one body');}catch(e){api.onStatus(e.message);return;}session={...t.ref,refs};value=operation==='diameter'?(t.diameter.diameter+initial):initial;
   extrudeChoices.hidden=operation!=='extrude';if(operation==='extrude'){const targets=api.getExtrudeTargets?.(session)||[];extrudeTarget.replaceChildren(...targets.map(item=>{const option=document.createElement('option');option.value=item.id;option.textContent=item.name;return option;}));extrudeOperation.value='New body';extrudeTarget.hidden=true;for(const option of extrudeOperation.options)option.disabled=option.value!=='New body'&&!targets.length;}
   label.textContent=operation==='diameter'?'Diameter':operation==='fillet'?'Radius':operation==='chamfer'?'Chamfer':operation==='draft'?'Draft':'Distance';
-  unit.textContent=operation==='draft'?'°':api.getUnits?.().label||'mm';input.value=String(Number(displayValue().toFixed(4)));dimensions.hidden=false;update();if(initial)schedule();
+  unit.textContent=operation==='draft'?'°':api.getUnits?.().label||'mm';input.value=String(Number(displayValue().toFixed(4)));dimensions.hidden=false;applyButton.disabled=!t.diameter||Math.abs(value)<.001;update();if(initial)schedule();
  }
  function update(){
   const t=target();handle.hidden=!t;guide.hidden=true;arrow.visible=!!t;
@@ -81,7 +82,7 @@ export function createDirectModeling(api){
  const finish=()=>{drag=null;handle.classList.remove('dragging');api.onNavigation(true);if(session)schedule();};handle.addEventListener('pointerup',finish);handle.addEventListener('pointercancel',()=>{finish();cancel();});
  input.oninput=()=>{api.onSnap?.(null);value=Number(input.value)*(operation==='draft'?1:api.getUnits?.().factor||1);schedule();};
  dimensions.querySelector('#faceDistanceCancel').onclick=cancel;
- dimensions.querySelector('#faceDistanceApply').onclick=async()=>{if(api.isBusy())return;if(!session||!Number.isFinite(value)||Math.abs(value)<.001){api.onStatus('Enter a non-zero value');return;}const ref={...session},p=params(),op=operation;clearTimeout(timer);sequence++;previewEpoch++;wanted=null;try{await api.onCommit(op,p,ref);cancel();}catch(e){api.onResetPreview(true);feedback.textContent=e.message;feedback.dataset.error='true';}};
+ applyButton.onclick=async()=>{if(api.isBusy()||applyButton.disabled)return;if(!session||!Number.isFinite(value)||Math.abs(value)<.001){api.onStatus('Enter a non-zero value');return;}const ref={...session},p=params(),op=operation;clearTimeout(timer);sequence++;previewEpoch++;wanted=null;try{await api.onCommit(op,p,ref);cancel();}catch(e){api.onResetPreview(true);feedback.textContent=e.message;feedback.dataset.error='true';}};
  input.onkeydown=e=>{if(e.key==='Enter')dimensions.querySelector('#faceDistanceApply').click();if(e.key==='Escape')cancel();};
  return{handle,dimensions,arrow,update,target,direction,begin,cancel,get state(){return{dragging:!!drag,visible:!handle.hidden,target:handle.dataset.target,preview:!!session,operation,value,inFlight,pending:!!wanted,position:{left:handle.style.left,top:handle.style.top}};}};
 }

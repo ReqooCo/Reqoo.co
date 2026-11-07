@@ -5,5 +5,5 @@ export function dragRecipe(shape,a,b,mode){
  if(shape==='circle'){const edge=mode==='diameter';return{x:edge?mid[0]:a[0],y:edge?mid[1]:a[1],radius:Math.hypot(b[0]-a[0],b[1]-a[1])/(edge?2:1)};}
  return{x:a[0],y:a[1],radius:Math.hypot(b[0]-a[0],b[1]-a[1])};
 }
-export const startChoices=shape=>shape==='rectangle'||shape==='ellipse'?[['corner','Corner'],['center','Center']]:shape==='circle'?[['center','Center'],['diameter','Diameter']]:[];
-export const defaultStart=shape=>shape==='rectangle'?'corner':'center';
+export const startChoices=shape=>shape==='rectangle'||shape==='ellipse'?[['corner','Corner'],['center','Center']]:shape==='circle'?[['center','Center'],['diameter','Diameter']]:shape==='arc'?[['height','Height'],['threePoint','3-point'],['centerArc','Center']]:shape==='spline'?[['fit','Fit'],['control','Control']]:[];
+export const defaultStart=shape=>shape==='rectangle'?'corner':shape==='arc'?'height':shape==='spline'?'fit':'center';

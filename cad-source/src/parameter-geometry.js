@@ -4,16 +4,17 @@ export const axisVector=axis=>axis==='X'?[1,0,0]:axis==='Y'?[0,1,0]:[0,0,1];
 export function parameterGeometry(type,key,p={},context={}){
  const item=context.items?.[0],ref=context.refs?.find(r=>r.kind==='face'),face=item?.faceInfo?.find(f=>f.index===ref?.index),centre=item?.bounds?item.bounds[0].map((v,i)=>(v+item.bounds[1][i])/2):[0,0,0];
  const plane=p.plane||'XY',pn=plane==='XZ'?[0,-1,0]:plane==='YZ'?[1,0,0]:[0,0,1],px=plane==='YZ'?[0,1,0]:[1,0,0];
- const frame=p.basis||item?.sketchPlane||(face?{origin:face.center,x:Math.abs(face.normal[0])<.9?[1,0,0]:[0,1,0],normal:face.normal}:{origin:mul(pn,num(p.offset)),x:px,normal:pn});
+ const recipePlane={origin:mul(pn,num(p.offset)),x:px,normal:pn};
+ const frame=p.basis||((type==='sketch'||type.startsWith('sketch'))&&['XY','XZ','YZ'].includes(p.plane)?recipePlane:null)||item?.sketchPlane||(face?{origin:face.center,x:Math.abs(face.normal[0])<.9?[1,0,0]:[0,1,0],normal:face.normal}:{origin:mul(pn,num(p.offset)),x:px,normal:pn});
  const n=norm(frame.normal),dot=frame.x.reduce((s,v,i)=>s+v*n[i],0),x=norm(frame.x.map((v,i)=>v-dot*n[i])),y=norm(cross(n,x)),world=q=>add(frame.origin,add(mul(x,q[0]),mul(y,q[1])));
  let origin=[...centre],direction=[1,0,0],coefficient=1,kind='linear',unit='mm';
  const k=key.replace(/^p-/,''),point=/^point:(\d+):([xy])$/.exec(k),segment=/^segment:(\d+):length$/.exec(k);
  if(type==='sketch'||type.startsWith('sketch')||type==='faceSketch'){origin=world([num(p.x),num(p.y)]);direction=x;if(k==='y'||k==='height')direction=y;if(k==='offset')direction=n;
-  if(point&&p.points?.[Number(point[1])]){origin=world(p.points[Number(point[1])]);direction=point[2]==='x'?x:y;}
+  if(point&&p.points?.[Number(point[1])]){origin=world(p.points[Number(point[1])].map((v,i)=>v+num(i?p.y:p.x)));direction=point[2]==='x'?x:y;}
   else if(segment&&p.points?.length){const a=p.points[Number(segment[1])],b=p.points[(Number(segment[1])+1)%p.points.length];origin=world(b);direction=norm(add(mul(x,b[0]-a[0]),mul(y,b[1]-a[1])));}
   else if(['width','height'].includes(k)){const d=k==='width'?num(p.width,40):num(p.height,30);origin=add(origin,mul(direction,d/2));coefficient=2;}
   else if(k==='radius')origin=add(origin,mul(x,num(p.radius,15)));
-  else if(k==='sagitta'&&p.points?.length>1){origin=world([(p.points[0][0]+p.points[1][0])/2,(p.points[0][1]+p.points[1][1])/2]);direction=y;}
+  else if(k==='sagitta'&&p.points?.length>1){const a=p.points[0],b=p.points[1],len=Math.hypot(b[0]-a[0],b[1]-a[1])||1,normal=[-(b[1]-a[1])/len,(b[0]-a[0])/len];direction=add(mul(x,normal[0]),mul(y,normal[1]));origin=world([(a[0]+b[0])/2+num(p.x)+normal[0]*num(p.sagitta),(a[1]+b[1])/2+num(p.y)+normal[1]*num(p.sagitta)]);}
  }
  if(['sketchOffset','sketchFillet','sketchMirror'].includes(type)){origin=[...centre];direction=x;if(type==='sketchOffset'){const half=item?.bounds?x.reduce((s,v,i)=>s+Math.abs(v)*(item.bounds[1][i]-item.bounds[0][i])/2,0):10;origin=add(origin,mul(x,half+num(p.distance)));}}
  if(['box','cylinder','sphere','torus'].includes(type)){

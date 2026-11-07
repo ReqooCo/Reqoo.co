@@ -1,3 +1,6 @@
+import {controlSplineDrawing} from './control-spline.js';
+import {derivedSketchDrawings,projectedSketchDrawing,drawingIsClosed,drawingInFrame} from './sketch-tools-native.js';
+import {ensureSketchFont,SKETCH_FONT} from './text-font.js';
 import {validateVisualization} from './visualization-state.js';
 import {resolveDimensionDocument} from './smart-dimensions.js';
 import {imprintPlanarRegions} from './planar-regions.js';
@@ -6,9 +9,12 @@ import {cylinderInfo,cutThread} from './thread-solid.js';
 import {WORLD_AXES,rotateFrame,concentricPlacement} from './transform-frames.js';
 import {alignmentDelta} from './snapping.js';
 import {solveSketch} from './constraints.js';
+import {joinedOffsetDrawing,offsetOpenChain} from './offset-chain.js';
+import {trimDrawing,nativePlanarDrawing,exportCurveDrawing} from './curve-trim.js';
+import {offsetSketchPolyline} from './sketch-edit-geometry.js';
 import {normalizedCenter,resolveReference} from './topology.js';
 let meshSerial=0;
-export const TYPES=['sketch','faceSketch','sketchProfile','imprint','sketchOffset','sketchFillet','sketchMirror','box','cylinder','sphere','torus','extrude','hole','revolve','loft','sweep','union','subtract','intersect','fillet','chamfer','thread','shell','offsetFace','draft','move','rotate','scale','mirror','pattern','circularPattern','duplicate','align','split','import','plane','axis','delete'];
+export const TYPES=['sketch','faceSketch','sketchProfile','imprint','sketchOffset','sketchFillet','sketchMirror','sketchChamfer','sketchPattern','sketchTransform','sketchProject','sketchTrim','box','cylinder','sphere','torus','extrude','hole','revolve','loft','sweep','union','subtract','intersect','fillet','chamfer','thread','shell','offsetFace','draft','move','rotate','scale','mirror','pattern','circularPattern','duplicate','align','split','import','plane','axis','delete'];
 const V=(v,d=0)=>v===undefined?d:Number(v);
 export function number(v,name,min=-2000,max=2000){const n=Number(v);if(!Number.isFinite(n)||n<min||n>max)throw Error(name+' must be between '+min+' and '+max);return n;}
 export function basis(p={}){
@@ -27,23 +33,40 @@ export function validateProject(doc){
  if(JSON.stringify(doc).length>24e6)throw Error('Project is too large');
  return doc;
 }
+function signedArcHeight(value){const h=number(value,'Arc height',-1000,1000);if(Math.abs(h)<.001)throw Error('Arc height must be non-zero');return h;}
 export function profile(p){
- if(p.serializedDrawing)return R.deserializeDrawing(p.serializedDrawing);
  const x=number(p.x??0,'Sketch X'),y=number(p.y??0,'Sketch Y');let d;
- if(p.shape==='annulus'){const outer=number(p.radius,'Outer radius',.01,1000),inner=number(p.innerRadius,'Inner radius',.001,999);if(inner>=outer)throw Error('Inner radius must be smaller than outer radius');d=R.drawCircle(outer).cut(R.drawCircle(inner));}
+ if(p.serializedDrawing)d=R.deserializeDrawing(p.serializedDrawing);
+ else if(p.shape==='annulus'){const outer=number(p.radius,'Outer radius',.01,1000),inner=number(p.innerRadius,'Inner radius',.001,999);if(inner>=outer)throw Error('Inner radius must be smaller than outer radius');d=R.drawCircle(outer).cut(R.drawCircle(inner));}
+ else if(p.shape==='text'){
+  const text=p.text;if(typeof text!=='string'||!text.trim()||text.length>60)throw Error('Enter 1–60 text characters');
+  const font=R.getFont(SKETCH_FONT);if(!font)throw Error('Sketch text font is unavailable');if([...text].some(c=>!(/\s/.test(c))&&!font.charToGlyph(c).index))throw Error('The sketch font does not support one of these characters');
+  d=R.drawText(text,{fontSize:10,fontFamily:SKETCH_FONT});const box=d.boundingBox;if(box.height<1e-7)throw Error('Text has no visible outlines');d=d.translate([-box.bounds[0][0],-box.bounds[0][1]]).scale(number(p.height??10,'Text height',.5,200)/box.height,[0,0]).rotate(number(p.angle??0,'Text angle',-3600,3600));
+ }
  else if(p.shape==='circle')d=R.drawCircle(number(p.radius,'Radius',.01,1000));
  else if(p.shape==='ellipse')d=R.drawEllipse(number(p.width,'Width',.02,2000)/2,number(p.height,'Height',.02,2000)/2);
  else if(p.shape==='polygon'){const sides=number(p.sides,'Sides',3,64);if(!Number.isInteger(sides))throw Error('Sides must be an integer');d=R.drawPolysides(number(p.radius,'Radius',.01,1000),sides);}
  else if(p.shape==='polyline'||p.shape==='spline'||p.shape==='arc'){
   const pts=p.shape==='polyline'?solveSketch(p.points,p.constraints||[]).points:p.points;if(!Array.isArray(pts)||pts.length<2||pts.length>100||pts.some(q=>!Array.isArray(q)||q.length!==2||q.some(v=>!Number.isFinite(v)||Math.abs(v)>2000)))throw Error('Use 2–100 finite sketch points');
   if(p.closed!==false&&pts.length<3)throw Error('A closed profile needs at least three points');
-  if(p.shape==='spline')d=R.drawPointsInterpolation(pts,{}, {closeShape:p.closed!==false});
-  else{let pen=R.draw(pts[0]);if(p.shape==='arc')pen=pen.sagittaArc(pts[1][0]-pts[0][0],pts[1][1]-pts[0][1],number(p.sagitta??10,'Arc height',.01,1000));else for(const q of pts.slice(1))pen=pen.lineTo(q);d=p.closed===false?pen.done():pen.close();}
+  if(p.shape==='spline'){if(p.splineMode!==undefined&&!['Fit','Control'].includes(p.splineMode))throw Error('Choose Fit or Control spline');d=p.splineMode==='Control'?controlSplineDrawing(pts,p.closed!==false):R.drawPointsInterpolation(pts,{}, {closeShape:p.closed!==false});}
+  else{let pen=R.draw(pts[0]);if(p.shape==='arc')pen=pen.sagittaArc(pts[1][0]-pts[0][0],pts[1][1]-pts[0][1],signedArcHeight(p.sagitta??10));else for(const q of pts.slice(1))pen=pen.lineTo(q);d=p.closed===false?pen.done():pen.close();}
  }else d=R.drawRectangle(number(p.width,'Width',.02,2000),number(p.height,'Height',.02,2000));
  if(p.operations!==undefined){if(!Array.isArray(p.operations)||p.operations.length>20)throw Error('Too many derived sketch operations');for(const op of p.operations){if(op.type==='offset')d=d.offset(number(op.distance,'Sketch offset',-500,500));else if(op.type==='fillet')d=d.fillet(number(op.radius,'Sketch fillet radius',.001,500));else if(op.type==='mirror')d=d.mirror(op.axis==='X'?[1,0]:[0,1],[0,0],'plane');else throw Error('Unsupported sketch operation');}}
  return d.translate([x,y]);
 }
-function sketch(p){if(p.nativeSketch)return p.nativeSketch.clone?p.nativeSketch.clone():new R.CompoundSketch(p.nativeSketch.sketches.map(s=>s.clone()));const b=basis(p),result=profile(p).sketchOnPlane(new R.Plane(b.origin,b.x,b.normal));return typeof result.face!=='function'&&result.sketches?.length===1?result.sketches[0]:result;}
+function normalizeSketch(result){
+ if(!result)throw Error('Sketch contains no usable curves');
+ if(result instanceof R.Sketches){
+  result.sketches=result.sketches.map(normalizeSketch);if(result.sketches.length===1)return result.sketches[0];
+  let wires=null;result.face=()=>result.faces();Object.defineProperty(result,'wire',{get:()=>wires||(wires=result.wires())});result.delete=()=>{wires?.delete();wires=null;result.sketches.forEach(s=>s.delete());};
+ }else if(result instanceof R.CompoundSketch){let wires=null;const dispose=result.delete.bind(result);Object.defineProperty(result,'wire',{get:()=>wires||(wires=result.wires)});result.delete=()=>{wires?.delete();wires=null;dispose();};}
+ return result;
+}
+function sketch(p){if(p.nativeSketch)return normalizeSketch(p.nativeSketch.clone?p.nativeSketch.clone():new R.CompoundSketch(p.nativeSketch.sketches.map(s=>s.clone())));const b=basis(p),plane=new R.Plane(b.origin,b.x,b.normal);try{return normalizeSketch(profile(p).sketchOnPlane(plane));}finally{plane.delete();}}
+
+function sketchEdgeEnds(edge){const owned=[],keep=v=>(owned.push(v),v);try{const start=keep(edge.startPoint),end=keep(edge.endPoint),a=keep(edge.tangentAt(0)),b=keep(edge.tangentAt(1));return{start:start.toTuple(),end:end.toTuple(),startTangent:a.toTuple(),endTangent:b.toTuple()};}catch{return{};}finally{owned.forEach(v=>v.delete());}}
+
 function volume(s){const v=R.measureShapeVolumeProperties(s);const value=Math.abs(v.volume);v.delete();return value;}
 function length(s){const p=R.measureShapeLinearProperties(s);const v=p.length;p.delete();return v;}
 function area(s){const v=R.measureShapeSurfaceProperties(s);const value=Math.abs(v.area);v.delete();return value;}
@@ -54,7 +77,7 @@ function edgeDescriptor(shape,e){const bounds=shape.boundingBox.bounds,edgeBound
 
 
 export async function buildModel(doc,{base=null,preview=false,onProgress=()=>{}}={}){
- validateProject(doc);doc=resolveDimensionDocument(doc,basis);const shapes=new Map(),profiles=new Map(),meta=new Map(),visible=new Set(),arena=new Set();let released=false,currentFeature=null,featureFrame=WORLD_AXES;
+ validateProject(doc);if(doc.features.some(f=>!f.suppressed&&f.type==='sketch'&&f.params.shape==='text'))await ensureSketchFont();doc=resolveDimensionDocument(doc,basis);const shapes=new Map(),profiles=new Map(),meta=new Map(),visible=new Set(),arena=new Set();let released=false,currentFeature=null,featureFrame=WORLD_AXES;
  const reuse=base&&base.featureCount<=doc.features.length&&base.featureSignature===JSON.stringify(doc.features.slice(0,base.featureCount));
  if(reuse){for(const [k,v]of base.shapes)shapes.set(k,v);for(const [k,v]of base.profiles)profiles.set(k,v);for(const [k,v]of base.meta)meta.set(k,v);for(const k of base.visible)visible.add(k);}
  const metrics={reusedFeatures:reuse?base.featureCount:0,builtFeatures:0,meshedItems:0};
@@ -67,6 +90,29 @@ export async function buildModel(doc,{base=null,preview=false,onProgress=()=>{}}
  try{
  for(const f of doc.features.slice(reuse?base.featureCount:0)){currentFeature=f;onProgress({phase:'feature',index:doc.features.indexOf(f)+1,total:doc.features.length,name:f.name||f.type});metrics.builtFeatures++;if(f.suppressed)continue;const p=f.params,ins=f.inputs;featureFrame=meta.get(ins[0])?.localFrame||WORLD_AXES;let s=null,kind='body';
   if(f.type==='sketch'){const b=basis(p),x=b.x,n=b.normal;featureFrame=[x,[n[1]*x[2]-n[2]*x[1],n[2]*x[0]-n[0]*x[2],n[0]*x[1]-n[1]*x[0]],n];profiles.set(f.id,p);const sk=sketch(p);s=own(p.closed===false||p.construction?sk.wire.clone():sk.face());sk.delete();save(f,s,'sketch');continue;}
+  if(['sketchMirror','sketchChamfer','sketchFillet','sketchPattern','sketchTransform','sketchProject'].includes(f.type)){
+   if(!ins.length)throw Error('Select source geometry');let index=0;
+   for(const input of ins){
+    const original=profiles.get(input),frame=f.type==='sketchProject'||p.basis?basis(p):original?basis(original):null;if(!frame)throw Error('Select sketch profiles');
+    let drawing;
+    if(f.type==='sketchProject'){
+     const source=shapes.get(input);if(!source)throw Error('Projection source is unavailable');const reference=p.faces?.[input];drawing=projectedSketchDrawing(reference?face(source,reference):source,frame);
+    }else drawing=original.nativeSketch?nativePlanarDrawing(shapes.get(input),frame):drawingInFrame(profile(original),basis(original),frame);
+    const drawings=f.type==='sketchProject'?[drawing]:derivedSketchDrawings(f.type,p,drawing);
+    for(const d of drawings){const id=index?f.id+'_part'+index:f.id,recipe={shape:'profile',closed:drawingIsClosed(d),construction:!!original?.construction,basis:frame,serializedDrawing:d.serialize(),x:0,y:0,operations:[],constraints:[]},sk=sketch(recipe);try{profiles.set(id,recipe);save(f,recipe.closed&&!recipe.construction?sk.face():sk.wire.clone(),'sketch',id,index?(f.name||f.type)+' '+(index+1):f.name||f.type);}finally{sk.delete();}index++;}
+    if(!p.keepInputs&&f.type!=='sketchProject')consume(input);
+   }
+   continue;
+  }
+  if(f.type==='sketchTrim'){
+   const original=profiles.get(ins[0]);if(!original)throw Error('Trim source no longer exists');const frame=basis(original),y=[frame.normal[1]*frame.x[2]-frame.normal[2]*frame.x[1],frame.normal[2]*frame.x[0]-frame.normal[0]*frame.x[2],frame.normal[0]*frame.x[1]-frame.normal[1]*frame.x[0]],dot=(a,b)=>a.reduce((s,v,i)=>s+v*b[i],0);
+   const drawing=id=>{const recipe=profiles.get(id);if(!recipe)throw Error('Trim boundary no longer exists');const b=basis(recipe),delta=b.origin.map((v,i)=>v-frame.origin[i]);if(Math.abs(dot(b.normal,frame.normal))<.999999||Math.abs(dot(delta,frame.normal))>1e-5)throw Error('Trim curves must lie on the same sketch plane');
+    if(recipe.nativeSketch)return nativePlanarDrawing(shapes.get(id),frame);
+    let d=profile(recipe);if(dot(b.normal,frame.normal)<0)d=d.mirror([1,0],[0,0],'plane');return d.rotate(Math.atan2(dot(b.x,y),dot(b.x,frame.x))*180/Math.PI).translate([dot(delta,frame.x),dot(delta,y)]);
+   };
+   const parts=trimDrawing(drawing(ins[0]),ins.slice(1).map(drawing),p.point,number(p.tolerance??.1,'Trim hit tolerance',.000001,100));
+   parts.forEach((part,index)=>{const id=index?f.id+'_part'+index:f.id,recipe={...part,basis:frame,construction:!!original.construction};profiles.set(id,recipe);const sk=sketch(recipe);try{save(f,recipe.closed&&!recipe.construction?sk.face():sk.wire.clone(),'sketch',id,index?'Trim segment '+(index+1):f.name||'Trim');}finally{sk.delete();}});consume(ins[0]);continue;
+  }
   if(f.type==='sketchProfile'){if(ins.length<2||ins.length>25)throw Error('Choose two or more closed sketches');const recipes=ins.map(id=>profiles.get(id));if(recipes.some(p=>!p||p.closed===false||p.construction||p.nativeSketch))throw Error('Profile needs closed planar sketch recipes');const first=basis(recipes[0]);if(recipes.some(p=>{const b=basis(p);return b.origin.some((v,i)=>Math.abs(v-first.origin[i])>1e-6)||b.x.some((v,i)=>Math.abs(v-first.x[i])>1e-6)||b.normal.some((v,i)=>Math.abs(v-first.normal[i])>1e-6);}))throw Error('Choose profiles on the same sketch plane');const operation=p.operation||'Join';if(!['Join','Cut','Intersect'].includes(operation))throw Error('Invalid profile operation');let drawing=profile(recipes[0]);for(const recipe of recipes.slice(1))drawing=operation==='Join'?drawing.fuse(profile(recipe)):operation==='Cut'?drawing.cut(profile(recipe)):drawing.intersect(profile(recipe));const recipe={shape:'profile',closed:true,basis:first,serializedDrawing:drawing.serialize()};profiles.set(f.id,recipe);const sk=sketch(recipe);try{save(f,sk.face(),'sketch');}finally{sk.delete();}if(!p.keepInputs)for(const id of ins)consume(id);continue;}
   if(f.type==='faceSketch'){const source=body(ins[0]),selected=face(source,p);if(selected.geomType!=='PLANE')throw Error('Offset Sketch needs a planar face');const d=number(p.distance??0,'Sketch offset',-500,500),normal=own(selected.normalAt()).toTuple(),origin=own(selected.center).toTuple(),seed=Math.abs(normal[0])<.9?[1,0,0]:[0,1,0],dot=seed.reduce((sum,v,i)=>sum+v*normal[i],0),x=seed.map((v,i)=>v-dot*normal[i]),len=Math.hypot(...x);for(let i=0;i<3;i++)x[i]/=len;
    const wires=selected.wires.map(own),outer=own(selected.outerWire()),loops=[];
@@ -74,7 +120,20 @@ export async function buildModel(doc,{base=null,preview=false,onProgress=()=>{}}
    loops.push(offsetLoop(outer,d));for(const wire of wires){if(wire.isSame(outer))continue;loops.push(offsetLoop(wire,-d));}
    const native=own(loops.length===1?loops[0]:new R.CompoundSketch(loops)),recipe={shape:'faceOutline',closed:true,basis:{origin,x,normal},nativeSketch:native};profiles.set(f.id,recipe);featureFrame=[x,[normal[1]*x[2]-normal[2]*x[1],normal[2]*x[0]-normal[0]*x[2],normal[0]*x[1]-normal[1]*x[0]],normal];save(f,native.face(),'sketch');continue;
   }
-  if(['sketchOffset','sketchFillet','sketchMirror'].includes(f.type)){const original=profiles.get(ins[0]);if(original?.nativeSketch)throw Error('Edit the Offset Sketch distance in History');if(!original)throw Error('Select a sketch first');const op=f.type==='sketchOffset'?{type:'offset',distance:number(p.distance,'Offset distance',-500,500)}:f.type==='sketchFillet'?{type:'fillet',radius:number(p.radius,'Corner radius',.001,500)}:{type:'mirror',axis:p.axis==='X'?'X':'Y'},recipe={...original,operations:[...(original.operations||[]),op]};profiles.set(f.id,recipe);const sk=sketch(recipe);s=own(recipe.closed===false||recipe.construction?sk.wire.clone():sk.face());sk.delete();save(f,s,'sketch');
+  if(f.type==='sketchOffset'&&ins.length>1){
+   if(p.mode==='Single')throw Error('Single offset needs one sketch edge');
+   const recipes=ins.map(id=>profiles.get(id));if(recipes.some(r=>!r||r.nativeSketch||r.construction))throw Error('Choose editable sketch curves');
+   const plane=basis(recipes[0]);if(recipes.some(r=>JSON.stringify(basis(r))!==JSON.stringify(plane)))throw Error('Choose sketch curves on the same plane');
+   const drawing=joinedOffsetDrawing(recipes.map(profile)),closed=drawing.blueprint.isClosed(),distance=number(p.distance,'Offset distance',-500,500);
+   if(Math.abs(distance)<1e-7)throw Error('Enter a non-zero offset distance');
+   if(closed){const source=drawing.sketchOnPlane(new R.Plane(plane.origin,plane.x,plane.normal));let native;try{const face=own(source.face());native=own(R.sketchFaceOffset(face,distance));}finally{source.delete();}profiles.set(f.id,{shape:'chain',closed:true,basis:plane,nativeSketch:native});save(f,native.face(),'sketch');}
+   else{const source=drawing.sketchOnPlane(new R.Plane(plane.origin,plane.x,plane.normal));let native;try{native=own(offsetOpenChain(source,distance,plane));}finally{source.delete();}profiles.set(f.id,{shape:'chain',closed:false,basis:plane,nativeSketch:native});save(f,native.wire.clone(),'sketch');}if(!p.keepInputs)ins.forEach(consume);continue;
+  }
+  if(f.type==='sketchOffset'){let original=profiles.get(ins[0]);if(f.type==='sketchOffset'&&original&&!original.nativeSketch&&(original.serializedDrawing||['arc','spline','ellipse'].includes(original.shape)))original={...original,nativeSketch:own(sketch(original))};if(original?.nativeSketch&&f.type==='sketchOffset'){const distance=number(p.distance,'Offset distance',-500,500);if(p.mode==='Single'&&original.closed!==false)throw Error('Choose Chain for this closed sketch');if(Math.abs(distance)<1e-7)throw Error('Enter a non-zero offset distance');let native;if(original.closed===false)native=own(offsetOpenChain(original.nativeSketch,distance,basis(original)));else{const face=own(original.nativeSketch.face()),loops=face.wires,hasHoles=loops.length>1;loops.forEach(w=>w.delete());if(hasHoles)throw Error('Offset contours with holes separately');native=own(R.sketchFaceOffset(face,distance));}profiles.set(f.id,{...original,nativeSketch:native});save(f,original.closed===false?native.wire.clone():native.face(),'sketch');if(!p.keepInputs)consume(ins[0]);continue;}if(original?.nativeSketch)throw Error('Edit the original sketch in History');if(!original)throw Error('Select a sketch first');const op=f.type==='sketchOffset'?{type:'offset',distance:number(p.distance,'Offset distance',-500,500)}:f.type==='sketchFillet'?{type:'fillet',radius:number(p.radius,'Corner radius',.001,500)}:{type:'mirror',axis:p.axis==='X'?'X':'Y'};
+  const directOffset=f.type==='sketchOffset'&&(original.shape==='polyline'&&original.closed===false||p.mode==='Single'&&['polyline','rectangle'].includes(original.shape));
+  const source=directOffset&&original.shape==='polyline'&&original.constraints?.length?{...original,points:solveSketch(original.points,original.constraints).points,constraints:[]}:original;
+  const recipe=directOffset?{...original,...offsetSketchPolyline(source,op.distance,{mode:p.mode||'Chain',edgeIndex:p.edgeIndex??0}),operations:[]}:{...original,operations:[...(original.operations||[]),op]};
+  profiles.set(f.id,recipe);const sk=sketch(recipe);s=own(recipe.closed===false||recipe.construction?sk.wire.clone():sk.face());sk.delete();save(f,s,'sketch');
  if(f.type==='sketchOffset'&&original.shape==='circle'&&!original.operations?.length&&!original.construction&&Math.abs(p.distance)>.001){
   const r0=original.radius,r1=r0+Number(p.distance),inner=Math.min(r0,r1),outer=Math.max(r0,r1);
   if(inner>.001){
@@ -170,12 +229,12 @@ export async function buildModel(doc,{base=null,preview=false,onProgress=()=>{}}
   const faceMesh=m.kind==='axis'||(m.kind==='sketch'&&(profiles.get(id)?.closed===false||profiles.get(id)?.construction))?{triangles:[],vertices:[],normals:[],faceGroups:[]}:s.mesh({tolerance:preview?.12:.02,angularTolerance:preview?.2:.08});
   const groups=faceMesh.faceGroups.map(g=>({...g,faceIndex:faces.findIndex(f=>f.hashCode===g.faceId)}));
   const edgeFaces=new Map();faces.forEach((f,j)=>{for(const e of f.edges){own(e);const key=e.hashCode;if(!edgeFaces.has(key))edgeFaces.set(key,[]);edgeFaces.get(key).push(j);}});
-  const lineMeshes=edges.slice(0,600).map((e,i)=>({index:i,cacheKey:cacheKey+':edge:'+i,faceIndices:edgeFaces.get(e.hashCode)||[],length:length(e),type:e.geomType,reference:edgeDescriptor(s,e),center:e.boundingBox.center,lines:e.meshEdges({tolerance:preview?.12:.02,angularTolerance:preview?.2:.08}).lines}));
+  const lineMeshes=edges.slice(0,600).map((e,i)=>({index:i,cacheKey:cacheKey+':edge:'+i,...(m.kind==='sketch'?sketchEdgeEnds(e):{}),faceIndices:edgeFaces.get(e.hashCode)||[],length:length(e),type:e.geomType,reference:edgeDescriptor(s,e),center:e.boundingBox.center,lines:e.meshEdges({tolerance:preview?.12:.02,angularTolerance:preview?.2:.08}).lines}));
   const bb=s.boundingBox.bounds;
   items.push({...m,construction:profiles.get(id)?.construction||false,sketchPlane:profiles.has(id)?basis(profiles.get(id)):null,profileClosed:profiles.has(id)?profiles.get(id).closed!==false&&!profiles.get(id).construction:null,mesh:{...faceMesh,cacheKey,faceGroups:groups},edges:lineMeshes,faceInfo:faces.map((f,i)=>{let normal=[0,0,1],center=[0,0,0];try{const n=f.normalAt(),c=f.center;const len=Math.hypot(...n.toTuple());normal=n.toTuple().map(v=>v/(len||1));center=c.toTuple();n.delete();c.delete();}catch{}return{index:i,type:f.geomType,normal,center,cylinder:cylinderInfo(f),reference:faceDescriptor(s,f),area:area(f)};}),edgeCount:edges.length,bounds:bb,volume:m.kind==='body'?volume(s):0,area:m.kind==='body'||faces.length?area(s):0});
  }
  if(items.filter(i=>i.kind==='body').length>50)throw Error('Limit is 50 visible bodies');
- return{items,shapes,profiles,meta,visible,metrics,transferOwnershipTo(target){if(released)throw Error('Native cache has been released');for(const shape of arena)target.add(shape);arena.clear();released=true;},adoptBase(){if(reuse&&base){base.transferOwnershipTo(arena);base=null;}},featureCount:doc.features.length,featureSignature:JSON.stringify(doc.features),release,export:async(format,ids)=>{
+ return{items,shapes,profiles,meta,visible,metrics,exportSketch:(id,format)=>{const recipe=profiles.get(id);if(!recipe)throw Error('Select a sketch');return exportCurveDrawing(recipe.nativeSketch?nativePlanarDrawing(shapes.get(id),basis(recipe)):profile(recipe),format);},transferOwnershipTo(target){if(released)throw Error('Native cache has been released');for(const shape of arena)target.add(shape);arena.clear();released=true;},adoptBase(){if(reuse&&base){base.transferOwnershipTo(arena);base=null;}},featureCount:doc.features.length,featureSignature:JSON.stringify(doc.features),release,export:async(format,ids)=>{
   const chosen=(ids?.length?ids:[...visible]).map(id=>{if(meta.get(id)?.kind!=='body')throw Error('Export needs solid bodies');return shapes.get(id);});
   if(!chosen.length)throw Error('Select a solid body to export');const combined=chosen.length===1?chosen[0]:own(R.makeCompound(chosen.map(s=>own(s.clone()))));
   return format==='step'?combined.blobSTEP():combined.blobSTL({binary:true,tolerance:.03,angularTolerance:.1});
