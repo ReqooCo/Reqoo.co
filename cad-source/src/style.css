@@ -347,39 +347,3 @@ html[data-theme=dark] #moveDistance .gizmoFrameControls [aria-pressed=true]{back
 #stage #context:not([hidden]) button{flex:0 0 auto;min-height:38px;min-width:38px;padding:5px 7px;}
 #stage #context:not([hidden]) .selectionSummary{position:static;transform:none;flex:0 0 auto;pointer-events:none;border:0;background:transparent;}
 @media(max-width:760px){#stage #context:not([hidden]){bottom:72px;max-width:calc(100% - 104px);}}
-
-/* REDS: keep selection actions in a compact LEFT dock, not across the model.
-   Apply after the older horizontal context rules for both Sketch and Solid. */
-#stage #context:not([hidden]),
-#stage[data-sketch-context="true"] #context:not([hidden]){
- position:absolute;left:64px;right:auto;top:76px;bottom:164px;
- transform:none;width:48px;max-width:48px;max-height:none;
- display:flex;flex-direction:column;flex-wrap:nowrap;align-items:center;
- justify-content:flex-start;gap:3px;padding:4px;
- overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;
- scrollbar-width:thin;border-radius:12px;
-}
-#stage #context:not([hidden]) button,
-#stage[data-sketch-context="true"] #context:not([hidden]) button{
- flex:0 0 auto;width:38px;min-width:38px;min-height:38px;
- padding:6px;justify-content:center;
-}
-#stage #context:not([hidden]) button span{display:none}
-#stage #context:not([hidden]) .selectionSummary{
- width:100%;max-width:100%;min-width:0;padding:5px 1px;
- border-right:0;border-bottom:1px solid var(--border);
- font-size:9px;overflow-wrap:anywhere;
-}
-#stage #selectionBar{
- left:116px;right:auto;bottom:12px;top:auto;
- width:112px;max-width:112px;display:flex;flex-direction:column;
- align-items:stretch;gap:2px;padding:4px;
-}
-#stage #selectionBar>label{font-size:10px;padding:2px;justify-content:center}
-#stage #selectionBar button{justify-content:center;min-height:32px}
-@media(max-width:600px){
- #stage #context:not([hidden]),#stage[data-sketch-context="true"] #context:not([hidden]){
-  left:54px;top:72px;bottom:156px;width:44px;max-width:44px;padding:3px;
- }
- #stage #selectionBar{left:108px;bottom:8px;width:104px;max-width:104px}
-}

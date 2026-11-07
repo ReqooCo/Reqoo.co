@@ -23,7 +23,7 @@ export function createDirectModeling(api){
   const edge=ref.kind==='edge'&&item.kind==='body'?item.edges.find(e=>e.index===ref.index):null;
   const sketch=ref.kind==='sketch'&&item.kind==='sketch'?api.getDoc().features.find(f=>f.id===item.featureId)?.params:null;
   const diameter=['CYLINDRE','CYLINDER'].includes(face?.type)?api.getDiameterTarget?.(ref):null;
-  if(face?.type!=='PLANE'&&!diameter&&!edge&&!(sketch&&sketch.closed!==false&&!item.construction))return null;
+  if(face?.type!=='PLANE'&&!diameter&&!edge&&!(sketch&&item.profileClosed&&!item.construction))return null;
   return{ref,item,face,edge,sketch,diameter};
  }
  function direction(){

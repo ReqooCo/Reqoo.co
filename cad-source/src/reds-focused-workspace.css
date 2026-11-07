@@ -442,3 +442,22 @@ body.cadWorkspace #operationGizmo[data-compact=true] .operationValue{max-width:m
 body.cadWorkspace #operationGizmo[data-compact=true] .operationValue input{flex:0 0 62px;min-width:62px;}
 body.cadWorkspace #operationGizmo[data-compact=true] [data-parameter-select]{width:84px;min-width:65px;flex:0 1 84px;}
 body.cadWorkspace #operationGizmo[data-compact=true] .operationValue:has([data-parameter-select]:not([hidden])) [data-point-axes]{display:none;}
+/* The final layout layer owns both selection docks across workspace states. */
+body.cadWorkspace #stage #context:not([hidden]),
+body.cadWorkspace #stage[data-workspace=sketch][data-sketch-context=true] #context:not([hidden]){
+ left:74px;right:auto;top:117px;bottom:230px;transform:none;width:54px;max-width:54px;max-height:none;
+ display:flex;flex-flow:column nowrap;align-items:center;justify-content:flex-start;gap:4px;padding:4px;
+ overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;
+}
+body.cadWorkspace #stage #context button{width:42px;min-width:42px;min-height:38px;flex:none;padding:6px;justify-content:center;}
+body.cadWorkspace #stage #context button span{display:none;}
+body.cadWorkspace #stage #context .selectionSummary{display:block;flex:none;align-self:stretch;max-width:100%;padding:3px 0;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;}
+body.cadWorkspace #stage #selectionBar{left:74px;right:auto;top:auto;bottom:78px;width:118px;max-width:118px;min-height:0;display:flex;flex-direction:column;align-items:stretch;gap:2px;padding:4px;}
+body.cadWorkspace #stage #selectionBar>label{display:flex;flex-direction:column;align-items:stretch;gap:1px;font-size:9px;min-width:0;padding:2px;}
+body.cadWorkspace #stage #selectionBar select{width:100%;min-width:0;max-width:100%;font-size:11px;}
+body.cadWorkspace #stage #selectionBar button{min-height:30px;padding:4px;font-size:10px;justify-content:center;}
+@media(max-width:760px){body.cadWorkspace #stage #context:not([hidden]),body.cadWorkspace #stage[data-workspace=sketch][data-sketch-context=true] #context:not([hidden]){left:60px;top:102px;width:48px;max-width:48px;}body.cadWorkspace #stage #context button{width:38px;min-width:38px;}body.cadWorkspace #stage #selectionBar{left:60px;}}
+body.cadWorkspace #stage #selectionBar{transform:none;}
+body.cadWorkspace #stage #context:not([hidden]),body.cadWorkspace #stage[data-workspace=sketch][data-sketch-context=true] #context:not([hidden]){bottom:auto;height:max-content;max-height:max(80px,calc(100% - 350px));}
+@media(max-height:500px){body.cadWorkspace #stage #selectionBar{left:134px;} }
+@media(max-height:500px) and (max-width:760px){body.cadWorkspace #stage #selectionBar{left:116px;} }
