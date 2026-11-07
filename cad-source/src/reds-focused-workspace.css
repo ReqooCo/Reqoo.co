@@ -358,3 +358,6 @@ body.cadWorkspace #sketchPlanePicker .planeInstructions button[data-cancel]::aft
 
 /* Trim shares the sketch bar; drawing controls belong only to Draw. */
 body.cadWorkspace #sketchBar #sketchTrimHUD{position:static;transform:none;inset:auto;display:flex;flex:none;width:auto;max-width:none;padding:0;border:0;background:transparent;box-shadow:none;}
+
+body.cadWorkspace #stage{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+body.cadWorkspace #stage input,body.cadWorkspace #stage textarea{-webkit-user-select:text;user-select:text;}

@@ -1,3 +1,4 @@
+import {arcPreviewPoints} from './sketch-edit-geometry.js';
 const lastLayouts=new WeakMap();
 // Screen-space annotation layout derived from the same sketch plane/parameters as CAD.
 export function layoutDimensions({THREE,basis,camera,stage,overlay,svg,params:p}){
@@ -5,7 +6,8 @@ export function layoutDimensions({THREE,basis,camera,stage,overlay,svg,params:p}
  const project=(x,y)=>{const v=origin.clone().addScaledVector(xAxis,x+(p.x||0)).addScaledVector(yAxis,y+(p.y||0)).project(camera);return{x:(v.x+1)*rect.width/2,y:(1-v.y)*rect.height/2,z:v.z};};
  const centre=project(0,0);if(centre.z < -1||centre.z>1){overlay.hidden=true;return;}overlay.hidden=false;
  const plans=[],shape=p.shape;
- if(shape==='circle')plans.push(['diameter',[-p.radius,0],[p.radius,0],0,25]);
+ if(shape==='arc'&&p.points?.length>=2){const [a,c]=p.points,mid=[(a[0]+c[0])/2,(a[1]+c[1])/2],points=arcPreviewPoints(a,c,p.sagitta??10);plans.push(['sagitta',mid,points[40],24,0]);}
+ else if(shape==='circle')plans.push(['diameter',[-p.radius,0],[p.radius,0],0,25]);
  else if(shape==='annulus')plans.push(['outerDiameter',[-p.radius,0],[p.radius,0],-38,0],['innerDiameter',[-p.innerRadius,0],[p.innerRadius,0],38,0]);
  else if(shape==='rectangle'||shape==='ellipse'){const w=p.width||40,h=p.height||30;plans.push(['width',[-w/2,-h/2],[w/2,-h/2],30,0],['height',[w/2,-h/2],[w/2,h/2],30,0]);}
  else if(shape==='polygon')plans.push(['radius',[0,0],[p.radius,0],0,-24]);

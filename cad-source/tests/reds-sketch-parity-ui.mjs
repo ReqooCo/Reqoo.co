@@ -1,3 +1,4 @@
+import './curve-system-ui.mjs';
 import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
 import {beginSketch,projectSketchPoint} from './sketch-flow.mjs';
@@ -59,8 +60,8 @@ try{
  assert.ok(sketchMid.x>canvasBounds.x+canvasBounds.width*.25&&sketchMid.x<canvasBounds.x+canvasBounds.width*.75,'Editing an existing sketch must center the profile, Shapr3D-style');
  let hit=sketchMid;await page.touchscreen.tap(hit.x,hit.y);
  await page.waitForFunction(()=>window.__cad.doc.features.length===3&&!window.__cad.gizmo.busy);
- const parts=await page.evaluate(()=>window.__cad.doc.features.filter(f=>f.params.shape==='polyline').map(f=>f.params.points));
- assert.deepEqual(parts,[[[0,0],[6,0]],[[14,0],[20,0]]]);
+ const parts=await page.evaluate(()=>window.__cad.items.filter(i=>i.featureId===window.__cad.doc.features.at(-1).id).map(i=>i.bounds));
+ assert.equal(parts.length,2);near(parts[0][0][0],0);near(parts[0][1][0],6);near(parts[1][0][0],14);near(parts[1][1][0],20);assert.deepEqual(await page.evaluate(id=>window.__cad.doc.features.find(f=>f.id===id).params.points,line),[[0,0],[20,0]],'Source history stays intact');
  await page.locator('#undo').click();await page.waitForFunction(()=>window.__cad.doc.features.length===2&&!window.__cad.gizmo.busy);
  await page.locator('#redo').click();await page.waitForFunction(()=>window.__cad.doc.features.length===3&&!window.__cad.gizmo.busy);
  await page.keyboard.press('Escape');
@@ -122,20 +123,19 @@ try{
  await op('sketch',{shape:'polyline',points:[[-20,0],[20,0]],closed:false,plane:'XY'});
  await page.getByRole('button',{name:'Trim sketch segment',exact:true}).click();
  hit=await projectSketchPoint(page,[0,10]);await page.touchscreen.tap(hit.x,hit.y);
- await page.waitForFunction(id=>window.__cad.doc.features.find(f=>f.id===id)?.params.shape==='arc'&&!window.__cad.gizmo.busy,circleId);
- let arcItem=await page.evaluate(id=>window.__cad.items.find(i=>i.id===id),circleId);
+ await page.waitForFunction(()=>window.__cad.doc.features.at(-1).type==='sketchTrim'&&!window.__cad.gizmo.busy);
+ let arcItem=await page.evaluate(()=>window.__cad.items.find(i=>i.id===window.__cad.doc.features.at(-1).id));
  assert.equal(arcItem.edgeCount,1);near(arcItem.bounds[0][1],-10);near(arcItem.bounds[1][1],0);
- await page.locator('#undo').click();await page.waitForFunction(id=>window.__cad.doc.features.find(f=>f.id===id)?.params.shape==='circle'&&!window.__cad.gizmo.busy,circleId);
- await page.locator('#redo').click();await page.waitForFunction(id=>window.__cad.doc.features.find(f=>f.id===id)?.params.shape==='arc'&&!window.__cad.gizmo.busy,circleId);
+ await page.locator('#undo').click();await page.waitForFunction(()=>window.__cad.doc.features.length===2&&!window.__cad.gizmo.busy);
+ await page.locator('#redo').click();await page.waitForFunction(()=>window.__cad.doc.features.length===3&&!window.__cad.gizmo.busy);
  await page.locator('#finishSketch').click();await page.waitForFunction(()=>!window.__cad.gizmo.sketchMode);
- await page.reload();await ready();
- assert.equal(await page.evaluate(id=>window.__cad.doc.features.find(f=>f.id===id)?.params.shape,circleId),'arc');
+ await page.reload();await ready();assert.equal(await page.evaluate(()=>window.__cad.doc.features.at(-1).type),'sketchTrim');assert.equal(await page.evaluate(id=>window.__cad.doc.features.find(f=>f.id===id).params.shape,circleId),'circle','Trim never rewrites the source recipe');
  await beginSketch(page,{shape:'polyline'});
  await op('sketch',{shape:'polyline',points:[[0,-20],[0,20]],closed:false,plane:'XY'});
  await page.getByRole('button',{name:'Trim sketch segment',exact:true}).click();
  hit=await projectSketchPoint(page,[Math.SQRT1_2*10,-Math.SQRT1_2*10]);await page.mouse.click(hit.x,hit.y);
- await page.waitForFunction(id=>{const f=window.__cad.doc.features.find(f=>f.id===id);return f?.params.sagitta<5&&!window.__cad.gizmo.busy;},circleId);
- arcItem=await page.evaluate(id=>window.__cad.items.find(i=>i.id===id),circleId);assert.equal(arcItem.edgeCount,1);
+ await page.waitForFunction(()=>window.__cad.doc.features.length===5&&!window.__cad.gizmo.busy);
+ arcItem=await page.evaluate(()=>window.__cad.items.find(i=>i.id===window.__cad.doc.features.at(-1).id));assert.equal(arcItem.edgeCount,1);near(arcItem.bounds[0][0],-10);near(arcItem.bounds[1][0],0);near(arcItem.bounds[0][1],-10);near(arcItem.bounds[1][1],0);
  await page.locator('#finishSketch').click();await page.waitForFunction(()=>!window.__cad.gizmo.sketchMode);
  await page.screenshot({path:path.join(out,'reds-trim-native-arc.png')});
  // Exact overlapping geometry must ask for disambiguation, never trim

@@ -174,3 +174,6 @@ export function offsetSketchPolyline(source,distance,{mode='Chain',edgeIndex=0}=
  shifted.push(lines.at(-1).b);
  return recipe(shifted);
 }
+export function arcPreviewPoints(a,b,sagitta=10){
+ if(dist(a,b)<1e-8)return[a,b];const c=sketchCircularCurve({shape:'arc',points:[a,b],sagitta,closed:false});return Array.from({length:81},(_,i)=>curvePoint(c,i/80));
+}

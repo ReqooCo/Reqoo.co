@@ -1,4 +1,5 @@
-import {Blueprint,Drawing,getOC,cast,Sketch,Wire} from 'replicad';
+import {nativePlanarDrawing} from './curve-trim.js';
+import {Blueprint,Drawing,getOC,cast,Sketch,Wire,Curve2D,Plane,localGC} from 'replicad';
 const near=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1])<1e-5;
 // Preserve analytic curves; joining is endpoint-only, never a tessellated approximation.
 export function joinedOffsetDrawing(drawings){
@@ -16,5 +17,10 @@ export function joinedOffsetDrawing(drawings){
 }
 export function offsetOpenChain(sketch,distance,plane){
  const oc=getOC(),maker=new oc.BRepOffsetAPI_MakeOffset(sketch.wire.wrapped,oc.GeomAbs_JoinType.GeomAbs_Intersection,true);
- try{maker.Perform(-distance,0);if(!maker.IsDone())throw Error('Offset could not create a connected chain');const wire=cast(maker.Shape());if(!(wire instanceof Wire)){wire.delete();throw Error('Offset split the chain');}return new Sketch(wire,{defaultOrigin:plane.origin,defaultDirection:plane.normal});}finally{maker.delete();}
+ try{maker.Perform(-distance,0);if(!maker.IsDone())return offsetSplineWire(sketch,distance,plane);const wire=cast(maker.Shape());if(!(wire instanceof Wire)){wire.delete();throw Error('Offset split the chain');}return new Sketch(wire,{defaultOrigin:plane.origin,defaultDirection:plane.normal});}finally{maker.delete();}
+}
+
+function offsetSplineWire(sketch,distance,plane){
+ const drawing=nativePlanarDrawing(sketch.wire,plane),curves=drawing.blueprint.curves;
+ try{if(curves.length!==1||!['BSPLINE_CURVE','BEZIER_CURVE'].includes(curves[0].geomType))throw Error('Offset could not create a connected chain');const oc=getOC(),[own,free]=localGC();try{const offset=own(new Curve2D(new oc.Geom2d_OffsetCurve(curves[0].wrapped,-distance,true))),adaptor=own(offset.adaptor()),approx=own(new oc.Geom2dConvert_ApproxCurve(own(adaptor.ShallowCopy()),1e-5,oc.GeomAbs_Shape.GeomAbs_C2,200,3)),curve=own(new Curve2D(approx.Curve()));return new Drawing(new Blueprint([curve])).sketchOnPlane(new Plane(plane.origin,plane.x,plane.normal));}finally{free();}}finally{drawing.blueprint.delete();}
 }

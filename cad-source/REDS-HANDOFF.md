@@ -18,6 +18,18 @@
 6. Protect existing CAD data: never delete originals, backups or history; preserve OpenCascade B-Rep and the native `.rqcad` project format.
 7. **Production release is not authorised merely because CI is green.** Admin GitHub ruleset + environment secret/token separation are open in [issue #278](https://github.com/ReqooCo/Reqoo.co/issues/278). Do not merge/deploy until these controls are verified and user approval/release policy is satisfied.
 
+## Work checkpoint — unified native Trim and deep sketch audit (2026-11-07)
+
+- Baseline `9dd0699efaac87ed173fbea3de8956750c456f3f`: exact-head Core/Modeling/Product PASS 42305090178; canonical Draft PASS 42305080892. Owner IMG_1346 reports Arc/Spline mismatch and unsupported curve boundary Trim.
+- Replaced the app's shape-specific Trim dispatch/mutation with one native `sketchTrim` history feature. Original input recipes remain intact. Native finite intersections/parameters/splitting now support line, arc, circle, ellipse, spline, spline self-intersections, and derived/native outlines. Rectangle vertices bound intervals; analytic circle/ellipse seams do not. Coincident selected intervals and ambiguous picks reject, while unrelated overlap does not block an unambiguous edge.
+- Native planar curves are read through OpenCascade p-curves in the sketch frame, preserving analytic, B-spline/rational and offset-curve geometry. This fixed the additional Ellipse → Offset → Trim failure found during the audit. Original constraints and upstream source history remain, rather than being erased.
+- Arc now previews the curved native geometry and exposes editable attached height. Spline preview uses the same native fitted curve as commit in the worker, with one running/latest pending request, session invalidation, no project payload, and explicit native resource disposal. Canvas long-press text callouts suppressed; inputs remain editable.
+- Fixed serialized drawings bypassing later operations. Trimmed open curves can enter Offset; standalone spline fallback fits an OpenCascade offset curve to a B-spline at 0.00001 mm tolerance. Native Trim SVG and line/circular-arc DXF export preserve the existing export path; spline/ellipse DXF remains explicit unsupported.
+- Local PASS: production build; 25 sampled target/boundary pairs; principal planes; looping spline; derived/projected targets; vertex/source immutability/coincidence checks; minor/major Arc preview; Spline→Trim→Offset (1 mm distance samples); Rectangle/Circle/Ellipse/Spline/Arc→Offset→Trim; native exports; complete expanded sketch browser suite including touch, native preview, height editing, native curve types, Undo/Redo/reopen/offset eligibility; full CAD/Product/file UX browser suites; native sketch/IO/constraint suites and whitespace check.
+- Full source/research findings and remaining work: `REDS-SKETCH-DEEP-AUDIT.md`. This is not all-tool/Shapr3D parity. Three-point Arc/direct bulge and spline Control Point/direct handles remain; normalized references after upstream geometry changes, constraints/closure policy, dense selection, export coverage and physical iPad profiling remain incomplete.
+- Fresh exact-head Core/Modeling/Product and canonical Draft identity/browser runs required after this commit. No Live changes; #278 lock retained.
+- Next: retrieve fresh CI/Draft outcomes, fix failures, then continue the explicit remaining items in the audit without claiming all tools complete.
+
 ## Work checkpoint — multi-profile Offset and snapping lag (2026-11-07)
 
 - Baseline Draft/PR #277 `ddd9e07ebda02a5ccb779532b99181bcaf7e149b`: Core/Modeling/Product PASS 42300023496; full canonical Draft PASS 42300018226. Owner IMG_1343/1344 reports multiple Offset unavailable, arc showing zero selected and lag.

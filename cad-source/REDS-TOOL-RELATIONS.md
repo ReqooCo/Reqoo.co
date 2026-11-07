@@ -16,7 +16,7 @@ Switching to an edit state clears old snap feedback, hides drawing start/rectang
 
 ## Verified boundaries, not parity claims
 
-- Trim edits source `sketch` polyline, rectangle, circle and arc recipes. Derived Offset/Profile, rounded recipes, ellipse and spline editing are incomplete. Do not advertise arbitrary Trim chains across those results.
+- Trim now records a native source-preserving history operation for all planar curve types, including spline/ellipse boundaries and derived/native outlines. The 25-pair sample matrix and browser regressions cover the reported curve failures; normalized references after upstream size edits and all possible topologies remain incomplete.
 - Offset Chain now joins endpoint-connected source curves across multiple profiles on the same plane, including analytic lines/arcs. Disconnected selected profiles offset as separate groups in one history transaction. Branching/ambiguous chains reject rather than guess. Closed derived native chains can be offset repeatedly.
 - Linked planar face projection follows upstream native geometry; arbitrary editable linked projection remains incomplete.
 - Trim rejects dependencies or constraints when it cannot preserve them. No silent destructive recovery.
