@@ -18,6 +18,12 @@
 6. Protect existing CAD data: never delete originals, backups or history; preserve OpenCascade B-Rep and the native `.rqcad` project format.
 7. **Production release is not authorised merely because CI is green.** Admin GitHub ruleset + environment secret/token separation are open in [issue #278](https://github.com/ReqooCo/Reqoo.co/issues/278). Do not merge/deploy until these controls are verified and user approval/release policy is satisfied.
 
+## Work checkpoint — curve editor plane ownership (2026-11-07)
+
+- Arc/Spline commit `5cf2c77930c7322ef34d7b5272b963f1acd82bcd` passed exact-head Core/Modeling/Product (42365353176). During final review, changing a source curve's plane in History exposed an existing shared-gizmo precedence bug: selected-item plane could override the explicit edited sketch plane.
+- Explicit XY/XZ/YZ recipe planes now own source Sketch gizmos; selected-item/face frames remain fallbacks where a recipe has no explicit plane. An explicit custom basis keeps priority. This aligns numeric arrows and free planar point drags with the actual native preview after a plane change.
+- Regression checks conflicting XY selected-item versus XZ recipe, translated point origin and Y-to-world-Z direction, plus real curve-editor plane selection/visible arrow normal before Cancel and subsequent point/bulge editing. Source fingerprint `c3dd0013522ebe36`; fresh exact-head matrix and canonical Draft browser/source verification required after this small follow-up. No Live changes or gate exceptions.
+
 ## Work checkpoint — direct curve points and native Arc/Spline modes (2026-11-07)
 
 - Started from verified `1eaebb5030f29d164803c602d395b1187ec32ba4` (matrix 42351702173 and canonical deployed Draft 42351696353 both passed). Reconciled concurrent Draft commits through `4411ca4d632418274964736e33d78a3dab81db6d`; retained snap-coordinate indexing and compact left selection dock/Undo clearance. No competing branch, deployment or PR.

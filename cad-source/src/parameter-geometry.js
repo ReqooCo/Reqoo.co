@@ -4,7 +4,8 @@ export const axisVector=axis=>axis==='X'?[1,0,0]:axis==='Y'?[0,1,0]:[0,0,1];
 export function parameterGeometry(type,key,p={},context={}){
  const item=context.items?.[0],ref=context.refs?.find(r=>r.kind==='face'),face=item?.faceInfo?.find(f=>f.index===ref?.index),centre=item?.bounds?item.bounds[0].map((v,i)=>(v+item.bounds[1][i])/2):[0,0,0];
  const plane=p.plane||'XY',pn=plane==='XZ'?[0,-1,0]:plane==='YZ'?[1,0,0]:[0,0,1],px=plane==='YZ'?[0,1,0]:[1,0,0];
- const frame=p.basis||item?.sketchPlane||(face?{origin:face.center,x:Math.abs(face.normal[0])<.9?[1,0,0]:[0,1,0],normal:face.normal}:{origin:mul(pn,num(p.offset)),x:px,normal:pn});
+ const recipePlane={origin:mul(pn,num(p.offset)),x:px,normal:pn};
+ const frame=p.basis||((type==='sketch'||type.startsWith('sketch'))&&['XY','XZ','YZ'].includes(p.plane)?recipePlane:null)||item?.sketchPlane||(face?{origin:face.center,x:Math.abs(face.normal[0])<.9?[1,0,0]:[0,1,0],normal:face.normal}:{origin:mul(pn,num(p.offset)),x:px,normal:pn});
  const n=norm(frame.normal),dot=frame.x.reduce((s,v,i)=>s+v*n[i],0),x=norm(frame.x.map((v,i)=>v-dot*n[i])),y=norm(cross(n,x)),world=q=>add(frame.origin,add(mul(x,q[0]),mul(y,q[1])));
  let origin=[...centre],direction=[1,0,0],coefficient=1,kind='linear',unit='mm';
  const k=key.replace(/^p-/,''),point=/^point:(\d+):([xy])$/.exec(k),segment=/^segment:(\d+):length$/.exec(k);
