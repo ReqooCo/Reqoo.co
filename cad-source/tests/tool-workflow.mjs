@@ -11,3 +11,17 @@ console.log('TOOL WORKFLOW PASS: every native tool has an entry contract; mixed/
 
 assert.deepEqual(promoteBodySelection([ref('b','body'),ref('c','face',1)],'c'),[ref('b','body'),ref('c','body')]);
 assert.deepEqual(promoteBodySelection([ref('b','body')],'b'),[ref('b','body')]);
+
+
+import {resolveReference,descriptorDistance} from '../src/topology.js';
+// Sprint 1 dependency contracts: no silent reassignment of a face after upstream edits.
+const plane=(center,normal=[0,0,1])=>({kind:'face',type:'PLANE',center,normal,measure:100,loops:1});
+const original=plane([.5,.5,0]),reordered=[plane([.9,.5,0]),plane([.5,.5,0])];
+assert.equal(resolveReference(original,reordered,0),1,'Face reference must survive index reordering');
+assert.throws(()=>resolveReference(original,[plane([.5,.5,0]),plane([.5,.5,0])],0),/ambiguous/,'Identical candidate faces must not be chosen arbitrarily');
+assert.throws(()=>resolveReference(original,[plane([.5,.5,0],[0,0,-1])],0),/ambiguous/,'Opposite-facing geometry must not be matched');
+assert.throws(()=>resolveReference(original,[],0),/ambiguous/,'Missing geometry must not silently bind');
+assert.equal(descriptorDistance(original,{...original,kind:'edge'}),Infinity,'Cross-domain reference must be rejected');
+assert.equal(toolSelectionError('union',[ref('b','body'),ref('b','body')],items,doc)!=='',true,'Boolean requires two unique bodies');
+assert.equal(toolSelectionError('union',[ref('b','body'),ref('c','body')],items,doc),'','Boolean accepts two distinct bodies');
+console.log('DEPENDENCY CONTRACT PASS: topology reorder/ambiguity/missing/opposite normals and unique-body Boolean selection');
