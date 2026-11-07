@@ -4,8 +4,8 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
 const root=fileURLToPath(new URL('.',import.meta.url));
-const sources=fs.readdirSync(path.join(root,'src')).filter(n=>/\.(js|css)$/.test(n)).sort();
-const sourceHash=createHash('sha256').update(sources.map(n=>n+'\n'+fs.readFileSync(path.join(root,'src',n),'utf8')).join('\n')).update(fs.readFileSync(path.join(root,'package-lock.json'))).update(fs.readFileSync(path.join(root,'vite.config.js'))).update(fs.readFileSync(path.join(root,'package.json'))).update(fs.readFileSync(path.join(root,'index.html'))).digest('hex').slice(0,16);
+const sources=fs.readdirSync(path.join(root,'src'),{recursive:true}).map(n=>n.split(path.sep).join('/')).filter(n=>/\.(js|css|ttf)$/.test(n)).sort();
+const sourceHash=createHash('sha256').update(Buffer.concat(sources.flatMap(n=>[Buffer.from(n+'\n'),fs.readFileSync(path.join(root,'src',n)),Buffer.from('\n')]))).update(fs.readFileSync(path.join(root,'package-lock.json'))).update(fs.readFileSync(path.join(root,'vite.config.js'))).update(fs.readFileSync(path.join(root,'package.json'))).update(fs.readFileSync(path.join(root,'index.html'))).digest('hex').slice(0,16);
 export default defineConfig({
  server:{allowedHosts:['terminal.local']},
  base:'/cad/',worker:{format:'es'},define:{__CAD_BUILD__:JSON.stringify(sourceHash)},

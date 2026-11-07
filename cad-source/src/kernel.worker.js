@@ -1,3 +1,6 @@
+import sketchFontURL from './assets/DejaVuSans-Latin.ttf?url';
+import {setSketchFontLoader} from './text-font.js';
+setSketchFontLoader(async()=>{const response=await fetch(sketchFontURL);if(!response.ok)throw Error('Sketch text font could not load');return response.arrayBuffer();});
 import opencascade from 'replicad-opencascadejs';
 import wasmURL from 'replicad-opencascadejs/wasm?url';
 import {setOC,Plane} from 'replicad';

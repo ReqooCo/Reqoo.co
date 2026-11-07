@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import init from 'replicad-opencascadejs';
@@ -42,3 +43,34 @@ for(const recipe of [{shape:'rectangle',width:20,height:12},{shape:'circle',radi
  const features=[f('source',recipe),{id:'offset',type:'sketchOffset',params:{distance:1,mode:'Chain',keepInputs:true},inputs:['source']}];m=await buildModel({format:'reqoo-cad',version:1,features});const sourceRecipe=m.profiles.get('offset'),drawing=sourceRecipe.nativeSketch?nativePlanarDrawing(m.shapes.get('offset'),sourceRecipe.basis||{origin:[0,0,0],x:[1,0,0],normal:[0,0,1]}):profile(sourceRecipe),curve=drawing.blueprint.curves[0],p=curve.value(curve.firstParameter+.37*(curve.lastParameter-curve.firstParameter));m.release();features.push(f('wall',{shape:'polyline',points:[[0,-30],[0,30]],closed:false}),{id:'trim',type:'sketchTrim',params:{point:p,tolerance:.05},inputs:['offset','wall']});m=await buildModel({format:'reqoo-cad',version:1,features});m.release();
 }
 console.log('PASS Rectangle/Circle/Ellipse/Spline/Arc → Offset → native Trim');
+
+// Exact geometry from the reported four-stage circle/Offset Trim failure.
+const repeated=JSON.parse(fs.readFileSync(new URL('./fixtures/trim-offset-circles.json',import.meta.url),'utf8'));
+m=await buildModel(repeated);const visible=m.items.filter(i=>i.kind==='sketch');let checked=0;
+const drawing=id=>{const r=m.profiles.get(id);return r.nativeSketch?nativePlanarDrawing(m.shapes.get(id),r.basis):profile(r);};
+for(const item of visible){
+ const source=drawing(item.id),boundaries=visible.filter(i=>i.id!==item.id).map(i=>drawing(i.id)),original=source.serialize();
+ for(const c of source.blueprint.curves)for(const q of [.05,.2,.4,.6,.8,.95]){
+  const p=c.value(c.firstParameter+q*(c.lastParameter-c.firstParameter)),remaining=trimDrawing(source,boundaries,p,.01);
+  assert.ok(remaining.length,'Trimming a finite arc retains the rest of the wire');
+  assert.equal(source.serialize(),original,'Repeated Trim preserves source curves');
+  for(const r of remaining)assert.ok(R.deserializeDrawing(r.serializedDrawing).blueprint.curves.every(c=>c.geomType==='CIRCLE'));
+  checked++;
+ }
+}
+m.release();assert.equal(checked,96);
+// Follow the real saved history with another native Trim and reopen it.
+const target=[41.39407134104093,15.816721727077539],extended=structuredClone(repeated);
+extended.features.push({id:'repeat-cut',type:'sketchTrim',params:{point:target,tolerance:.01},inputs:['f5','f6','f7','f8']});
+m=await buildModel(extended);const expected=JSON.stringify(m.items.map(i=>[i.id,i.bounds,i.edges.map(e=>[e.type,e.length])]));assert.ok(m.items.filter(i=>i.featureId==='repeat-cut').every(i=>i.edges.every(e=>e.type==='CIRCLE')));m.release();
+m=await buildModel(JSON.parse(JSON.stringify(extended)));assert.equal(JSON.stringify(m.items.map(i=>[i.id,i.bounds,i.edges.map(e=>[e.type,e.length])])),expected);m.release();
+// Same-support arcs with a shared endpoint are contacts, not overlaps.
+for(const shape of [{shape:'circle',radius:10},{shape:'ellipse',width:24,height:12}]){
+ const d=profile(shape),cs=d.blueprint.curves,oc=R.getOC(),c=cs[0],mid=(c.firstParameter+c.lastParameter)/2;
+ const a=new R.Drawing(new R.Blueprint([new R.Curve2D(new oc.Geom2d_TrimmedCurve(c.wrapped,c.firstParameter,mid,true,true))])),b=new R.Drawing(new R.Blueprint([new R.Curve2D(new oc.Geom2d_TrimmedCurve(c.wrapped,mid,c.lastParameter,true,true))]));
+ assert.equal(trimDrawing(a,[b],c.value((c.firstParameter+mid)/2),.0001).length,0,'An endpoint contact must not fail');
+ assert.throws(()=>trimDrawing(a,[a],c.value((c.firstParameter+mid)/2),.0001),/Coincident/,'Genuine finite overlap remains blocked');
+}
+console.log('PASS reported repeated Offset/circle Trim: 96 native arc picks, exact curve retention, further Trim/reopen, circle/ellipse endpoint contacts and true overlap rejection');
+
+await import('./sketch-tools.mjs');

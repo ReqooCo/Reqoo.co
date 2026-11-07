@@ -5,9 +5,11 @@ export function createWorldReference({THREE,scene,camera,stage}){
  const group=new THREE.Group();group.name='World origin and axes';scene.add(group);
  const axes=new THREE.AxesHelper(1);group.add(axes);
  axes.material.depthTest=false;axes.material.transparent=true;axes.material.opacity=.8;axes.renderOrder=8;
+ const longGeometry=new THREE.BufferGeometry();longGeometry.setAttribute('position',new THREE.Float32BufferAttribute([-1,0,0,1,0,0,0,-1,0,0,1,0,0,0,-1,0,0,1],3));longGeometry.setAttribute('color',new THREE.Float32BufferAttribute([.98,.25,.25,.98,.25,.25,.15,.75,.4,.15,.75,.4,.22,.5,.95,.22,.5,.95],3));
+ const longAxes=new THREE.LineSegments(longGeometry,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.38,depthTest:false,depthWrite:false}));longAxes.name='Extended world axes';longAxes.renderOrder=7;group.add(longAxes);
  const dot=new THREE.Mesh(new THREE.SphereGeometry(1,12,8),new THREE.MeshBasicMaterial({color:0xffffff,depthTest:false}));dot.renderOrder=9;group.add(dot);
  const labels=document.createElement('div');labels.id='worldReference';labels.innerHTML='<span data-origin>0, 0, 0</span><span data-axis="X">X</span><span data-axis="Y">Y</span><span data-axis="Z">Z</span>';stage.append(labels);
- function update(){const r=stage.getBoundingClientRect(),unit=(camera.top-camera.bottom)/camera.zoom/r.height,length=unit*76;axes.scale.setScalar(length);dot.scale.setScalar(unit*2.5);
+ function update(){const r=stage.getBoundingClientRect(),unit=(camera.top-camera.bottom)/camera.zoom/r.height,length=unit*76;axes.scale.setScalar(length);longAxes.scale.setScalar(Math.max(unit*Math.hypot(r.width,r.height)*2,camera.position.length()*2));dot.scale.setScalar(unit*2.5);
   const screenOrigin=new THREE.Vector3(0,0,0).project(camera);
   for(const [i,el]of [...labels.children].entries()){const p=new THREE.Vector3(...(i===0?[0,0,0]:i===1?[length,0,0]:i===2?[0,length,0]:[0,0,length])).project(camera);el.hidden=Math.abs(p.x)>1||Math.abs(p.y)>1||Math.abs(p.z)>1||i>0&&Math.hypot((p.x-screenOrigin.x)*r.width/2,(p.y-screenOrigin.y)*r.height/2)<14;el.style.left=((p.x+1)*r.width/2+6)+'px';el.style.top=((1-p.y)*r.height/2+5)+'px';}
  }

@@ -387,3 +387,36 @@ body.cadWorkspace #snapGuides circle{stroke-width:1.5;filter:none;}
 @media(max-width:760px){
  body.cadWorkspace #stage[data-workspace=sketch] #quickSketchTools{max-height:calc(100% - 330px);}
 }
+
+/* Sketch operation options live in the existing task strip. The only numeric
+   editor and confirm/cancel controls follow the geometry-owned drag handle. */
+body.cadWorkspace #sketchBar .operationActions[data-compact=true]{position:static;inset:auto;display:flex;flex-flow:row nowrap;align-items:center;gap:5px;width:auto;max-height:none;padding:0;border:0;background:none;box-shadow:none;overflow:visible;pointer-events:auto;}
+body.cadWorkspace #sketchBar .operationActions[data-compact=true]>strong,
+body.cadWorkspace #sketchBar .operationActions[data-compact=true]>output,
+body.cadWorkspace #sketchBar .operationActions[data-compact=true]>[data-fit],
+body.cadWorkspace #sketchBar .operationActions[data-compact=true]>[data-commands]{display:none;}
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] [data-choices]{display:flex;width:auto;max-width:none;padding:0;gap:4px;}
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] .operationChoice{display:flex;gap:3px;}
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] .operationChoice>div{display:flex;gap:3px;}
+body.cadWorkspace #operationGizmo[data-compact=true] [data-badges]{display:none;}
+body.cadWorkspace #operationGizmo[data-compact=true] .operationValue{gap:3px;padding:3px 5px;max-width:250px;}
+body.cadWorkspace #operationGizmo[data-compact=true] .operationValue input{width:62px;}
+body.cadWorkspace #operationGizmo[data-compact=true] .operationValue button{width:32px;min-width:32px;min-height:34px;padding:5px;}
+body.cadWorkspace #operationGizmo[data-compact=true] .operationValue button svg{width:18px;height:18px;}
+body.cadWorkspace #operationGizmo .operationDrag svg{width:26px;height:26px;vertical-align:middle;}
+body.cadWorkspace #sketchBar:has(.operationActions[data-compact=true])>strong{display:none;}
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] [aria-pressed=true]{border-color:var(--blue);background:#337eaa25;}
+
+body.cadWorkspace #operationGizmo[data-compact=true] [data-parameter-select]{font-size:11px;max-width:95px;padding:4px;min-height:34px;}
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] input[type=text]{width:130px;min-width:70px;min-height:34px;font-size:16px;padding:3px 7px;}
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] select{max-width:115px;font-size:12px;min-height:34px;}
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] [data-choices]{max-width:240px;overflow-x:auto;}
+@media(max-width:760px){body.cadWorkspace #sketchBar .operationActions[data-compact=true] [data-choices]{max-width:135px;}}
+
+body.cadWorkspace #sketchMoreTools{position:absolute;left:74px;z-index:65;display:flex;flex-direction:column;gap:3px;min-width:160px;max-height:calc(100% - 190px);overflow:auto;padding:5px;background:var(--panel);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px #0003;}
+body.cadWorkspace #sketchMoreTools[hidden]{display:none;}
+body.cadWorkspace #sketchMoreTools button{display:flex;align-items:center;gap:8px;min-height:39px;padding:7px 10px;font-size:12px;text-align:left;border-radius:7px;}
+body.cadWorkspace #sketchMoreTools svg{width:20px;height:20px;}
+@media(max-width:760px){body.cadWorkspace #sketchMoreTools{left:60px;min-width:150px;}}
+
+body.cadWorkspace footer{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}

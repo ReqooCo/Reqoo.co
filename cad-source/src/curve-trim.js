@@ -9,10 +9,36 @@ function paramsAt(curve,point){
  try{for(let i=1;i<=projector.NbPoints();i++)if(projector.Distance(i)<EPS*5){const t=projector.Parameter(i);if(t>=curve.firstParameter-EPS&&t<=curve.lastParameter+EPS&&!out.some(v=>Math.abs(v-t)<EPS))out.push(t);}}finally{projector.delete();p.delete();}
  return out;
 }
+// Adjacent conic arcs can produce an OC tangency segment with zero length.
+// Segment() cannot construct that curve. Resolve equal analytic supports in
+// their finite parameter domains before invoking the general intersector.
+function sameConic(a,b){
+ const kind=a.geomType;if(!['CIRCLE','ELLIPSE'].includes(kind)||kind!==b.geomType)return false;
+ const owned=[],keep=v=>(owned.push(v),v);
+ try{
+  const aa=keep(a.adaptor()),bb=keep(b.adaptor()),ca=keep(kind==='CIRCLE'?aa.Circle():aa.Ellipse()),cb=keep(kind==='CIRCLE'?bb.Circle():bb.Ellipse()),pa=keep(ca.Location()),pb=keep(cb.Location());
+  if(Math.hypot(pa.X()-pb.X(),pa.Y()-pb.Y())>EPS)return false;
+  if(kind==='CIRCLE')return Math.abs(ca.Radius()-cb.Radius())<EPS;
+  if(Math.abs(ca.MajorRadius()-cb.MajorRadius())>EPS||Math.abs(ca.MinorRadius()-cb.MinorRadius())>EPS)return false;
+  if(Math.abs(ca.MajorRadius()-ca.MinorRadius())<EPS)return true;
+  const xa=keep(ca.XAxis()),xb=keep(cb.XAxis()),da=keep(xa.Direction()),db=keep(xb.Direction());
+  return Math.abs(da.X()*db.Y()-da.Y()*db.X())<1e-10;
+ }finally{for(const v of owned.reverse())v.delete();}
+}
+function conicContacts(a,b,point,tolerance){
+ const first=a.firstParameter,last=a.lastParameter,parameters=[first,last,...paramsAt(a,b.firstPoint),...paramsAt(a,b.lastPoint)].sort((x,y)=>x-y).filter((t,i,ts)=>!i||Math.abs(t-ts[i-1])>1e-10),points=[];
+ for(const t of parameters){const p=a.value(t);if(paramsAt(b,p).length)points.push(p);}
+ for(let i=1;i<parameters.length;i++){
+  const lo=parameters[i-1],hi=parameters[i];if(!paramsAt(b,a.value((lo+hi)/2)).length)continue;
+  const c=new R.Curve2D(new (R.getOC()).Geom2d_TrimmedCurve(a.wrapped,lo,hi,true,true));
+  try{if((!near(c.firstPoint,c.lastPoint)||!near(c.firstPoint,c.value((lo+hi)/2)))&&c.distanceFrom(point)<=tolerance)throw Error('Coincident sketch boundaries overlap; isolate the intended curve');points.push(c.firstPoint,c.lastPoint);}finally{c.delete();}
+ }
+ return points;
+}
 export function trimDrawing(source,boundaries,point,tolerance=.1){
  if(!Array.isArray(point)||point.length!==2||!point.every(Number.isFinite)||!(tolerance>0))throw Error('Invalid Trim point');
  const curves=drawingCurves(source),others=boundaries.flatMap(drawingCurves),owned=new Set([...curves,...others]),cuts=curves.map(()=>[]),stops=[];
- const intersection=(a,b,self=false)=>{if(!self&&a.boundingBox.isOut(b.boundingBox))return[];const inter=new (R.getOC()).Geom2dAPI_InterCurveCurve();try{if(self)inter.Init(a.wrapped,1e-8);else inter.Init(a.wrapped,b.wrapped,1e-8);const points=[];if(!self)for(let k=1;k<=inter.NbSegments();k++){const segment=inter.Segment(k),c=new R.Curve2D(segment.Curve1);try{if(!near(c.firstPoint,c.lastPoint)){if(c.distanceFrom(point)<=tolerance)throw Error('Coincident sketch boundaries overlap; isolate the intended curve');points.push(c.firstPoint,c.lastPoint);}else points.push(c.firstPoint);}finally{c.delete();segment.Curve2.delete();}}for(let i=1;i<=inter.NbPoints();i++){const p=inter.Point(i);points.push([p.X(),p.Y()]);p.delete();}return points;}finally{inter.delete();}};
+ const intersection=(a,b,self=false)=>{if(!self&&a.boundingBox.isOut(b.boundingBox))return[];if(!self&&sameConic(a,b))return conicContacts(a,b,point,tolerance);const inter=new (R.getOC()).Geom2dAPI_InterCurveCurve();try{if(self)inter.Init(a.wrapped,1e-8);else inter.Init(a.wrapped,b.wrapped,1e-8);const points=[];if(!self)for(let k=1;k<=inter.NbSegments();k++){const segment=inter.Segment(k),c=new R.Curve2D(segment.Curve1);try{if(!near(c.firstPoint,c.lastPoint)){if(c.distanceFrom(point)<=tolerance)throw Error('Coincident sketch boundaries overlap; isolate the intended curve');points.push(c.firstPoint,c.lastPoint);}else points.push(c.firstPoint);}finally{c.delete();segment.Curve2.delete();}}for(let i=1;i<=inter.NbPoints();i++){const p=inter.Point(i);points.push([p.X(),p.Y()]);p.delete();}return points;}finally{inter.delete();}};
  let phase='curve intersections';
  try{
   // Native vertices bound a segment. Only the artificial seam in a complete
