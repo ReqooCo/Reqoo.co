@@ -47,7 +47,10 @@ export function cutThread(body,face,p){
   // Try four-pitch spans to reduce expensive native Boolean calls; retain the same
   // phase-aligned helix and validate every resulting B-rep before proceeding.
   result=body;const step=4*d.pitch;
-  for(let offset=0;offset<d.length-1e-8;offset+=step){const length=Math.min(step,d.length-offset),prior=volume(result),next=cutSpan(result,d.start+offset,length,offset===0,offset+length>=d.length-1e-8);if(!valid(next,prior,length))throw Error('Thread could not create valid helical flanks on this cylinder');result=next;}
+  // Reuse the validated stock volume between spans instead of recalculating
+  // B-rep mass properties on an increasingly complex threaded solid.
+  let prior=before;
+  for(let offset=0;offset<d.length-1e-8;offset+=step){const length=Math.min(step,d.length-offset),next=cutSpan(result,d.start+offset,length,offset===0,offset+length>=d.length-1e-8);if(!valid(next,prior,length))throw Error('Thread could not create valid helical flanks on this cylinder');prior=volume(next);result=next;}
   return result.clone();
  }finally{console.info('[REDS Thread] total',JSON.stringify({length:d.length,pitch:d.pitch,spans:spanCount,prepMs:prepMsTotal,booleanMs:booleanMsTotal,totalMs:Math.round(performance.now()-totalStarted)}));for(const s of temps.reverse())try{s.delete();}catch{}}
 }
