@@ -16,7 +16,7 @@ export function cutThread(body,face,p){
  const spec=threadDimensions(p,c),reverse=c.axis.find(v=>Math.abs(v)>1e-8)<0,axis=reverse?c.axis.map(v=>-v):c.axis,d={...spec,start:reverse?-spec.start-spec.length:spec.start},temps=[],keep=s=>(temps.push(s),s),eps=Math.max(.03,d.pitch*.03),root=d.minor/2,major=d.diameter/2;
  const totalStarted=performance.now();let spanCount=0,booleanMsTotal=0,prepMsTotal=0;
  const volume=shape=>{const m=R.measureShapeVolumeProperties(shape);try{return Math.abs(m.volume);}finally{m.delete();}};
- const validatedVolume=(shape,before,span=d.length)=>{const check=new (R.getOC().BRepCheck_Analyzer)(shape.wrapped,true);try{const v=volume(shape);return R.isShape3D(shape)&&check.IsValid()&&v>1e-8&&v<before-Math.max(1e-7,Math.min(before*.001,root*d.depth*span*.02))?v:null;}finally{check.delete();}};
+ const validatedVolume=(shape,before,span=d.length)=>{const started=performance.now(),check=new (R.getOC().BRepCheck_Analyzer)(shape.wrapped,true);try{const measuredAt=performance.now(),v=volume(shape),volumeMs=Math.round(performance.now()-measuredAt),is3D=R.isShape3D(shape),validShape=check.IsValid();console.info('[REDS Thread] validation',JSON.stringify({span,analyzerSetupMs:Math.round(measuredAt-started),volumeMs,validityMs:Math.round(performance.now()-measuredAt)-volumeMs,is3D,validShape}));return is3D&&validShape&&v>1e-8&&v<before-Math.max(1e-7,Math.min(before*.001,root*d.depth*span*.02))?v:null;}finally{check.delete();}};
  function cutSpan(stock,start,length,first=true,last=true){
   const started=performance.now();let phase='profile';
   try{
