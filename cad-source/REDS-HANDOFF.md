@@ -18,6 +18,12 @@
 6. Protect existing CAD data: never delete originals, backups or history; preserve OpenCascade B-Rep and the native `.rqcad` project format.
 7. **Production release is not authorised merely because CI is green.** Admin GitHub ruleset + environment secret/token separation are open in [issue #278](https://github.com/ReqooCo/Reqoo.co/issues/278). Do not merge/deploy until these controls are verified and user approval/release policy is satisfied.
 
+## Work checkpoint — native-preview readiness synchronisation (2026-11-07)
+
+- Full CAD suite passed after compact constraint repair, including constrained polyline solve/extrude/conflict preservation and phone controls. Published repair as `4b74cfdc4f9e0a2539387354743f4ca5b5a5020e`.
+- Canonical deployed Draft run 42351480577 found an asynchronous readiness race: native Offset preview was valid before the next animation frame updated the visible Apply button. Shared gizmo now refreshes the visible state immediately on native completion (same session/epoch only). The browser test waits for both native validity and the actual enabled Apply control before asserting eligibility and committing the native Offset. No geometry check or operation was removed.
+- Fresh sourceHash `9aaa5392dcec5f4e`. Focused curve-system/Offset and generic gizmo browser tests precede push; final exact-head Core/Modeling/Product plus canonical Draft browser verification remain mandatory. Record final outcomes in PR #277. Live unchanged; #278 lock retained.
+
 ## Work checkpoint — compact polyline constraint selection (2026-11-07)
 
 - Published preceding work as `5e3b3bd570c7bae5e9b0daa104a5b4a175f03b8d`. Exact-head Core and Product passed in 42350791820. Modeling caught a genuine regression in the test adapter: compact parameter selection tried to select a checkbox key (`lock:0`) in the numeric dropdown, so the full CAD constraint flow timed out.
