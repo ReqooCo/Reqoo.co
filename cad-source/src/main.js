@@ -172,7 +172,7 @@ function formFields(type,p){
  if(type==='revolve')return[select('axis','Axis',['X','Y','Z'],'Z'),f('angle','Angle (°)',360)];
  if(type==='sweep')return[f('radius','Round profile radius (mm)',3)];
  if(type==='fillet'||type==='chamfer')return[f('radius',type==='fillet'?'Radius (mm)':'Distance (mm)',2),field('allEdges','All edges',p.allEdges??!(p.edges?.length||selection.some(s=>s.kind==='edge')),'checkbox')];
- if(type==='thread')return[field('size','Metric size',p.size,'select',[...METRIC_THREADS.map(s=>s.name),'Custom']),field('diameter','Nominal diameter (mm)',p.diameter),field('pitch','Pitch (mm) · coarse / fine / custom',p.pitch),select('kind','Thread type',['External','Internal'],p.kind),field('length','Thread length (mm)',p.length),field('offset','Start offset (mm)',p.offset??0),select('end','Measure from cylinder end',['End','Start'],p.end??'End'),select('hand','Handedness',['Right','Left'],p.hand??'Right')];
+ if(type==='thread')return[select('mode','Geometry',['Cosmetic','Modeled'],p.mode??'Cosmetic'),field('size','Metric size',p.size,'select',[...METRIC_THREADS.map(s=>s.name),'Custom']),field('diameter','Nominal diameter (mm)',p.diameter),field('pitch','Pitch (mm) · coarse / fine / custom',p.pitch),select('kind','Thread type',['External','Internal'],p.kind),field('length','Thread length (mm)',p.length),field('offset','Start offset (mm)',p.offset??0),select('end','Measure from cylinder end',['End','Start'],p.end??'End'),select('hand','Handedness',['Right','Left'],p.hand??'Right')];
  if(type==='shell')return[f('thickness','Wall thickness (mm)',2)];
  if(type==='draft')return[f('angle','Draft angle (°)',5),select('plane','Neutral plane',['XY','XZ','YZ'],'XY'),f('offset','Neutral offset (mm)',0)];
  if(type==='offsetFace')return[f('distance','Distance (mm)',5)];
@@ -237,7 +237,7 @@ function startTool(type,initial={},editId=null){
  if(type==='thread'){
   direct.cancel();const ref=selection.at(-1),stock=old?.params.threadStock||selectedItem()?.faceInfo.find(f=>ref?.kind==='face'&&f.index===ref.index)?.cylinder;
   if(!stock?.full){activeTool=null;status('Select a complete cylindrical side face, then apply Thread');return;}
-  if(!old)Object.assign(p,autoThread(stock,preferences),{threadStock:stock,threadTarget:ref.id,face:ref.index,faceRef:selectedItem().faceInfo.find(f=>f.index===ref.index).reference},initial);
+  if(!old)Object.assign(p,autoThread(stock,preferences),{mode:'Cosmetic',threadStock:stock,threadTarget:ref.id,face:ref.index,faceRef:selectedItem().faceInfo.find(f=>f.index===ref.index).reference},initial);
  }
  const workingInputs=[...(old?.inputs||selectedIds())],workingRefs=selection.map(r=>structuredClone(r));
  const fields=formFields(type,p),panel=$('toolPanel');
