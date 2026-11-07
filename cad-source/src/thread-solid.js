@@ -17,18 +17,21 @@ export function cutThread(body,face,p){
  const volume=shape=>{const m=R.measureShapeVolumeProperties(shape);try{return Math.abs(m.volume);}finally{m.delete();}};
  const valid=(shape,before,span=d.length)=>{const check=new (R.getOC().BRepCheck_Analyzer)(shape.wrapped,true);try{const v=volume(shape);return R.isShape3D(shape)&&check.IsValid()&&v>1e-8&&v<before-Math.max(1e-7,Math.min(before*.001,root*d.depth*span*.02));}finally{check.delete();}};
  function cutSpan(stock,start,length,first=true,last=true){
+  const started=performance.now();let phase='profile';
+  try{
   const z=start-d.pitch,r=d.internal?root-eps:root,outer=d.internal?major:major+eps,innerWidth=d.internal?.75*d.pitch+2*eps/Math.sqrt(3):d.pitch/4,outerWidth=d.internal?d.pitch/8:.875*d.pitch+2*eps/Math.sqrt(3);
   const plane=keep(new R.Plane([0,0,z],[1,0,0],[0,-1,0]));
   const sk=keep(R.draw([r,-innerWidth/2]).lineTo([outer,-outerWidth/2]).lineTo([outer,outerWidth/2]).lineTo([r,innerWidth/2]).close().sketchOnPlane(plane));
-  const helix=keep(R.makeHelix(d.pitch,length+2*d.pitch,r,[0,0,z],[0,0,1],d.left));
-  let cutter=keep(R.genericSweep(sk.wire,helix,{frenet:true,forceProfileSpineOthogonality:false}));cutter=keep(cutter.rotate(17,[0,0,0],'Z'));
+  phase='helix';const helix=keep(R.makeHelix(d.pitch,length+2*d.pitch,r,[0,0,z],[0,0,1],d.left));
+  phase='sweep';let cutter=keep(R.genericSweep(sk.wire,helix,{frenet:true,forceProfileSpineOthogonality:false}));cutter=keep(cutter.rotate(17,[0,0,0],'Z'));
   // A 0.0001 mm end-face clearance avoids degenerate helical cap edges;
   // only internal span joins overlap. Interior requested limits remain exact.
   const low=reverse?-c.max:c.min,high=reverse?-c.min:c.max,lead=!first||Math.abs(start-low)<1e-7?-1e-4:0,trail=!last||Math.abs(start+length-high)<1e-7?-1e-4:0;
-  const clip=keep(R.makeCylinder(outer+eps,length+lead+trail,[0,0,start-lead]));cutter=keep(cutter.intersect(clip,{simplify:false}));
+  phase='clip';const clip=keep(R.makeCylinder(outer+eps,length+lead+trail,[0,0,start-lead]));cutter=keep(cutter.intersect(clip,{simplify:false}));
   const [x,y,zAxis]=axis,angle=Math.acos(Math.max(-1,Math.min(1,zAxis)))*180/Math.PI;
   if(angle>1e-7)cutter=keep(cutter.rotate(angle,[0,0,0],Math.hypot(x,y)<1e-8?[1,0,0]:[-y,x,0]));cutter=keep(cutter.translate(c.origin));
-  const builder=keep(new (R.getOC().BRepAlgoAPI_Cut)(stock.wrapped,cutter.wrapped));builder.SetFuzzyValue(1e-6);builder.SetNonDestructive(true);builder.Build();return keep(R.cast(builder.Shape()));
+  phase='boolean';const builder=keep(new (R.getOC().BRepAlgoAPI_Cut)(stock.wrapped,cutter.wrapped));builder.SetFuzzyValue(1e-6);builder.SetNonDestructive(true);builder.Build();return keep(R.cast(builder.Shape()));
+  }finally{console.info('[REDS Thread] span',JSON.stringify({start,length,phase,elapsedMs:Math.round(performance.now()-started)}));}
  }
  try{
   const before=volume(body);let result;
