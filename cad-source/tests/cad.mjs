@@ -68,7 +68,7 @@ try{
  await reset();const editable=await apply('sketch',{shape:'polyline',plane:'XY',closed:true,points:[[0,0],[29,1],[31,19],[-1,21]],constraints:[]});await page.evaluate(id=>window.__cad.startTool('sketch',{},id),editable);
  await setToolToggle(page,'lock:0',true);
  for(const [i,dir]of [[0,'horizontal'],[1,'vertical'],[2,'horizontal'],[3,'vertical']])await setToolChoice(page,'segment:'+i+':direction',dir);
- await setToolValue(page,'segment:0:length','30');await setToolValue(page,'segment:1:length','20');await page.getByRole('button',{name:'Solve constraints',exact:true}).click();
+ await setToolValue(page,'segment:0:length','30');await setToolValue(page,'segment:1:length','20');assert.equal(await page.locator('[data-gizmo-choice="segment:1:direction"]').isVisible(),true,'Segment length selection exposes constraints for the same segment');await page.getByRole('button',{name:'Solve constraints',exact:true}).click();
  assert.equal(await page.locator('[data-solve-status]').textContent(),'Fully constrained');await page.screenshot({path:path.join(out,'07-sketch-constraints.png')});
  await page.getByRole('button',{name:'Update feature',exact:true}).click();await page.waitForFunction(()=>window.__cad.items.some(i=>i.kind==='sketch'));
  assert.equal(await page.locator('#nav-tools').isVisible(),false);assert.equal(await page.locator('#exitSketch').isVisible(),true);assert.equal(await page.locator('#context').getByRole('button',{name:'Extrude',exact:true}).isVisible(),true);const sketchId=await page.evaluate(()=>window.__cad.doc.features[0].id);

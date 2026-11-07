@@ -1,6 +1,6 @@
 // Real canvas controls only: helpers never write hidden form state or app internals.
 export async function toolField(page,key){
- if(await page.locator('#operationGizmo[data-compact=true]').isVisible()){const select=page.getByRole('combobox',{name:'Sketch parameter',exact:true});if(await select.isVisible())await select.selectOption(key);return page.locator('#gizmoValue');}
+ if(await page.locator('#operationGizmo[data-compact=true]').isVisible()){const select=page.getByRole('combobox',{name:'Sketch parameter',exact:true});if(await select.isVisible()){const owner=/^(?:lock|segment):(\d+)/.exec(key),target=owner&&!key.endsWith(':length')?'point:'+owner[1]+':x':key;await select.selectOption(target);}return page.locator('#gizmoValue');}
  const point=/^point:(\d+):([xy])$/.exec(key),segment=/^(?:segment|lock):(\d+)/.exec(key);
  if(point){await page.locator('[data-gizmo-field="point:'+point[1]+':x"]').click();if(point[2]==='y')await page.getByRole('button',{name:'Point coordinate Y',exact:true}).click();}
  else if(segment){await page.locator('[data-gizmo-field="point:'+segment[1]+':x"]').click();if(key.startsWith('segment:')&&key.endsWith(':length'))await page.locator('[data-gizmo-field="'+key+'"]').click();}

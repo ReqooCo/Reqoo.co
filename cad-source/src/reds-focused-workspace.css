@@ -393,8 +393,7 @@ body.cadWorkspace #snapGuides circle{stroke-width:1.5;filter:none;}
 body.cadWorkspace #sketchBar .operationActions[data-compact=true]{position:static;inset:auto;display:flex;flex-flow:row nowrap;align-items:center;gap:5px;width:auto;max-height:none;padding:0;border:0;background:none;box-shadow:none;overflow:visible;pointer-events:auto;}
 body.cadWorkspace #sketchBar .operationActions[data-compact=true]>strong,
 body.cadWorkspace #sketchBar .operationActions[data-compact=true]>output,
-body.cadWorkspace #sketchBar .operationActions[data-compact=true]>[data-fit],
-body.cadWorkspace #sketchBar .operationActions[data-compact=true]>[data-commands]{display:none;}
+body.cadWorkspace #sketchBar .operationActions[data-compact=true]>[data-fit]{display:none;}
 body.cadWorkspace #sketchBar .operationActions[data-compact=true] [data-choices]{display:flex;width:auto;max-width:none;padding:0;gap:4px;}
 body.cadWorkspace #sketchBar .operationActions[data-compact=true] .operationChoice{display:flex;gap:3px;}
 body.cadWorkspace #sketchBar .operationActions[data-compact=true] .operationChoice>div{display:flex;gap:3px;}
@@ -420,3 +419,15 @@ body.cadWorkspace #sketchMoreTools svg{width:20px;height:20px;}
 @media(max-width:760px){body.cadWorkspace #sketchMoreTools{left:60px;min-width:150px;}}
 
 body.cadWorkspace footer{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+
+/* Preserve hidden constraint groups after moving actions out of the gizmo.
+   One horizontal strip scrolls as a unit, so adjacent choices cannot overlap. */
+body.cadWorkspace #sketchBar .operationActions[data-compact=true]{flex:0 1 auto;min-width:0;max-width:100%;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;}
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] [data-choices],
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] [data-commands]{display:flex;flex:0 0 auto;width:max-content;max-width:none;overflow:visible;gap:4px;}
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] .operationChoice,
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] .operationChoice>div,
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] button,
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] select{flex:0 0 auto;white-space:nowrap;}
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] [hidden],
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] [data-commands]:empty{display:none!important;}

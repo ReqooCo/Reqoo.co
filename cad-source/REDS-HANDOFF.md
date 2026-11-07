@@ -18,6 +18,12 @@
 6. Protect existing CAD data: never delete originals, backups or history; preserve OpenCascade B-Rep and the native `.rqcad` project format.
 7. **Production release is not authorised merely because CI is green.** Admin GitHub ruleset + environment secret/token separation are open in [issue #278](https://github.com/ReqooCo/Reqoo.co/issues/278). Do not merge/deploy until these controls are verified and user approval/release policy is satisfied.
 
+## Work checkpoint — compact polyline constraint selection (2026-11-07)
+
+- Published preceding work as `5e3b3bd570c7bae5e9b0daa104a5b4a175f03b8d`. Exact-head Core and Product passed in 42350791820. Modeling caught a genuine regression in the test adapter: compact parameter selection tried to select a checkbox key (`lock:0`) in the numeric dropdown, so the full CAD constraint flow timed out.
+- Adapted the real-control test helper to select the owning point before its Lock/Direction choices. Fixed the UI itself so choosing a segment length also changes the active constraint owner to that segment. Added an assertion requiring the selected segment's Direction choices to be visible. The resumed test also exposed overlapping constraint groups: their hidden/flex styles had depended on the old parent. Restored hidden-group semantics, nonshrinking choices and one horizontally scrolling compact strip, including the real Solve/Clear commands. No validation was skipped or weakened.
+- Fresh sourceHash `964d6382bd392164`. Re-run full CAD constraint/solid/save/open test and exact-head Core/Modeling/Product plus deployed Draft checks before calling ready. Final run evidence belongs in PR #277. No Live change; release lock retained.
+
 ## Work checkpoint — unified sketch gizmos, native tools and cube planes (2026-11-07)
 
 - Baseline reconciled with PR #277 and remote `reds/draft`: `2a4cbc55bab1ebabebc69a51acb0ea71cc7e3a35`. Owner explicitly authorized pushing after the earlier compact-UI checkpoint. That commit deployed, but Product/browser overlap validation failed; the dimension obstacle solver now finds a free position against all controls together.
