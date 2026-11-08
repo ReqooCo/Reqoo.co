@@ -14,7 +14,7 @@ concurrency:
 jobs:
   integrated:
     runs-on: ubuntu-latest
-    timeout-minutes: 100
+    timeout-minutes: 160
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -64,7 +64,19 @@ jobs:
             tests/union-selection-ui.mjs \
             tests/multi-profile-ui.mjs \
             tests/reds-sketch-parity-ui.mjs \
-            tests/active-sketch-edit-ui.mjs; do
+            tests/active-sketch-edit-ui.mjs \
+            tests/transform-ui.mjs \
+            tests/rotation-ui.mjs \
+            tests/canvas-gizmo-ui.mjs \
+            tests/pattern-thread-ui.mjs \
+            tests/precision-ui.mjs \
+            tests/visualization-ui.mjs \
+            tests/smart-dimensions-ui.mjs \
+            tests/sketch-regions-ui.mjs \
+            tests/workspace-reference-ui.mjs \
+            tests/input.mjs \
+            tests/acceptance.mjs \
+            tests/product.mjs; do
             run_suite "$suite"
           done
           cat test-results/summary.txt
