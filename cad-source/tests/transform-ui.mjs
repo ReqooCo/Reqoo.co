@@ -38,7 +38,26 @@ try{
  await fresh();a=await op('box',{width:10,depth:10,height:10});b=await op('box',{width:20,depth:10,height:10,x:30,y:20,z:40});await page.evaluate(()=>window.__cad.view('iso'));await page.locator('#fit').click();
  const source=await item(a),target=await item(b),top=source.faceInfo.find(f=>f.normal[2]>.99),front=target.faceInfo.find(f=>f.normal[1]<-.99);
  await page.evaluate(({id,index})=>window.__cad.select([{id,kind:'face',index}]),{id:a,index:top.index});await page.evaluate(()=>window.__cad.startTool('align'));
- const point=await project([30,15,45]);await page.touchscreen.tap(point.x,point.y);await page.waitForFunction(index=>window.__cad.alignGizmo.state?.targetFace?.index===index,front.index);await setToolValue(page,'Face alignment gap','2');await previewReady();
+ const point=await project([30,15,45]);await page.touchscreen.tap(point.x,point.y);try{
+  await page.waitForFunction(index=>window.__cad.alignGizmo.state?.targetFace?.index===index,front.index,{timeout:5000});
+ }catch(error){
+  const diagnostic=await page.evaluate(({point,expected})=>({
+   point,expected,
+   alignState:window.__cad.alignGizmo?.state&&{
+    sourceFace:window.__cad.alignGizmo.state.sourceFace,
+    targetFace:window.__cad.alignGizmo.state.targetFace,
+    active:window.__cad.alignGizmo.state.active
+   },
+   selection:window.__cad.selection,
+   viewport:(()=>{const r=document.querySelector('#canvas')?.getBoundingClientRect();return r&&{x:r.x,y:r.y,width:r.width,height:r.height};})(),
+   elementAtPoint:document.elementFromPoint(point.x,point.y)?.outerHTML?.slice(0,350),
+   status:document.body.innerText.slice(-600)
+  }),{point,expected:front.index});
+  await fs.writeFile(path.join(out,'transform-face-pick-diagnostic.json'),JSON.stringify(diagnostic,null,2));
+  console.error('FACE ALIGN PICK DIAGNOSTIC',JSON.stringify(diagnostic));
+  throw error;
+ }
+ await setToolValue(page,'Face alignment gap','2');await previewReady();
  await page.screenshot({path:path.join(out,'transform-face-alignment.png')});await page.getByRole('button',{name:'Apply alignment',exact:true}).click();await page.waitForFunction(()=>window.__cad.doc.features.at(-1).params.method==='faces'&&!window.__cad.gizmo.busy);aligned=await page.evaluate(()=>window.__cad.items.find(i=>i.featureId===window.__cad.doc.features.at(-1).id));near(aligned.bounds[1][1],13);near(aligned.volume,1000);assert.deepEqual((await item(b)).bounds,target.bounds);
  await page.reload();await ready();near((await page.evaluate(()=>window.__cad.items.find(i=>i.featureId===window.__cad.doc.features.at(-1).id))).volume,1000);
  checks.push('Tap two planar faces to rotate and translate the moving part with an exact gap; target and history survive reload');
