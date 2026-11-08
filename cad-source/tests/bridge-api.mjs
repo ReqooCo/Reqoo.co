@@ -25,7 +25,8 @@ try{
  const almost={...assemblyDoc,features:assemblyDoc.features.slice(0,-1)};
  const accepted=await applyBridgeCommand(almost,{id:'last_part',title:'Add final part',expectedRevision:await bridgeRevision(almost),features:[assemblyDoc.features.at(-1)]});
  assert.equal(accepted.features.length,MAX_PROJECT_FEATURES);
- await assert.rejects(()=>applyBridgeCommand(assemblyDoc,{id:'overcap',title:'Over capacity',expectedRevision:await bridgeRevision(assemblyDoc),features:[{id:'too_many',type:'box',params:{width:1,depth:1,height:1},inputs:[]}]}),/feature limit/);
+ const fullAssemblyRevision=await bridgeRevision(assemblyDoc);
+ await assert.rejects(()=>applyBridgeCommand(assemblyDoc,{id:'overcap',title:'Over capacity',expectedRevision:fullAssemblyRevision,features:[{id:'too_many',type:'box',params:{width:1,depth:1,height:1},inputs:[]}]}),/feature limit/);
  const next=await applyBridgeCommand(doc,command);assert.equal(next.features.length,1);assert.equal(doc.features.length,0);await assert.rejects(()=>applyBridgeCommand(next,command),/changed/);
  const rev=await bridgeRevision(next),dependent={...next,features:[...next.features,{id:'shifted',type:'move',name:'Move',params:{x:5},inputs:['plate']}]};
  await assert.rejects(async()=>applyBridgeCommand(dependent,{id:'no_cascade',title:'Delete plate',expectedRevision:await bridgeRevision(dependent),actions:[{kind:'delete',ids:['plate']}]}),/Dependent feature/);
