@@ -42,6 +42,6 @@ export function toolSelectionError(type,refs,items,doc={features:[]}){
  if(rule==='cylinderFace')return face?.cylinder?.full?'':'Select one complete cylindrical side face';
  if(rule==='hole'){const recipe=doc.features.find(f=>f.id===chosen[0]?.featureId)?.params;return face?.type==='PLANE'||refs.length===1&&all('sketch')&&recipe?.shape==='circle'?'':'Select one planar face or circle sketch';}
  if(rule==='curves'||rule==='profiles')return all('sketch')&&(rule!=='profiles'||closed()&&refs.length>=2)?'':'Select '+(rule==='profiles'?'at least two closed profiles':'sketch curves');
- if(rule==='projection')return refs.length&&chosen.every(i=>i&&['body','sketch'].includes(i.kind))?'':'Select source geometry';
+ if(rule==='projection')return refs.length&&refs.every((r,n)=>{const item=chosen[n];if(!item)return false;if(r.kind==='sketch')return item.kind==='sketch';if(item.kind!=='body')return false;if(r.kind==='body')return true;if(r.kind==='face')return item.faceInfo?.some(f=>f.index===r.index);if(r.kind==='edge')return item.edges?.some((edge,i)=>(Number.isInteger(edge.index)?edge.index:i)===r.index);return false;})?'':'Select valid source geometry';
  return'';
 }
