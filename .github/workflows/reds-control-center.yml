@@ -21,15 +21,16 @@ jobs:
       - name: Validate reconciler and fail-closed behavior
         run: |
           node --check scripts/reds-control-sync.mjs
+          node --check scripts/reds-control-sync.test.mjs
           node scripts/reds-control-sync.test.mjs
-      - name: Clear offline test report before live reconciliation
-        run: rm -f reds/control/status.json
       - name: Read authoritative GitHub and Cloudflare state
         id: sync
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: node scripts/reds-control-sync.mjs reds/control/status.json
+        run: |
+          rm -f reds/control/status.json
+          node scripts/reds-control-sync.mjs reds/control/status.json
       - name: Publish evidence artifact
         if: always()
         uses: actions/upload-artifact@v4
