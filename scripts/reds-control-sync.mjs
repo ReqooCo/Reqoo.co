@@ -16,11 +16,14 @@ async function inspect(id,fn){try{return await fn();}catch(e){return {error:Stri
 const policy=JSON.parse(fs.readFileSync(new URL('../cad-source/release-policy.json',import.meta.url)));
 const head=ghToken?await inspect('github-head',async()=>await request(api+'/repos/'+repo+'/branches/'+branch,ghToken)):null;
 const sha=head?.commit?.sha||null;
+const executionSha=process.env.GITHUB_SHA||null;
+if(executionSha)check('draft.executionSha',sha,executionSha,'github',sha);
 check('draft.branch',head?.name||null,policy.draft.branch,'github',sha);
 const pr=ghToken?await inspect('github-pr',async()=>await request(api+'/repos/'+repo+'/pulls/277',ghToken)):null;
 check('release.pr.base',pr?.base?.ref||null,policy.live.branch,'github',pr?.html_url||null);
 check('release.pr.head',pr?.head?.ref||null,policy.draft.branch,'github',pr?.html_url||null);
 check('release.pr.draft',typeof pr?.draft==='boolean'?pr.draft:null,true,'github',pr?.html_url||null);
+check('release.pr.headSha',pr?.head?.sha||null,sha,'github',pr?.html_url||null);
 const cf=(cfToken&&account)?await inspect('cloudflare-pages',async()=>await request('https://api.cloudflare.com/client/v4/accounts/'+account+'/pages/projects/'+project,cfToken)):null;
 const config=cf?.result?.source?.config;
 check('pages.productionAutoDeploy',typeof config?.production_deployments_enabled==='boolean'?config.production_deployments_enabled:null,false,'cloudflare','pages/'+project);
