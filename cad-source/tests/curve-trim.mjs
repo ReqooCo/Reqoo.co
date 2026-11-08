@@ -14,6 +14,8 @@ const spline={shape:'spline',points:[[-20,0],[0,10],[20,0]],closed:false},walls=
 let parts=trimDrawing(profile(spline),walls,[0,10],.01);assert.equal(parts.length,2);for(const p of parts)assert.ok(R.deserializeDrawing(p.serializedDrawing).blueprint.curves.every(c=>c.geomType==='BSPLINE_CURVE'));
 const ellipse={shape:'ellipse',width:20,height:10};parts=trimDrawing(profile(ellipse),[profile(line)],[0,5],.01);assert.equal(parts.length,1);assert.ok(R.deserializeDrawing(parts[0].serializedDrawing).blueprint.curves.every(c=>c.geomType==='ELLIPSE'));
 assert.throws(()=>trimDrawing(profile(line),[profile(line)],[1,0],.01),/Coincident/);
+for(const invalidTolerance of [NaN,Infinity,-Infinity,0,-1])assert.throws(()=>trimDrawing(profile(line),[],[0,0],invalidTolerance),/Invalid Trim point/,'Trim must reject invalid tolerance');
+for(const invalidPoint of [[NaN,0],[0,Infinity],[0],null])assert.throws(()=>trimDrawing(profile(line),[],invalidPoint,.01),/Invalid Trim point/,'Trim must reject invalid click coordinates');
 console.log('PASS finite line Trim against circle/ellipse/arc/spline on XY/XZ/YZ, exact spline target and ellipse target, coincident rejection');
 const loop=profile({shape:'spline',points:[[-20,-10],[20,10],[-20,10],[20,-10]],closed:false}),lc=loop.blueprint.curves[0],at=lc.value(lc.firstParameter+(lc.lastParameter-lc.firstParameter)*.1);
 parts=trimDrawing(loop,[],at,.001);assert.ok(parts.length>0,'Self-intersection divides a looping spline; do not delete the whole curve');
