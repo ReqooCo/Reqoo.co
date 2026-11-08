@@ -15,7 +15,8 @@ try{
  r=await call('/cad/bridge/poll','GET',pair.consumer);assert.deepEqual(r.data.command,command);assert.equal((await call('/cad/bridge/commands','POST',pair.code,{...command,id:'stale',expectedRevision:'0'.repeat(64)})).status,409);
  assert.throws(()=>validateBridgeCommand({...command,id:'__proto__'}),/Command needs/);assert.throws(()=>validateBridgeCommand({...command,id:'constructor'}),/Command needs/);
  const huge=bridgeSummary({features:Array.from({length:150},(_,i)=>({id:'f'+i+'a'.repeat(75),type:'box',name:'界'.repeat(80),params:{label:'界'.repeat(2000)},inputs:Array(32).fill('a'.repeat(80))}))},[]);assert.equal(huge.truncated,true);assert.ok(new TextEncoder().encode(JSON.stringify(huge)).byteLength<MAX_BRIDGE_STATE_BYTES);assert.throws(()=>validateBridgeCommand({...command,features:[{...command.features[0],params:{labels:Array(20).fill('界'.repeat(1000))}}]}),/48 KB/);
- // Mechanical regression: a 300-feature assembly and 32 components must remain inspectable.
+ // Mechanical bridge regression: a 1000-feature history and 32 components must remain inspectable.
+ assert.equal(MAX_PROJECT_FEATURES,1000,'R3DS large-assembly history limit');
  const assemblyDoc={...doc,features:Array.from({length:MAX_PROJECT_FEATURES},(_,i)=>({id:'part'+i,type:'box',name:'Part '+i,params:{width:10+i%7,depth:20,height:3,tag:'detail-'+i},inputs:[]}))};
  const assemblyItems=Array.from({length:32},(_,i)=>({id:'body'+i,name:'Body '+i,kind:'body',volume:100+i,bounds:[[i,0,0],[i+10,20,3]],edges:[],faceInfo:[]}));
  const assemblyState=bridgeSummary(assemblyDoc,assemblyItems);
@@ -25,7 +26,30 @@ try{
  const almost={...assemblyDoc,features:assemblyDoc.features.slice(0,-1)};
  const accepted=await applyBridgeCommand(almost,{id:'last_part',title:'Add final part',expectedRevision:await bridgeRevision(almost),features:[assemblyDoc.features.at(-1)]});
  assert.equal(accepted.features.length,MAX_PROJECT_FEATURES);
+ // Regression: resume an existing 299-feature assembly and safely append beyond the old 300 cap.
+ assert.ok(MAX_PROJECT_FEATURES>=301,'R3DS assembly budget must support more than 300 features');
+ const legacy299={...doc,features:assemblyDoc.features.slice(0,299)};
+ const beyondOldLimit=await applyBridgeCommand(legacy299,{
+  id:'resume_299',title:'Resume REQOO Laser V2 assembly',expectedRevision:await bridgeRevision(legacy299),
+  features:assemblyDoc.features.slice(299,301)
+ });
+ assert.equal(beyondOldLimit.features.length,301);
+ const legacy499={...doc,features:assemblyDoc.features.slice(0,499)};
+ const beyondPreviousCandidate=await applyBridgeCommand(legacy499,{
+  id:'resume_499',title:'Continue large assembly above 500',expectedRevision:await bridgeRevision(legacy499),
+  features:assemblyDoc.features.slice(499,501)
+ });
+ assert.equal(beyondPreviousCandidate.features.length,501);
+ const editedBeyondLimit=await applyBridgeCommand(beyondOldLimit,{
+  id:'reparam_301',title:'Repair existing bracket without increasing history',
+  expectedRevision:await bridgeRevision(beyondOldLimit),
+  updates:[{id:'part299',params:{width:25}}]
+ });
+ assert.equal(editedBeyondLimit.features.length,301);
+ assert.equal(editedBeyondLimit.features[299].params.width,25);
  const fullAssemblyRevision=await bridgeRevision(assemblyDoc);
+ assert.equal(accepted.features.length,1000);
+ assert.ok(new TextEncoder().encode(JSON.stringify(assemblyState)).byteLength<MAX_BRIDGE_STATE_BYTES);
  await assert.rejects(()=>applyBridgeCommand(assemblyDoc,{id:'overcap',title:'Over capacity',expectedRevision:fullAssemblyRevision,features:[{id:'too_many',type:'box',params:{width:1,depth:1,height:1},inputs:[]}]}),/feature limit/);
  const next=await applyBridgeCommand(doc,command);assert.equal(next.features.length,1);assert.equal(doc.features.length,0);await assert.rejects(()=>applyBridgeCommand(next,command),/changed/);
  const rev=await bridgeRevision(next),dependent={...next,features:[...next.features,{id:'shifted',type:'move',name:'Move',params:{x:5},inputs:['plate']}]};

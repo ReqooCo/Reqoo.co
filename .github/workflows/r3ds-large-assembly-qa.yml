@@ -1,0 +1,70 @@
+name: R3DS 1000-feature Draft candidate QA
+on:
+  push:
+    branches: ['fix/r3ds-v2-assembly-feature-budget-20261108']
+    paths:
+      - 'cad-source/**'
+      - '.github/workflows/r3ds-large-assembly-qa.yml'
+  pull_request:
+    branches: ['reds/draft']
+    paths:
+      - 'cad-source/**'
+      - '.github/workflows/r3ds-large-assembly-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  assembly-limit:
+    name: 1000-feature native and MCP regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: cad-source/package-lock.json
+      - name: Install CAD dependencies
+        working-directory: cad-source
+        run: npm ci
+      - name: Check shared CAD feature limit
+        working-directory: cad-source
+        run: |
+          node --check src/cad-limits.js
+          node --check tests/bridge-api.mjs
+          node --check tests/large-assembly-1000.mjs
+      - name: Run MCP bridge regression at 1000 features
+        working-directory: cad-source
+        run: node tests/bridge-api.mjs
+      - name: Run native CAD 1000-feature / 43-body assembly benchmark
+        working-directory: cad-source
+        run: timeout --signal=TERM --kill-after=15s 600s node tests/large-assembly-1000.mjs
+      - name: Stress complex 1000-feature assembly with 344 boolean cuts
+        working-directory: cad-source
+        run: timeout --signal=TERM --kill-after=15s 600s node tests/large-assembly-1000-booleans.mjs
+      - name: Verify native feature cache and 80-body guard
+        working-directory: cad-source
+        run: node tests/native-cache.mjs
+      - name: Verify native save/open round trip
+        working-directory: cad-source
+        run: node tests/project-io.mjs
+      - name: Check production bundle build (no deployment)
+        working-directory: cad-source
+        run: npm run build
+
+      - name: Install Chromium for CAD browser tests
+        working-directory: cad-source
+        run: npx playwright install --with-deps chromium
+      - name: Test browser MCP pairing, editing and persistence
+        working-directory: cad-source
+        run: timeout --signal=TERM --kill-after=15s 300s node tests/bridge-ui.mjs
+      - name: Test R3DS CAD workspace end to end
+        working-directory: cad-source
+        run: timeout --signal=TERM --kill-after=15s 300s node tests/cad.mjs
+      - name: Test 1000-feature browser rebuild, render and reload
+        working-directory: cad-source
+        run: timeout --signal=TERM --kill-after=15s 600s node tests/large-assembly-1000-ui.mjs
+      - name: Test modeling product workflows
+        working-directory: cad-source
+        run: timeout --signal=TERM --kill-after=15s 300s node tests/product.mjs
