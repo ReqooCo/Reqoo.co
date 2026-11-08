@@ -17,6 +17,7 @@ const run=async(statuses)=>{
  return result;
 };
 assert.deepEqual(await run([200,403,404,403]),{draftWorkerReadable:true,liveWorkersDenied:2,d1Denied:true});
+assert.deepEqual(await run([200,401,403,401]),{draftWorkerReadable:true,liveWorkersDenied:2,d1Denied:true});
 for(const statuses of [[403,403,403,403],[200,200,403,403],[200,403,200,403],[200,403,403,200],[200,500,403,403],[200,403,403,500]]){
  await assert.rejects(run(statuses),/not verified|can access|not denied|can list|denial was not verified/);
 }
