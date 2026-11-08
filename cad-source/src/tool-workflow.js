@@ -1,10 +1,10 @@
 // A double-tap promotes a face without losing bodies selected before its first tap.
 export function promoteBodySelection(before,id){
  // Preserve earlier whole-body selections and their order for Boolean tools.
- // A double-tap on an already selected body toggles it off; promoting a face
- // of another body adds that body without discarding the previous operands.
+ // Repeated double-taps remain idempotent; promoting another face adds its
+ // owning body without discarding existing Boolean operands.
  const bodies=before.filter(r=>r.kind==='body');
- return bodies.some(r=>r.id===id)?bodies.filter(r=>r.id!==id):[...bodies,{id,kind:'body'}];
+ return bodies.some(r=>r.id===id)?bodies:[...bodies,{id,kind:'body'}];
 }
 // Common entry contracts; native geometry validation still owns commit validity.
 export function extendCanvasSelection(current,next,{explicit=false,filter='auto'}={}){
