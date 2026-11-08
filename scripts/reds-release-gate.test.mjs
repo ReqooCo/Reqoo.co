@@ -52,6 +52,10 @@ try{
  }
  scenario('identical',true);
  scenario('valid',true);
+ scenario('paginated',true);
+ scenario('pagination-truncated',false);
+ scenario('pagination-duplicate',false);
+ scenario('pagination-drift',false);
  scenario('admin-pending',false);
  scenario('unreviewed',false);
  for(const name of ['no-review','self-review','bot-review','outside-review','stale-review','dismissed-review','changes-requested'])scenario(name,false);
