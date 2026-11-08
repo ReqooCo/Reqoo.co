@@ -754,7 +754,7 @@ function offsetGeometry(params){
 function offsetPlan(params,previewOnly=false){
  const refs=sketchEditRefs(),ids=[...new Set(refs.map(r=>r.id))];if(!ids.length)throw Error('Select a sketch edge or profile');
  const next=snapshot(),remaining=new Set(ids),created=[],chosen=items.filter(i=>ids.includes(i.id));
- while(remaining.size){const seed=remaining.values().next().value,group=params.mode==='Single'?[seed]:connectedSketchIds(chosen,seed).filter(id=>remaining.has(id));for(const id of group)remaining.delete(id);const id=previewOnly?'sketch_offset_preview_'+created.length:uid();created.push(id);next.features.push({id,type:'sketchOffset',name:'Offset chain',params:{...params,keepInputs:true},inputs:group});}
+ while(remaining.size){const seed=remaining.values().next().value,connected=params.mode==='Single'?[seed]:connectedSketchIds(chosen,seed).filter(id=>remaining.has(id)),group=connected.length?connected:[seed];for(const id of group)remaining.delete(id);const id=previewOnly?'sketch_offset_preview_'+created.length:uid();created.push(id);next.features.push({id,type:'sketchOffset',name:'Offset chain',params:{...params,keepInputs:true},inputs:group});}
  return{next,created};
 }
 async function activateSketchEdit(action){
