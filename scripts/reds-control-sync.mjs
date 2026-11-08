@@ -24,6 +24,7 @@ check('release.pr.base',pr?.base?.ref||null,policy.live.branch,'github',pr?.html
 check('release.pr.head',pr?.head?.ref||null,policy.draft.branch,'github',pr?.html_url||null);
 check('release.pr.draft',typeof pr?.draft==='boolean'?pr.draft:null,true,'github',pr?.html_url||null);
 check('release.pr.headSha',pr?.head?.sha||null,sha,'github',pr?.html_url||null);
+check('release.pr.open',pr?.state||null,'open','github',pr?.html_url||null);
 const cf=(cfToken&&account)?await inspect('cloudflare-pages',async()=>await request('https://api.cloudflare.com/client/v4/accounts/'+account+'/pages/projects/'+project,cfToken)):null;
 const config=cf?.result?.source?.config;
 check('pages.productionAutoDeploy',typeof config?.production_deployments_enabled==='boolean'?config.production_deployments_enabled:null,false,'cloudflare','pages/'+project);
@@ -36,7 +37,8 @@ for(const name of policy.rules.requiredChecks){
 }
 check('release.securityGate',policy.rules.liveAccessRestricted,true,'policy','cad-source/release-policy.json');
 const errors=[head,pr,cf,run].filter(x=>x?.error).map(x=>({source:x.id,error:x.error}));
-const report={schemaVersion:1,generatedAt:now,repository:repo,branch,headSha:sha,sourceOfTruth:{git:'GitHub API',pages:'Cloudflare API',releasePolicy:'cad-source/release-policy.json'},sourceErrors:errors,checks,summary:{pass:checks.filter(x=>x.status==='pass').length,conflict:checks.filter(x=>x.status==='conflict').length,unverified:checks.filter(x=>x.status==='unverified').length},releaseReady:checks.every(x=>x.status==='pass')};
+const releaseBlockers=checks.filter(x=>x.status!=='pass').map(x=>({id:x.id,status:x.status}));
+const report={schemaVersion:1,generatedAt:now,repository:repo,branch,headSha:sha,sourceOfTruth:{git:'GitHub API',pages:'Cloudflare API',releasePolicy:'cad-source/release-policy.json'},sourceErrors:errors,checks,releaseBlockers,summary:{pass:checks.filter(x=>x.status==='pass').length,conflict:checks.filter(x=>x.status==='conflict').length,unverified:checks.filter(x=>x.status==='unverified').length},releaseReady:checks.every(x=>x.status==='pass')};
 const output=process.argv[2]||'reds/control/status.json';
 fs.mkdirSync(new URL('../reds/control/',import.meta.url),{recursive:true});
 fs.writeFileSync(output,JSON.stringify(report,null,2)+'\n');
