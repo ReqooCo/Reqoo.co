@@ -25,6 +25,21 @@ try{
  const almost={...assemblyDoc,features:assemblyDoc.features.slice(0,-1)};
  const accepted=await applyBridgeCommand(almost,{id:'last_part',title:'Add final part',expectedRevision:await bridgeRevision(almost),features:[assemblyDoc.features.at(-1)]});
  assert.equal(accepted.features.length,MAX_PROJECT_FEATURES);
+ // Regression: resume an existing 299-feature assembly and safely append beyond the old 300 cap.
+ assert.ok(MAX_PROJECT_FEATURES>=301,'R3DS assembly budget must support more than 300 features');
+ const legacy299={...doc,features:assemblyDoc.features.slice(0,299)};
+ const beyondOldLimit=await applyBridgeCommand(legacy299,{
+  id:'resume_299',title:'Resume REQOO Laser V2 assembly',expectedRevision:await bridgeRevision(legacy299),
+  features:assemblyDoc.features.slice(299,301)
+ });
+ assert.equal(beyondOldLimit.features.length,301);
+ const editedBeyondLimit=await applyBridgeCommand(beyondOldLimit,{
+  id:'reparam_301',title:'Repair existing bracket without increasing history',
+  expectedRevision:await bridgeRevision(beyondOldLimit),
+  updates:[{id:'part299',params:{width:25}}]
+ });
+ assert.equal(editedBeyondLimit.features.length,301);
+ assert.equal(editedBeyondLimit.features[299].params.width,25);
  const fullAssemblyRevision=await bridgeRevision(assemblyDoc);
  await assert.rejects(()=>applyBridgeCommand(assemblyDoc,{id:'overcap',title:'Over capacity',expectedRevision:fullAssemblyRevision,features:[{id:'too_many',type:'box',params:{width:1,depth:1,height:1},inputs:[]}]}),/feature limit/);
  const next=await applyBridgeCommand(doc,command);assert.equal(next.features.length,1);assert.equal(doc.features.length,0);await assert.rejects(()=>applyBridgeCommand(next,command),/changed/);
