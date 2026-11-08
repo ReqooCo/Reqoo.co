@@ -84,6 +84,11 @@ jobs:
             tests/input.mjs \
             tests/acceptance.mjs \
             tests/product.mjs; do
+            if [[ ! -f "$suite" ]]; then
+              echo "FAIL $suite (suite file missing)" | tee -a test-results/summary.txt
+              failed=1
+              continue
+            fi
             run_suite "$suite"
           done
           cat test-results/summary.txt
