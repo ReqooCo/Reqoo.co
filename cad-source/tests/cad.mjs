@@ -93,7 +93,12 @@ try{
  await page.locator('.historyRow').first().click();
  await setToolValue(page,'width','40');
  await page.getByRole('button',{name:'Update feature',exact:true}).click();
- await page.waitForFunction(()=>!document.body.classList.contains('busy'));
+ // Wait for the actual edited feature and rebuilt body; the busy flag alone can race.
+ await page.waitForFunction(()=>{
+  const source=window.__cad.doc.features.find(f=>f.type==='box');
+  const solid=window.__cad.items.find(i=>i.kind==='body');
+  return source?.params.width===40&&solid?.volume>0&&!document.body.classList.contains('busy');
+ },{},{timeout:30000});
  const resized=(await data()).filter(i=>i.kind==='body');
  assert.equal(resized.length,1,'Dimension edit after Fillet must keep one solid');
  assert.ok(resized[0].volume>rounded.volume,'Wider upstream box must rebuild downstream Extrude and Fillet');
