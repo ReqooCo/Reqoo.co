@@ -28,7 +28,7 @@ export function toolSelectionError(type,refs,items,doc={features:[]}){
  const rule=TOOL_WORKFLOWS[type];if(!rule||rule==='create')return'';
  const chosen=refs.map(r=>items.find(i=>i.id===r.id)),unique=[...new Set(refs.map(r=>r.id))],all=kind=>refs.length&&chosen.every((i,n)=>i?.kind===kind&&(kind!=='sketch'||refs[n].kind==='sketch'));
  const closed=()=>all('sketch')&&chosen.every(i=>i.profileClosed&&!i.construction),face=refs.length===1&&refs[0].kind==='face'&&chosen[0]?.kind==='body'?chosen[0].faceInfo?.find(f=>f.index===refs[0].index):null;
- if(rule==='selected')return refs.length?'':'Select an object first';
+ if(rule==='selected')return refs.length&&chosen.every(Boolean)?'':'Select an existing object first';
  if(rule==='extrude'){if(face?.type==='PLANE')return'';if(!closed())return'Select closed sketch profiles together, or one planar solid face';const n=chosen[0].sketchPlane?.normal;if(n&&chosen.some(i=>i.sketchPlane?.normal.reduce((v,k,j)=>v+k*n[j],0)<.99999))return'Choose parallel sketch profiles with matching directions';return'';}
  if(rule==='closedProfile')return closed()&&refs.length===1?'':'Select one closed sketch profile';
  if(rule==='loft')return closed()&&refs.length>=2?'':'Select at least two closed sketch profiles';
