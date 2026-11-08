@@ -2,7 +2,6 @@ name: REDS Control Center
 on:
   push:
     branches: [reds/draft]
-  workflow_dispatch:
 permissions:
   contents: read
   checks: read
@@ -14,7 +13,6 @@ jobs:
   reconcile:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    environment: reds-draft
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -45,7 +43,7 @@ jobs:
         shell: bash
         run: |
           if [[ -f reds/control/status.json ]]; then
-            node -e 'const r=require("./reds/control/status.json");console.log("REDS Control Center: "+JSON.stringify(r.summary)+" | releaseReady="+r.releaseReady);'
+            node -e 'const fs=require("fs"),r=require("./reds/control/status.json");const lines=["## REDS Control Center", "Draft SHA: "+(r.headSha||"unverified"),"Release ready: **"+r.releaseReady+"**", "Pass: "+r.summary.pass+" / Conflict: "+r.summary.conflict+" / Unverified: "+r.summary.unverified, "", "| Check | Result |", "|---|---|", ...r.checks.map(c=>"| "+c.id+" | "+c.status+" |")];console.log(lines.join("\\n"));fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join("\\n")+"\\n");'
             if [[ "\${{ steps.sync.outcome }}" != "success" ]]; then
               echo 'Reconciliation reported blockers; see artifact. This monitor does not approve Live.'
             fi
