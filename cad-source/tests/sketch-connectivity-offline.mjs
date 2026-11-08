@@ -44,3 +44,15 @@ run('parallel sketches on different planes stay isolated',()=>{
  const raised=sketch('raised',[1,0,0],[2,0,0],{sketchPlane:{origin:[0,0,1],x:[1,0,0],normal:[0,0,1]}});
  assert.deepEqual(connectedSketchIds([a,raised],'a'),['a']);
 });
+
+run('scaled coplanar normals connect without joining nearby parallel planes',()=>{
+ const a=sketch('a',[0,0,0],[1,0,0]);
+ const scaled=sketch('scaled',[1,0,0],[2,0,0],{sketchPlane:{origin:[3,2,0],x:[1,0,0],normal:[0,0,10]}});
+ const separated=sketch('separated',[1,0,0],[2,0,0],{sketchPlane:{origin:[0,0,0.01],x:[1,0,0],normal:[0,0,10]}});
+ assert.deepEqual(new Set(connectedSketchIds([a,scaled,separated],'a')),new Set(['a','scaled']));
+});
+run('invalid plane normals cannot form a chain',()=>{
+ const a=sketch('a',[0,0,0],[1,0,0]);
+ const broken=sketch('broken',[1,0,0],[2,0,0],{sketchPlane:{origin:[0,0,0],normal:[0,0,0]}});
+ assert.deepEqual(connectedSketchIds([a,broken],'a'),['a']);
+});
