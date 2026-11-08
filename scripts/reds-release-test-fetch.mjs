@@ -29,10 +29,8 @@ globalThis.fetch=async raw=>{
    body={status:commits.length?'ahead':'identical',total_commits:commits.length,commits};
   }
  }else if(p.endsWith('/commits/'+cadCommit))body={files:[{filename:'cad-source/src/main.js'}]};
- else if(scenario.startsWith('pagination-')||scenario==='paginated'){
-  if(/^\/repos\/ReqooCo\/Reqoo.co\/commits\/[0-9]{40}$/.test(p))body={files:[{filename:'docs/audit-history.md'}]};
-  else throw Error('Unexpected paginated mock endpoint: '+p);
- }
+ else if((scenario.startsWith('pagination-')||scenario==='paginated')&&
+    /^\/repos\/ReqooCo\/Reqoo.co\/commits\/[0-9]{40}$/.test(p))body={files:[{filename:'docs/audit-history.md'}]};
  else if(p.endsWith('/commits/'+nonCAD))body={files:[{filename:'docs/README.md'}]};
  else if(p.endsWith('/commits/'+cadCommit+'/pulls'))
   body=scenario==='unreviewed'||scenario==='delayed'?[]:[{
