@@ -35,6 +35,13 @@ jobs:
         run: node scripts/reds-release-gate.mjs check-draft
       - name: Ensure there is no second Live or Draft publisher
         run: node scripts/reds-release-surface-audit.mjs
+      - name: Unit test read-only Draft credential scope verifier
+        run: node scripts/reds-credential-scope-check.test.mjs
+      - name: Verify effective Draft credential has no Live or D1 access
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node scripts/reds-credential-scope-check.mjs
       - name: Deploy canonical REDS Draft Worker
         working-directory: cad-source
         env:
