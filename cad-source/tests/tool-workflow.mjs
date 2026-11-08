@@ -13,6 +13,8 @@ console.log('TOOL WORKFLOW PASS: every native tool has an entry contract; mixed/
 
 assert.deepEqual(promoteBodySelection([ref('b','body'),ref('c','face',1)],'c'),[ref('b','body'),ref('c','body')]);
 assert.deepEqual(promoteBodySelection([ref('b','body')],'b'),[ref('b','body')]);
+assert.deepEqual(promoteBodySelection([ref('b','body'),ref('c','face',0)],'c'),[ref('b','body'),ref('c','body')],'Promoting another face must retain earlier Boolean body');
+assert.deepEqual(promoteBodySelection([ref('b','body'),ref('c','body')],'c'),[ref('b','body'),ref('c','body')],'Repeated double-tap must not deselect a Boolean operand');
 
 
 import {resolveReference,descriptorDistance} from '../src/topology.js';
