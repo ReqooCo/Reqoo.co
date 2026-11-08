@@ -2,6 +2,12 @@
 
 **Purpose:** One shared place to develop REDS/R3ds CAD, regardless of which agent or chat is used. **Only the owner `ReqooCo` approves a Live release.** Do not add extra human-review steps.
 
+## Automatic project routing — R3DS keyword
+
+When the owner says **R3DS**, **REDS**, **Reqoo CAD**, or **Reqoo 3D Studios** in any chat or coding session, treat them as the same existing project **ReqooCo/Reqoo.co**, not a new project. First locate the already-built **REDS Control Center** at `.github/workflows/reds-control-center.yml`, `scripts/reds-control-sync.mjs`, and its latest GitHub Actions `reds-control-status` artifact; then read current `reds/draft` HEAD, open release PR(s), `cad-source/release-policy.json`, and relevant Cloudflare evidence. Never start a new Control Center or request tokens just because the conversation changed. If the artifact is inaccessible, report it as unverified and fetch GitHub state directly.
+
+**Do not hardcode historical PR numbers.** #277 and #289 are merged; locate the current open Draft→main PR dynamically (currently #290), and distinguish merged history from an active release candidate. Do not treat an old committed snapshot as current status. One protected Draft and one owner-approved Live release, with no redundant approval workflows.
+
 ## REDS Control Center — mandatory shared evidence
 
 - Before work, inspect the latest `reds/draft` HEAD, `cad-source/release-policy.json`, and the latest **REDS Control Center** workflow artifact `reds-control-status` (not a stale committed snapshot).
@@ -15,7 +21,7 @@
 
 - **Development:** `reds/draft` → https://reqoo-reds-draft.abarttrading1.workers.dev/cad/
 - **Production:** `main` → https://reqoo.co/cad/
-- **One release PR:** [#277](https://github.com/ReqooCo/Reqoo.co/pull/277), always `reds/draft` → `main`.
+- **Release PR:** discover the current open `reds/draft` → `main` PR from GitHub; never assume a fixed number.
 - Historical feature branches are reference material only; do not create competing Live or Draft deployments.
 
 ## Mandatory engineering protocol — audit first, repair by coherent batch
@@ -25,16 +31,16 @@
 3. **Fix root causes in coherent batches.** Group coupled defects and update shared contracts rather than layering special-case patches. Prefer a single reviewed batch per related subsystem, with regression tests for each confirmed root cause and integration tests across tool boundaries. Never weaken or move an assertion merely to make CI green without proving the intended user interaction remains correct.
 4. **Validate at multiple levels.** Run static/syntax and offline geometry/selection tests, browser workflows on the actual Draft build, cross-tool sequences, save/open, history, mobile UX and performance checks where relevant. CI must collect failures and artifacts across suites; passing some jobs never means the release is ready. Record exact run/commit and evidence, and explicitly mark unverified claims.
 5. **Close the loop before declaring done.** Inspect failed logs and diagnostics, repair the verified root cause, rerun the impacted suite and integrated gate, then confirm the same commit passed all required checks. Do not ask the owner to fetch logs that are accessible through connected GitHub tools. If access genuinely blocks verification, state precisely what is missing.
-6. **Keep the release boundary strict.** All implementation and tests remain on `reds/draft`; never merge or deploy Live while a required check, security gate or owner approval is pending. Use PR #277 and the existing release process only. No duplicate publishers or alternate release path.
+6. **Keep the release boundary strict.** All implementation and tests remain on `reds/draft`; never merge or deploy Live while a required check, security gate or owner approval is pending. Use the current open Draft release PR and the existing release process only. No duplicate publishers or alternate release path.
 7. **Communicate outcomes, not activity.** Report briefly: scope audited, root causes found, files/commits changed, tests actually passed/failed, remaining blockers. Do not claim a comprehensive audit merely because more test suites were added. Avoid repetitive status-only turns and unnecessary micro-commits.
 
 ## Agent workflow — shared branch and release steps
 
-1. Before changing CAD, read the **latest** `reds/draft` HEAD and this file; inspect relevant code and [PR #277](https://github.com/ReqooCo/Reqoo.co/pull/277). Use `cad-source/REDS-HANDOFF.md` for technical history **only when relevant**, not as a mandatory report for every short task.
+1. Before changing CAD, read the **latest** `reds/draft` HEAD and this file; inspect relevant code and [the current open Draft release PR](https://github.com/ReqooCo/Reqoo.co/pull/277). Use `cad-source/REDS-HANDOFF.md` for technical history **only when relevant**, not as a mandatory report for every short task.
 2. Make the requested fix **on `reds/draft`**, preserving other agents' commits. Re-fetch the current file blob SHA before writing; if another agent updated it, reconcile their change first. No force-push.
 3. Run targeted checks for the affected feature. Let the existing GitHub workflows run automated **Core / Modeling / Product** validation and Draft browser verification. Do not manually duplicate all suites for every tiny fix.
-4. Report real results and blockers. Add a **milestone** checkpoint to PR #277 or the handoff when a substantive feature/incident is resolved; **do not commit a handoff file after every turn**, because it restarts the Draft validation.
-5. Release through **the same PR #277** into protected `main` after required automated checks pass on its actual head commit. The only human release approval is by owner `ReqooCo` at `reds-live`; no second developer or self-PR approval is required.
+4. Report real results and blockers. Add a **milestone** checkpoint to the current open Draft release PR or the handoff when a substantive feature/incident is resolved; **do not commit a handoff file after every turn**, because it restarts the Draft validation.
+5. Release through **the same the current open Draft release PR** into protected `main` after required automated checks pass on its actual head commit. The only human release approval is by owner `ReqooCo` at `reds-live`; no second developer or self-PR approval is required.
 6. Verify Live version, essential geometry/edit/save-open flows and rollback readiness. Do not claim deployed until the actual release succeeds.
 
 ## Minimal safeguards worth keeping
@@ -44,4 +50,4 @@
 - Keep deployment tokens and database access separate from agent prompts, with only the permissions required for their jobs.
 - Release-policy safety blockers remain actionable technical configuration issues, **not requests for more human approvers**. Do not bypass an unresolved blocker by setting a flag without making the underlying deployment path work.
 
-**Short version:** Chat / Work / Codex → `reds/draft` → automatic checks → PR #277 → **one ReqooCo Live approval** → `main`.
+**Short version:** Chat / Work / Codex → `reds/draft` → automatic checks → the current open Draft release PR → **one ReqooCo Live approval** → `main`.
