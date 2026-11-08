@@ -585,7 +585,7 @@ renderer.domElement.addEventListener('pointerup',e=>{if(sketchMode&&e.button!==0
  // Sketch profiles are selected before the host face in automatic mode; face remains in Select other.
  if(alignGizmo?.active){alignGizmo.pick(pickCandidates);parameterGizmo?.changed();lastCanvasTap=null;}else if(parameterGizmo?.active&&!parameterGizmo.allowSelection){status('Drag a handle, tap a dimension, or cancel this operation');}else{
  const now=performance.now(),bodyId=front?.object.userData.id;
- const doubleTap=bodyId&&mode!=='sketch'&&lastCanvasTap?.id===bodyId&&lastCanvasTap.type===e.pointerType&&now-lastCanvasTap.time<=350&&Math.hypot(e.clientX-lastCanvasTap.x,e.clientY-lastCanvasTap.y)<=(e.pointerType==='touch'?24:12);
+ const doubleTap=bodyId&&!booleanSession&&mode!=='sketch'&&lastCanvasTap?.id===bodyId&&lastCanvasTap.type===e.pointerType&&now-lastCanvasTap.time<=350&&Math.hypot(e.clientX-lastCanvasTap.x,e.clientY-lastCanvasTap.y)<=(e.pointerType==='touch'?24:12);
  const candidate=doubleTap?{id:bodyId,kind:'body'}:pickCandidates[0],extend=extendCanvasSelection(selection,candidate,{explicit:e.shiftKey||e.metaKey||e.ctrlKey||$('multi').getAttribute('aria-pressed')==='true'||!!booleanSession,filter:mode});
  if(doubleTap){const full={id:bodyId,kind:'body'};select(promoteBodySelection(lastCanvasTap.before||selection,bodyId));pickCandidates=[full];lastCanvasTap=null;}
  else{const before=selection.map(r=>({...r}));if(pickCandidates.length)select([pickCandidates[0]],extend);else select([]);lastCanvasTap=bodyId?{id:bodyId,type:e.pointerType,time:now,x:e.clientX,y:e.clientY,before}:null;}
