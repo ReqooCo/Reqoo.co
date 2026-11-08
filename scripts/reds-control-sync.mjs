@@ -11,7 +11,7 @@ const project='reqoo-co';
 const now=new Date().toISOString();
 const checks=[];
 const check=(id,observed,expected,source,evidence)=>checks.push({id,observed,expected,status:observed===null?'unverified':observed===expected?'pass':'conflict',source,evidence,checkedAt:now});
-async function request(url,token){const r=await fetch(url,{headers:{authorization:'Bearer '+token,accept:'application/json','user-agent':'reds-control-center'}});if(!r.ok)throw Error('HTTP '+r.status+' at '+new URL(url).pathname);return r.json();}
+async function request(url,token){const r=await fetch(url,{signal:AbortSignal.timeout(15000),headers:{authorization:'Bearer '+token,accept:'application/json','user-agent':'reds-control-center'}});if(!r.ok)throw Error('HTTP '+r.status+' at '+new URL(url).pathname);return r.json();}
 async function inspect(id,fn){try{return await fn();}catch(e){return {error:String(e.message||e),id};}}
 const policy=JSON.parse(fs.readFileSync(new URL('../cad-source/release-policy.json',import.meta.url)));
 const head=ghToken?await inspect('github-head',async()=>await request(api+'/repos/'+repo+'/branches/'+branch,ghToken)):null;
@@ -32,7 +32,8 @@ for(const name of policy.rules.requiredChecks){
  check('ci.'+name,matches.length?matches[0].conclusion:null,'success','github',matches[0]?.details_url||null);
 }
 check('release.securityGate',policy.rules.liveAccessRestricted,true,'policy','cad-source/release-policy.json');
-const report={schemaVersion:1,generatedAt:now,repository:repo,branch,headSha:sha,sourceOfTruth:{git:'GitHub API',pages:'Cloudflare API',releasePolicy:'cad-source/release-policy.json'},checks,summary:{pass:checks.filter(x=>x.status==='pass').length,conflict:checks.filter(x=>x.status==='conflict').length,unverified:checks.filter(x=>x.status==='unverified').length},releaseReady:checks.every(x=>x.status==='pass')};
+const errors=[head,pr,cf,run].filter(x=>x?.error).map(x=>({source:x.id,error:x.error}));
+const report={schemaVersion:1,generatedAt:now,repository:repo,branch,headSha:sha,sourceOfTruth:{git:'GitHub API',pages:'Cloudflare API',releasePolicy:'cad-source/release-policy.json'},sourceErrors:errors,checks,summary:{pass:checks.filter(x=>x.status==='pass').length,conflict:checks.filter(x=>x.status==='conflict').length,unverified:checks.filter(x=>x.status==='unverified').length},releaseReady:checks.every(x=>x.status==='pass')};
 const output=process.argv[2]||'reds/control/status.json';
 fs.mkdirSync(new URL('../reds/control/',import.meta.url),{recursive:true});
 fs.writeFileSync(output,JSON.stringify(report,null,2)+'\n');
