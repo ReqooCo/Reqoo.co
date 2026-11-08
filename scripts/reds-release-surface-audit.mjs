@@ -70,6 +70,15 @@ for(const file of workflows){
   const scrubbed=data.replace(allowedWorker,'').replace(allowedD1,'');
   assert.doesNotMatch(scrubbed,/secrets\.CLOUDFLARE_(?:API|D1_API)_TOKEN/,'Retirement audit must never pass secret values');
   assert.doesNotMatch(data,/^\s+environment:|wrangler.*deploy|\bdeploy-worker\b/m,'Retirement audit must never deploy or use an environment');
+ }else if(file==='reds-live-credential-audit.yml'){
+  // Owner-approved, read-only environment probe. It must never become a publisher.
+  assert.match(data,/environment: reds-live/);
+  assert.match(data,/workflow_dispatch:/);
+  assert.doesNotMatch(data,/^\s+push:|^\s+pull_request:/m);
+  assert.match(data,/run: node scripts\/reds-live-credential-audit\.mjs/);
+  assert.doesNotMatch(data,/wrangler|deploy\s|migrations\s+apply|cloudflare\/wrangler-action|curl\s.*(?:-X|--request)/i);
+  for(const secret of ['CLOUDFLARE_API_TOKEN','CLOUDFLARE_D1_API_TOKEN','CLOUDFLARE_ACCOUNT_ID'])
+   assert.ok(data.includes('secrets.'+secret),'Missing isolated read-only audit credential '+secret);
  }else if(!['deploy.yml','cad-live-verification.yml'].includes(file)&&/secrets\.CLOUDFLARE_API_TOKEN/.test(data))forbidden.push(file+': shared Cloudflare credential outside canonical environments');
  if(file!=='deploy.yml'&&/^\s*(?:npx\s+[^\n]*\s+)?wrangler\s+deploy\s+--config\s+wrangler-web\.toml\s*$/m.test(data))forbidden.push(file+': production worker');
  if(file!=='deploy-web-simple.yml'&&/^\s*command:\s*deploy\s+--config\s+wrangler-web\.toml\s*$/m.test(data))forbidden.push(file+': Cloudflare action');
