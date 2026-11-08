@@ -739,11 +739,12 @@ function offsetGeometry(params){
  const pick=offsetPick?.id===item.id?offsetPick.point:null;
  if(!offsetAnchorCache||offsetAnchorCache.item!==item||offsetAnchorCache.pick!==pick||offsetAnchorCache.mode!==params.mode){
   const frame=item.sketchPlane,n=new THREE.Vector3(...frame.normal),x=new THREE.Vector3(...frame.x),centre=new THREE.Vector3(...item.bounds[0].map((v,i)=>(v+item.bounds[1][i])/2));let best=null;
-  for(const edge of item.edges||[])for(let i=3;i<edge.lines.length;i+=3){
+  for(const edge of item.edges||[]){if(!edge.lines||edge.lines.length<6||edge.lines.length%3!==0||!Array.from(edge.lines).every(Number.isFinite))continue;for(let i=3;i<edge.lines.length;i+=3){
    const a=new THREE.Vector3(...edge.lines.slice(i-3,i)),b=new THREE.Vector3(...edge.lines.slice(i,i+3)),v=b.clone().sub(a);if(v.lengthSq()<1e-12)continue;
    const point=pick?a.clone().addScaledVector(v,Math.max(0,Math.min(1,new THREE.Vector3(...pick).sub(a).dot(v)/v.lengthSq()))):a.clone().add(b).multiplyScalar(.5),score=pick?point.distanceToSquared(new THREE.Vector3(...pick)):-point.dot(x);
    if(best&&score>=best.score)continue;
    const direction=n.clone().cross(v).normalize();if(item.profileClosed&&params.mode!=='Single'&&direction.dot(point.clone().sub(centre))<0)direction.negate();best={point,direction,score};
+  }
   }
   offsetAnchorCache={item,pick,mode:params.mode,...(best||{point:centre,direction:x})};
  }
