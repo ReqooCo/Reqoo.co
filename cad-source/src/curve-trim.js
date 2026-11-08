@@ -36,7 +36,7 @@ function conicContacts(a,b,point,tolerance){
  return points;
 }
 export function trimDrawing(source,boundaries,point,tolerance=.1){
- if(!Array.isArray(point)||point.length!==2||!point.every(Number.isFinite)||!(tolerance>0))throw Error('Invalid Trim point');
+ if(!Array.isArray(point)||point.length!==2||!point.every(Number.isFinite)||!Number.isFinite(tolerance)||!(tolerance>0))throw Error('Invalid Trim point');
  const curves=drawingCurves(source),others=boundaries.flatMap(drawingCurves),owned=new Set([...curves,...others]),cuts=curves.map(()=>[]),stops=[];
  const intersection=(a,b,self=false)=>{if(!self&&a.boundingBox.isOut(b.boundingBox))return[];if(!self&&sameConic(a,b))return conicContacts(a,b,point,tolerance);const inter=new (R.getOC()).Geom2dAPI_InterCurveCurve();try{if(self)inter.Init(a.wrapped,1e-8);else inter.Init(a.wrapped,b.wrapped,1e-8);const points=[];if(!self)for(let k=1;k<=inter.NbSegments();k++){const segment=inter.Segment(k),c=new R.Curve2D(segment.Curve1);try{if(!near(c.firstPoint,c.lastPoint)){if(c.distanceFrom(point)<=tolerance)throw Error('Coincident sketch boundaries overlap; isolate the intended curve');points.push(c.firstPoint,c.lastPoint);}else points.push(c.firstPoint);}finally{c.delete();segment.Curve2.delete();}}for(let i=1;i<=inter.NbPoints();i++){const p=inter.Point(i);points.push([p.X(),p.Y()]);p.delete();}return points;}finally{inter.delete();}};
  let phase='curve intersections';
