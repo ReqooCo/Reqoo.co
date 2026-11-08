@@ -1,3 +1,4 @@
+import {MAX_PROJECT_FEATURES} from './cad-limits.js';
 import {validateVisualization} from './visualization-state.js';
 import {resolveDimensionDocument} from './smart-dimensions.js';
 import {imprintPlanarRegions} from './planar-regions.js';
@@ -18,7 +19,7 @@ export function basis(p={}){
 }
 export function validateProject(doc){
  validateVisualization(doc?.ui?.visualization);
- if(!doc||doc.format!=='reqoo-cad'||doc.version!==1||!Array.isArray(doc.features)||doc.features.length>150)throw Error('Not a supported Reqoo CAD project');
+ if(!doc||doc.format!=='reqoo-cad'||doc.version!==1||!Array.isArray(doc.features)||doc.features.length>MAX_PROJECT_FEATURES)throw Error('Not a supported Reqoo CAD project');
  if(doc.title!==undefined&&(typeof doc.title!=='string'||doc.title.length>80))throw Error('Invalid project title');
  if(doc.ui!==undefined){if(!doc.ui||typeof doc.ui!=='object'||Array.isArray(doc.ui))throw Error('Invalid appearance');if(doc.ui.hidden!==undefined&&(!Array.isArray(doc.ui.hidden)||doc.ui.hidden.some(id=>typeof id!=='string')))throw Error('Invalid hidden items');if(doc.ui.colors!==undefined&&(!doc.ui.colors||typeof doc.ui.colors!=='object'||Array.isArray(doc.ui.colors)||Object.values(doc.ui.colors).some(c=>typeof c!=='string'||!/^#[a-fA-F0-9]{6}$/.test(c))))throw Error('Invalid colours');}
  if(doc.ui?.smartDimensions!==undefined){const pins=doc.ui.smartDimensions;if(!Array.isArray(pins)||pins.length>40||pins.some(p=>!p||typeof p.id!=='string'||typeof p.target!=='string'||p.source!==null&&typeof p.source!=='string'||typeof p.from!=='string'||typeof p.to!=='string'||!['reference','driving'].includes(p.kind)||!['horizontal','vertical','distance'].includes(p.mode)||p.labelOffset!==undefined&&(!Array.isArray(p.labelOffset)||p.labelOffset.length!==2||p.labelOffset.some(v=>!Number.isFinite(v)||Math.abs(v)>20000))))throw Error('Invalid pinned dimensions');}
