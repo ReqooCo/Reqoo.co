@@ -38,4 +38,6 @@ for(const type of ['union','subtract','intersect','move','rotate','scale','patte
  assert.ok(toolSelectionError(type,refs,items,doc),type+' must reject face refs for whole-body operation');
 }
 assert.equal(toolSelectionError('move',[ref('b','body')],items,doc),'','Move still accepts body refs');
+assert.ok(toolSelectionError('delete',[ref('missing','body')],items,doc),'Delete must reject a stale reference');
+assert.equal(toolSelectionError('delete',[ref('b','body')],items,doc),'','Delete accepts an existing body');
 console.log('DEPENDENCY CONTRACT PASS: topology reorder/ambiguity/missing/opposite normals and unique-body Boolean selection');
