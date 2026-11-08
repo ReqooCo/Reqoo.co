@@ -60,7 +60,11 @@ jobs:
             tests/cad.mjs \
             tests/sketch-file-ux-ui.mjs \
             tests/extrude-modes-ui.mjs \
-            tests/direct-sketch-ui.mjs; do
+            tests/direct-sketch-ui.mjs \
+            tests/union-selection-ui.mjs \
+            tests/multi-profile-ui.mjs \
+            tests/reds-sketch-parity-ui.mjs \
+            tests/active-sketch-edit-ui.mjs; do
             run_suite "$suite"
           done
           cat test-results/summary.txt
