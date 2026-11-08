@@ -34,7 +34,7 @@ export function toolSelectionError(type,refs,items,doc={features:[]}){
  if(rule==='loft')return closed()&&refs.length>=2?'':'Select at least two closed sketch profiles';
  if(rule==='sweep')return all('sketch')&&refs.length===2&&chosen[0].profileClosed&&!chosen[0].construction?'':'Select a closed profile first, then a sketch path';
  if(rule==='boolean')return all('body')&&refs.every(r=>r.kind==='body')&&unique.length>=2?'':'Select at least two solid bodies';
- if(rule==='align')return refs.length>0&&unique.length<=2&&refs.every((r,n)=>chosen[n]?.kind==='body'&&['body','face'].includes(r.kind)&& (r.kind!=='face'||chosen[n].faceInfo?.some(f=>f.index===r.index)))?'':'Select a solid body or planar/cylindrical face to align';
+ if(rule==='align')return refs.length>0&&unique.length<=2&&refs.every((r,n)=>chosen[n]?.kind==='body'&&['body','face'].includes(r.kind)&&(r.kind!=='face'||chosen[n].faceInfo?.some(f=>f.index===r.index&&(f.type==='PLANE'||!!f.cylinder))))?'':'Select a solid body or planar/cylindrical face to align';
  if(['bodies','body'].includes(rule))return all('body')&&refs.every(r=>r.kind==='body')&&(rule!=='body'||unique.length===1)?'':'Select '+(rule==='body'?'one solid body':'solid bodies');
  if(rule==='edges')return all('body')&&unique.length===1&&(refs.every(r=>r.kind==='edge')||refs.length===1&&refs[0].kind==='body')?'':'Select edges from one body, or one whole body';
  if(rule==='face')return face?'':'Select one solid face';
