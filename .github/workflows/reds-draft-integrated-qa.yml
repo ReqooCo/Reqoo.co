@@ -31,6 +31,12 @@ jobs:
       - name: Install Chromium
         working-directory: cad-source
         run: npx playwright install --with-deps chromium
+      - name: Validate all CAD JavaScript syntax before browser QA
+        working-directory: cad-source
+        shell: bash
+        run: |
+          set -euo pipefail
+          find src tests -type f \( -name '*.js' -o -name '*.mjs' \) -print0 | xargs -0 -n1 node --check
       - name: Run batch QA and collect every failure
         working-directory: cad-source
         shell: bash
