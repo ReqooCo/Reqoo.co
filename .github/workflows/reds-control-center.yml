@@ -43,8 +43,8 @@ jobs:
         shell: bash
         run: |
           if [[ -f reds/control/status.json ]]; then
-            node -e 'const fs=require("fs"),r=require("./reds/control/status.json");const lines=["## REDS Control Center", "Draft SHA: "+(r.headSha||"unverified"),"Release ready: **"+r.releaseReady+"**", "Pass: "+r.summary.pass+" / Conflict: "+r.summary.conflict+" / Unverified: "+r.summary.unverified, "", "| Check | Result |", "|---|---|", ...r.checks.map(c=>"| "+c.id+" | "+c.status+" |")];console.log(lines.join("\\n"));fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join("\\n")+"\\n");'
-            if [[ "\${{ steps.sync.outcome }}" != "success" ]]; then
+            node -e 'const fs=require("fs"),r=require("./reds/control/status.json");const lines=["## REDS Control Center", "Draft SHA: "+(r.headSha||"unverified"),"Release ready: **"+r.releaseReady+"**", "Pass: "+r.summary.pass+" / Conflict: "+r.summary.conflict+" / Unverified: "+r.summary.unverified, "", "| Check | Result |", "|---|---|", ...r.checks.map(c=>"| "+c.id+" | "+c.status+" |")];console.log(lines.join(String.fromCharCode(10)));fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join(String.fromCharCode(10))+String.fromCharCode(10));'
+            if [[ "${{ steps.sync.outcome }}" != "success" ]]; then
               echo 'Reconciliation reported blockers; see artifact. This monitor does not approve Live.'
             fi
           else
