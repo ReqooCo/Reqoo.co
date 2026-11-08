@@ -13,7 +13,8 @@ Endpoint: `https://reqoo.co/cad/mcp`. Use `Authorization: Bearer PAIRING_CODE` (
 POST JSON-RPC with `Accept: application/json, text/event-stream`. Call initialize, then tools/list. Tools:
 
 - `cad_get_schema`: supported native parameter conventions and limits.
-- `cad_get_state`: latest geometry revision, features and bounded native face/edge metadata; no meshes or imported STEP contents are shared.
+- `cad_get_state`: latest geometry revision and a **bounded overview** (first 15 features / 12 bodies), total feature/body counts, and `partial` indicator. For full assemblies use `cad_inspect`; no meshes or imported STEP contents are shared.
+- `cad_inspect`: list **every** native body/feature in pages (`{kind:"bodies"|"features",offset:0,limit:25}`) or request an individual ID (`{kind:"body"|"feature",id:"native_id"}`). Body list includes ID, volume and bounds. Per-part metadata and feature parameters are returned when the published state has retained them; respect `detailTruncated`/`featureParametersOmitted` flags for complex projects.
 - `cad_apply_features`: submit `{id,title,expectedRevision,features:[{id,type,params,inputs}],updates:[{id,params}]}`. Use the exact current revision. IDs must be unique, units mm. Input feature IDs may refer to earlier operations in the same transaction.
 - `cad_edit_document`: submit `{id,title,expectedRevision,actions:[...]}` for `clear`, `delete`, `deleteBodies`, `renameFeature`, `setTitle`, or `setVisibility`. `clear` requires `{kind:"clear",confirm:true}` as the only action. `delete` requires feature IDs and optionally `cascade:true` to remove dependent history steps. `deleteBodies` creates an undoable native deletion feature and requires `{kind:"deleteBodies",ids:[bodyId],featureId:"unique_id",confirm:true}`. IDs must come from `cad_get_state.state.bodies`. This modifies only the paired project, is one native Undo step, and cannot be replayed with a different payload.
 - `cad_control_workspace`: submit `{id,title,expectedRevision,control:{kind,...}}`. Supported kinds: `undo`, `redo`, `fit`, `view` (iso/top/bottom/front/back/left/right), `display` (solid, edges, wireframe, x-ray modes), `grid`, `select` (native body/sketch/face/edge references), and `clearSelection`. Read state first; control commands are standalone and execute only in the active CAD tab.
@@ -47,6 +48,14 @@ AND (SELECT count(*) FROM cad_bridge_commands WHERE session_id=?)<200;
 ```
 
 Parameters: command ID, serialized command, now, matching session ID, expected revision, now, matching session ID twice. Read back `payload,status,result` for that exact session/command; validate an existing payload matches on retry. Do not report success until status is applied and inspect returned native volume/bounds. The browser independently validates commands and revision even for a connector insert. Never print browser tokens or unrelated session data. Only clear/delete the paired project when the user explicitly requests that destructive action. Check resulting status and feature count before reporting success.
+
+## Large parametric assemblies (Draft implementation)
+
+The native history budget has been raised from 150 to **300 features**, subject to validation of memory and rebuild latency on a real iPad/phone. A single MCP transaction remains capped at 30 operations / 48 KB and remains revision-guarded. The browser publishes up to 450 KB of safe structured state per session; only authenticated consumer state/result uploads may exceed the normal 64 KB request limit (max 512 KB). No raw STEP, JavaScript or unrestricted file access is exposed.
+
+For large projects, call `cad_get_state` to get current revision and counts, then page through `cad_inspect` until `hasMore:false`. To read an individual feature's parameters or body's faces/edges, use the exact ID with `cad_inspect`. **The complete list of part IDs and bounding boxes is preserved even when topology detail is too large**, in which case the response flags detail omission explicitly. Never infer a missing body from the 12-body overview. If a source detail has been omitted for size, do not invent it; inspect the native CAD tab instead.
+
+This implementation is on `reds/draft` only. The owner-approved Live pilot remains unchanged until exact-head CI and a separate approved release.
 
 ## Deployment and QA
 
