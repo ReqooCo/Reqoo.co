@@ -33,3 +33,14 @@ run('3000 connected segments',()=>{
  const items=Array.from({length:3000},(_,i)=>sketch('s'+i,[i,0,0],[i+1,0,0]));
  assert.equal(connectedSketchIds(items,'s0').length,3000);
 });
+
+run('coplanar sketches with shifted origins and reversed normals connect',()=>{
+ const a=sketch('a',[0,0,0],[1,0,0]);
+ const shifted=sketch('shifted',[1,0,0],[2,0,0],{sketchPlane:{origin:[10,10,0],x:[0,1,0],normal:[0,0,-1]}});
+ assert.deepEqual(new Set(connectedSketchIds([a,shifted],'a')),new Set(['a','shifted']));
+});
+run('parallel sketches on different planes stay isolated',()=>{
+ const a=sketch('a',[0,0,0],[1,0,0]);
+ const raised=sketch('raised',[1,0,0],[2,0,0],{sketchPlane:{origin:[0,0,1],x:[1,0,0],normal:[0,0,1]}});
+ assert.deepEqual(connectedSketchIds([a,raised],'a'),['a']);
+});
