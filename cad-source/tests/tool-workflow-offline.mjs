@@ -39,4 +39,14 @@ assert.notEqual(toolSelectionError('extrude',refs,[sketches[0],{...sketches[1],s
 assert.notEqual(toolSelectionError('extrude',refs,[sketches[0],{...sketches[1],sketchPlane:null}]),'','missing second sketch plane rejected without crash');
 assert.notEqual(toolSelectionError('extrude',refs,[{...sketches[0],sketchPlane:{normal:[0,0,0]}},sketches[1]]),'','degenerate sketch normal rejected');
 assert.notEqual(toolSelectionError('extrude',refs,[sketches[0],{...sketches[1],sketchPlane:{normal:[0,0,NaN]}}]),'','nonfinite sketch normal rejected');
-console.log('TOOL WORKFLOW OFFLINE PASS 26');
+const projectionItems=[
+ {id:'solid',kind:'body',faceInfo:[{index:3,type:'PLANE'}],edges:[{index:2}]},
+ {id:'drawing',kind:'sketch',profileClosed:false}
+];
+for(const tool of ['sketchProject','imprint']){
+ for(const ref of [{id:'solid',kind:'body'},{id:'solid',kind:'face',index:3},{id:'solid',kind:'edge',index:2},{id:'drawing',kind:'sketch'}])
+  assert.equal(toolSelectionError(tool,[ref],projectionItems),'',tool+' accepts existing '+ref.kind);
+ for(const ref of [{id:'solid',kind:'face',index:90},{id:'solid',kind:'edge',index:90},{id:'solid',kind:'sketch'},{id:'drawing',kind:'body'}])
+  assert.notEqual(toolSelectionError(tool,[ref],projectionItems),'',tool+' rejects invalid '+ref.kind);
+}
+console.log('TOOL WORKFLOW OFFLINE PASS 42');
