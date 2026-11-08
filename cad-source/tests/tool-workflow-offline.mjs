@@ -3,7 +3,7 @@ import {toolSelectionError} from '../src/tool-workflow.js';
 
 const face=(index,type='PLANE')=>({index,type});
 const items=[
- {id:'moving',kind:'body',faceInfo:[face(0),{...face(1,'CYLINDER'),cylinder:{axis:[0,0,1]}}]},
+ {id:'moving',kind:'body',faceInfo:[face(0),{...face(1,'CYLINDER'),cylinder:{axis:[0,0,1]}}],edges:[{index:0},{index:2}]},
  {id:'fixed',kind:'body',faceInfo:[face(2)]},
  {id:'curve',kind:'sketch',profileClosed:true}
 ];
@@ -23,4 +23,10 @@ for(const refs of [
 ])assert.notEqual(toolSelectionError('align',refs,items),'','invalid alignment selection rejected');
 assert.equal(toolSelectionError('extrude',[{id:'moving',kind:'face',index:0}],items),'','planar extrude remains allowed');
 assert.notEqual(toolSelectionError('extrude',[{id:'moving',kind:'face',index:1}],items),'','cylindrical extrude remains rejected');
-console.log('TOOL WORKFLOW OFFLINE PASS 13');
+for(const tool of ['fillet','chamfer']){
+ assert.equal(toolSelectionError(tool,[{id:'moving',kind:'edge',index:0}],items),'',tool+' accepts valid edge');
+ assert.equal(toolSelectionError(tool,[{id:'moving',kind:'edge',index:0},{id:'moving',kind:'edge',index:2}],items),'',tool+' accepts multiple valid edges');
+ assert.notEqual(toolSelectionError(tool,[{id:'moving',kind:'edge',index:99}],items),'',tool+' rejects nonexistent edge');
+ assert.notEqual(toolSelectionError(tool,[{id:'moving',kind:'face',index:0}],items),'',tool+' rejects face pretending to be edge');
+}
+console.log('TOOL WORKFLOW OFFLINE PASS 21');
