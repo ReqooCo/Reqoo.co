@@ -11,7 +11,7 @@ function validateAction(a){
   case 'delete':if(!actionIds(a.ids)||a.cascade!==undefined&&typeof a.cascade!=='boolean')throw Error('Invalid feature delete action');break;
   case 'deleteBodies':if(!actionIds(a.ids)||!idOK(a.featureId)||a.confirm!==true)throw Error('Deleting visible bodies requires IDs, featureId and confirm:true');break;
   case 'renameFeature':if(!idOK(a.id)||typeof a.name!=='string'||!a.name.trim()||a.name.length>80)throw Error('Invalid feature rename action');break;
-  case 'setTitle':if(typeof a.title!=='string'||!a.title.trim()||a.title.length>120)throw Error('Invalid project title');break;
+  case 'setTitle':if(typeof a.title!=='string'||!a.title.trim()||a.title.length>80)throw Error('Invalid project title');break;
   case 'setVisibility':if(!Array.isArray(a.ids)||!a.ids.length||a.ids.length>30||a.ids.some(id=>typeof id!=='string'||!/^[a-zA-Z0-9_:-]{1,100}$/.test(id))||typeof a.visible!=='boolean')throw Error('Invalid visibility action');break;
   default:throw Error('Unsupported document action');
  }
