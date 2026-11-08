@@ -14,6 +14,8 @@ import {connectedSketchIds} from '../src/sketch-connectivity.js';
  assert.deepEqual(new Set(connectedSketchIds(chain,'a')),new Set(['a','b','c','branch']));
  assert.deepEqual(connectedSketchIds(chain,'isolated'),['isolated']);
  assert.deepEqual(connectedSketchIds(chain,'missing'),[]);
+ assert.deepEqual(connectedSketchIds([...chain,{id:'solid',kind:'body',sketchPlane:plane,edges:[edge([0,0,0],[1,0,0])]}],'solid'),[],'Offset Chain must reject solid-body seeds');
+ assert.deepEqual(connectedSketchIds([...chain,{...sketch('region',[0,0,0],[1,0,0]),regionHost:'host'}],'region'),[],'Offset Chain must reject derived region seeds');
  const long=Array.from({length:250},(_,i)=>sketch('segment-'+i,[i,0,0],[i+1,0,0]));
  assert.equal(connectedSketchIds(long,'segment-0').length,250,'Offset Chain traverses a long linked sketch without dropping members');
  const near=[sketch('near-a',[0,0,0],[1,0,0]),sketch('near-b',[1+0.000004,0,0],[2,0,0]),sketch('far',[2+0.00002,0,0],[3,0,0])];
