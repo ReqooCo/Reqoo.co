@@ -9,6 +9,7 @@ function validateAction(a){
  switch(a.kind){
   case 'clear':if(a.confirm!==true)throw Error('Clearing a project requires confirm:true');break;
   case 'delete':if(!actionIds(a.ids)||a.cascade!==undefined&&typeof a.cascade!=='boolean')throw Error('Invalid feature delete action');break;
+  case 'deleteBodies':if(!actionIds(a.ids)||!idOK(a.featureId)||a.confirm!==true)throw Error('Deleting visible bodies requires IDs, featureId and confirm:true');break;
   case 'renameFeature':if(!idOK(a.id)||typeof a.name!=='string'||!a.name.trim()||a.name.length>80)throw Error('Invalid feature rename action');break;
   case 'setTitle':if(typeof a.title!=='string'||!a.title.trim()||a.title.length>120)throw Error('Invalid project title');break;
   case 'setVisibility':if(!Array.isArray(a.ids)||!a.ids.length||a.ids.length>30||a.ids.some(id=>typeof id!=='string'||!/^[a-zA-Z0-9_:-]{1,100}$/.test(id))||typeof a.visible!=='boolean')throw Error('Invalid visibility action');break;
@@ -45,6 +46,11 @@ function applyDocumentAction(doc,a){
   const hidden=new Set(doc.ui.hidden||[]);
   for(const id of a.ids)a.visible?hidden.delete(id):hidden.add(id);
   doc.ui.hidden=[...hidden];return;
+ }
+ if(a.kind==='deleteBodies'){
+  if(doc.features.some(f=>f.id===a.featureId))throw Error('Deletion feature ID already exists');
+  for(const id of a.ids)if(!doc.features.some(f=>f.id===id.split(':')[0]))throw Error('Body history feature not found: '+id);
+  doc.features.push({id:a.featureId,type:'delete',name:'Delete bodies',params:{},inputs:[...a.ids]});return;
  }
  if(a.kind==='delete'){
   const removed=new Set(a.ids);for(const id of removed)find(id);
