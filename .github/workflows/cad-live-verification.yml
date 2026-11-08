@@ -28,6 +28,9 @@ jobs:
       - name: Validate MCP bridge API, 300-feature limit, paged assembly inspection
         working-directory: cad-source
         run: node tests/bridge-api.mjs
+      - name: Validate native CAD 80-body assembly and incremental cache before Draft deployment
+        working-directory: cad-source
+        run: node tests/native-cache.mjs
       - name: REDS Draft-only deployment gate
         run: node scripts/reds-release-gate.mjs check-draft
       - name: Ensure there is no second Live or Draft publisher
