@@ -2,14 +2,7 @@ name: REDS Control Center
 on:
   push:
     branches: [reds/draft]
-    paths:
-      - 'scripts/reds-control-*'
-      - 'cad-source/release-policy.json'
-      - '.github/workflows/reds-control-center.yml'
-      - 'AGENTS.md'
   workflow_dispatch:
-  schedule:
-    - cron: '17 */6 * * *'
 permissions:
   contents: read
   checks: read
@@ -47,7 +40,13 @@ jobs:
           path: reds/control/status.json
           if-no-files-found: warn
           retention-days: 14
-      - name: Report reconciliation status
+      - name: Summarize reconciliation
         if: always()
+        shell: bash
         run: |
-          echo 'Control Center report uploaded. Conflicts/unverified evidence remain release blockers; monitor execution is not a Live release check.'
+          if [[ -f reds/control/status.json ]]; then
+            node -e 'const r=require("./reds/control/status.json");console.log("REDS Control Center: "+JSON.stringify(r.summary)+" | releaseReady="+r.releaseReady);'
+          else
+            echo 'No report was generated; monitor execution failed.'
+            exit 1
+          fi
