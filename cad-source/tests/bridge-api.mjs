@@ -3,6 +3,7 @@ import worker from '../../_web_worker.js';
 import {handleCadBridge,hashToken} from '../../workers/cad-bridge.js';
 import {bridgeDB} from './bridge-db.mjs';
 import {bridgeRevision,bridgeSummary,applyBridgeCommand,validateBridgeCommand} from '../src/bridge-protocol.js';
+import {MAX_PROJECT_FEATURES,MAX_BRIDGE_STATE_BYTES} from '../src/cad-limits.js';
 const db=bridgeDB(),env={CAD_DB:db},url='https://reqoo.co',headers={'Content-Type':'application/json'},request=(path,method='GET',key,payload,extra={})=>new Request(url+path,{method,headers:{...headers,...(key?{Authorization:'Bearer '+key}:{}),...extra},body:payload===undefined?undefined:JSON.stringify(payload)}),call=async(...a)=>{const r=await worker.fetch(request(...a),env,{});return{status:r.status,data:await r.json()};};
 try{
  let r=await call('/cad/bridge/session','POST',null,{});assert.equal(r.status,201);const pair=r.data;assert.equal(pair.code.replaceAll('-','').length,20);assert.notEqual(pair.consumer,pair.code);const row=await db.prepare('SELECT * FROM cad_bridge_sessions WHERE id=?').bind(pair.id).first();assert.equal(row.producer_hash,await hashToken(pair.code.replaceAll('-','').toLowerCase()));assert.ok(!JSON.stringify(row).includes(pair.consumer));
@@ -13,7 +14,18 @@ try{
  r=await call('/cad/bridge/commands','POST',pair.code,command);assert.equal(r.status,202);assert.equal(r.data.status,'queued');assert.equal((await call('/cad/bridge/commands','POST',pair.code,command)).data.commandId,command.id);assert.equal((await call('/cad/bridge/commands','POST',pair.code,{...command,title:'different'})).status,409);
  r=await call('/cad/bridge/poll','GET',pair.consumer);assert.deepEqual(r.data.command,command);assert.equal((await call('/cad/bridge/commands','POST',pair.code,{...command,id:'stale',expectedRevision:'0'.repeat(64)})).status,409);
  assert.throws(()=>validateBridgeCommand({...command,id:'__proto__'}),/Command needs/);assert.throws(()=>validateBridgeCommand({...command,id:'constructor'}),/Command needs/);
- const huge=bridgeSummary({features:Array.from({length:150},(_,i)=>({id:'f'+i+'a'.repeat(75),type:'box',name:'界'.repeat(80),params:{label:'界'.repeat(2000)},inputs:Array(32).fill('a'.repeat(80))}))},[]);assert.equal(huge.truncated,true);assert.ok(new TextEncoder().encode(JSON.stringify(huge)).byteLength<48000);assert.throws(()=>validateBridgeCommand({...command,features:[{...command.features[0],params:{labels:Array(20).fill('界'.repeat(1000))}}]}),/48 KB/);
+ const huge=bridgeSummary({features:Array.from({length:150},(_,i)=>({id:'f'+i+'a'.repeat(75),type:'box',name:'界'.repeat(80),params:{label:'界'.repeat(2000)},inputs:Array(32).fill('a'.repeat(80))}))},[]);assert.equal(huge.truncated,true);assert.ok(new TextEncoder().encode(JSON.stringify(huge)).byteLength<MAX_BRIDGE_STATE_BYTES);assert.throws(()=>validateBridgeCommand({...command,features:[{...command.features[0],params:{labels:Array(20).fill('界'.repeat(1000))}}]}),/48 KB/);
+ // Mechanical regression: a 300-feature assembly and 32 components must remain inspectable.
+ const assemblyDoc={...doc,features:Array.from({length:MAX_PROJECT_FEATURES},(_,i)=>({id:'part'+i,type:'box',name:'Part '+i,params:{width:10+i%7,depth:20,height:3,tag:'detail-'+i},inputs:[]}))};
+ const assemblyItems=Array.from({length:32},(_,i)=>({id:'body'+i,name:'Body '+i,kind:'body',volume:100+i,bounds:[[i,0,0],[i+10,20,3]],edges:[],faceInfo:[]}));
+ const assemblyState=bridgeSummary(assemblyDoc,assemblyItems);
+ assert.equal(assemblyState.totalFeatures,MAX_PROJECT_FEATURES);assert.equal(assemblyState.features.length,MAX_PROJECT_FEATURES);
+ assert.equal(assemblyState.totalBodies,32);assert.equal(assemblyState.bodies.length,32);assert.equal(assemblyState.bodies[31].id,'body31');
+ assert.equal(assemblyState.features.at(-1).params.tag,'detail-'+(MAX_PROJECT_FEATURES-1));
+ const almost={...assemblyDoc,features:assemblyDoc.features.slice(0,-1)};
+ const accepted=await applyBridgeCommand(almost,{id:'last_part',title:'Add final part',expectedRevision:await bridgeRevision(almost),features:[assemblyDoc.features.at(-1)]});
+ assert.equal(accepted.features.length,MAX_PROJECT_FEATURES);
+ await assert.rejects(()=>applyBridgeCommand(assemblyDoc,{id:'overcap',title:'Over capacity',expectedRevision:await bridgeRevision(assemblyDoc),features:[{id:'too_many',type:'box',params:{width:1,depth:1,height:1},inputs:[]}]}),/feature limit/);
  const next=await applyBridgeCommand(doc,command);assert.equal(next.features.length,1);assert.equal(doc.features.length,0);await assert.rejects(()=>applyBridgeCommand(next,command),/changed/);
  const rev=await bridgeRevision(next),dependent={...next,features:[...next.features,{id:'shifted',type:'move',name:'Move',params:{x:5},inputs:['plate']}]};
  await assert.rejects(async()=>applyBridgeCommand(dependent,{id:'no_cascade',title:'Delete plate',expectedRevision:await bridgeRevision(dependent),actions:[{kind:'delete',ids:['plate']}]}),/Dependent feature/);
@@ -31,7 +43,20 @@ try{
  const large=await handleCadBridge(request('/cad/bridge/commands','POST',pair.code,{a:'a'.repeat(70000)}),env);assert.equal(large.status,413);
  await call('/cad/bridge/result','POST',pair.consumer,{id:command.id,status:'applied',result:{volume:30000},revision,state:{title:doc.title,features:next.features}});r=await call('/cad/bridge/commands?id=test_one','GET',pair.code);assert.equal(r.data.status,'applied');assert.equal(r.data.result.volume,30000);assert.equal((await call('/cad/bridge/poll','GET',pair.consumer)).data.command,null);
  const mcp=async(method,params={},id=1)=>call('/cad/mcp','POST',pair.code,{jsonrpc:'2.0',id,method,params},{Accept:'application/json, text/event-stream'});
- r=await mcp('initialize');assert.equal(r.data.result.protocolVersion,'2025-06-18');r=await mcp('tools/list');assert.equal(r.data.result.tools.length,6);assert.ok(r.data.result.tools.some(t=>t.name==='cad_edit_document'));assert.ok(r.data.result.tools.some(t=>t.name==='cad_control_workspace'));const version=await worker.fetch(request('/cad/mcp','POST',pair.code,{jsonrpc:'2.0',id:1,method:'ping'},{Accept:'application/json, text/event-stream','MCP-Protocol-Version':'invalid'}),env,{});assert.equal(version.status,400);r=await mcp('tools/call',{name:'cad_get_schema'});assert.equal(JSON.parse(r.data.result.content[0].text).units,'mm');r=await mcp('tools/call',{name:'cad_get_state'});assert.equal(JSON.parse(r.data.result.content[0].text).revision,revision);r=await mcp('tools/call',{name:'cad_command_status',arguments:{id:command.id}});assert.equal(JSON.parse(r.data.result.content[0].text).status,'applied');
+ r=await mcp('initialize');assert.equal(r.data.result.protocolVersion,'2025-06-18');r=await mcp('tools/list');assert.equal(r.data.result.tools.length,7);assert.ok(r.data.result.tools.some(t=>t.name==='cad_inspect'));assert.ok(r.data.result.tools.some(t=>t.name==='cad_edit_document'));assert.ok(r.data.result.tools.some(t=>t.name==='cad_control_workspace'));const version=await worker.fetch(request('/cad/mcp','POST',pair.code,{jsonrpc:'2.0',id:1,method:'ping'},{Accept:'application/json, text/event-stream','MCP-Protocol-Version':'invalid'}),env,{});assert.equal(version.status,400); // Consumer state transfer over 64 KB is permitted; client command payloads remain capped.
+ const fullState={...assemblyState,features:assemblyState.features.map(f=>({...f,params:{...f.params,annotation:'A'.repeat(300)}}))};
+ assert.ok(JSON.stringify({revision,state:fullState}).length>65536);
+ assert.equal((await call('/cad/bridge/state','POST',pair.consumer,{revision,state:fullState})).status,200);
+ let inspection=await mcp('tools/call',{name:'cad_inspect',arguments:{kind:'bodies',offset:25,limit:25}});
+ let inspected=JSON.parse(inspection.data.result.content[0].text);
+ assert.equal(inspected.total,32);assert.equal(inspected.items.length,7);assert.equal(inspected.items.at(-1).id,'body31');assert.equal(inspected.hasMore,false);
+ inspection=await mcp('tools/call',{name:'cad_inspect',arguments:{kind:'feature',id:'part299'}});
+ inspected=JSON.parse(inspection.data.result.content[0].text);assert.equal(inspected.item.params.tag,'detail-299');
+ inspection=await mcp('tools/call',{name:'cad_inspect',arguments:{kind:'body',id:'body31'}});
+ inspected=JSON.parse(inspection.data.result.content[0].text);assert.deepEqual(inspected.item.bounds,[[31,0,0],[41,20,3]]);
+ inspection=await mcp('tools/call',{name:'cad_inspect',arguments:{kind:'bodies',offset:-1}});assert.equal(inspection.data.result.isError,true);
+ inspection=await mcp('tools/call',{name:'cad_inspect',arguments:{kind:'body',id:'body99'}});assert.equal(inspection.data.result.isError,true);
+r=await mcp('tools/call',{name:'cad_get_schema'});assert.equal(JSON.parse(r.data.result.content[0].text).units,'mm');r=await mcp('tools/call',{name:'cad_get_state'});assert.equal(JSON.parse(r.data.result.content[0].text).revision,revision);r=await mcp('tools/call',{name:'cad_command_status',arguments:{id:command.id}});assert.equal(JSON.parse(r.data.result.content[0].text).status,'applied');
  r=await mcp('tools/call',{name:'cad_edit_document',arguments:{id:'mcp_clear',title:'Clear project',expectedRevision:revision,actions:[{kind:'clear',confirm:true}]}});assert.equal(r.data.result.isError,false);assert.equal(JSON.parse(r.data.result.content[0].text).status,'queued');
  r=await mcp('tools/call',{name:'cad_edit_document',arguments:{id:'mcp_no_confirm',title:'Clear',expectedRevision:revision,actions:[{kind:'clear'}]}});assert.equal(r.data.result.isError,true);
  r=await mcp('tools/call',{name:'cad_control_workspace',arguments:{id:'mcp_view',title:'Show top view',expectedRevision:revision,control:{kind:'view',view:'top'}}});assert.equal(r.data.result.isError,false);assert.equal(JSON.parse(r.data.result.content[0].text).status,'queued');

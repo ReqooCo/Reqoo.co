@@ -1,3 +1,4 @@
+import {MAX_PROJECT_FEATURES,MAX_BRIDGE_STATE_BYTES} from './cad-limits.js';
 // Shared by the browser and Worker. Commands contain CAD data, never executable code.
 export const BRIDGE_TYPES=['sketch','faceSketch','sketchProfile','imprint','sketchOffset','sketchFillet','sketchMirror','sketchChamfer','sketchPattern','sketchTransform','sketchProject','sketchTrim','box','cylinder','sphere','torus','extrude','hole','revolve','loft','sweep','union','subtract','intersect','fillet','chamfer','thread','shell','offsetFace','draft','move','rotate','scale','mirror','pattern','circularPattern','duplicate','align','split','plane','axis'];
 const idOK=v=>typeof v==='string'&&!Object.hasOwn(Object.prototype,v)&&/^[a-zA-Z0-9_-]{1,80}$/.test(v),object=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
@@ -74,5 +75,35 @@ export function validateBridgeCommand(c){
  for(const f of updates)if(!object(f)||!idOK(f.id)||!object(f.params))throw Error('Invalid feature update');data(c);if(new TextEncoder().encode(JSON.stringify(c)).byteLength>48000)throw Error('Command exceeds 48 KB');return c;
 }
 export async function bridgeRevision(doc){const bytes=new TextEncoder().encode(JSON.stringify({features:doc.features,title:doc.title||'Untitled'}));return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),v=>v.toString(16).padStart(2,'0')).join('');}
-export async function applyBridgeCommand(doc,command){validateBridgeCommand(command);if(command.control)throw Error('Workspace control must execute in the paired CAD client');if(await bridgeRevision(doc)!==command.expectedRevision)throw Error('Project changed. Read its current state and send a new command.');const next=JSON.parse(JSON.stringify(doc));for(const action of command.actions||[])applyDocumentAction(next,action);for(const change of command.updates||[]){const f=next.features.find(f=>f.id===change.id);if(!f||!BRIDGE_TYPES.includes(f.type))throw Error('Cannot update this feature');f.params={...f.params,...change.params};}for(const f of command.features||[]){if(next.features.some(v=>v.id===f.id))throw Error('Feature id already exists');next.features.push({id:f.id,type:f.type,name:(f.name||f.type).slice(0,80),params:f.params,inputs:f.inputs});}if(next.features.length>150)throw Error('Project feature limit reached');next.ui||={hidden:[],colors:{}};next.ui.bridgeApplied=[...(next.ui.bridgeApplied||[]),command.id].slice(-100);return next;}
-export function bridgeSummary(doc,items,workspace){const summary={workspace:workspace||undefined,title:doc.title||'Untitled',units:'mm',hidden:doc.ui?.hidden||[],features:doc.features.map(f=>({id:f.id,type:f.type,name:f.name,params:f.type==='import'?{externalGeometry:true}:f.params,inputs:f.inputs})),bodies:items.filter(i=>i.kind==='body').slice(0,12).map(i=>({id:i.id,name:i.name,volume:i.volume,bounds:i.bounds,edges:(i.edges||[]).slice(0,32).map(e=>({index:e.index,type:e.type,center:e.center,length:e.length,faceIndices:e.faceIndices,reference:e.reference})),faces:i.faceInfo.slice(0,24).map(f=>({index:f.index,type:f.type,center:f.center,normal:f.normal,area:f.area,cylinder:f.cylinder,reference:f.reference}))})),featureLimit:150};if(new TextEncoder().encode(JSON.stringify(summary)).byteLength>48000){summary.truncated=true;summary.features=summary.features.map(f=>({...f,name:f.name?.slice(0,40),inputs:f.inputs.slice(0,8),params:{omitted:true}}));summary.bodies=summary.bodies.slice(0,8).map(b=>({...b,faces:b.faces.slice(0,6),edges:b.edges.slice(0,8)}));}if(new TextEncoder().encode(JSON.stringify(summary)).byteLength>48000){summary.truncated=true;summary.features=doc.features.map(f=>({id:f.id,type:f.type}));summary.bodies=summary.bodies.map(b=>({id:b.id,name:b.name?.slice(0,40),volume:b.volume,bounds:b.bounds}));}return summary;}
+export async function applyBridgeCommand(doc,command){validateBridgeCommand(command);if(command.control)throw Error('Workspace control must execute in the paired CAD client');if(await bridgeRevision(doc)!==command.expectedRevision)throw Error('Project changed. Read its current state and send a new command.');const next=JSON.parse(JSON.stringify(doc));for(const action of command.actions||[])applyDocumentAction(next,action);for(const change of command.updates||[]){const f=next.features.find(f=>f.id===change.id);if(!f||!BRIDGE_TYPES.includes(f.type))throw Error('Cannot update this feature');f.params={...f.params,...change.params};}for(const f of command.features||[]){if(next.features.some(v=>v.id===f.id))throw Error('Feature id already exists');next.features.push({id:f.id,type:f.type,name:(f.name||f.type).slice(0,80),params:f.params,inputs:f.inputs});}if(next.features.length>MAX_PROJECT_FEATURES)throw Error('Project feature limit reached ('+MAX_PROJECT_FEATURES+')');next.ui||={hidden:[],colors:{}};next.ui.bridgeApplied=[...(next.ui.bridgeApplied||[]),command.id].slice(-100);return next;}
+export function bridgeSummary(doc,items,workspace){
+ const solids=items.filter(i=>i.kind==='body');
+ const summary={
+  workspace:workspace||undefined,title:doc.title||'Untitled',units:'mm',
+  hidden:doc.ui?.hidden||[],featureLimit:MAX_PROJECT_FEATURES,
+  totalFeatures:doc.features.length,totalBodies:solids.length,
+  features:doc.features.map(f=>({id:f.id,type:f.type,name:f.name,params:f.type==='import'?{externalGeometry:true}:f.params,inputs:f.inputs})),
+  // Include ALL solid bodies; previously the server could only inspect the first 12.
+  bodies:solids.map(i=>({id:i.id,name:i.name,volume:i.volume,bounds:i.bounds,
+   edges:(i.edges||[]).slice(0,32).map(e=>({index:e.index,type:e.type,center:e.center,length:e.length,faceIndices:e.faceIndices,reference:e.reference})),
+   faces:(i.faceInfo||[]).slice(0,24).map(f=>({index:f.index,type:f.type,center:f.center,normal:f.normal,area:f.area,cylinder:f.cylinder,reference:f.reference}))
+  }))
+ };
+ const bytes=()=>new TextEncoder().encode(JSON.stringify(summary)).byteLength;
+ if(bytes()>MAX_BRIDGE_STATE_BYTES){
+  // Keep all IDs, volumes and bounding boxes, dropping bulky topology first.
+  summary.truncated=true;summary.detailTruncated=true;
+  summary.bodies=summary.bodies.map(({id,name,volume,bounds})=>({id,name,volume,bounds,detailOmitted:true}));
+ }
+ if(bytes()>MAX_BRIDGE_STATE_BYTES){
+  summary.truncated=true;summary.featureParametersOmitted=true;
+  summary.features=summary.features.map(f=>({...f,params:{omitted:true}}));
+ }
+ if(bytes()>MAX_BRIDGE_STATE_BYTES){
+  summary.truncated=true;summary.namesTruncated=true;
+  summary.features=summary.features.map(f=>({id:f.id,type:f.type,name:f.name?.slice(0,30),params:{omitted:true},inputs:f.inputs.slice(0,8)}));
+  summary.bodies=summary.bodies.map(b=>({id:b.id,name:b.name?.slice(0,30),volume:b.volume,bounds:b.bounds,detailOmitted:true}));
+ }
+ if(bytes()>MAX_BRIDGE_STATE_BYTES)throw Error('CAD bridge state is too large to publish safely');
+ return summary;
+}
