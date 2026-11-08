@@ -62,6 +62,9 @@ jobs:
       - name: Test R3DS CAD workspace end to end
         working-directory: cad-source
         run: timeout --signal=TERM --kill-after=15s 300s node tests/cad.mjs
+      - name: Test 1000-feature browser rebuild, render and reload
+        working-directory: cad-source
+        run: timeout --signal=TERM --kill-after=15s 600s node tests/large-assembly-1000-ui.mjs
       - name: Test modeling product workflows
         working-directory: cad-source
         run: timeout --signal=TERM --kill-after=15s 300s node tests/product.mjs
