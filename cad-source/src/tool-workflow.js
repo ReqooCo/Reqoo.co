@@ -4,7 +4,9 @@ export function promoteBodySelection(before,id){return [...before.filter(r=>r.ki
 export function extendCanvasSelection(current,next,{explicit=false,filter='auto'}={}){
  if(explicit)return true;if(!current.length||!next)return false;
  if(!current.every(r=>r.kind===next.kind))return false;
- if(next.kind==='face')return filter==='face'||current.every(r=>r.id===next.id&&r.index===next.index);
+ // Multi-face selection must work for fillet/chamfer and face-based tools.
+ // Keep cross-body face selection opt-in via the explicit face filter.
+ if(next.kind==='face')return filter==='face'||current.every(r=>r.id===next.id);
  if(next.kind==='edge')return current.every(r=>r.id===next.id);
  return ['sketch','body'].includes(next.kind);
 }
