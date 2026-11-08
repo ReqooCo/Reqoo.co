@@ -47,6 +47,13 @@ try{
  const data=async()=>page.evaluate(()=>window.__cad.items);
  const box=async(params={})=>apply('box',{width:30,depth:20,height:10,...params});
  await reset();let a=await box(),b=await box({x:15});assert.equal((await data()).length,2);let id=await apply('union',{},[a,b]);approx((await data())[0].volume,9000);checks.push('Adding a body preserves the previous body; native union');
+ // Three overlapping operands must merge into one selectable solid.
+ await reset();a=await box();b=await box({x:15});const c=await box({x:30});
+ await apply('union',{},[a,b,c]);
+ const merged=(await data()).filter(i=>i.kind==='body');
+ assert.equal(merged.length,1,'Three-body Union must produce one selectable body');
+ approx(merged[0].volume,12000,.01);
+ checks.push('Three-body Union combines all selected operands into one valid solid');
  for(const [operation,expected]of [['subtract',3000],['intersect',3000]]){await reset();a=await box();b=await box({x:15});await apply(operation,{},[a,b]);approx((await data())[0].volume,expected);checks.push('Native '+operation+' volume verified');}
  for(const type of ['fillet','chamfer']){await reset();a=await box();await apply(type,{radius:1,allEdges:true},[a]);const item=(await data())[0];assert.ok(item.volume>0&&item.volume<6000);assert.ok(item.faceInfo.length>6);checks.push(type+' changes B-rep topology and volume');await page.screenshot({path:path.join(out,'03-'+type+'.png')});}
  await reset();a=await box();let item=(await data())[0],top=item.faceInfo.find(f=>f.normal[2]>.99).index;await apply('shell',{face:top,thickness:2},[a]);approx((await data())[0].volume,2672,.001);checks.push('Shell removes selected face and creates actual 2 mm walls');
