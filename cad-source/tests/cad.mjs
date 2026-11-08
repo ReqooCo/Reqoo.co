@@ -4,6 +4,20 @@ import {beginSketch,createSketch} from './sketch-flow.mjs';
 import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
 import {sketchGuidepoints,nearestGuidepoint} from '../src/guidepoints.js';
+import {connectedSketchIds} from '../src/sketch-connectivity.js';
+// Offset Chain: connected segments, branching, isolated and different planes.
+{
+ const plane={origin:[0,0,0],x:[1,0,0],normal:[0,0,1]},other={origin:[0,0,1],x:[1,0,0],normal:[0,0,1]};
+ const edge=(a,b)=>({lines:[...a,...b]});
+ const sketch=(id,a,b,sketchPlane=plane)=>({id,kind:'sketch',sketchPlane,edges:[edge(a,b)]});
+ const chain=[sketch('a',[0,0,0],[1,0,0]),sketch('b',[1,0,0],[2,0,0]),sketch('c',[2,0,0],[3,0,0]),sketch('branch',[1,0,0],[1,1,0]),sketch('isolated',[8,0,0],[9,0,0]),sketch('other-plane',[3,0,0],[4,0,0],other)];
+ assert.deepEqual(new Set(connectedSketchIds(chain,'a')),new Set(['a','b','c','branch']));
+ assert.deepEqual(connectedSketchIds(chain,'isolated'),['isolated']);
+ assert.deepEqual(connectedSketchIds(chain,'missing'),[]);
+ const long=Array.from({length:250},(_,i)=>sketch('segment-'+i,[i,0,0],[i+1,0,0]));
+ assert.equal(connectedSketchIds(long,'segment-0').length,250,'Offset Chain traverses a long linked sketch without dropping members');
+}
+
 // Geometry snap regressions run before browser startup.
 {
  const plane={origin:[0,0,0],x:[1,0,0],normal:[0,0,1]};
