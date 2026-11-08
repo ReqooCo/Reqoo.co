@@ -36,7 +36,7 @@ export function toolSelectionError(type,refs,items,doc={features:[]}){
  if(rule==='boolean')return all('body')&&refs.every(r=>r.kind==='body')&&unique.length>=2?'':'Select at least two solid bodies';
  if(rule==='align')return refs.length>0&&unique.length<=2&&refs.every((r,n)=>chosen[n]?.kind==='body'&&['body','face'].includes(r.kind)&&(r.kind!=='face'||chosen[n].faceInfo?.some(f=>f.index===r.index&&(f.type==='PLANE'||!!f.cylinder))))?'':'Select a solid body or planar/cylindrical face to align';
  if(['bodies','body'].includes(rule))return all('body')&&refs.every(r=>r.kind==='body')&&(rule!=='body'||unique.length===1)?'':'Select '+(rule==='body'?'one solid body':'solid bodies');
- if(rule==='edges')return all('body')&&unique.length===1&&(refs.every(r=>r.kind==='edge')||refs.length===1&&refs[0].kind==='body')?'':'Select edges from one body, or one whole body';
+ if(rule==='edges')return all('body')&&unique.length===1&&(refs.every((r,n)=>r.kind==='edge'&&chosen[n].edges?.some((edge,i)=>(Number.isInteger(edge.index)?edge.index:i)===r.index))||refs.length===1&&refs[0].kind==='body')?'':'Select valid edges from one body, or one whole body';
  if(rule==='face')return face?'':'Select one solid face';
  if(rule==='planarFace')return face?.type==='PLANE'?'':'Select one planar solid face';
  if(rule==='cylinderFace')return face?.cylinder?.full?'':'Select one complete cylindrical side face';
