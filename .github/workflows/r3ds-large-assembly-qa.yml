@@ -40,6 +40,9 @@ jobs:
       - name: Run native CAD 1000-feature / 43-body assembly benchmark
         working-directory: cad-source
         run: timeout --signal=TERM --kill-after=15s 600s node tests/large-assembly-1000.mjs
+      - name: Stress complex 1000-feature assembly with 344 boolean cuts
+        working-directory: cad-source
+        run: timeout --signal=TERM --kill-after=15s 600s node tests/large-assembly-1000-booleans.mjs
       - name: Verify native feature cache and 80-body guard
         working-directory: cad-source
         run: node tests/native-cache.mjs
