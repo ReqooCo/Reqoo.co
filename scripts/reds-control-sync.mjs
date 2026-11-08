@@ -37,10 +37,13 @@ for(const name of policy.rules.requiredChecks){
 }
 check('release.securityGate',policy.rules.liveAccessRestricted,true,'policy','cad-source/release-policy.json');
 const errors=[head,pr,cf,run].filter(x=>x?.error).map(x=>({source:x.id,error:x.error}));
+if(!cfToken||!account)errors.push({source:'cloudflare-pages',error:'Cloudflare audit credentials not configured; Pages state unverified'});
+if(!ghToken)errors.push({source:'github',error:'GitHub token unavailable; GitHub state unverified'});
 const releaseBlockers=checks.filter(x=>x.status!=='pass').map(x=>({id:x.id,status:x.status}));
 const report={schemaVersion:1,generatedAt:now,repository:repo,branch,headSha:sha,sourceOfTruth:{git:'GitHub API',pages:'Cloudflare API',releasePolicy:'cad-source/release-policy.json'},sourceErrors:errors,checks,releaseBlockers,summary:{pass:checks.filter(x=>x.status==='pass').length,conflict:checks.filter(x=>x.status==='conflict').length,unverified:checks.filter(x=>x.status==='unverified').length},releaseReady:checks.every(x=>x.status==='pass')};
 const output=process.argv[2]||'reds/control/status.json';
-fs.mkdirSync(new URL('../reds/control/',import.meta.url),{recursive:true});
+fs.mkdirSync(new URL('.',new URL('file://'+process.cwd()+'/')), {recursive:true});
+fs.mkdirSync((await import('node:path')).dirname(output),{recursive:true});
 fs.writeFileSync(output,JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify(report.summary));
 if(!report.releaseReady)process.exitCode=2;
