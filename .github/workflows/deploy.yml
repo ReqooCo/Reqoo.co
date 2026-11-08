@@ -64,29 +64,8 @@ jobs:
         shell: bash
         run: npm install --no-save --no-package-lock "wrangler@${WRANGLER_VERSION}"
 
-      - name: Verify existing Billplz Worker secrets (names only)
-        run: node scripts/check-billplz-deployment.mjs
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-
-      - name: Apply D1 migrations
-        shell: bash
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          set -euo pipefail
-          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then echo "::error::Missing reds-live CLOUDFLARE_D1_API_TOKEN"; exit 1; fi
-          npx --no-install wrangler d1 migrations apply reqoo-rebuild --remote --config api/wrangler.jsonc
-
-      - name: Deploy API Worker
-        shell: bash
-        run: npx --no-install wrangler deploy --config api/wrangler.jsonc
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-
+      # MCP pilot ONLY: the cad_bridge_* D1 tables already exist in production.
+      # Do not run D1 migrations, redeploy API/commerce Workers or touch Billplz.
       - name: Deploy Web Worker
         shell: bash
         run: npx --no-install wrangler deploy --config wrangler-web.toml
