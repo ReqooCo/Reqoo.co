@@ -56,10 +56,22 @@ try{
    else check(reviewer?.prevent_self_review&&reviewer.reviewers?.length&&env.can_admins_bypass===false,`${name}: reviewers, prevent self approval, no admin bypass`);
   }
   const secrets=await all(`/environments/${name}/secrets`,'secrets');
-  check(secrets.some(s=>s.name==='CLOUDFLARE_API_TOKEN'),`${name}: environment deployment token exists (scope and distinctness require Cloudflare evidence)`);
+  const secretNames=new Set(secrets.map(s=>s.name));
+  // GitHub API lists names/timestamps only, never secret values. An existing name
+  // is evidence of binding, NOT proof that its Cloudflare token is least-privilege.
+  check(secretNames.has('CLOUDFLARE_API_TOKEN'),`${name}: environment Worker deployment token is installed`);
+  if(name==='reds-live')check(secretNames.has('CLOUDFLARE_D1_API_TOKEN'),
+    'reds-live: separate D1 migration token CLOUDFLARE_D1_API_TOKEN is installed');
+  else check(!secretNames.has('CLOUDFLARE_D1_API_TOKEN'),
+    'reds-draft: no Live D1 migration token exposed to Draft environment');
  }
  const repoSecrets=await all('/actions/secrets','secrets');
- check(!repoSecrets.some(s=>s.name==='CLOUDFLARE_API_TOKEN'),'repository: broad shared CLOUDFLARE_API_TOKEN removed');
- console.log('MANUAL EVIDENCE STILL REQUIRED: Cloudflare token scopes/distinctness/revocation, organization secrets, app/PAT/member access, alternate publishers, safe negative enforcement tests.');
+ const repoNames=new Set(repoSecrets.map(s=>s.name));
+ check(!repoNames.has('CLOUDFLARE_API_TOKEN'),
+   'repository: broad shared Worker deployment token removed (environment-only)');
+ check(!repoNames.has('CLOUDFLARE_D1_API_TOKEN'),
+   'repository: D1 migration token not shared globally (reds-live environment-only)');
+ // Do not infer missing organization/user credentials from repository listings.
+ console.log('MANUAL EVIDENCE STILL REQUIRED: environment secret values/token identity cannot be read; verify Cloudflare token binding, user-scoped token revocation, organization secrets, connected-agent/PAT access, alternative publishers and safe negative enforcement tests.');
 }catch(e){failures.push(e.message);console.error(`BLOCKED: ${e.message}`);}
 if(failures.length)process.exitCode=1;
