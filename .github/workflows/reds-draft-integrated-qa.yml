@@ -4,6 +4,11 @@ on:
     branches: [reds/draft]
     paths:
       - 'cad-source/**'
+      - 'scripts/reds-*'
+      - 'workers/cad-bridge.js'
+      - '_web_worker.js'
+      - 'wrangler-web.toml'
+      - '.github/workflows/cad-live-verification.yml'
       - '.github/workflows/reds-draft-integrated-qa.yml'
   workflow_dispatch:
 permissions:
