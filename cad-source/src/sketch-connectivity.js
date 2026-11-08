@@ -1,8 +1,19 @@
 export function connectedSketchIds(items,seed){
  const source=items.find(i=>i.id===seed);
  if(!source||source.kind!=='sketch'||source.regionHost)return[];
- const plane=JSON.stringify(source.sketchPlane);
- const candidates=items.filter(i=>i.kind==='sketch'&&!i.regionHost&&JSON.stringify(i.sketchPlane)===plane);
+ const coplanar=(a,b)=>{
+  if(!a||!b)return false;
+  const valid=v=>Array.isArray(v)&&v.length===3&&v.every(Number.isFinite);
+  if(!valid(a.origin)||!valid(b.origin)||!valid(a.normal)||!valid(b.normal))return false;
+  const dot=(u,v)=>u.reduce((s,n,k)=>s+n*v[k],0);
+  const norm=v=>Math.hypot(...v);
+  const na=norm(a.normal),nb=norm(b.normal);
+  if(na<1e-10||nb<1e-10)return false;
+  const alignment=Math.abs(dot(a.normal,b.normal)/(na*nb));
+  const delta=a.origin.map((n,k)=>n-b.origin[k]);
+  return alignment>.9999&&Math.abs(dot(delta,b.normal)/nb)<1e-4;
+ };
+ const candidates=items.filter(i=>i.kind==='sketch'&&!i.regionHost&&coplanar(i.sketchPlane,source.sketchPlane));
  const ends=i=>(i.edges||[]).flatMap(e=>{
   const lines=e?.lines;
   if(!lines||lines.length<6||lines.length%3!==0||!Array.from(lines).every(Number.isFinite))return[];
