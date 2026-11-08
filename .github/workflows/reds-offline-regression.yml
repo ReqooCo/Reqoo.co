@@ -1,24 +1,39 @@
-name: REDS offline geometry regressions
+name: REDS offline regression gate
 on:
   push:
     branches: [reds/draft]
-    paths: ['cad-source/src/sketch-connectivity.js', 'cad-source/tests/sketch-connectivity-offline.mjs', '.github/workflows/reds-offline-regression.yml']
+    paths: ['cad-source/**', '.github/workflows/reds-offline-regression.yml']
   pull_request:
     branches: [main]
 permissions:
   contents: read
 jobs:
-  geometry:
+  offline-regression:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Run dependency-free Offset Chain regressions
+      - name: Check syntax and run dependency-free regressions
         working-directory: cad-source
+        shell: bash
         run: |
+          set -euo pipefail
           node --check src/sketch-connectivity.js
-          node --check tests/sketch-connectivity-offline.mjs
-          node tests/sketch-connectivity-offline.mjs
+          for suite in \
+            tests/sketch-connectivity-offline.mjs \
+            tests/guidepoints.mjs \
+            tests/sketch-edit-geometry.mjs \
+            tests/sketch-flow.mjs \
+            tests/bridge-api.mjs \
+            tests/display-cache.mjs \
+            tests/constraints.mjs \
+            tests/canvas-tool-flow.mjs \
+            tests/bridge-db.mjs \
+            tests/runtime-route.mjs; do
+            echo "::group::$suite"
+            node "$suite"
+            echo "::endgroup::"
+          done
