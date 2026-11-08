@@ -9,6 +9,7 @@ assert.equal(data.releaseReady,false);
 assert.ok(data.checks.some(x=>x.status==='unverified'));
 assert.equal(data.schemaVersion,1);
 assert.ok(data.checks.some(x=>x.id==='release.pr.headSha'&&x.status==='unverified'));
+assert.ok(data.checks.some(x=>x.id==='release.pr.readyForReview'&&x.status==='unverified'));
 assert.ok(Array.isArray(data.sourceErrors));
 assert.ok(data.checks.some(x=>x.id==='release.securityGate'&&x.status==='conflict'));
 assert.equal(JSON.stringify(data).includes('CLOUDFLARE_AUDIT_TOKEN'),false);
