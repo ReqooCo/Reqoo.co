@@ -59,7 +59,13 @@ export function createDirectModeling(api){
  function cancel(){api.onSnap?.(null);drag=null;handle.classList.remove('dragging');api.onNavigation(true);clearTimeout(timer);sequence++;previewEpoch++;wanted=null;session=null;value=0;dimensions.hidden=true;api.onResetPreview();feedback.textContent='';}
  function begin(initial=0,requested){
   const t=target();if(!t)return;previewEpoch++;operation=requested||(t.diameter?'diameter':t.edge?'fillet':t.sketch?'extrude':'offsetFace');let refs;try{refs=api.getOperationRefs?.(operation)||[t.ref];if(['fillet','chamfer'].includes(operation)&&refs.some(r=>r.kind!=='edge'||r.id!==t.ref.id))throw Error('Select edges from one body');}catch(e){api.onStatus(e.message);return;}session={...t.ref,refs};value=operation==='diameter'?(t.diameter.diameter+initial):initial;
-  extrudeChoices.hidden=operation!=='extrude';if(operation==='extrude'){const targets=api.getExtrudeTargets?.(session)||[];extrudeTarget.replaceChildren(...targets.map(item=>{const option=document.createElement('option');option.value=item.id;option.textContent=item.name;return option;}));extrudeOperation.value='New body';extrudeTarget.hidden=true;for(const option of extrudeOperation.options)option.disabled=option.value!=='New body'&&!targets.length;}
+  extrudeChoices.hidden=operation!=='extrude';if(operation==='extrude'){const targets=api.getExtrudeTargets?.(session)||[];extrudeTarget.replaceChildren(...targets.map(item=>{const option=document.createElement('option');option.value=item.id;option.textContent=item.name;return option;}));// Pulling an existing solid face should extend that solid by default.
+   // Sketch extrusion remains New body unless the user explicitly chooses a Boolean target.
+   const defaultAdd=session.kind==='face'&&targets.some(item=>item.id===session.id);
+   extrudeOperation.value=defaultAdd?'Add':'New body';
+   if(defaultAdd)extrudeTarget.value=session.id;
+   extrudeTarget.hidden=!defaultAdd;
+   for(const option of extrudeOperation.options)option.disabled=option.value!=='New body'&&!targets.length;}
   label.textContent=operation==='diameter'?'Diameter':operation==='fillet'?'Radius':operation==='chamfer'?'Chamfer':operation==='draft'?'Draft':'Distance';
   unit.textContent=operation==='draft'?'°':api.getUnits?.().label||'mm';input.value=String(Number(displayValue().toFixed(4)));dimensions.hidden=false;applyButton.disabled=!t.diameter||Math.abs(value)<.001;update();if(initial)schedule();
  }
