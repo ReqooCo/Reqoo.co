@@ -25,7 +25,7 @@ jobs:
         run: |
           npm ci
           npm run build
-      - name: Validate MCP bridge API, 300-feature limit, paged assembly inspection
+      - name: Validate MCP bridge API, 1000-feature limit, paged assembly inspection
         working-directory: cad-source
         run: node tests/bridge-api.mjs
       - name: Validate native CAD 80-body assembly and incremental cache before Draft deployment
