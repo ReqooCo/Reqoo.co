@@ -63,6 +63,19 @@ try{
  await page.waitForFunction(()=>window.__cad.items.filter(i=>i.kind==='body').length===1);
  approx((await data())[0].volume,9000,.01);
  checks.push('Boolean Union UI uses preselected bodies and commits through Done');
+ // Real canvas taps must extend and toggle body selection inside the Boolean session.
+ await reset();a=await box();b=await box({x:15});
+ await page.evaluate(()=>window.__cad.view('top'));await page.locator('#fit').click();
+ const tapWorld=async(x,y=0)=>{const point=await page.evaluate(({x,y})=>{const p=new window.THREE.Vector3(x,y,10).project(window.__cad.camera),r=document.querySelector('#canvas').getBoundingClientRect();return{x:r.left+(p.x+1)*r.width/2,y:r.top+(1-p.y)*r.height/2};},{x,y});await page.mouse.click(point.x,point.y);};
+ await page.evaluate(()=>window.__cad.startTool('union'));
+ await tapWorld(-10);assert.equal(await page.locator('#booleanBar output').textContent(),'1 bodies selected');
+ await tapWorld(25);assert.equal(await page.locator('#booleanBar output').textContent(),'2 bodies selected');
+ await tapWorld(25);assert.equal(await page.locator('#booleanBar output').textContent(),'1 bodies selected');
+ await tapWorld(25);assert.equal(await page.locator('#booleanBar output').textContent(),'2 bodies selected');
+ await page.locator('#booleanBar button[aria-label="Apply Union"]').click();
+ await page.waitForFunction(()=>window.__cad.items.filter(i=>i.kind==='body').length===1);
+ approx((await data())[0].volume,9000,.01);
+ checks.push('Canvas tap multi-select toggles Boolean operands and commits Union');
  for(const [operation,expected]of [['subtract',3000],['intersect',3000]]){await reset();a=await box();b=await box({x:15});await apply(operation,{},[a,b]);approx((await data())[0].volume,expected);checks.push('Native '+operation+' volume verified');}
  for(const type of ['fillet','chamfer']){await reset();a=await box();await apply(type,{radius:1,allEdges:true},[a]);const item=(await data())[0];assert.ok(item.volume>0&&item.volume<6000);assert.ok(item.faceInfo.length>6);checks.push(type+' changes B-rep topology and volume');await page.screenshot({path:path.join(out,'03-'+type+'.png')});}
  await reset();a=await box();let item=(await data())[0],top=item.faceInfo.find(f=>f.normal[2]>.99).index;await apply('shell',{face:top,thickness:2},[a]);approx((await data())[0].volume,2672,.001);checks.push('Shell removes selected face and creates actual 2 mm walls');
