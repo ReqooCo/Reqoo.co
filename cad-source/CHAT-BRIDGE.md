@@ -4,7 +4,7 @@
 
 Open https://reqoo.co/cad/ → **Chat** → **Connect this project** → **Copy message for chat**. Paste that message in the assistant conversation, then describe the model with dimensions. Auto Apply is enabled; turn it off to review each command in CAD first. Return to the CAD tab on iPad to receive the model; background/suspended Safari tabs cannot execute the geometry kernel. Disconnect revokes access. Pairing lasts 24 hours and resumes across reloads in the same tab.
 
-The chat assistant translates the request into structured CAD features; the bridge itself is not an LLM and needs no OpenAI key. Native geometry is built on the device. Each command is one undoable transaction. Failed kernel builds preserve the previous document. No JavaScript, STEP uploads, project reset or deletion can be submitted remotely.
+The chat assistant translates the request into structured CAD operations; the bridge itself is not an LLM and needs no OpenAI key. Native geometry is built on the device. Each command is one undoable transaction. Failed kernel builds preserve the previous document. No JavaScript, STEP uploads, or arbitrary file deletion can be submitted remotely. Project clearing and history-feature deletion are available only through the authenticated, revision-guarded document control tool.
 
 ## MCP clients
 
@@ -15,6 +15,7 @@ POST JSON-RPC with `Accept: application/json, text/event-stream`. Call initializ
 - `cad_get_schema`: supported native parameter conventions and limits.
 - `cad_get_state`: latest geometry revision, features and bounded native face/edge metadata; no meshes or imported STEP contents are shared.
 - `cad_apply_features`: submit `{id,title,expectedRevision,features:[{id,type,params,inputs}],updates:[{id,params}]}`. Use the exact current revision. IDs must be unique, units mm. Input feature IDs may refer to earlier operations in the same transaction.
+- `cad_edit_document`: submit `{id,title,expectedRevision,actions:[...]}` for `clear`, `delete`, `renameFeature`, `setTitle`, or `setVisibility`. `clear` requires `{kind:"clear",confirm:true}` as the only action. `delete` requires IDs and optionally `cascade:true` to remove dependent history steps. This modifies only the paired project, is one native Undo step, and cannot be replayed with a different payload.
 - `cad_command_status`: poll `{id}`. Only **applied** confirms geometry was committed. **queued** means the open CAD tab has not yet applied it. **failed/rejected** means no changes from that command were committed.
 
 A completed acknowledgement publishes the new state and command result atomically, so the next command cannot observe an applied result with the old document revision. Repeated command IDs with identical data return their existing result; different data with the same ID is rejected. The browser keeps receipt markers through save/reopen and prevents duplicate execution after lost acknowledgements. Web Locks prevent duplicated tabs from consuming the same pairing concurrently.
@@ -44,13 +45,13 @@ AND (SELECT count(*) FROM cad_bridge_commands WHERE session_id=? AND status='que
 AND (SELECT count(*) FROM cad_bridge_commands WHERE session_id=?)<200;
 ```
 
-Parameters: command ID, serialized command, now, matching session ID, expected revision, now, matching session ID twice. Read back `payload,status,result` for that exact session/command; validate an existing payload matches on retry. Do not report success until status is applied and inspect returned native volume/bounds. The browser independently validates commands and revision even for a connector insert. Never print browser tokens or unrelated session data. Do not silently replace/reset an existing project; append features or update requested parameters.
+Parameters: command ID, serialized command, now, matching session ID, expected revision, now, matching session ID twice. Read back `payload,status,result` for that exact session/command; validate an existing payload matches on retry. Do not report success until status is applied and inspect returned native volume/bounds. The browser independently validates commands and revision even for a connector insert. Never print browser tokens or unrelated session data. Only clear/delete the paired project when the user explicitly requests that destructive action. Check resulting status and feature count before reporting success.
 
 ## Deployment and QA
 
 Migration `migrations/20261105_cad_bridge.sql` creates isolated session, command and short-lived rate-limit tables. The existing production workflow applies it before deploying `reqoo-web` with `CAD_DB`. No external secrets are embedded. Pairing hashes are stored in D1; plaintext credentials are returned only to the browser. Creation is rate limited, JSON bodies are bounded, origins are checked, statements are parameterized, sessions are isolated and expired records are cleaned when a new session starts. Server implementation is excluded from public static assets.
 
-Run `node tests/bridge-api.mjs` (Node 24 SQLite) and `CAD_BUILD_DIR=dist node tests/bridge-ui.mjs` after building in cad-source. The UI test runs the actual Worker handler against real SQLite locally and the deployed D1/Worker through MCP on production, with the real CAD kernel in Chromium. It creates a plate with four holes, checks native volume, Undo/Redo, reload, retry deduplication, failed geometry rollback, optional review, upstream resizing, rejection and revocation. Existing CAD regressions remain required.
+Run `node tests/bridge-api.mjs` (Node 24 SQLite) and `CAD_BUILD_DIR=dist node tests/bridge-ui.mjs` after building in cad-source. The UI test runs the actual Worker handler against real SQLite locally and the deployed D1/Worker through MCP on production, with the real CAD kernel in Chromium. It creates a plate with four holes, checks native volume, Undo/Redo, reload, retry deduplication, failed geometry rollback, optional review, upstream resizing, document rename, confirmed clear and restore, rejection and revocation. Existing CAD regressions remain required.
 
 Limits: 30 operations/command, 150 features/project, 20 pending commands, 200 commands/pairing, 48 KB command data, 24-hour pairing. Large state summaries are marked truncated. Native feature support is the existing CAD engine's support; the bridge does not add new modeling operations. Production bridge routes are served by reqoo-web at reqoo.co, not the static Pages preview.
 
