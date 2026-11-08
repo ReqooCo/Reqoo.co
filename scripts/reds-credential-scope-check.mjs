@@ -2,7 +2,9 @@
 // Never log secret values, response bodies, or account identifiers. No writes occur.
 const WORKER_DRAFT='reqoo-reds-draft';
 const WORKER_LIVE=['reqoo-web','reqoo-catalog-api'];
-const denied=status=>status===403||status===404;
+// A successful Draft Worker read establishes a valid credential before denial checks.
+// Cloudflare returns 401 for out-of-scope D1 account endpoints on this token.
+const denied=status=>status===401||status===403||status===404;
 export async function verifyDraftCredential({accountId,token,request=fetch}){
  if(!accountId||!token)throw Error('Missing reds-draft deployment secret or account ID');
  const base='https://api.cloudflare.com/client/v4/accounts/'+encodeURIComponent(accountId);
