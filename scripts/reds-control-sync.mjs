@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // REDS Control Center: read-only reconciliation. No credentials are written to reports.
 import fs from 'node:fs';
+import path from 'node:path';
 const repo=process.env.GITHUB_REPOSITORY||'ReqooCo/Reqoo.co';
 const branch='reds/draft';
 const api='https://api.github.com';
@@ -42,8 +43,7 @@ if(!ghToken)errors.push({source:'github',error:'GitHub token unavailable; GitHub
 const releaseBlockers=checks.filter(x=>x.status!=='pass').map(x=>({id:x.id,status:x.status}));
 const report={schemaVersion:1,generatedAt:now,repository:repo,branch,headSha:sha,sourceOfTruth:{git:'GitHub API',pages:'Cloudflare API',releasePolicy:'cad-source/release-policy.json'},sourceErrors:errors,checks,releaseBlockers,summary:{pass:checks.filter(x=>x.status==='pass').length,conflict:checks.filter(x=>x.status==='conflict').length,unverified:checks.filter(x=>x.status==='unverified').length},releaseReady:checks.every(x=>x.status==='pass')};
 const output=process.argv[2]||'reds/control/status.json';
-fs.mkdirSync(new URL('.',new URL('file://'+process.cwd()+'/')), {recursive:true});
-fs.mkdirSync((await import('node:path')).dirname(output),{recursive:true});
+fs.mkdirSync(path.dirname(output),{recursive:true});
 fs.writeFileSync(output,JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify(report.summary));
 if(!report.releaseReady)process.exitCode=2;
