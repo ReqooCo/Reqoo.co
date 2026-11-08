@@ -16,11 +16,21 @@ globalThis.fetch=async raw=>{
  else if(p.endsWith('/actions/runs/900'))body={id:900,name:'Deploy Reqoo Final',path:scenario==='wrong-live-workflow'?'.github/workflows/fake.yml':'.github/workflows/deploy.yml',event:scenario==='wrong-live-event'?'workflow_dispatch':'push',head_branch:'main',head_sha:scenario==='wrong-live-run-sha'?source:'dddddddddddddddddddddddddddddddddddddddd',repository:{full_name:scenario==='wrong-live-repo'?'other/repo':'ReqooCo/Reqoo.co'}};
  else if(p.endsWith('/pulls/279/files'))body=scenario==='noncad-pr'?[{filename:'shop/index.html'}]:scenario==='renamed-cad-pr'?[{filename:'docs/moved.md',previous_filename:'cad-source/src/main.js'}]:scenario==='policy-pr'?[{filename:'scripts/reds-release-surface-audit.mjs'}]:[{filename:'cad-source/src/main.js'}];
  else if(p.includes('/compare/')){
-  const commits=scenario==='identical'?[]:scenario==='delayed'?[
-   {sha:cadCommit},{sha:nonCAD}
-  ]:[{sha:cadCommit}];
-  body={status:commits.length?'ahead':'identical',total_commits:commits.length,commits};
+  if(scenario.startsWith('pagination-')||scenario==='paginated'){
+   const page=Number(uri.searchParams.get('page')||1);
+   const first=Array.from({length:100},(_,i)=>({sha:String(i+1).padStart(40,'0')}));
+   body={status:'ahead',total_commits:scenario==='pagination-drift'&&page===2?102:101,
+    commits:page===1?first:scenario==='pagination-truncated'?[]:
+     scenario==='pagination-duplicate'?[first.at(-1)]:[{sha:cadCommit}]};
+  }else{
+   const commits=scenario==='identical'?[]:scenario==='delayed'?[
+    {sha:cadCommit},{sha:nonCAD}
+   ]:[{sha:cadCommit}];
+   body={status:commits.length?'ahead':'identical',total_commits:commits.length,commits};
+  }
  }else if(p.endsWith('/commits/'+cadCommit))body={files:[{filename:'cad-source/src/main.js'}]};
+ else if((scenario.startsWith('pagination-')||scenario==='paginated')&&
+    /^\/repos\/ReqooCo\/Reqoo.co\/commits\/[0-9]{40}$/.test(p))body={files:[{filename:'docs/audit-history.md'}]};
  else if(p.endsWith('/commits/'+nonCAD))body={files:[{filename:'docs/README.md'}]};
  else if(p.endsWith('/commits/'+cadCommit+'/pulls'))
   body=scenario==='unreviewed'||scenario==='delayed'?[]:[{

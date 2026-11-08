@@ -79,13 +79,30 @@ async function checkLive({requireOwnerApproval=true}={}){
  if(!sha||!/^([0-9a-f]{40})$/.test(sha)||!/^([0-9a-f]{40})$/.test(baseline))
   fail('Release SHA or approved baseline is missing.');
  const [owner,name]=repo.split('/');
- const compare=await gh('/repos/'+owner+'/'+name+'/compare/'+baseline+'...'+sha+'?per_page=100');
+ const comparePath='/repos/'+owner+'/'+name+'/compare/'+baseline+'...'+sha;
+ const compare=await gh(comparePath+'?per_page=100&page=1');
  if(!['ahead','identical'].includes(compare.status))fail('Main no longer descends from approved release baseline.');
- // Inspect the entire change history, not only the last commit:
- // a direct CAD push followed by an unrelated commit must remain blocked.
- const commits=compare.commits||[];
- if(!Array.isArray(commits)||compare.total_commits>commits.length||commits.length>=100)
-  fail('Release history exceeds audit window; explicitly rotate the approved baseline via reviewed PR.');
+ // Audit every commit, even when the release has over 100 predecessors. GitHub's
+ // compare API paginates chronologically; the unpaginated result silently skips
+ // middle commits and must never be used to approve a release.
+ if(!Number.isSafeInteger(compare.total_commits)||compare.total_commits<0||compare.total_commits>10000)
+  fail('Release history size is invalid or exceeds the complete-audit limit.');
+ const commits=[];
+ const seen=new Set();
+ for(let page=1;page<=Math.max(1,Math.ceil(compare.total_commits/100));page++){
+  const result=page===1?compare:await gh(comparePath+'?per_page=100&page='+page);
+  if(result.status!==compare.status||result.total_commits!==compare.total_commits||
+     !Array.isArray(result.commits))fail('Release history changed during paginated audit.');
+  const expected=Math.min(100,compare.total_commits-commits.length);
+  if(result.commits.length!==expected)fail('Release history page is incomplete.');
+  for(const item of result.commits){
+   if(!/^[0-9a-f]{40}$/.test(item.sha||'')||seen.has(item.sha))fail('Duplicate or invalid release history commit.');
+   seen.add(item.sha);commits.push(item);
+  }
+ }
+ if(commits.length!==compare.total_commits||compare.status==='identical'&&commits.length!==0||
+    compare.status==='ahead'&&commits.length===0||compare.head_commit?.sha&&compare.head_commit.sha!==sha)
+  fail('Release history does not match the requested main SHA.');
  const validated=new Set();
  for(const commit of commits){
   const item=await gh('/repos/'+owner+'/'+name+'/commits/'+commit.sha);

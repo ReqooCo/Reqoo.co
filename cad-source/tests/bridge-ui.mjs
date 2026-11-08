@@ -15,7 +15,23 @@ try{
  await page.locator('#bridgeToggle').click();await page.locator('#bridgeAuto').uncheck();s=await state();await rpc('cad_apply_features',{id:'resize_plate',title:'Increase plate width to 110 mm',expectedRevision:s.revision,updates:[{id:'ai_plate',params:{width:110}}]});await page.locator('#bridgeApply').waitFor({state:'visible'});assert.equal((await features())[0].params.width,100);await page.locator('#bridgeApply').click();result=await wait('resize_plate');near(result.result.bodies[0].volume,33000-180*Math.PI);assert.equal((await features())[0].params.width,110);
  s=await state();await rpc('cad_apply_features',{id:'review_reject',title:'Rejected move',expectedRevision:s.revision,features:[f('rejected_move','move',{x:10},['ai_cut'])]});await page.locator('#bridgeReject').waitFor({state:'visible'});await page.locator('#bridgeReject').click();await wait('review_reject','rejected');assert.equal((await features()).length,6);checks.push('Optional review, native parent resize with downstream holes rebuilt and explicit rejection');
  s=await state();await rpc('cad_edit_document',{id:'rename_remote_plate',title:'Rename plate via chat',expectedRevision:s.revision,actions:[{kind:'renameFeature',id:'ai_plate',name:'Renamed base plate'}]});await page.locator('#bridgeApply').waitFor({state:'visible'});await page.locator('#bridgeApply').click();await wait('rename_remote_plate');assert.equal((await features())[0].name,'Renamed base plate');
- s=await state();await rpc('cad_edit_document',{id:'clear_remote_project',title:'Clear all geometry',expectedRevision:s.revision,actions:[{kind:'clear',confirm:true}]});await page.locator('#bridgeApply').waitFor({state:'visible'});await page.locator('#bridgeApply').click();result=await wait('clear_remote_project');assert.equal(result.result.bodyCount,0);assert.equal((await features()).length,0);
+ s=await state();await rpc('cad_edit_document',{id:'clear_remote_project',title:'Clear all geometry',expectedRevision:s.revision,actions:[{kind:'clear',confirm:true}]});await page.locator('#bridgeApply').waitFor({state:'visible'});
+ // A background poll can overlap an explicit review click. The click must be queued, not lost.
+ let releaseReviewPoll=()=>{},reviewPollStarted=()=>{},reviewPollFinished=()=>{},reviewPollHeld=false;
+ const reviewPollObserved=new Promise(resolve=>{reviewPollStarted=resolve;});
+ const reviewPollHandled=new Promise(resolve=>{reviewPollFinished=resolve;});
+ await page.route('**/cad/bridge/poll',async route=>{
+  if(reviewPollHeld){await route.continue();return;}
+  reviewPollHeld=true;reviewPollStarted();
+  try{await new Promise(resolve=>{releaseReviewPoll=resolve;});await route.continue();}
+  finally{reviewPollFinished();}
+ });
+ try{
+  await Promise.race([reviewPollObserved,new Promise((_,reject)=>setTimeout(()=>reject(Error('Review poll not observed')),15000))]);
+  await page.locator('#bridgeApply').click();
+  assert.match(await page.locator('#bridgeStatus').innerText(),/Applying after current synchronization/);
+ }finally{releaseReviewPoll();if(reviewPollHeld)await reviewPollHandled;await page.unroute('**/cad/bridge/poll');}
+ result=await wait('clear_remote_project');assert.equal(result.result.bodyCount,0);assert.equal((await features()).length,0);
  s=await state();await rpc('cad_control_workspace',{id:'undo_clear_remotely',title:'Undo clear',expectedRevision:s.revision,control:{kind:'undo'}});await page.locator('#bridgeApply').waitFor({state:'visible'});await page.locator('#bridgeApply').click();await wait('undo_clear_remotely');assert.equal((await features()).length,6);assert.equal((await features())[0].name,'Renamed base plate');
  s=await state();await rpc('cad_control_workspace',{id:'redo_clear_remotely',title:'Redo clear',expectedRevision:s.revision,control:{kind:'redo'}});await page.locator('#bridgeApply').waitFor({state:'visible'});await page.locator('#bridgeApply').click();await wait('redo_clear_remotely');assert.equal((await features()).length,0);
  s=await state();await rpc('cad_control_workspace',{id:'top_view_remote',title:'Top view',expectedRevision:s.revision,control:{kind:'view',view:'top'}});await page.locator('#bridgeApply').waitFor({state:'visible'});await page.locator('#bridgeApply').click();await wait('top_view_remote');s=await state();assert.equal(s.state.workspace.view,'top');
