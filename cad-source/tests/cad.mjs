@@ -68,6 +68,14 @@ try{
  await page.locator('#faceDistanceValue').fill('5');await page.locator('#faceDistanceApply').click();
  await page.waitForFunction(()=>Math.abs(window.__cad.items.find(i=>i.kind==='body')?.volume-9000)<.01);
  checks.push('Planar-face UI Extrude on existing solid produces 9000 mm³');
+ // Human workflow: after commit, the next face remains discoverable and Extrude is reachable again.
+ await page.mouse.click(faceClick.x,faceClick.y);
+ assert.equal(await page.evaluate(()=>window.__cad.selection.at(-1)?.kind),'face','Second face tap must select a face, not the whole body');
+ assert.equal(await page.locator('#context').getByRole('button',{name:'Extrude',exact:true}).count(),1,'Extrude must remain discoverable after the first commit');
+ await page.locator('#context').getByRole('button',{name:'Extrude',exact:true}).click();
+ await page.locator('#faceDistanceValue').fill('3');await page.locator('#faceDistanceApply').click();
+ await page.waitForFunction(()=>Math.abs(window.__cad.items.find(i=>i.kind==='body')?.volume-10800)<.01);
+ checks.push('Human flow: select face → Extrude → select new face → Extrude without sketch reset');
  await reset();a=await apply('sketch',{shape:'rectangle',width:10,height:20,x:25,y:0,plane:'XZ'},[]);await apply('revolve',{axis:'Z',angle:360},[a]);approx((await data())[0].volume,10000*Math.PI,.01);checks.push('Revolve preserves analytic cylindrical volume');
  await reset();a=await apply('sketch',{shape:'circle',radius:10,plane:'XY',offset:0});b=await apply('sketch',{shape:'circle',radius:5,plane:'XY',offset:20});await apply('loft',{},[a,b]);approx((await data())[0].volume,Math.PI*20*175/3,.05);checks.push('Loft builds a real closed tapered solid between profiles');
  await reset();a=await apply('sketch',{shape:'polyline',points:[[0,0],[0,30]],closed:false,plane:'XY'});await apply('sweep',{radius:2},[a]);approx((await data())[0].volume,Math.PI*120,.01);checks.push('Round-profile sweep follows an open sketch path');
