@@ -3,7 +3,11 @@ export function connectedSketchIds(items,seed){
  if(!source||source.kind!=='sketch'||source.regionHost)return[];
  const plane=JSON.stringify(source.sketchPlane);
  const candidates=items.filter(i=>i.kind==='sketch'&&!i.regionHost&&JSON.stringify(i.sketchPlane)===plane);
- const ends=i=>(i.edges||[]).flatMap(e=>e.lines?.length>=6?[e.lines.slice(0,3),e.lines.slice(-3)]:[]);
+ const ends=i=>(i.edges||[]).flatMap(e=>{
+  const lines=e?.lines;
+  if(!lines||lines.length<6||lines.length%3!==0||!Array.from(lines).every(Number.isFinite))return[];
+  return [Array.from(lines.slice(0,3)),Array.from(lines.slice(-3))];
+ });
  const tolerance=1e-5,cell=p=>p.map(v=>Math.floor(v/tolerance));
  const key=(x,y,z)=>x+','+y+','+z;
  const grid=new Map(),endpoints=new Map();
