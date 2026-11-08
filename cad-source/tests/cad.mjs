@@ -58,7 +58,8 @@ try{
  const context=await browser.newContext({viewport:{width:1440,height:900},acceptDownloads:true});page=await context.newPage();const errors=[];page.on('pageerror',e=>{errors.push(e.message);console.error('APP ERROR',e.message);});page.setDefaultTimeout(45000);
  await page.goto(baseURL+'?test=1');await page.waitForFunction(()=>window.__cad?.ready(),{},{timeout:90000});for(const id of ['itemsToggle','nav-search','nav-sketch','nav-add','nav-construct','nav-transform','nav-tools'])assert.equal(await page.locator('#'+id).count(),1);assert.equal(await page.locator('#toolPanel').isVisible(),false);assert.equal(await page.locator('#sidebar').isVisible(),false);assert.equal(await page.getByText(/generator/i).count(),0);
  assert.equal(await page.locator('#nav-sketch').isVisible(),false);assert.equal(await page.locator('#nav-tools').isVisible(),true);await page.screenshot({path:path.join(out,'01-cad-empty.png')});checks.push('Independent CAD workspace; no generator or legacy editor');
- await createSketch(page,{width:30,height:20});
+ const trimSketchId=await createSketch(page,{width:30,height:20});
+ await page.evaluate(id=>window.__cad.select([{id,kind:'sketch'}]),trimSketchId);
  await page.evaluate(()=>window.__cad.activateSketchTrim());
  await page.locator('#sketchTrimHUD').getByRole('button',{name:'Done trimming'}).waitFor({state:'visible'});
  await page.locator('#sketchTrimHUD').getByRole('button',{name:'Done trimming'}).click();
