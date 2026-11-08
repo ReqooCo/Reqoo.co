@@ -2,6 +2,15 @@
 
 **Purpose:** One shared place to develop REDS/R3ds CAD, regardless of which agent or chat is used. **Only the owner `ReqooCo` approves a Live release.** Do not add extra human-review steps.
 
+## REDS Control Center — mandatory shared evidence
+
+- Before work, inspect the latest `reds/draft` HEAD, `cad-source/release-policy.json`, and the latest **REDS Control Center** workflow artifact `reds-control-status` (not a stale committed snapshot).
+- Authoritative state comes from GitHub API for PR/SHA/checks, Cloudflare API for Pages, and the reviewed release policy for gate requirements. Documentation, comments, and other agents' summaries are **not** authoritative runtime status.
+- `scripts/reds-control-sync.mjs` produces `reds/control/status.json` with per-check `pass/conflict/unverified`, evidence, timestamp, and source. Missing credentials or API failures must remain `unverified`; never silently substitute previous observations.
+- Workflow `.github/workflows/reds-control-center.yml` runs read-only, validates the fail-closed test, and uploads the report as an artifact. Configure **read-only** `CLOUDFLARE_AUDIT_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in `reds-draft` environment; do not reuse deployment tokens or put secrets in artifacts.
+- A `conflict` or `unverified` is a **release blocker**, not permission to edit policy to force green. This report is supplemental and does not replace the canonical owner-approved Live gate.
+- ChatGPT, Work, and Codex all follow this protocol. Re-fetch live evidence before changing state, preserve concurrent commits, and record actual commit/run IDs rather than claiming status from old notes.
+
 ## The only two active destinations
 
 - **Development:** `reds/draft` → https://reqoo-reds-draft.abarttrading1.workers.dev/cad/
