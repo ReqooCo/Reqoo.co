@@ -1,26 +1,28 @@
-# REQOO Development Agents — shared deployment contract
+# REQOO CAD — shared working agreement (ChatGPT, Work, Codex)
 
-These rules apply equally to ChatGPT, Work, Codex, local scripts and other automation when modifying **REDS / R3ds CAD** (`cad-source/`, `workers/cad-bridge.js`, its web-worker integration and release workflows).
+**Purpose:** One shared place to develop REDS/R3ds CAD, regardless of which agent or chat is used. **Only the owner `ReqooCo` approves a Live release.** Do not add extra human-review steps.
 
-## One Live / one Draft
-- **LIVE**: `main` → https://reqoo.co/cad/ (production Worker `reqoo-web`).
-- **DRAFT**: `reds/draft` → https://reqoo-reds-draft.abarttrading1.workers.dev/cad/ (Worker `reqoo-reds-draft`).
-- **One active Draft PR:** `reds/draft` → `main`. Do not create a separate active CAD release PR.
-- Historical CAD branches are read-only research sources; cherry-pick useful changes **into `reds/draft`**, not onto `main` or a separate deployed preview.
+## The only two active destinations
 
-## Mandatory engineering workflow
-1. Read `cad-source/REDS-HANDOFF.md`, `cad-source/release-policy.json` and `cad-source/REDS-RELEASE-GOVERNANCE.md`. Before any edit, reconcile the latest `reds/draft` SHA with active PR #277. When finishing, update the handoff checkpoint with test and blocker evidence.
-2. Start from the current `reds/draft` head. Preserve committed work and do not force-push.
-3. Fix the root cause; include feature tests, Playwright UX tests and native geometry tests for changes to sketch/modeling/history/save/open.
-4. Run the CAD PR validation matrix (Core, Modeling, Product). Do not call a Draft ready unless all required checks pass on the exact branch head SHA.
-5. GitHub Actions alone deploys `reds/draft` to the dedicated Draft Worker. Check build identity and the actual browser workflow.
-6. For the owner-confirmed solo setup, release via `reds/draft` PR merge into protected `main`, automated preflight and final `ReqooCo` approval of the `reds-live` deployment. Agents must never submit that owner approval themselves. `deploy.yml` must pass the centralized release gate before touching Workers or D1.
-7. Verify production source SHA and critical user flows; keep a rollback path.
+- **Development:** `reds/draft` → https://reqoo-reds-draft.abarttrading1.workers.dev/cad/
+- **Production:** `main` → https://reqoo.co/cad/
+- **One release PR:** [#277](https://github.com/ReqooCo/Reqoo.co/pull/277), always `reds/draft` → `main`.
+- Historical feature branches are reference material only; do not create competing Live or Draft deployments.
 
-## Do not bypass
-- Do **not** call `wrangler deploy` for `reqoo-web`, push to `main` directly, use retired `rebuild/v1-simple` or publish REDS to any other Worker/Pages URL.
-- Do **not** create a new CAD preview Worker, new release branch, second active CAD Draft PR or deploy from chat/Work/Codex directly.
-- Do **not** disable validation or loosen policy to make a test pass. Fix the source or test.
-- Cloudflare credentials must be least-privileged and deployment environments protected; agent instructions alone are not security controls.
+## Agent workflow — small and repeatable
 
-Non-CAD REQOO products may have their own workflows, but must never overwrite REDS release artifacts outside this same gate.
+1. Before changing CAD, read the **latest** `reds/draft` HEAD and this file; inspect relevant code and [PR #277](https://github.com/ReqooCo/Reqoo.co/pull/277). Use `cad-source/REDS-HANDOFF.md` for technical history **only when relevant**, not as a mandatory report for every short task.
+2. Make the requested fix **on `reds/draft`**, preserving other agents' commits. Re-fetch the current file blob SHA before writing; if another agent updated it, reconcile their change first. No force-push.
+3. Run targeted checks for the affected feature. Let the existing GitHub workflows run automated **Core / Modeling / Product** validation and Draft browser verification. Do not manually duplicate all suites for every tiny fix.
+4. Report real results and blockers. Add a **milestone** checkpoint to PR #277 or the handoff when a substantive feature/incident is resolved; **do not commit a handoff file after every turn**, because it restarts the Draft validation.
+5. Release through **the same PR #277** into protected `main` after required automated checks pass on its actual head commit. The only human release approval is by owner `ReqooCo` at `reds-live`; no second developer or self-PR approval is required.
+6. Verify Live version, essential geometry/edit/save-open flows and rollback readiness. Do not claim deployed until the actual release succeeds.
+
+## Minimal safeguards worth keeping
+
+- No direct pushes to `main`, force-push, or alternate production publisher; no direct `wrangler deploy` from an agent.
+- Do not skip failed automated checks, use a stale SHA, silently discard model data, or approve `reds-live` on the owner's behalf.
+- Keep deployment tokens and database access separate from agent prompts, with only the permissions required for their jobs.
+- Release-policy safety blockers remain actionable technical configuration issues, **not requests for more human approvers**. Do not bypass an unresolved blocker by setting a flag without making the underlying deployment path work.
+
+**Short version:** Chat / Work / Codex → `reds/draft` → automatic checks → PR #277 → **one ReqooCo Live approval** → `main`.
