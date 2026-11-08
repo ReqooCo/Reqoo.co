@@ -1,0 +1,108 @@
+name: REDS draft integrated CAD QA
+on:
+  push:
+    branches: [reds/draft]
+    paths:
+      - 'cad-source/**'
+      - 'scripts/reds-*'
+      - 'workers/cad-bridge.js'
+      - '_web_worker.js'
+      - 'wrangler-web.toml'
+      - '.github/workflows/cad-live-verification.yml'
+      - '.github/workflows/reds-draft-integrated-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: reds-draft-integrated-qa-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  integrated:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 160
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: cad-source/package-lock.json
+      - name: Install locked dependencies
+        working-directory: cad-source
+        run: npm ci --no-audit --no-fund
+      - name: Build CAD
+        working-directory: cad-source
+        run: npm run build
+      - name: Install Chromium
+        working-directory: cad-source
+        run: npx playwright install --with-deps chromium
+      - name: Validate all CAD JavaScript syntax before browser QA
+        working-directory: cad-source
+        shell: bash
+        run: |
+          set -euo pipefail
+          find src tests -type f \( -name '*.js' -o -name '*.mjs' \) -print0 | xargs -0 -n1 node --check
+      - name: Run batch QA and collect every failure
+        working-directory: cad-source
+        shell: bash
+        run: |
+          mkdir -p test-results
+          failed=0
+          run_suite() {
+            local suite="$1"
+            local label="${suite//\//_}"
+            echo "::group::$suite"
+            if timeout --signal=TERM --kill-after=15s 360s node "$suite" > "test-results/${label}.log" 2>&1; then
+              echo "PASS $suite" | tee -a test-results/summary.txt
+            else
+              code=$?
+              echo "FAIL $suite (exit $code)" | tee -a test-results/summary.txt
+              tail -n 50 "test-results/${label}.log"
+              failed=1
+            fi
+            echo "::endgroup::"
+          }
+          for suite in \
+            tests/sketch-connectivity-offline.mjs \
+            tests/tool-workflow-offline.mjs \
+            tests/curve-trim.mjs \
+            tests/offset-chain.mjs \
+            tests/multi-profile.mjs \
+            tests/project-io.mjs \
+            tests/cad.mjs \
+            tests/sketch-file-ux-ui.mjs \
+            tests/extrude-modes-ui.mjs \
+            tests/direct-sketch-ui.mjs \
+            tests/union-selection-ui.mjs \
+            tests/multi-profile-ui.mjs \
+            tests/reds-sketch-parity-ui.mjs \
+            tests/active-sketch-edit-ui.mjs \
+            tests/transform-ui.mjs \
+            tests/rotation-ui.mjs \
+            tests/canvas-gizmo-ui.mjs \
+            tests/pattern-thread-ui.mjs \
+            tests/precision-ui.mjs \
+            tests/visualization-ui.mjs \
+            tests/smart-dimensions-ui.mjs \
+            tests/sketch-regions-ui.mjs \
+            tests/workspace-reference-ui.mjs \
+            tests/input.mjs \
+            tests/acceptance.mjs \
+            tests/product.mjs; do
+            if [[ ! -f "$suite" ]]; then
+              echo "FAIL $suite (suite file missing)" | tee -a test-results/summary.txt
+              failed=1
+              continue
+            fi
+            run_suite "$suite"
+          done
+          cat test-results/summary.txt
+          exit "$failed"
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reds-draft-integrated-qa
+          path: cad-source/test-results/
+          if-no-files-found: ignore
+          retention-days: 7

@@ -1,0 +1,61 @@
+name: REDS offline regression gate
+on:
+  workflow_dispatch:
+  push:
+    branches: [reds/draft]
+    paths: ['cad-source/**', '.github/workflows/reds-offline-regression.yml']
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  offline-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check syntax and run dependency-free regressions
+        working-directory: cad-source
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p test-results
+          failed=0
+          if ! node --check src/sketch-connectivity.js; then failed=1; fi
+          for suite in \
+            tests/sketch-connectivity-offline.mjs \
+            tests/tool-workflow-offline.mjs \
+            tests/offset-plan-offline.mjs \
+            tests/same-sketch-plane-offline.mjs \
+            tests/guidepoints.mjs \
+            tests/sketch-edit-geometry.mjs \
+            tests/sketch-flow.mjs \
+            tests/bridge-api.mjs \
+            tests/display-cache.mjs \
+            tests/constraints.mjs \
+            tests/canvas-tool-flow.mjs \
+            tests/bridge-db.mjs \
+            tests/runtime-route.mjs; do
+            echo "::group::$suite"
+            if node "$suite" > "test-results/$(basename "$suite").log" 2>&1; then
+              echo "PASS $suite" | tee -a test-results/offline-summary.txt
+            else
+              echo "FAIL $suite" | tee -a test-results/offline-summary.txt
+              tail -n 60 "test-results/$(basename "$suite").log"
+              failed=1
+            fi
+            echo "::endgroup::"
+          done
+          cat test-results/offline-summary.txt
+          exit "$failed"
+      - name: Upload complete offline regression evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reds-offline-regression
+          path: cad-source/test-results/
+          if-no-files-found: ignore
+          retention-days: 7

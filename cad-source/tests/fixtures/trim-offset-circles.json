@@ -1,0 +1,145 @@
+{
+  "format": "reqoo-cad",
+  "version": 1,
+  "title": "Repeated circle Trim regression",
+  "features": [
+    {
+      "id": "f1",
+      "type": "sketch",
+      "name": "sketch 1",
+      "params": {
+        "plane": "XY",
+        "offset": 0,
+        "shape": "circle",
+        "closed": true,
+        "sides": 6,
+        "sagitta": 10,
+        "startMode": "center",
+        "x": 0,
+        "y": 0,
+        "radius": 31.400636936215164
+      },
+      "inputs": []
+    },
+    {
+      "id": "f2",
+      "type": "sketch",
+      "name": "sketch 2",
+      "params": {
+        "plane": "XY",
+        "offset": 0,
+        "shape": "circle",
+        "closed": true,
+        "sides": 6,
+        "sagitta": 10,
+        "startMode": "center",
+        "x": 32,
+        "y": -1,
+        "radius": 17.26267650163207
+      },
+      "inputs": []
+    },
+    {
+      "id": "f3",
+      "type": "sketchOffset",
+      "name": "sketchOffset 3",
+      "params": {
+        "distance": 2,
+        "mode": "Chain",
+        "keepInputs": true
+      },
+      "inputs": [
+        "f2"
+      ]
+    },
+    {
+      "id": "f4",
+      "type": "sketchOffset",
+      "name": "sketchOffset 4",
+      "params": {
+        "distance": 2,
+        "mode": "Chain",
+        "keepInputs": true
+      },
+      "inputs": [
+        "f1"
+      ]
+    },
+    {
+      "id": "f5",
+      "type": "sketchTrim",
+      "name": "sketchTrim 5",
+      "params": {
+        "point": [
+          22.939170606444375,
+          16.746532422804563
+        ],
+        "tolerance": 1.7963088080157519
+      },
+      "inputs": [
+        "f3",
+        "f1",
+        "f2",
+        "f4"
+      ]
+    },
+    {
+      "id": "f6",
+      "type": "sketchTrim",
+      "name": "sketchTrim 6",
+      "params": {
+        "point": [
+          23.76247881011826,
+          14.650838813452856
+        ],
+        "tolerance": 1.7963088080157519
+      },
+      "inputs": [
+        "f2",
+        "f1",
+        "f4",
+        "f5"
+      ]
+    },
+    {
+      "id": "f7",
+      "type": "sketchTrim",
+      "name": "sketchTrim 7",
+      "params": {
+        "point": [
+          28.402943230825617,
+          13.079068606439076
+        ],
+        "tolerance": 1.7963088080157519
+      },
+      "inputs": [
+        "f1",
+        "f4",
+        "f5",
+        "f6"
+      ]
+    },
+    {
+      "id": "f8",
+      "type": "sketchTrim",
+      "name": "sketchTrim 8",
+      "params": {
+        "point": [
+          30.348944439509346,
+          10.384605394415441
+        ],
+        "tolerance": 1.7963088080157519
+      },
+      "inputs": [
+        "f4",
+        "f5",
+        "f6",
+        "f7"
+      ]
+    }
+  ],
+  "ui": {
+    "hidden": [],
+    "colors": {}
+  }
+}

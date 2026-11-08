@@ -1,0 +1,54 @@
+name: REDS Control Center
+on:
+  push:
+    branches: [reds/draft]
+permissions:
+  contents: read
+  checks: read
+  pull-requests: read
+concurrency:
+  group: reds-control-center
+  cancel-in-progress: true
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate reconciler and fail-closed behavior
+        run: |
+          node --check scripts/reds-control-sync.mjs
+          node --check scripts/reds-control-sync.test.mjs
+          node scripts/reds-control-sync.test.mjs
+      - name: Read authoritative GitHub and Cloudflare state
+        id: sync
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          rm -f reds/control/status.json
+          node scripts/reds-control-sync.mjs reds/control/status.json
+      - name: Publish evidence artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reds-control-status
+          path: reds/control/status.json
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Summarize reconciliation
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f reds/control/status.json ]]; then
+            node -e 'const fs=require("fs"),r=require("./reds/control/status.json");const lines=["## REDS Control Center", "Draft SHA: "+(r.headSha||"unverified"),"Release ready: **"+r.releaseReady+"**", "Pass: "+r.summary.pass+" / Conflict: "+r.summary.conflict+" / Unverified: "+r.summary.unverified, "", "| Check | Result |", "|---|---|", ...r.checks.map(c=>"| "+c.id+" | "+c.status+" |")];console.log(lines.join(String.fromCharCode(10)));fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join(String.fromCharCode(10))+String.fromCharCode(10));'
+            if [[ "${{ steps.sync.outcome }}" != "success" ]]; then
+              echo 'Reconciliation reported blockers; see artifact. This monitor does not approve Live.'
+            fi
+          else
+            echo 'No report was generated; monitor execution failed.'
+            exit 1
+          fi

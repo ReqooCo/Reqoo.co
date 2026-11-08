@@ -18,7 +18,7 @@ try{
  const a=await op('sketch',{shape:'rectangle',width:10,height:12,x:-15}),b=await op('sketch',{shape:'circle',radius:4,x:15});
  await page.getByRole('button',{name:'top face',exact:true}).click();await page.evaluate(()=>{window.__cad.select([]);window.__cad.fit();});
  for(const p of [[-15,0,0],[15,0,0]]){const c=await project(p);await page.mouse.click(c.x,c.y);}
- assert.equal(await page.evaluate(()=>window.__cad.selection.length),2);assert.equal(await page.locator('#multi').isVisible(),false);
+ assert.equal(await page.evaluate(()=>window.__cad.selection.length),2);assert.equal(await page.locator('#multi').isVisible(),true); // Multi-select remains available for additive selection.
  await page.getByRole('button',{name:'Extrude',exact:true}).click();await page.locator('#faceDistanceValue').fill('8');await page.locator('#faceDistanceApply').click();
  await page.waitForFunction(()=>!window.__cad.gizmo.busy&&window.__cad.items.filter(i=>i.kind==='body').length===2);
  const volumes=await page.evaluate(()=>window.__cad.items.filter(i=>i.kind==='body').map(i=>i.volume).sort((a,b)=>a-b));near(volumes[0],128*Math.PI,.02);near(volumes[1],960,.02);

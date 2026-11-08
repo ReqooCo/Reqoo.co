@@ -242,3 +242,247 @@ body.cadWorkspace #stage:not([data-workspace=sketch]) #empty{
  body.cadWorkspace #operationGizmo .operationActions{bottom:74px;max-height:32vh;}
  body.cadWorkspace #operationGizmo [data-badges]{bottom:26px;}
 }
+
+/* Sketch-first parity: direct Trim has a minimal instruction chip, not an extra modal panel. */
+body.cadWorkspace #sketchTrimHUD{
+ position:absolute;left:50%;bottom:70px;transform:translateX(-50%);
+ z-index:63;display:flex;align-items:center;gap:12px;
+ max-width:calc(100vw - 140px);padding:8px 10px;
+ background:var(--panel);color:var(--text);
+ border:1px solid var(--border);border-radius:11px;
+ box-shadow:0 8px 25px #0003;pointer-events:auto;
+ font-size:12px;white-space:nowrap;
+}
+body.cadWorkspace #sketchTrimHUD[hidden]{display:none!important;}
+body.cadWorkspace #sketchTrimHUD strong{font-size:13px;}
+body.cadWorkspace #sketchTrimHUD span{color:var(--muted,#a9b1bb);}
+body.cadWorkspace #sketchTrimHUD button{padding:6px 10px;min-height:32px;}
+body.cadWorkspace #stage:has(#sketchTrimHUD:not([hidden])) #selectionBar{display:none!important;}
+body.cadWorkspace #sketchEditHUD [data-offset-type] select{min-width:78px;max-width:100px;}
+body.cadWorkspace #quickSketchTools{scrollbar-width:thin;}
+@media(max-width:760px){
+ body.cadWorkspace #sketchTrimHUD{
+   left:60px;right:54px;bottom:20px;transform:none;
+   max-width:none;gap:7px;padding:7px 8px;justify-content:space-between;
+   white-space:normal;font-size:11px;
+ }
+ body.cadWorkspace #sketchTrimHUD strong{font-size:12px;}
+ body.cadWorkspace #sketchTrimHUD button{min-width:48px;}
+ body.cadWorkspace #stage:has(#sketchTrimHUD:not([hidden])) #sketchEditHUD{display:none!important;}
+}
+
+/* Sketch mode owns a single compact left rail. General 3D tools are reachable
+   through the Solid workspace, not layered behind Sketch tools. */
+body.cadWorkspace #stage[data-workspace=sketch] #rail :is(#nav-search,#nav-sketch,#nav-add,#nav-construct,#nav-transform,#nav-tools,#nav-selection){display:none!important;}
+body.cadWorkspace #stage[data-workspace=sketch] #quickSketchTools,
+body.cadWorkspace #stage[data-workspace=sketch]:not([data-drawing=true]):not([data-sketch-context=true]) #quickSketchTools{
+ left:12px;top:166px;max-height:calc(100% - 240px);width:var(--reds-rail);
+}
+@media(max-width:760px){
+ body.cadWorkspace #stage[data-workspace=sketch] #quickSketchTools,
+ body.cadWorkspace #stage[data-workspace=sketch]:not([data-drawing=true]):not([data-sketch-context=true]) #quickSketchTools{
+  left:8px;top:153px;max-height:calc(100% - 223px);width:44px;
+ }
+}
+
+/* Before a plane is chosen, the primary Draw action remains available.
+   The single-rail Sketch palette replaces Draw only after sketch entry. */
+body.cadWorkspace #stage[data-workspace=sketch]:not([data-drawing=true]) #rail #nav-sketch{
+ display:flex!important;
+}
+body.cadWorkspace #stage[data-workspace=sketch]:not([data-drawing=true]) #quickSketchTools{
+ display:none!important;
+}
+
+/* Shapr3D-first plane picking: the planes themselves are the controls.
+   Replace large instructional modal with a one-line, keyboard-accessible hint. */
+body.cadWorkspace #sketchPlanePicker .planeInstructions{
+ top:76px;left:50%;right:auto;transform:translateX(-50%);
+ width:max-content;max-width:calc(100% - 230px);
+ min-height:36px;padding:4px 8px;gap:8px;
+ border-radius:10px;box-shadow:0 5px 18px #0002;
+ flex-wrap:nowrap;white-space:nowrap;
+}
+body.cadWorkspace #sketchPlanePicker .planeInstructions strong{
+ font-size:12px;font-weight:600;line-height:1.25;width:auto;
+}
+body.cadWorkspace #sketchPlanePicker .planeInstructions>span{display:none;}
+body.cadWorkspace #sketchPlanePicker .planeInstructions button{
+ min-height:30px;min-width:30px;padding:4px 9px;font-size:11px;
+}
+body.cadWorkspace #sketchPlanePicker [data-cancel]{
+ width:30px;padding:0;font-size:0;
+}
+body.cadWorkspace #sketchPlanePicker [data-cancel]::after{
+ content:"×";font-size:19px;line-height:1;
+}
+body.cadWorkspace #sketchPlanePicker .planeChoice{
+ padding:7px 11px;min-height:38px;border-width:1px;
+ font-size:12px;border-radius:9px;box-shadow:0 4px 12px #0003;
+}
+@media(max-width:760px){
+ body.cadWorkspace #sketchPlanePicker .planeInstructions{
+  left:56px;right:54px;top:105px;transform:none;width:auto;max-width:none;
+  justify-content:space-between;min-height:36px;
+  padding:4px 7px;gap:5px;
+ }
+ body.cadWorkspace #sketchPlanePicker .planeInstructions strong{font-size:11px;}
+ body.cadWorkspace #sketchPlanePicker .planeInstructions [data-face]{font-size:10px;padding:4px 6px;}
+ body.cadWorkspace #sketchPlanePicker .planeChoice{font-size:11px;min-height:36px;padding:7px;}
+}
+
+/* Before drawing, keep BOTH shortcuts: Draw chooses the plane, while the
+   primitive tools are directly discoverable. Stagger them in the same column. */
+body.cadWorkspace #stage[data-workspace=sketch]:not([data-drawing=true]) #quickSketchTools:not([hidden]){
+ display:flex!important;top:218px;
+}
+@media(max-width:760px){
+ body.cadWorkspace #stage[data-workspace=sketch]:not([data-drawing=true]) #quickSketchTools:not([hidden]){
+  top:205px;
+ }
+}
+
+/* Plane-first Sketch: do not show an unrelated column of drawing tools
+   before an XY/XZ/YZ plane is chosen. A selected planar face still
+   exposes its direct drawing shortcuts, like Shapr3D adaptive tools. */
+body.cadWorkspace #stage[data-workspace=sketch]:not([data-drawing=true]):not([data-sketch-target-kind=face]) #quickSketchTools{
+ display:none!important;
+}
+body.cadWorkspace #sketchPlanePicker .planeInstructions button[data-cancel]{
+ font-size:0!important;min-width:30px;max-width:30px;overflow:hidden;
+ display:inline-flex;align-items:center;justify-content:center;
+}
+body.cadWorkspace #sketchPlanePicker .planeInstructions button[data-cancel]::after{
+ content:"×";font-size:19px;line-height:1;
+}
+
+/* Trim shares the sketch bar; drawing controls belong only to Draw. */
+body.cadWorkspace #sketchBar #sketchTrimHUD{position:static;transform:none;inset:auto;display:flex;flex:none;width:auto;max-width:none;padding:0;border:0;background:transparent;box-shadow:none;}
+
+body.cadWorkspace #stage{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+body.cadWorkspace #stage input,body.cadWorkspace #stage textarea{-webkit-user-select:text;user-select:text;}
+
+/* One task strip and one set of attached dimension editors. */
+body.cadWorkspace #sketchBar{top:62px;left:50%;right:auto;bottom:auto;transform:translateX(-50%);width:max-content;max-width:calc(100% - 540px);min-height:42px;padding:4px 6px;gap:8px;flex-wrap:nowrap;border-radius:9px;box-shadow:0 3px 12px #0002;}
+body.cadWorkspace #sketchBar strong{width:auto;max-width:150px;font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+body.cadWorkspace #sketchStart{display:flex;align-items:center;gap:4px;font-size:11px;white-space:nowrap;}
+body.cadWorkspace #sketchStart>span{display:none;}
+body.cadWorkspace #sketchStart select{min-height:32px;max-width:108px;font-size:12px;padding:4px 7px;}
+body.cadWorkspace #sketchBar button{flex:none;min-height:34px;padding:5px 10px;font-size:12px;}
+body.cadWorkspace #stage[data-drawing=true] #selectionBar{display:none!important;}
+body.cadWorkspace #sketchDimensions>label{min-height:34px;padding:0 4px;gap:2px;border-radius:6px;font-size:10px;font-weight:500;box-shadow:none;background:var(--panel);border-color:var(--border);color:var(--text);}
+body.cadWorkspace #sketchDimensions input{width:46px;min-height:32px;font-size:16px;font-weight:500;padding:0 2px;color:inherit;}
+body.cadWorkspace #sketchDimensions>label:focus-within{border-color:var(--blue);box-shadow:0 0 0 2px #3387e025;}
+body.cadWorkspace #sketchDimensionLines{opacity:.7;}
+body.cadWorkspace #snapFeedback{padding:3px 6px;font-size:10px;border-radius:5px;box-shadow:none;background:var(--panel);color:var(--text);border-color:var(--border);max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+body.cadWorkspace #snapGuides circle{stroke-width:1.5;filter:none;}
+@media(max-width:1050px){body.cadWorkspace #sketchBar{top:109px;max-width:calc(100% - 170px);}}
+@media(max-width:760px){
+ body.cadWorkspace #sketchBar{left:60px;right:55px;top:106px;transform:none;width:auto;max-width:none;justify-content:space-between;gap:5px;}
+ body.cadWorkspace #sketchBar strong{display:none;}
+ body.cadWorkspace #sketchBar #sketchTrimHUD{flex:1;justify-content:flex-end;}
+ body.cadWorkspace #sketchStart select{max-width:100px;}
+}
+
+@media(max-width:760px){
+ body.cadWorkspace #stage[data-workspace=sketch] #quickSketchTools{max-height:calc(100% - 330px);}
+}
+
+/* Sketch operation options live in the existing task strip. The only numeric
+   editor and confirm/cancel controls follow the geometry-owned drag handle. */
+body.cadWorkspace #sketchBar .operationActions[data-compact=true]{position:static;inset:auto;display:flex;flex-flow:row nowrap;align-items:center;gap:5px;width:auto;max-height:none;padding:0;border:0;background:none;box-shadow:none;overflow:visible;pointer-events:auto;}
+body.cadWorkspace #sketchBar .operationActions[data-compact=true]>strong,
+body.cadWorkspace #sketchBar .operationActions[data-compact=true]>output,
+body.cadWorkspace #sketchBar .operationActions[data-compact=true]>[data-fit]{display:none;}
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] [data-choices]{display:flex;width:auto;max-width:none;padding:0;gap:4px;}
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] .operationChoice{display:flex;gap:3px;}
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] .operationChoice>div{display:flex;gap:3px;}
+body.cadWorkspace #operationGizmo[data-compact=true] [data-badges]{display:none;}
+body.cadWorkspace #operationGizmo[data-compact=true] .operationValue{gap:3px;padding:3px 5px;max-width:250px;}
+body.cadWorkspace #operationGizmo[data-compact=true] .operationValue input{width:62px;}
+body.cadWorkspace #operationGizmo[data-compact=true] .operationValue button{width:32px;min-width:32px;min-height:34px;padding:5px;}
+body.cadWorkspace #operationGizmo[data-compact=true] .operationValue button svg{width:18px;height:18px;}
+body.cadWorkspace #operationGizmo .operationDrag svg{width:26px;height:26px;vertical-align:middle;}
+body.cadWorkspace #sketchBar:has(.operationActions[data-compact=true])>strong{display:none;}
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] [aria-pressed=true]{border-color:var(--blue);background:#337eaa25;}
+
+body.cadWorkspace #operationGizmo[data-compact=true] [data-parameter-select]{font-size:11px;max-width:95px;padding:4px;min-height:34px;}
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] input[type=text]{width:130px;min-width:70px;min-height:34px;font-size:16px;padding:3px 7px;}
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] select{max-width:115px;font-size:12px;min-height:34px;}
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] [data-choices]{max-width:240px;overflow-x:auto;}
+@media(max-width:760px){body.cadWorkspace #sketchBar .operationActions[data-compact=true] [data-choices]{max-width:135px;}}
+
+body.cadWorkspace #sketchMoreTools{position:absolute;left:74px;z-index:65;display:flex;flex-direction:column;gap:3px;min-width:160px;max-height:calc(100% - 190px);overflow:auto;padding:5px;background:var(--panel);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px #0003;}
+body.cadWorkspace #sketchMoreTools[hidden]{display:none;}
+body.cadWorkspace #sketchMoreTools button{display:flex;align-items:center;gap:8px;min-height:39px;padding:7px 10px;font-size:12px;text-align:left;border-radius:7px;}
+body.cadWorkspace #sketchMoreTools svg{width:20px;height:20px;}
+@media(max-width:760px){body.cadWorkspace #sketchMoreTools{left:60px;min-width:150px;}}
+
+body.cadWorkspace footer{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+
+/* Preserve hidden constraint groups after moving actions out of the gizmo.
+   One horizontal strip scrolls as a unit, so adjacent choices cannot overlap. */
+body.cadWorkspace #sketchBar .operationActions[data-compact=true]{flex:0 1 auto;min-width:0;max-width:100%;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;}
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] [data-choices],
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] [data-commands]{display:flex;flex:0 0 auto;width:max-content;max-width:none;overflow:visible;gap:4px;}
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] .operationChoice,
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] .operationChoice>div,
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] button,
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] select{flex:0 0 auto;white-space:nowrap;}
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] [hidden],
+body.cadWorkspace #sketchBar .operationActions[data-compact=true] [data-commands]:empty{display:none!important;}
+#curvePointHandles{position:absolute;inset:0;z-index:36;pointer-events:none;}
+#curvePointHandles[hidden],#curvePointHandles [hidden]{display:none!important;}
+#curvePointHandles svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;}
+#curvePointHandles polyline{fill:none;stroke:#d0aa6890;stroke-width:1;stroke-dasharray:5 4;}
+#curvePointHandles button{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;touch-action:none;min-height:26px;min-width:26px;width:26px;height:26px;padding:0;border:1px solid #e6ad55;border-radius:50%;background:var(--panel);color:var(--text);font-size:10px;box-shadow:0 0 0 4px #e6ad5518;}
+#curvePointHandles button.active{background:#e6ad55;color:#17191b;}
+#curvePointHandles button[data-curve-point=sagitta]{width:20px;min-width:20px;height:20px;min-height:20px;border-radius:4px;}
+body.cadWorkspace #operationGizmo[data-compact=true] .operationValue{max-width:min(280px,calc(100vw - 125px));}
+body.cadWorkspace #operationGizmo[data-compact=true] .operationValue input{flex:0 0 62px;min-width:62px;}
+body.cadWorkspace #operationGizmo[data-compact=true] [data-parameter-select]{width:84px;min-width:65px;flex:0 1 84px;}
+body.cadWorkspace #operationGizmo[data-compact=true] .operationValue:has([data-parameter-select]:not([hidden])) [data-point-axes]{display:none;}
+/* The final layout layer owns both selection docks across workspace states. */
+body.cadWorkspace #stage #context:not([hidden]),
+body.cadWorkspace #stage[data-workspace=sketch][data-sketch-context=true] #context:not([hidden]){
+ left:74px;right:auto;top:117px;bottom:230px;transform:none;width:54px;max-width:54px;max-height:none;
+ display:flex;flex-flow:column nowrap;align-items:center;justify-content:flex-start;gap:4px;padding:4px;
+ overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;
+}
+body.cadWorkspace #stage #context button{width:42px;min-width:42px;min-height:38px;flex:none;padding:6px;justify-content:center;}
+body.cadWorkspace #stage #context button span{display:none;}
+body.cadWorkspace #stage #context .selectionSummary{display:block;flex:none;align-self:stretch;max-width:100%;padding:3px 0;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;}
+body.cadWorkspace #stage #selectionBar{left:74px;right:auto;top:auto;bottom:78px;width:118px;max-width:118px;min-height:0;display:flex;flex-direction:column;align-items:stretch;gap:2px;padding:4px;}
+body.cadWorkspace #stage #selectionBar>label{display:flex;flex-direction:column;align-items:stretch;gap:1px;font-size:9px;min-width:0;padding:2px;}
+body.cadWorkspace #stage #selectionBar select{width:100%;min-width:0;max-width:100%;font-size:11px;}
+body.cadWorkspace #stage #selectionBar button{min-height:30px;padding:4px;font-size:10px;justify-content:center;}
+@media(max-width:760px){body.cadWorkspace #stage #context:not([hidden]),body.cadWorkspace #stage[data-workspace=sketch][data-sketch-context=true] #context:not([hidden]){left:60px;top:102px;width:48px;max-width:48px;}body.cadWorkspace #stage #context button{width:38px;min-width:38px;}body.cadWorkspace #stage #selectionBar{left:60px;}}
+body.cadWorkspace #stage #selectionBar{transform:none;}
+body.cadWorkspace #stage #context:not([hidden]),body.cadWorkspace #stage[data-workspace=sketch][data-sketch-context=true] #context:not([hidden]){bottom:auto;height:max-content;max-height:max(80px,calc(100% - 350px));}
+@media(max-height:500px){body.cadWorkspace #stage #selectionBar{left:134px;} }
+@media(max-height:500px) and (max-width:760px){body.cadWorkspace #stage #selectionBar{left:116px;} }
+
+/* Pattern parameters stay beside their model directions, with no numeric menu. */
+body.cadWorkspace #operationGizmo[data-model-badges=true] [data-badges]{display:block;position:absolute;inset:0;width:auto;padding:0;border:0;background:none;box-shadow:none;overflow:visible;pointer-events:none;}
+body.cadWorkspace #operationGizmo[data-model-badges=true] [data-gizmo-field]{position:absolute!important;left:var(--model-x)!important;top:var(--model-y)!important;min-height:36px;pointer-events:auto;touch-action:none;}
+
+/* Named command rows: common CAD silhouettes stay readable at touch sizes. */
+body.cadWorkspace #menu{display:flex;flex-direction:column;width:232px;gap:3px;padding:10px;overflow-y:auto;}
+body.cadWorkspace #menu>h2{font-size:12px;margin:0 0 5px;color:var(--muted);}
+body.cadWorkspace #menu>button{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:12px;min-height:40px;width:100%;padding:7px 10px;background:transparent;color:var(--text);border-color:transparent;border-radius:7px;text-align:left;}
+body.cadWorkspace #menu>button:hover{background:var(--hover,#6582a525);border-color:var(--border);}
+body.cadWorkspace #menu>button svg{width:25px;height:25px;color:inherit;}
+body.cadWorkspace #menu>button span{font-size:12px;line-height:1.2;}
+body.cadWorkspace #stage #context:not([hidden]){width:144px;max-width:144px;align-items:stretch;}
+body.cadWorkspace #stage #context button{width:100%;min-height:36px;gap:7px;justify-content:flex-start;}
+body.cadWorkspace #stage #context button span{display:block;font-size:11px;white-space:nowrap;}
+body.cadWorkspace #stage #context button svg{width:22px;height:22px;}
+#booleanBar{position:absolute;top:117px;left:50%;transform:translateX(-50%);z-index:45;display:flex;gap:8px;align-items:center;max-width:calc(100% - 400px);padding:7px 9px;background:var(--panel);border:1px solid var(--border);border-radius:10px;box-shadow:0 4px 18px #0002;font-size:12px;}
+#booleanBar strong,#booleanBar label,#booleanBar button{display:flex;align-items:center;gap:5px;white-space:nowrap;}
+#booleanBar output{white-space:nowrap;color:var(--muted);}
+#booleanBar button{min-height:36px;padding:6px;}
+#booleanBar button:first-of-type{background:var(--blue);color:white;}
+#booleanBar input{accent-color:var(--blue);}
+@media(max-width:760px){body.cadWorkspace #menu{width:min(232px,calc(100% - 120px));}body.cadWorkspace #stage #context:not([hidden]){width:108px;max-width:108px;}body.cadWorkspace #stage #context button{padding:4px;gap:4px;}body.cadWorkspace #stage #context button span{font-size:10px;}#booleanBar{left:60px;right:54px;transform:none;max-width:none;flex-wrap:wrap;font-size:11px;gap:5px;}#booleanBar label{font-size:10px;}}
+
+#booleanBar output{max-width:170px;overflow:hidden;text-overflow:ellipsis;}

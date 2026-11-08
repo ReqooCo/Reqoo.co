@@ -6,7 +6,7 @@ export function cubeDirection(name){
  if(/^(edge|corner):/.test(name)){const a=name.split(':')[1].split(',').map(Number);if(a.length===3&&a.every(v=>[-1,0,1].includes(v))&&a.some(Boolean))return a;}
  return named.iso;
 }
-export function createOrientationCube({THREE,camera,controls,root,onView}){
+export function createOrientationCube({THREE,camera,controls,root,onView,onOrbit=async()=>true}){
  const ns='http://www.w3.org/2000/svg',graphic=document.createElementNS(ns,'svg');graphic.classList.add('orientationGraphic');graphic.setAttribute('viewBox','0 0 128 112');graphic.setAttribute('aria-label','Interactive orientation cube');
  root.replaceChildren(graphic);root.setAttribute('aria-label','View cube');
  const vertices=[[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]];
@@ -46,12 +46,13 @@ export function createOrientationCube({THREE,camera,controls,root,onView}){
   camera.up.copy(drag.up).applyQuaternion(rotation);camera.lookAt(controls.target);
   root.dataset.orientation='free';controls.syncPose?.();update(document.documentElement.dataset.theme||'light');
  });
- function endDrag(e){
+ async function endDrag(e){
   if(!drag||drag.id!==e.pointerId)return;
-  const snap=e.type==='pointerup'&&!drag.moved?drag.view:null;
+  const orbit=drag.moved,savedOffset=drag.offset,savedUp=drag.up,snap=e.type==='pointerup'&&!drag.moved?drag.view:null;
   suppressClick=true;
   controls.enabled=drag.enabled;drag=null;graphic.style.cursor='grab';
   if(graphic.hasPointerCapture(e.pointerId))graphic.releasePointerCapture(e.pointerId);
+  if(orbit&&(e.type!=='pointerup'||!await onOrbit())){camera.position.copy(controls.target).add(savedOffset);camera.up.copy(savedUp);camera.lookAt(controls.target);controls.syncPose?.();}
   if(snap)onView(snap);
  }
  graphic.addEventListener('pointerup',endDrag);graphic.addEventListener('pointercancel',endDrag);graphic.addEventListener('lostpointercapture',endDrag);

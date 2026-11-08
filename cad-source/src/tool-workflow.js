@@ -1,0 +1,50 @@
+// A double-tap promotes a face without losing bodies selected before its first tap.
+export function promoteBodySelection(before,id){
+ // Preserve earlier whole-body selections and their order for Boolean tools.
+ // Repeated double-taps remain idempotent; promoting another face adds its
+ // owning body without discarding existing Boolean operands.
+ const bodies=before.filter(r=>r.kind==='body');
+ return bodies.some(r=>r.id===id)?bodies:[...bodies,{id,kind:'body'}];
+}
+// Common entry contracts; native geometry validation still owns commit validity.
+export function extendCanvasSelection(current,next,{explicit=false,filter='auto'}={}){
+ if(explicit)return true;if(!current.length||!next)return false;
+ if(!current.every(r=>r.kind===next.kind))return false;
+ // Multi-face selection must work for fillet/chamfer and face-based tools.
+ // Keep cross-body face selection opt-in via the explicit face filter.
+ if(next.kind==='face')return filter==='face'||current.every(r=>r.id===next.id);
+ if(next.kind==='edge')return current.every(r=>r.id===next.id);
+ return ['sketch','body'].includes(next.kind);
+}
+export const TOOL_WORKFLOWS={
+ sketch:'create',rectangle:'create',circle:'create',ellipse:'create',polygon:'create',polyline:'create',arc:'create',spline:'create',text:'create',box:'create',cylinder:'create',sphere:'create',torus:'create',plane:'create',axis:'create',import:'create',
+ extrude:'extrude',revolve:'closedProfile',loft:'loft',sweep:'sweep',
+ move:'bodies',rotate:'bodies',scale:'bodies',mirror:'body',pattern:'bodies',circularPattern:'body',duplicate:'body',align:'align',
+ union:'boolean',subtract:'boolean',intersect:'boolean',split:'body',fillet:'edges',chamfer:'edges',
+ shell:'face',offsetFace:'face',draft:'face',faceSketch:'planarFace',hole:'hole',thread:'cylinderFace',
+ sketchOffset:'curves',sketchFillet:'curves',sketchChamfer:'curves',sketchMirror:'curves',sketchPattern:'curves',sketchTransform:'curves',sketchProject:'projection',sketchProfile:'profiles',sketchTrim:'curves',delete:'selected',imprint:'projection'
+};
+export function toolSelectionError(type,refs,items,doc={features:[]}){
+ const rule=TOOL_WORKFLOWS[type];if(!rule||rule==='create')return'';
+ const chosen=refs.map(r=>items.find(i=>i.id===r.id)),unique=[...new Set(refs.map(r=>r.id))],all=kind=>refs.length&&chosen.every((i,n)=>i?.kind===kind&&(kind!=='sketch'||refs[n].kind==='sketch'));
+ const closed=()=>all('sketch')&&chosen.every(i=>i.profileClosed&&!i.construction),face=refs.length===1&&refs[0].kind==='face'&&chosen[0]?.kind==='body'?chosen[0].faceInfo?.find(f=>f.index===refs[0].index):null;
+ if(rule==='selected')return refs.length&&refs.every((ref,index)=>{const item=chosen[index];if(!item)return false;if(ref.kind==='body'||ref.kind==='sketch')return ref.kind===item.kind;if(ref.kind==='face')return item.kind==='body'&&item.faceInfo?.some(face=>face.index===ref.index);if(ref.kind==='edge')return item.kind==='body'&&item.edges?.some((edge,i)=>(Number.isInteger(edge.index)?edge.index:i)===ref.index);return false;})?'':'Select an existing object first';
+ if(rule==='extrude'){if(face?.type==='PLANE')return'';if(!closed())return'Select closed sketch profiles together, or one planar solid face';const normals=chosen.map(i=>i.sketchPlane?.normal);if(normals.some(Boolean)){const unit=n=>Array.isArray(n)&&n.length===3&&n.every(Number.isFinite)&&Math.hypot(...n)>1e-9?n.map(v=>v/Math.hypot(...n)):null;const reference=unit(normals[0]);if(!reference||normals.some(n=>{const v=unit(n);return !v||v.reduce((sum,x,j)=>sum+x*reference[j],0)<.99999;}))return'Choose parallel sketch profiles with matching directions';}return'';}
+ if(rule==='closedProfile')return closed()&&refs.length===1?'':'Select one closed sketch profile';
+ if(rule==='loft')return closed()&&refs.length>=2?'':'Select at least two closed sketch profiles';
+ if(rule==='sweep')return all('sketch')&&refs.length===2&&chosen[0].profileClosed&&!chosen[0].construction?'':'Select a closed profile first, then a sketch path';
+ if(rule==='boolean')return all('body')&&refs.every(r=>r.kind==='body')&&unique.length>=2?'':'Select at least two solid bodies';
+ if(rule==='align')return refs.length>0&&unique.length<=2&&refs.every((r,n)=>chosen[n]?.kind==='body'&&['body','face'].includes(r.kind)&&(r.kind!=='face'||chosen[n].faceInfo?.some(f=>f.index===r.index&&(f.type==='PLANE'||!!f.cylinder))))?'':'Select a solid body or planar/cylindrical face to align';
+ // Scale can start from a selected solid face: the face provides the pivot
+ // while the native gizmo scales its owning solid body.
+ if(type==='scale'&&face)return'';
+ if(['bodies','body'].includes(rule))return all('body')&&refs.every(r=>r.kind==='body')&&(rule!=='body'||unique.length===1)?'':'Select '+(rule==='body'?'one solid body':'solid bodies');
+ if(rule==='edges')return all('body')&&unique.length===1&&(refs.every((r,n)=>r.kind==='edge'&&chosen[n].edges?.some((edge,i)=>(Number.isInteger(edge.index)?edge.index:i)===r.index))||refs.length===1&&refs[0].kind==='body')?'':'Select valid edges from one body, or one whole body';
+ if(rule==='face')return face?'':'Select one solid face';
+ if(rule==='planarFace')return face?.type==='PLANE'?'':'Select one planar solid face';
+ if(rule==='cylinderFace')return face?.cylinder?.full?'':'Select one complete cylindrical side face';
+ if(rule==='hole'){const recipe=doc.features.find(f=>f.id===chosen[0]?.featureId)?.params;return face?.type==='PLANE'||refs.length===1&&all('sketch')&&recipe?.shape==='circle'?'':'Select one planar face or circle sketch';}
+ if(rule==='curves'||rule==='profiles')return all('sketch')&&(rule!=='profiles'||closed()&&refs.length>=2)?'':'Select '+(rule==='profiles'?'at least two closed profiles':'sketch curves');
+ if(rule==='projection')return refs.length&&refs.every((r,n)=>{const item=chosen[n];if(!item)return false;if(r.kind==='sketch')return item.kind==='sketch';if(item.kind!=='body')return false;if(r.kind==='body')return true;if(r.kind==='face')return item.faceInfo?.some(f=>f.index===r.index);if(r.kind==='edge')return item.edges?.some((edge,i)=>(Number.isInteger(edge.index)?edge.index:i)===r.index);return false;})?'':'Select valid source geometry';
+ return'';
+}

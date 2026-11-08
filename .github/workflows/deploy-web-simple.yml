@@ -1,16 +1,14 @@
-name: Deploy Reqoo Web
-
+# Legacy workflow intentionally disabled.
+# All REDS production releases: reds/draft PR -> main -> deploy.yml
+# Never add Cloudflare credentials or Wrangler deploy commands here.
+name: Legacy deploy (disabled)
 on:
-  push:
-    branches: [rebuild/v1-simple]
-
+  workflow_dispatch:
 jobs:
-  deploy:
+  retired:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy --config wrangler-web.toml
+      - name: Block legacy production release
+        run: |
+          echo "::error::Legacy deploy is retired. Use reds/draft -> main and Deploy Reqoo Final."
+          exit 1

@@ -1,0 +1,78 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import init from 'replicad-opencascadejs';
+import * as R from 'replicad';
+import {buildModel,profile} from '../src/engine.js';
+import {trimDrawing,nativePlanarDrawing} from '../src/curve-trim.js';
+const req=createRequire(import.meta.url);R.setOC(await init({locateFile:()=>req.resolve('replicad-opencascadejs/wasm')}));
+const f=(id,params,plane='XY')=>({id,type:'sketch',params:{plane,...params},inputs:[]});
+const line={shape:'polyline',points:[[-20,0],[20,0]],closed:false};
+const boundaries=[{shape:'circle',radius:8},{shape:'ellipse',width:16,height:10},{shape:'arc',points:[[-10,-10],[10,-10]],sagitta:15,closed:false},{shape:'spline',points:[[-10,-10],[0,10],[10,-10]],closed:false}];
+for(const plane of ['XY','XZ','YZ'])for(const boundary of boundaries){const features=[f('source',line,plane),f('boundary',boundary,plane),{id:'trim',type:'sketchTrim',params:{point:[0,0],tolerance:.01},inputs:['source','boundary']}];let m=await buildModel({format:'reqoo-cad',version:1,features});const pieces=m.items.filter(i=>i.featureId==='trim');assert.equal(pieces.length,2,`${plane} line against ${boundary.shape}`);assert.ok(pieces.every(i=>i.edges.every(e=>e.type==='LINE')));m.release();}
+const spline={shape:'spline',points:[[-20,0],[0,10],[20,0]],closed:false},walls=[profile({shape:'polyline',points:[[-5,-20],[-5,20]],closed:false}),profile({shape:'polyline',points:[[5,-20],[5,20]],closed:false})];
+let parts=trimDrawing(profile(spline),walls,[0,10],.01);assert.equal(parts.length,2);for(const p of parts)assert.ok(R.deserializeDrawing(p.serializedDrawing).blueprint.curves.every(c=>c.geomType==='BSPLINE_CURVE'));
+const ellipse={shape:'ellipse',width:20,height:10};parts=trimDrawing(profile(ellipse),[profile(line)],[0,5],.01);assert.equal(parts.length,1);assert.ok(R.deserializeDrawing(parts[0].serializedDrawing).blueprint.curves.every(c=>c.geomType==='ELLIPSE'));
+assert.throws(()=>trimDrawing(profile(line),[profile(line)],[1,0],.01),/Coincident/);
+for(const invalidTolerance of [NaN,Infinity,-Infinity,0,-1])assert.throws(()=>trimDrawing(profile(line),[],[0,0],invalidTolerance),/Invalid Trim point/,'Trim must reject invalid tolerance');
+for(const invalidPoint of [[NaN,0],[0,Infinity],[0],null])assert.throws(()=>trimDrawing(profile(line),[],invalidPoint,.01),/Invalid Trim point/,'Trim must reject invalid click coordinates');
+console.log('PASS finite line Trim against circle/ellipse/arc/spline on XY/XZ/YZ, exact spline target and ellipse target, coincident rejection');
+const loop=profile({shape:'spline',points:[[-20,-10],[20,10],[-20,10],[20,-10]],closed:false}),lc=loop.blueprint.curves[0],at=lc.value(lc.firstParameter+(lc.lastParameter-lc.firstParameter)*.1);
+parts=trimDrawing(loop,[],at,.001);assert.ok(parts.length>0,'Self-intersection divides a looping spline; do not delete the whole curve');
+console.log('PASS looping spline self-intersection is parameter-split');
+let features=[f('circle',{shape:'circle',radius:10}),{id:'offset',type:'sketchOffset',params:{distance:2,keepInputs:true},inputs:['circle']},f('line',{shape:'polyline',points:[[0,-20],[0,20]],closed:false}),{id:'cut',type:'sketchTrim',params:{point:[12,0],tolerance:.01},inputs:['offset','line']}];
+let m=await buildModel({format:'reqoo-cad',version:1,features});let result=m.items.filter(i=>i.featureId==='cut');assert.ok(result.length);assert.ok(result.every(i=>i.edges.every(e=>e.type==='CIRCLE')));m.release();
+features=[{id:'block',type:'box',params:{width:20,depth:20,height:8},inputs:[]}];m=await buildModel({format:'reqoo-cad',version:1,features});const top=m.items[0].faceInfo.find(f=>f.normal[2]>.99);m.release();features.push({id:'projection',type:'faceSketch',params:{face:top.index,distance:0},inputs:['block']},f('bottom',{shape:'polyline',points:[[-20,-5],[20,-5]],closed:false,offset:8}),f('upper',{shape:'polyline',points:[[-20,5],[20,5]],closed:false,offset:8}),{id:'cut',type:'sketchTrim',params:{point:[10,0],tolerance:.01},inputs:['projection','bottom','upper']});
+m=await buildModel(JSON.parse(JSON.stringify({format:'reqoo-cad',version:1,features})));result=m.items.filter(i=>i.featureId==='cut');assert.equal(result.length,1);assert.equal(result[0].profileClosed,false);m.release();
+console.log('PASS derived Offset target and native projected face target, exact curves and project rebuild');
+parts=trimDrawing(profile({shape:'rectangle',width:20,height:10}),[],[10,0],.001);assert.equal(parts.length,1);assert.equal(R.deserializeDrawing(parts[0].serializedDrawing).blueprint.curves.length,3,'Rectangle corners bound Trim; never erase the whole rectangle');
+const targets=[line,{shape:'arc',points:[[-18,0],[18,0]],sagitta:18,closed:false},{shape:'circle',radius:14},{shape:'ellipse',width:32,height:20},{shape:'spline',points:[[-20,-3],[-6,12],[8,-9],[22,2]],closed:false}];
+const mixed=[{shape:'polyline',points:[[2,-30],[2,30]],closed:false},{shape:'arc',points:[[-17,-3],[17,-3]],sagitta:12,closed:false},{shape:'circle',radius:9,x:3,y:1},{shape:'ellipse',width:18,height:28,x:-2,y:1},{shape:'spline',points:[[-25,-8],[-10,11],[8,-13],[25,8]],closed:false}];
+let matrixCount=0;for(const target of targets)for(const boundary of mixed){const d=profile(target),curve=d.blueprint.curves[0],point=curve.value(curve.firstParameter+.31*(curve.lastParameter-curve.firstParameter));const before=d.serialize(),remaining=trimDrawing(d,[profile(boundary)],point,.0001);assert.equal(d.serialize(),before,'Trim never mutates the source drawing');for(const p of remaining)assert.ok(p.serializedDrawing);matrixCount++;}
+console.log('PASS '+matrixCount+' target/boundary pairs: line, arc, circle, ellipse, spline; native vertex and source-immutability checks');
+const {arcPreviewPoints}=await import('../src/sketch-edit-geometry.js');for(const h of [2,10,30]){const drawing=profile({shape:'arc',points:[[0,0],[20,0]],sagitta:h,closed:false}),curve=drawing.blueprint.curves[0];for(const p of arcPreviewPoints([0,0],[20,0],h))assert.ok(curve.distanceFrom(p)<1e-5,'Arc preview follows the committed native circle');}
+console.log('PASS minor/semicircle/major arc previews match native curves');
+parts=trimDrawing(profile({shape:'rectangle',width:20,height:10}),[profile({shape:'polyline',points:[[-10,-5],[10,-5]],closed:false})],[10,0],.001);assert.equal(parts.length,1,'A coincident boundary elsewhere does not block an unambiguous target edge');
+console.log('PASS unrelated overlapping boundary does not block the chosen interval');
+features=[{id:'source',type:'sketch',params:spline,inputs:[]},f('left',{shape:'polyline',points:[[-5,-20],[-5,20]],closed:false}),f('right',{shape:'polyline',points:[[5,-20],[5,20]],closed:false}),{id:'cut',type:'sketchTrim',params:{point:[0,10],tolerance:.01},inputs:['source','left','right']},{id:'offset',type:'sketchOffset',params:{distance:1,mode:'Chain',keepInputs:true},inputs:['cut']}];
+m=await buildModel({format:'reqoo-cad',version:1,features});const before=m.items.find(i=>i.id==='cut'),after=m.items.find(i=>i.id==='offset');assert.notDeepEqual(before.bounds,after.bounds,'Offset after native spline Trim really changes geometry');assert.equal(after.profileClosed,false);assert.ok(m.exportSketch('cut','svg').includes('<path'),'Trimmed spline exports as a curve SVG');const originalCurve=nativePlanarDrawing(m.shapes.get('cut'),m.profiles.get('cut').basis).blueprint.curves[0],offsetCurve=nativePlanarDrawing(m.shapes.get('offset'),m.profiles.get('offset').basis).blueprint.curves[0];for(let n=1;n<10;n++){const p=offsetCurve.value(offsetCurve.firstParameter+n/10*(offsetCurve.lastParameter-offsetCurve.firstParameter));assert.ok(Math.abs(originalCurve.distanceFrom(p)-1)<.001,'Spline offset maintains 1 mm normal distance');}originalCurve.delete();offsetCurve.delete();m.release();
+console.log('PASS Spline → Trim → Offset uses the retained native curve');
+m=await buildModel({format:'reqoo-cad',version:1,features:[f('line',line),f('circle',{shape:'circle',radius:8}),{id:'trim',type:'sketchTrim',params:{point:[0,0],tolerance:.01},inputs:['line','circle']}]});assert.ok(m.exportSketch('trim','svg').includes('<path'));assert.ok(m.exportSketch('trim','dxf').includes('\nLINE\n'));m.release();
+console.log('PASS trimmed sketch SVG/DXF retain exportable native line geometry');
+m=await buildModel({format:'reqoo-cad',version:1,features:[f('circle',{shape:'circle',radius:10}),f('line',line),{id:'trim',type:'sketchTrim',params:{point:[0,10],tolerance:.01},inputs:['circle','line']}]});assert.ok(m.exportSketch('trim','dxf').includes('\nARC\n'));m.release();
+console.log('PASS trimmed circular arc DXF export');
+for(const recipe of [{shape:'rectangle',width:20,height:12},{shape:'circle',radius:10},{shape:'ellipse',width:24,height:12},{shape:'spline',points:[[-15,0],[0,8],[15,0]],closed:false},{shape:'arc',points:[[-10,0],[10,0]],sagitta:10,closed:false}]){
+ const features=[f('source',recipe),{id:'offset',type:'sketchOffset',params:{distance:1,mode:'Chain',keepInputs:true},inputs:['source']}];m=await buildModel({format:'reqoo-cad',version:1,features});const sourceRecipe=m.profiles.get('offset'),drawing=sourceRecipe.nativeSketch?nativePlanarDrawing(m.shapes.get('offset'),sourceRecipe.basis||{origin:[0,0,0],x:[1,0,0],normal:[0,0,1]}):profile(sourceRecipe),curve=drawing.blueprint.curves[0],p=curve.value(curve.firstParameter+.37*(curve.lastParameter-curve.firstParameter));m.release();features.push(f('wall',{shape:'polyline',points:[[0,-30],[0,30]],closed:false}),{id:'trim',type:'sketchTrim',params:{point:p,tolerance:.05},inputs:['offset','wall']});m=await buildModel({format:'reqoo-cad',version:1,features});m.release();
+}
+console.log('PASS Rectangle/Circle/Ellipse/Spline/Arc → Offset → native Trim');
+
+// Exact geometry from the reported four-stage circle/Offset Trim failure.
+const repeated=JSON.parse(fs.readFileSync(new URL('./fixtures/trim-offset-circles.json',import.meta.url),'utf8'));
+m=await buildModel(repeated);const visible=m.items.filter(i=>i.kind==='sketch');let checked=0;
+const drawing=id=>{const r=m.profiles.get(id);return r.nativeSketch?nativePlanarDrawing(m.shapes.get(id),r.basis):profile(r);};
+for(const item of visible){
+ const source=drawing(item.id),boundaries=visible.filter(i=>i.id!==item.id).map(i=>drawing(i.id)),original=source.serialize();
+ for(const c of source.blueprint.curves)for(const q of [.05,.2,.4,.6,.8,.95]){
+  const p=c.value(c.firstParameter+q*(c.lastParameter-c.firstParameter)),remaining=trimDrawing(source,boundaries,p,.01);
+  assert.ok(remaining.length,'Trimming a finite arc retains the rest of the wire');
+  assert.equal(source.serialize(),original,'Repeated Trim preserves source curves');
+  for(const r of remaining)assert.ok(R.deserializeDrawing(r.serializedDrawing).blueprint.curves.every(c=>c.geomType==='CIRCLE'));
+  checked++;
+ }
+}
+m.release();assert.equal(checked,96);
+// Follow the real saved history with another native Trim and reopen it.
+const target=[41.39407134104093,15.816721727077539],extended=structuredClone(repeated);
+extended.features.push({id:'repeat-cut',type:'sketchTrim',params:{point:target,tolerance:.01},inputs:['f5','f6','f7','f8']});
+m=await buildModel(extended);const expected=JSON.stringify(m.items.map(i=>[i.id,i.bounds,i.edges.map(e=>[e.type,e.length])]));assert.ok(m.items.filter(i=>i.featureId==='repeat-cut').every(i=>i.edges.every(e=>e.type==='CIRCLE')));m.release();
+m=await buildModel(JSON.parse(JSON.stringify(extended)));assert.equal(JSON.stringify(m.items.map(i=>[i.id,i.bounds,i.edges.map(e=>[e.type,e.length])])),expected);m.release();
+// Same-support arcs with a shared endpoint are contacts, not overlaps.
+for(const shape of [{shape:'circle',radius:10},{shape:'ellipse',width:24,height:12}]){
+ const d=profile(shape),cs=d.blueprint.curves,oc=R.getOC(),c=cs[0],mid=(c.firstParameter+c.lastParameter)/2;
+ const a=new R.Drawing(new R.Blueprint([new R.Curve2D(new oc.Geom2d_TrimmedCurve(c.wrapped,c.firstParameter,mid,true,true))])),b=new R.Drawing(new R.Blueprint([new R.Curve2D(new oc.Geom2d_TrimmedCurve(c.wrapped,mid,c.lastParameter,true,true))]));
+ assert.equal(trimDrawing(a,[b],c.value((c.firstParameter+mid)/2),.0001).length,0,'An endpoint contact must not fail');
+ assert.throws(()=>trimDrawing(a,[a],c.value((c.firstParameter+mid)/2),.0001),/Coincident/,'Genuine finite overlap remains blocked');
+}
+console.log('PASS reported repeated Offset/circle Trim: 96 native arc picks, exact curve retention, further Trim/reopen, circle/ellipse endpoint contacts and true overlap rejection');
+
+await import('./sketch-tools.mjs');
