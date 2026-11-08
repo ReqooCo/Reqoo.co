@@ -66,7 +66,10 @@ try{
  assert.equal(await page.evaluate(()=>window.__cad.selection.at(-1)?.kind),'face');
  await page.locator('#context').getByRole('button',{name:'Extrude',exact:true}).click();
  await page.locator('#faceDistanceValue').fill('5');await page.locator('#faceDistanceApply').click();
- await page.waitForFunction(()=>Math.abs(window.__cad.items.find(i=>i.kind==='body')?.volume-9000)<.01);
+ await page.waitForFunction(()=>!document.body.classList.contains('busy'),{},{timeout:15000});
+ const firstUiExtrude=await page.evaluate(()=>({volume:window.__cad.items.find(i=>i.kind==='body')?.volume,selection:window.__cad.selection,features:window.__cad.doc.features.slice(-2).map(f=>({type:f.type,params:f.params,inputs:f.inputs})),status:document.querySelector('#status')?.textContent}));
+ console.log('FIRST_FACE_EXTRUDE_DIAGNOSTIC',JSON.stringify(firstUiExtrude));
+ approx(firstUiExtrude.volume,9000,.01);
  checks.push('Planar-face UI Extrude on existing solid produces 9000 mm³');
  // Human workflow: after commit, the next face remains discoverable and Extrude is reachable again.
  await page.mouse.click(faceClick.x,faceClick.y);
