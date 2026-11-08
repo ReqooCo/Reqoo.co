@@ -14,7 +14,7 @@
 2. Work on **`reds/draft` only** for REDS; don't open a competing release PR, create another Draft, push to `main`, force-push, or run `wrangler deploy` directly. Retain source/history from older feature branches, bringing approved improvements into Draft.
 3. Before writing, fetch the latest blob SHA. If another agent has committed since you read the file, **rebase the intended change on the latest content**; do not overwrite their work.
 4. Make small reviewable commits. Run relevant unit/native/browser tests, then let GitHub Actions run **Core, Modeling and Product** on the **same exact HEAD**. Also verify the **Draft live browser** workflow and version identity before marking ready.
-5. End every session by updating **this handoff file** with exact completed changes, test evidence, remaining problems and next action. Commit this file to `reds/draft`; if that moves HEAD, recheck the CI for the new HEAD before reporting success.
+5. Update this handoff **only for meaningful milestones, regressions or ownership changes**. For routine fixes and status replies use the existing PR #277 comments; do not create a handoff-only commit after each `go`, because it restarts every Draft CI/browser test. Follow the simplified `AGENTS.md` working agreement.
 6. Protect existing CAD data: never delete originals, backups or history; preserve OpenCascade B-Rep and the native `.rqcad` project format.
 7. **Production release is not authorised merely because CI is green.** Admin GitHub ruleset + environment secret/token separation are open in [issue #278](https://github.com/ReqooCo/Reqoo.co/issues/278). Do not merge/deploy until these controls are verified and user approval/release policy is satisfied.
 
