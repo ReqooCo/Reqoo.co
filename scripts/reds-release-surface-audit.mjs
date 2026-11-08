@@ -60,7 +60,17 @@ assert.equal(cfg.name,'reqoo-reds-draft');
 const forbidden=[];
 for(const file of workflows){
  const data=read(file);
- if(!['deploy.yml','cad-live-verification.yml'].includes(file)&&/secrets\.CLOUDFLARE_API_TOKEN/.test(data))forbidden.push(file+': shared Cloudflare credential outside canonical environments');
+ if(file==='reds-credential-retirement-audit.yml'){
+  // This audit may inspect ONLY the boolean presence of legacy secrets. It
+  // cannot receive their values, use an environment, or invoke a publisher.
+  const allowedWorker=/REPO_WORKER_SECRET_PRESENT:\s*\$\{\{\s*secrets\.CLOUDFLARE_API_TOKEN\s*!=\s*''\s*\}\}/;
+  const allowedD1=/REPO_D1_SECRET_PRESENT:\s*\$\{\{\s*secrets\.CLOUDFLARE_D1_API_TOKEN\s*!=\s*''\s*\}\}/;
+  assert.match(data,allowedWorker,'Retirement audit must compare only the existence of the shared Worker secret');
+  assert.match(data,allowedD1,'Retirement audit must compare only the existence of the shared D1 secret');
+  const scrubbed=data.replace(allowedWorker,'').replace(allowedD1,'');
+  assert.doesNotMatch(scrubbed,/secrets\.CLOUDFLARE_(?:API|D1_API)_TOKEN/,'Retirement audit must never pass secret values');
+  assert.doesNotMatch(data,/^\s+environment:|wrangler.*deploy|\bdeploy-worker\b/m,'Retirement audit must never deploy or use an environment');
+ }else if(!['deploy.yml','cad-live-verification.yml'].includes(file)&&/secrets\.CLOUDFLARE_API_TOKEN/.test(data))forbidden.push(file+': shared Cloudflare credential outside canonical environments');
  if(file!=='deploy.yml'&&/^\s*(?:npx\s+[^\n]*\s+)?wrangler\s+deploy\s+--config\s+wrangler-web\.toml\s*$/m.test(data))forbidden.push(file+': production worker');
  if(file!=='deploy-web-simple.yml'&&/^\s*command:\s*deploy\s+--config\s+wrangler-web\.toml\s*$/m.test(data))forbidden.push(file+': Cloudflare action');
  if(file!=='cad-live-verification.yml'&&/^\s*(?:npx\s+[^\n]*\s+)?wrangler(?:@[\d.]+)?\s+deploy\s+--config\s+wrangler\.(?:preview|sketch-preview|draft)\.jsonc\s*$/m.test(data))forbidden.push(file+': independent CAD preview');
