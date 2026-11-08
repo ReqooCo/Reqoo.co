@@ -24,6 +24,7 @@ jobs:
           node --check src/sketch-connectivity.js
           for suite in \
             tests/sketch-connectivity-offline.mjs \
+            tests/offset-plan-offline.mjs \
             tests/guidepoints.mjs \
             tests/sketch-edit-geometry.mjs \
             tests/sketch-flow.mjs \
