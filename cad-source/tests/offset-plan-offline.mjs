@@ -19,8 +19,8 @@ function run(refs,connections,mode='Chain'){
   items:refs.map(id=>({id})),connectedSketchIds:(_,seed)=>connections[seed]||[],
   uid:(()=>{let i=0;return()=>String(++i)})()};
  vm.createContext(context);
- vm.runInContext(implementation+';this.testOffsetPlan=offsetPlan',context,{timeout:1000});
- const result=context.testOffsetPlan({mode,distance:2},false);
+ vm.runInContext(implementation+';this.testOffsetPlan=offsetPlan;this.testResult=offsetPlan({mode:"'+mode+'",distance:2},false)',context,{timeout:1000});
+ const result=context.testResult;
  return result.next.features.map(f=>Array.from(f.inputs));
 }
 assert.deepEqual(run(['a'],{a:[]}),[['a']],'disconnected seed must advance');
