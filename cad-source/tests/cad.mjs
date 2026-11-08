@@ -65,6 +65,8 @@ try{
  await page.mouse.click(faceClick.x,faceClick.y);
  assert.equal(await page.evaluate(()=>window.__cad.selection.at(-1)?.kind),'face');
  await page.locator('#context').getByRole('button',{name:'Extrude',exact:true}).click();
+ assert.equal(await page.locator('[aria-label="Extrude operation"]').inputValue(),'Add','Existing face must default to Add, not New body');
+ assert.equal(await page.locator('[aria-label="Extrude target body"]').inputValue(),a,'Existing face must target its owning body');
  await page.locator('#faceDistanceValue').fill('5');await page.locator('#faceDistanceApply').click();
  await page.waitForFunction(()=>!document.body.classList.contains('busy'),{},{timeout:15000});
  const firstUiExtrude=await page.evaluate(()=>({volume:window.__cad.items.find(i=>i.kind==='body')?.volume,selection:window.__cad.selection,features:window.__cad.doc.features.slice(-2).map(f=>({type:f.type,params:f.params,inputs:f.inputs})),status:document.querySelector('#status')?.textContent}));
