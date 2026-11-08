@@ -22,4 +22,4 @@ for(const refs of [
 ])assert.notEqual(toolSelectionError('align',refs,items),'','invalid alignment selection rejected');
 assert.equal(toolSelectionError('extrude',[{id:'moving',kind:'face',index:0}],items),'','planar extrude remains allowed');
 assert.notEqual(toolSelectionError('extrude',[{id:'moving',kind:'face',index:1}],items),'','cylindrical extrude remains rejected');
-console.log('TOOL WORKFLOW OFFLINE PASS 11');
+console.log('TOOL WORKFLOW OFFLINE PASS 12');
