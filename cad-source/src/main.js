@@ -642,8 +642,12 @@ function updateSketchEditHUD(){const hud=$('sketchEditHUD');if(!hud||hud.hidden)
 const skDot=(a,b)=>a.reduce((sum,v,i)=>sum+v*b[i],0);
 const skCross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
 function sameSketchPlane(a,b){
+ const valid=v=>Array.isArray(v)&&v.length===3&&v.every(Number.isFinite);
+ if(!a||!b||!valid(a.origin)||!valid(b.origin)||!valid(a.normal)||!valid(b.normal))return false;
+ const an=Math.hypot(...a.normal),bn=Math.hypot(...b.normal);
+ if(an<1e-10||bn<1e-10)return false;
  const delta=a.origin.map((v,i)=>v-b.origin[i]);
- return Math.abs(skDot(delta,b.normal))<.0001&&Math.abs(skDot(a.normal,b.normal))>.9999;
+ return Math.abs(skDot(delta,b.normal)/bn)<.0001&&Math.abs(skDot(a.normal,b.normal)/(an*bn))>.9999;
 }
 function sketchPointToFrame(point,from,to){
  const y=skCross(from.normal,from.x),ty=skCross(to.normal,to.x);
