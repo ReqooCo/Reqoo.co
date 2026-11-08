@@ -59,6 +59,15 @@ try{
   approx((await data())[0].volume,expected,.01);
  }
  checks.push('Repeated face Extrude Add rebuilds a valid solid from the latest top face');
+ // UI regression: the next planar face must launch Extrude from the context toolbar.
+ await reset();a=await box();await page.evaluate(()=>window.__cad.view('top'));await page.locator('#fit').click();
+ const faceClick=await page.evaluate(()=>{const p=window.__cad.camera.position.clone().set(0,0,10).project(window.__cad.camera),r=document.querySelector('#canvas').getBoundingClientRect();return{x:r.left+(p.x+1)*r.width/2,y:r.top+(1-p.y)*r.height/2};});
+ await page.mouse.click(faceClick.x,faceClick.y);
+ assert.equal(await page.evaluate(()=>window.__cad.selection.at(-1)?.kind),'face');
+ await page.locator('#context').getByRole('button',{name:'Extrude',exact:true}).click();
+ await page.locator('#faceDistanceValue').fill('5');await page.locator('#faceDistanceApply').click();
+ await page.waitForFunction(()=>Math.abs(window.__cad.items.find(i=>i.kind==='body')?.volume-9000)<.01);
+ checks.push('Planar-face UI Extrude on existing solid produces 9000 mm³');
  await reset();a=await apply('sketch',{shape:'rectangle',width:10,height:20,x:25,y:0,plane:'XZ'},[]);await apply('revolve',{axis:'Z',angle:360},[a]);approx((await data())[0].volume,10000*Math.PI,.01);checks.push('Revolve preserves analytic cylindrical volume');
  await reset();a=await apply('sketch',{shape:'circle',radius:10,plane:'XY',offset:0});b=await apply('sketch',{shape:'circle',radius:5,plane:'XY',offset:20});await apply('loft',{},[a,b]);approx((await data())[0].volume,Math.PI*20*175/3,.05);checks.push('Loft builds a real closed tapered solid between profiles');
  await reset();a=await apply('sketch',{shape:'polyline',points:[[0,0],[0,30]],closed:false,plane:'XY'});await apply('sweep',{radius:2},[a]);approx((await data())[0].volume,Math.PI*120,.01);checks.push('Round-profile sweep follows an open sketch path');
