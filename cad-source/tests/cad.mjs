@@ -71,7 +71,7 @@ try{
  assert.equal(await page.locator('#booleanBar output').textContent(),'0 bodies selected');
  await tapWorld(-10);assert.equal(await page.locator('#booleanBar output').textContent(),'1 bodies selected');
  await tapWorld(25);assert.equal(await page.locator('#booleanBar output').textContent(),'2 bodies selected');
- await tapWorld(25);assert.equal(await page.locator('#booleanBar output').textContent(),'1 bodies selected');
+ await page.waitForTimeout(450);await tapWorld(25);console.log('BOOLEAN_TOGGLE_DEBUG',JSON.stringify(await page.evaluate(()=>({selection:window.__cad.selection,bar:document.querySelector('#booleanBar output')?.textContent,mode:document.querySelector('#pickMode')?.value}))));assert.equal(await page.locator('#booleanBar output').textContent(),'1 bodies selected');
  await tapWorld(25);assert.equal(await page.locator('#booleanBar output').textContent(),'2 bodies selected');
  await page.locator('#booleanBar button[aria-label="Apply Union"]').click();
  await page.waitForFunction(()=>window.__cad.items.filter(i=>i.kind==='body').length===1);
