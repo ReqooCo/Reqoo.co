@@ -81,6 +81,13 @@ try{
  await page.locator('#faceDistanceValue').fill('3');await page.locator('#faceDistanceApply').click();
  await page.waitForFunction(()=>Math.abs(window.__cad.items.find(i=>i.kind==='body')?.volume-10800)<.01);
  checks.push('Human flow: select face → Extrude → select new face → Extrude without sketch reset');
+ // Downstream compatibility: fillet must accept the body produced by consecutive face pulls.
+ const pulled=await data();assert.equal(pulled.filter(i=>i.kind==='body').length,1,'Two face pulls must leave one editable solid');
+ const pulledId=pulled.find(i=>i.kind==='body').id;
+ await apply('fillet',{radius:1,allEdges:true},[pulledId]);
+ const rounded=(await data()).find(i=>i.kind==='body');
+ assert.ok(rounded?.volume>0&&rounded.volume<10800,'Fillet after repeated face Extrude must generate a valid rounded solid');
+ checks.push('Repeated face Extrude → Fillet preserves one valid downstream solid');
  await reset();a=await apply('sketch',{shape:'rectangle',width:10,height:20,x:25,y:0,plane:'XZ'},[]);await apply('revolve',{axis:'Z',angle:360},[a]);approx((await data())[0].volume,10000*Math.PI,.01);checks.push('Revolve preserves analytic cylindrical volume');
  await reset();a=await apply('sketch',{shape:'circle',radius:10,plane:'XY',offset:0});b=await apply('sketch',{shape:'circle',radius:5,plane:'XY',offset:20});await apply('loft',{},[a,b]);approx((await data())[0].volume,Math.PI*20*175/3,.05);checks.push('Loft builds a real closed tapered solid between profiles');
  await reset();a=await apply('sketch',{shape:'polyline',points:[[0,0],[0,30]],closed:false,plane:'XY'});await apply('sweep',{radius:2},[a]);approx((await data())[0].volume,Math.PI*120,.01);checks.push('Round-profile sweep follows an open sketch path');
