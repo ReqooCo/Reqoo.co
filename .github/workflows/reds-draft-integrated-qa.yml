@@ -31,23 +31,40 @@ jobs:
       - name: Install Chromium
         working-directory: cad-source
         run: npx playwright install --with-deps chromium
-      - name: Run geometry and project regressions
+      - name: Run batch QA and collect every failure
         working-directory: cad-source
+        shell: bash
         run: |
-          node tests/sketch-connectivity-offline.mjs
-          node tests/curve-trim.mjs
-          node tests/offset-chain.mjs
-          node tests/multi-profile.mjs
-          node tests/project-io.mjs
-      - name: Run integrated browser scenarios
-        working-directory: cad-source
-        run: |
-          set -e
-          for suite in tests/cad.mjs tests/sketch-file-ux-ui.mjs tests/extrude-modes-ui.mjs tests/direct-sketch-ui.mjs; do
+          mkdir -p test-results
+          failed=0
+          run_suite() {
+            local suite="$1"
+            local label="${suite//\//_}"
             echo "::group::$suite"
-            timeout --signal=TERM --kill-after=15s 360s node "$suite"
+            if timeout --signal=TERM --kill-after=15s 360s node "$suite" > "test-results/${label}.log" 2>&1; then
+              echo "PASS $suite" | tee -a test-results/summary.txt
+            else
+              code=$?
+              echo "FAIL $suite (exit $code)" | tee -a test-results/summary.txt
+              tail -n 50 "test-results/${label}.log"
+              failed=1
+            fi
             echo "::endgroup::"
+          }
+          for suite in \
+            tests/sketch-connectivity-offline.mjs \
+            tests/curve-trim.mjs \
+            tests/offset-chain.mjs \
+            tests/multi-profile.mjs \
+            tests/project-io.mjs \
+            tests/cad.mjs \
+            tests/sketch-file-ux-ui.mjs \
+            tests/extrude-modes-ui.mjs \
+            tests/direct-sketch-ui.mjs; do
+            run_suite "$suite"
           done
+          cat test-results/summary.txt
+          exit "$failed"
       - name: Upload browser evidence
         if: always()
         uses: actions/upload-artifact@v4
