@@ -16,6 +16,10 @@ import {connectedSketchIds} from '../src/sketch-connectivity.js';
  assert.deepEqual(connectedSketchIds(chain,'missing'),[]);
  const long=Array.from({length:250},(_,i)=>sketch('segment-'+i,[i,0,0],[i+1,0,0]));
  assert.equal(connectedSketchIds(long,'segment-0').length,250,'Offset Chain traverses a long linked sketch without dropping members');
+ const near=[sketch('near-a',[0,0,0],[1,0,0]),sketch('near-b',[1+0.000004,0,0],[2,0,0]),sketch('far',[2+0.00002,0,0],[3,0,0])];
+ assert.deepEqual(new Set(connectedSketchIds(near,'near-a')),new Set(['near-a','near-b']),'Offset Chain joins endpoints within tolerance but not beyond it');
+ const reversed=[sketch('reverse-a',[0,0,0],[1,0,0]),sketch('reverse-b',[2,0,0],[1,0,0])];
+ assert.deepEqual(new Set(connectedSketchIds(reversed,'reverse-a')),new Set(['reverse-a','reverse-b']),'Offset Chain supports reversed segment direction');
 }
 
 // Geometry snap regressions run before browser startup.
