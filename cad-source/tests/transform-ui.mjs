@@ -35,7 +35,7 @@ try{
  await page.screenshot({path:path.join(out,'transform-part-alignment.png')});await page.getByRole('button',{name:'Apply alignment',exact:true}).click();await page.waitForFunction(()=>window.__cad.doc.features.at(-1).type==='align'&&!window.__cad.gizmo.busy);let aligned=await page.evaluate(()=>window.__cad.items.find(i=>i.featureId===window.__cad.doc.features.at(-1).id));near(aligned.bounds[1][0],20);assert.deepEqual((await item(b)).bounds,targetBefore.bounds);near((await item(b)).volume,targetBefore.volume);
  await page.locator('#undo').click();await page.waitForFunction(()=>window.__cad.doc.features.length===2);
  checks.push('Two-part bounding alignment supports minimum/centre/maximum anchors, preserves the target and undoes as one operation');
- await fresh();a=await op('box',{width:10,depth:10,height:10});b=await op('box',{width:20,depth:10,height:10,x:30,y:20,z:40});await page.evaluate(()=>window.__cad.view('iso'));await page.locator('#fit').click();
+ await fresh();a=await op('box',{width:10,depth:10,height:10});b=await op('box',{width:20,depth:10,height:10,x:30,y:20,z:40});await page.evaluate(()=>window.__cad.view('front'));await page.locator('#fit').click();
  const source=await item(a),target=await item(b),top=source.faceInfo.find(f=>f.normal[2]>.99),front=target.faceInfo.find(f=>f.normal[1]<-.99);
  await page.evaluate(({id,index})=>window.__cad.select([{id,kind:'face',index}]),{id:a,index:top.index});await page.evaluate(()=>window.__cad.startTool('align'));
  const point=await project([30,15,45]);
