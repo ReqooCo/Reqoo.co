@@ -24,6 +24,8 @@ jobs:
         run: |
           node --check scripts/reds-control-sync.mjs
           node scripts/reds-control-sync.test.mjs
+      - name: Clear offline test report before live reconciliation
+        run: rm -f reds/control/status.json
       - name: Read authoritative GitHub and Cloudflare state
         id: sync
         continue-on-error: true
@@ -44,6 +46,9 @@ jobs:
         run: |
           if [[ -f reds/control/status.json ]]; then
             node -e 'const r=require("./reds/control/status.json");console.log("REDS Control Center: "+JSON.stringify(r.summary)+" | releaseReady="+r.releaseReady);'
+            if [[ "\${{ steps.sync.outcome }}" != "success" ]]; then
+              echo 'Reconciliation reported blockers; see artifact. This monitor does not approve Live.'
+            fi
           else
             echo 'No report was generated; monitor execution failed.'
             exit 1
