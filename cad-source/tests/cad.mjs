@@ -51,6 +51,14 @@ try{
  for(const type of ['fillet','chamfer']){await reset();a=await box();await apply(type,{radius:1,allEdges:true},[a]);const item=(await data())[0];assert.ok(item.volume>0&&item.volume<6000);assert.ok(item.faceInfo.length>6);checks.push(type+' changes B-rep topology and volume');await page.screenshot({path:path.join(out,'03-'+type+'.png')});}
  await reset();a=await box();let item=(await data())[0],top=item.faceInfo.find(f=>f.normal[2]>.99).index;await apply('shell',{face:top,thickness:2},[a]);approx((await data())[0].volume,2672,.001);checks.push('Shell removes selected face and creates actual 2 mm walls');
  await reset();a=await box();item=(await data())[0];top=item.faceInfo.find(f=>f.normal[2]>.99).index;await apply('offsetFace',{face:top,distance:5},[a]);approx((await data())[0].volume,9000,.001);checks.push('Selected planar face extension is a real fused solid');
+ // Regression: repeatedly extrude the newly generated top face, not a stale face index.
+ await reset();a=await box();
+ for(const [distance,expected] of [[5,9000],[3,10800]]){
+  item=(await data())[0];top=item.faceInfo.find(f=>f.type==='PLANE'&&f.normal[2]>.99).index;
+  a=await apply('extrude',{face:top,distance,operation:'Add'},[a]);
+  approx((await data())[0].volume,expected,.01);
+ }
+ checks.push('Repeated face Extrude Add rebuilds a valid solid from the latest top face');
  await reset();a=await apply('sketch',{shape:'rectangle',width:10,height:20,x:25,y:0,plane:'XZ'},[]);await apply('revolve',{axis:'Z',angle:360},[a]);approx((await data())[0].volume,10000*Math.PI,.01);checks.push('Revolve preserves analytic cylindrical volume');
  await reset();a=await apply('sketch',{shape:'circle',radius:10,plane:'XY',offset:0});b=await apply('sketch',{shape:'circle',radius:5,plane:'XY',offset:20});await apply('loft',{},[a,b]);approx((await data())[0].volume,Math.PI*20*175/3,.05);checks.push('Loft builds a real closed tapered solid between profiles');
  await reset();a=await apply('sketch',{shape:'polyline',points:[[0,0],[0,30]],closed:false,plane:'XY'});await apply('sweep',{radius:2},[a]);approx((await data())[0].volume,Math.PI*120,.01);checks.push('Round-profile sweep follows an open sketch path');
