@@ -1,0 +1,58 @@
+name: REDS draft integrated CAD QA
+on:
+  push:
+    branches: [reds/draft]
+    paths:
+      - 'cad-source/**'
+      - '.github/workflows/reds-draft-integrated-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: reds-draft-integrated-qa-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  integrated:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: cad-source/package-lock.json
+      - name: Install locked dependencies
+        working-directory: cad-source
+        run: npm ci --no-audit --no-fund
+      - name: Build CAD
+        working-directory: cad-source
+        run: npm run build
+      - name: Install Chromium
+        working-directory: cad-source
+        run: npx playwright install --with-deps chromium
+      - name: Run geometry and project regressions
+        working-directory: cad-source
+        run: |
+          node tests/sketch-connectivity-offline.mjs
+          node tests/curve-trim.mjs
+          node tests/offset-chain.mjs
+          node tests/multi-profile.mjs
+          node tests/project-io.mjs
+      - name: Run integrated browser scenarios
+        working-directory: cad-source
+        run: |
+          set -e
+          for suite in tests/cad.mjs tests/sketch-file-ux-ui.mjs tests/extrude-modes-ui.mjs tests/direct-sketch-ui.mjs; do
+            echo "::group::$suite"
+            timeout --signal=TERM --kill-after=15s 360s node "$suite"
+            echo "::endgroup::"
+          done
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reds-draft-integrated-qa
+          path: cad-source/test-results/
+          if-no-files-found: ignore
+          retention-days: 7
