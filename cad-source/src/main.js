@@ -349,6 +349,7 @@ function render(previewOnly=false){
 function referenceParams(type,params,ref=selection.at(-1)){
  const result={...params},item=items.find(i=>i.id===ref?.id);
  if(ref?.kind==='face'&&['offsetFace','shell','hole','extrude','draft','thread','faceSketch'].includes(type)){result.face??=ref.index;result.faceRef??=item?.faceInfo.find(f=>f.index===result.face)?.reference;}
+ if(type==='extrude'&&ref?.kind==='face')result.operation??='Add';
  if((type==='fillet'||type==='chamfer')&&!result.allEdges){result.edges??=selection.filter(s=>s.id===ref?.id&&s.kind==='edge').map(s=>s.index);result.edgeRefs??=result.edges.map(i=>item?.edges.find(e=>e.index===i)?.reference);}
  if(type==='extrude'&&ref?.kind==='face')result.operation??='Add';
  return result;
