@@ -671,7 +671,37 @@ displayMenu.onkeydown=e=>{e.stopPropagation();if(e.key==='Escape'){closeDisplay(
 document.addEventListener('pointerdown',e=>{if(!e.target.closest('#displayModeButton,#displayPopover'))closeDisplay();});
 syncDisplay();
 
-const chatBridge=mountChatBridge({getDocument:()=>doc,getItems:()=>items,canRun:()=>ready&&!visualizer?.active&&!busy&&!sketchMode&&!planePicker.active&&!moveGizmo.active&&!rotationGizmo.active&&!alignGizmo.active&&!direct.state.preview&&$('toolPanel').hidden&&$('menu').hidden&&(!smartDimensions||$('smartDimensionPanel').hidden)&&!document.querySelector('dialog[open]:not(#chatBridge)'),commit:async(next,id)=>{await rebuild(next,{selectId:id});setWorkspaceMode('solid');fit();},onError:error});
+function remoteWorkspaceState(){
+ return{view:$('viewCube').dataset.orientation||'iso',displayMode:preferences.displayMode,gridVisible:preferences.gridVisible!==false,selection:selection.map(ref=>({id:ref.id,kind:ref.kind,...(Number.isInteger(ref.index)?{index:ref.index}:{})}))};
+}
+async function remoteWorkspaceControl(command,id){
+ if(command.kind==='undo'||command.kind==='redo'){
+  const from=command.kind==='undo'?undo:redo,to=command.kind==='undo'?redo:undo;
+  if(!from.length)throw Error('No '+command.kind+' history available');
+  const next=structuredClone(from.at(-1)),prior=snapshot();
+  next.ui||={hidden:[],colors:{}};
+  next.ui.bridgeApplied=[...(next.ui.bridgeApplied||[]),id].slice(-100);
+  await rebuild(next,{history:false});from.pop();remember(to,prior);updateHistoryButtons();return;
+ }
+ if(command.kind==='view'){await view(command.view);return;}
+ if(command.kind==='fit'){fit();return;}
+ if(command.kind==='display'){setDisplayMode(command.mode);return;}
+ if(command.kind==='grid'){setGridVisible(command.visible);return;}
+ if(command.kind==='clearSelection'){select([]);return;}
+ if(command.kind==='select'){
+  const refs=command.refs.map(ref=>({id:ref.id,kind:ref.kind,...(Number.isInteger(ref.index)?{index:ref.index}:{})}));
+  for(const ref of refs){
+   const item=items.find(x=>x.id===ref.id);
+   if(!item)throw Error('Selection item not found: '+ref.id);
+   if(['body','sketch'].includes(ref.kind)&&item.kind!==ref.kind)throw Error('Selection kind does not match '+ref.id);
+   if(ref.kind==='face'&&(item.kind!=='body'||!item.faceInfo?.some(f=>f.index===ref.index)))throw Error('Selected face does not exist');
+   if(ref.kind==='edge'&&!item.edges?.some(e=>e.index===ref.index))throw Error('Selected edge does not exist');
+  }
+  select(refs);return;
+ }
+ throw Error('Unsupported workspace command');
+}
+const chatBridge=mountChatBridge({getDocument:()=>doc,getItems:()=>items,getWorkspaceState:remoteWorkspaceState,control:remoteWorkspaceControl,canRun:()=>ready&&!visualizer?.active&&!busy&&!sketchMode&&!planePicker.active&&!moveGizmo.active&&!rotationGizmo.active&&!alignGizmo.active&&!direct.state.preview&&$('toolPanel').hidden&&$('menu').hidden&&(!smartDimensions||$('smartDimensionPanel').hidden)&&!document.querySelector('dialog[open]:not(#chatBridge)'),commit:async(next,id)=>{await rebuild(next,{selectId:id});setWorkspaceMode('solid');fit();},onError:error});
 smartDimensions=mountSmartDimensions({onStart:closePanels,onControls:source=>parameterGizmo.begin(source),onPreview:async(next,isCurrent)=>{const result=await rpc('preview',{doc:next});if(isCurrent()){displayItems=result;render(true);}},stage:$('stage'),THREE,camera,basis,getDoc:()=>doc,getSelection:()=>selection,allowSelection:()=>!visualizer?.active&&!sketchMode&&!activeTool&&$('menu').hidden&&$('toolPanel').hidden&&!direct.state.preview&&!moveGizmo?.active&&!rotationGizmo?.active&&!alignGizmo?.active&&!planePicker?.active,rebuild,commitUI:commitDimensionUI,busy:()=>busy,error,units:()=>({factor:unitFactorValue(),label:preferences.units}),precision:()=>preferences.precision});
 visualizer=mountVisualization({stage:$('stage'),renderer,scene,camera,lights:{hemisphere,lamp,fill},getDoc:()=>doc,getItems:()=>items,getSelection:()=>selection,getVisibleItems:()=>items.filter(i=>!(doc.ui.hidden||[]).includes(i.id)&&(!isolate||selectedIds().includes(i.id))),commitUI:commitDimensionUI,refresh:()=>render(true),fitView:fit,getSaveState:()=>$('saveState').textContent,busy:()=>busy,getTheme:()=>preferences.theme,onError:error,onEnter:()=>{if(sketchMode)throw Error('Exit sketch before visualizing');setWorkspaceMode('solid');closePanels();smartDimensions?.close();direct.cancel();$('sidebar').hidden=true;},onExit:options=>{if(options?.deselect)select([]);},capture:transparent=>{if(busy)throw Error('Wait for the CAD operation');const renderRatio=renderer.getPixelRatio(),background=scene.background,view=camera.view?{...camera.view}:null;captureMode=true;try{render(true);grid.visible=false;worldReference.group.visible=false;if(transparent)scene.background=null;camera.clearViewOffset();camera.updateProjectionMatrix();renderer.setPixelRatio(Math.max(2,Math.min(3,devicePixelRatio||2)));renderer.render(scene,camera);const a=document.createElement('a');a.href=renderer.domElement.toDataURL('image/png');a.download=(doc.title||'R3ds')+'-visualization.png';a.click();}finally{captureMode=false;renderer.setPixelRatio(renderRatio);scene.background=background;if(view?.enabled)camera.setViewOffset(view.fullWidth,view.fullHeight,view.offsetX,view.offsetY,view.width,view.height);else camera.clearViewOffset();camera.updateProjectionMatrix();render(true);}}});
 workspaceChrome=createWorkspaceChrome({stage:$('stage'),icon:ico,getState:()=>({workspaceMode,drawing:!!sketchMode,shape:sketchMode?.params.shape,sketchEdit:sketchMode?.editMode,selectedKind:selection.at(-1)?.kind,rotating:rotationGizmo?.active,moveMode:moveGizmo?.state?.mode,aligning:alignGizmo?.active,directMode:direct.state.preview?direct.state.operation:null}),getGridLabel:()=>Number((gridStep/unitFactorValue()).toFixed(Math.max(3,preferences.precision)))+'\n'+preferences.units,onGridSettings:()=>showSidebar('settings'),onQuickSketch:quickSketch,onSketchSelect:selectSketchProfiles,onSketchEdit:activateSketchEdit,onExitSketch:async()=>{if(sketchMode)await $('finishSketch').onclick();else setWorkspaceMode('solid');},onSelectionTools:()=>{$('stage').dataset.moreTools='false';}});
