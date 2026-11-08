@@ -1,5 +1,5 @@
 export function connectedSketchIds(items,seed){
- const source=items.find(i=>i.id===seed);if(!source)return[];
+ const source=items.find(i=>i.id===seed);if(!source||source.kind!=='sketch'||source.regionHost)return[];
  const plane=JSON.stringify(source.sketchPlane),candidates=items.filter(i=>i.kind==='sketch'&&!i.regionHost&&JSON.stringify(i.sketchPlane)===plane);
  const ends=i=>(i.edges||[]).flatMap(e=>e.lines?.length>=6?[e.lines.slice(0,3),e.lines.slice(-3)]:[]);
  const close=(a,b)=>Math.hypot(...a.map((v,k)=>v-b[k]))<1e-5;
