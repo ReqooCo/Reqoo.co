@@ -33,8 +33,8 @@ export function toolSelectionError(type,refs,items,doc={features:[]}){
  if(rule==='closedProfile')return closed()&&refs.length===1?'':'Select one closed sketch profile';
  if(rule==='loft')return closed()&&refs.length>=2?'':'Select at least two closed sketch profiles';
  if(rule==='sweep')return all('sketch')&&refs.length===2&&chosen[0].profileClosed&&!chosen[0].construction?'':'Select a closed profile first, then a sketch path';
- if(rule==='boolean')return all('body')&&unique.length>=2?'':'Select at least two solid bodies';
- if(['bodies','align','body'].includes(rule))return all('body')&&(rule!=='body'||unique.length===1)&&(rule!=='align'||unique.length<=2)?'':'Select '+(rule==='body'?'one solid body':rule==='align'?'one moving body and one target':'solid bodies');
+ if(rule==='boolean')return all('body')&&refs.every(r=>r.kind==='body')&&unique.length>=2?'':'Select at least two solid bodies';
+ if(['bodies','align','body'].includes(rule))return all('body')&&refs.every(r=>r.kind==='body')&&(rule!=='body'||unique.length===1)&&(rule!=='align'||unique.length<=2)?'':'Select '+(rule==='body'?'one solid body':rule==='align'?'one moving body and one target':'solid bodies');
  if(rule==='edges')return all('body')&&unique.length===1&&(refs.every(r=>r.kind==='edge')||refs.length===1&&refs[0].kind==='body')?'':'Select edges from one body, or one whole body';
  if(rule==='face')return face?'':'Select one solid face';
  if(rule==='planarFace')return face?.type==='PLANE'?'':'Select one planar solid face';
