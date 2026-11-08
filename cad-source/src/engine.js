@@ -1,4 +1,4 @@
-import {MAX_PROJECT_FEATURES} from './cad-limits.js';
+import {MAX_PROJECT_FEATURES,MAX_NATIVE_BODIES} from './cad-limits.js';
 import {validateVisualization} from './visualization-state.js';
 import {resolveDimensionDocument} from './smart-dimensions.js';
 import {imprintPlanarRegions} from './planar-regions.js';
@@ -175,7 +175,7 @@ export async function buildModel(doc,{base=null,preview=false,onProgress=()=>{}}
   const bb=s.boundingBox.bounds;
   items.push({...m,construction:profiles.get(id)?.construction||false,sketchPlane:profiles.has(id)?basis(profiles.get(id)):null,profileClosed:profiles.has(id)?profiles.get(id).closed!==false&&!profiles.get(id).construction:null,mesh:{...faceMesh,cacheKey,faceGroups:groups},edges:lineMeshes,faceInfo:faces.map((f,i)=>{let normal=[0,0,1],center=[0,0,0];try{const n=f.normalAt(),c=f.center;const len=Math.hypot(...n.toTuple());normal=n.toTuple().map(v=>v/(len||1));center=c.toTuple();n.delete();c.delete();}catch{}return{index:i,type:f.geomType,normal,center,cylinder:cylinderInfo(f),reference:faceDescriptor(s,f),area:area(f)};}),edgeCount:edges.length,bounds:bb,volume:m.kind==='body'?volume(s):0,area:m.kind==='body'||faces.length?area(s):0});
  }
- if(items.filter(i=>i.kind==='body').length>50)throw Error('Limit is 50 visible bodies');
+ if(items.filter(i=>i.kind==='body').length>MAX_NATIVE_BODIES)throw Error('Limit is '+MAX_NATIVE_BODIES+' native bodies');
  return{items,shapes,profiles,meta,visible,metrics,transferOwnershipTo(target){if(released)throw Error('Native cache has been released');for(const shape of arena)target.add(shape);arena.clear();released=true;},adoptBase(){if(reuse&&base){base.transferOwnershipTo(arena);base=null;}},featureCount:doc.features.length,featureSignature:JSON.stringify(doc.features),release,export:async(format,ids)=>{
   const chosen=(ids?.length?ids:[...visible]).map(id=>{if(meta.get(id)?.kind!=='body')throw Error('Export needs solid bodies');return shapes.get(id);});
   if(!chosen.length)throw Error('Select a solid body to export');const combined=chosen.length===1?chosen[0]:own(R.makeCompound(chosen.map(s=>own(s.clone()))));
