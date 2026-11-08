@@ -44,9 +44,10 @@ export function createPartAlignment(api){
   if(needsFaces())state.pick=!state.sourceFace?'source':!state.targetFace?'target':null;panel.hidden=false;update();api.onControls?.({type:'align',title:'Align',host:panel,preview:false,read:params,apply,cancel:el('Cancel alignment'),status:output,commit:()=>apply.onclick(),onCancel:cancel,allowSelection:true,context:()=>{const item=api.getPreviewItem?.(state?.source)||available().find(i=>i.id===state?.source),face=item?.faceInfo.find(f=>f.index===state?.sourceFace?.index),target=available().find(i=>i.id===state?.target)?.faceInfo.find(f=>f.index===state?.targetFace?.index);return{items:item?[item]:[],origin:face?.center,axis:target?.cylinder?.axis||target?.normal||face?.cylinder?.axis||face?.normal||[0,0,1]};}});
  }
  function pick(candidates){if(!state)return;const slot=state.pick||'target',items=available();
-  const ref=candidates.find(s=>s.visible!==false&&items.some(i=>i.id===s.id)&&(!needsFaces()||validFace(s,state.method)));
+  const other=slot==='source'?'target':'source';
+  const ref=candidates.find(s=>s.id!==state[other]&&s.visible!==false&&items.some(i=>i.id===s.id)&&(!needsFaces()||validFace(s,state.method)));
   if(!ref){output.textContent=state.method==='concentric'?'Choose a cylindrical side face on a visible part':state.method==='faces'?'Choose a planar face on a visible part':'Choose a visible solid part';return;}
-  const other=slot==='source'?'target':'source';if(ref.id===state[other]){output.textContent='Choose a different part';return;}
+
   state[slot]=ref.id;if(needsFaces())assign(slot,ref);state.pick=needsFaces()&&!state[other+'Face']?other:null;update();
  }
  for(const [slot,select]of [['source',sourceSelect],['target',targetSelect]])select.onchange=()=>{if(!state)return;state[slot]=select.value;state[slot+'Face']=null;state.pick=needsFaces()?slot:null;api.onResetPreview();update();};
