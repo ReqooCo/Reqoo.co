@@ -19,6 +19,8 @@ assert.match(deployment,/^\s+run: node scripts\/reds-release-gate\.mjs check-liv
 assert.ok(deployment.indexOf('check-live')<deployment.indexOf('d1 migrations apply'));
 assert.doesNotMatch(live.split(/^  deploy:\s*$/m)[0],/secrets\.|CLOUDFLARE_API_TOKEN|wrangler.*(?:deploy|migrations apply)/,'Preflight must not receive deployment credentials or mutate resources');
 assert.match(live,/environment: reds-live/);
+assert.match(deployment,/run: node scripts\/reds-live-credential-audit\.mjs/,'Owner-approved Live release must verify credential separation');
+assert.ok(deployment.indexOf('reds-live-credential-audit.mjs')<deployment.indexOf('d1 migrations apply'),'Token isolation check must precede any production mutation');
 // Remote D1 migrations must use their own environment-scoped credential,
 // never the restricted Workers deployment token.
 const migrationStep=live.match(/      - name: Apply D1 migrations\n([\s\S]*?)(?=\n      - name: |$)/)?.[1]||'';
@@ -70,15 +72,6 @@ for(const file of workflows){
   const scrubbed=data.replace(allowedWorker,'').replace(allowedD1,'');
   assert.doesNotMatch(scrubbed,/secrets\.CLOUDFLARE_(?:API|D1_API)_TOKEN/,'Retirement audit must never pass secret values');
   assert.doesNotMatch(data,/^\s+environment:|wrangler.*deploy|\bdeploy-worker\b/m,'Retirement audit must never deploy or use an environment');
- }else if(file==='reds-live-credential-audit.yml'){
-  // Owner-approved, read-only environment probe. It must never become a publisher.
-  assert.match(data,/environment: reds-live/);
-  assert.match(data,/workflow_dispatch:/);
-  assert.doesNotMatch(data,/^\s+push:|^\s+pull_request:/m);
-  assert.match(data,/run: node scripts\/reds-live-credential-audit\.mjs/);
-  assert.doesNotMatch(data,/wrangler|deploy\s|migrations\s+apply|cloudflare\/wrangler-action|curl\s.*(?:-X|--request)/i);
-  for(const secret of ['CLOUDFLARE_API_TOKEN','CLOUDFLARE_D1_API_TOKEN','CLOUDFLARE_ACCOUNT_ID'])
-   assert.ok(data.includes('secrets.'+secret),'Missing isolated read-only audit credential '+secret);
  }else if(!['deploy.yml','cad-live-verification.yml'].includes(file)&&/secrets\.CLOUDFLARE_API_TOKEN/.test(data))forbidden.push(file+': shared Cloudflare credential outside canonical environments');
  if(file!=='deploy.yml'&&/^\s*(?:npx\s+[^\n]*\s+)?wrangler\s+deploy\s+--config\s+wrangler-web\.toml\s*$/m.test(data))forbidden.push(file+': production worker');
  if(file!=='deploy-web-simple.yml'&&/^\s*command:\s*deploy\s+--config\s+wrangler-web\.toml\s*$/m.test(data))forbidden.push(file+': Cloudflare action');
