@@ -1,3 +1,5 @@
+> **Verified Cloudflare status (2026-11-08):** Pages project `reqoo-co` production auto-deploy was disabled and verified by API read-back (`production_deployments_enabled=false`); Draft preview remains enabled for `reds/draft`. Cloudflare account token inventory now shows active `REDS Draft Deploy` (Draft Worker only), `REDS Live Deploy` (specified Live Workers and zone routes), and `REDS D1 Migrations` (D1 Write only). This confirms token *policies*, not GitHub environment secret bindings or revocation of old user-owned tokens. **Do not re-enable Pages production auto-deploy or release Live until those remaining controls are verified.**
+
 # Issue #278 — current owner actions (solo REQOO setup)
 
 **Release remains locked.** The owner confirmed only the `ReqooCo` account is used and authorised a solo workflow: automated tests + protected PR + final owner deployment approval. This intentionally replaces the earlier second-person PR-review plan; it does not provide independent human review.
