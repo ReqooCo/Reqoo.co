@@ -6,6 +6,10 @@ assert.equal(extendCanvasSelection([ref('b','face',0)],ref('b','face',1)),true,'
 assert.equal(extendCanvasSelection([ref('b','face',0)],ref('c','face',1)),false,'Cross-body face selection remains opt-in');assert.equal(extendCanvasSelection([ref('s')],ref('b','face',0),{explicit:true}),true);
 for(const [type,refs]of [['extrude',[ref('s')]],['extrude',[ref('s'),ref('q')]],['extrude',[ref('b','face',0)]],['revolve',[ref('s')]],['loft',[ref('s'),ref('q')]],['sweep',[ref('s'),ref('open')]],['union',[ref('b','body'),ref('c','body')]],['fillet',[ref('b','edge',0),ref('b','edge',1)]],['shell',[ref('b','face',0)]],['hole',[ref('s')]],['thread',[ref('b','face',1)]]])assert.equal(toolSelectionError(type,refs,items,doc),'',type);
 for(const [type,refs]of [['extrude',[ref('b','face',0),ref('s')]],['extrude',[ref('open')]],['extrude',[ref('construction')]],['sweep',[ref('open'),ref('s')]],['loft',[ref('s')]],['union',[ref('s'),ref('b','body')]],['fillet',[ref('b','edge',0),ref('c','edge',0)]],['shell',[ref('b','face',0),ref('b','face',1)]],['thread',[ref('b','face',0)]]])assert.ok(toolSelectionError(type,refs,items,doc),type);
+assert.equal(toolSelectionError('scale',[ref('b','face',0)],items,doc),'','Scale from selected solid face must expose face pivot gizmo');
+assert.equal(toolSelectionError('scale',[ref('b','body')],items,doc),'','Scale from selected whole solid remains available');
+assert.ok(toolSelectionError('scale',[ref('s')],items,doc),'Scale must not accept sketch as body');
+assert.ok(toolSelectionError('scale',[ref('b','face',7)],items,doc),'Scale must not accept invalid face selection');
 for(const type of TYPES.filter(t=>TOOL_WORKFLOWS[t]!=='create'))assert.ok(toolSelectionError(type,[],items,doc),'Empty selection accepted for '+type);
 for(const type of ['mirror','duplicate','circularPattern'])assert.ok(toolSelectionError(type,[ref('b','body'),ref('c','body')],items,doc),'Single-source '+type+' cannot silently ignore a second body');
 for(const type of ['extrude','move','fillet','hole'])assert.ok(toolSelectionError(type,[ref('missing','body')],items,doc),'Stale reference: '+type);
