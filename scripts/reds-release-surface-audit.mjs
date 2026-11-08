@@ -37,6 +37,17 @@ assert.match(draft,/^\s+branches: \[reds\/draft\]\s*$/m);
 assert.match(draft,/environment: reds-draft/);
 assert.match(draft,/node scripts\/reds-release-gate\.mjs check-draft/);
 assert.match(draft,/node \.\.\/scripts\/reds-draft-deploy\.mjs/);
+
+// Every Draft release-candidate SHA must be eligible for deployed-browser and
+// integrated QA, including changes to security gates and CI workflows.
+const integrated=read('reds-draft-integrated-qa.yml');
+for(const pattern of ["'cad-source/**'","'scripts/reds-*'","'.github/workflows/reds-draft-integrated-qa.yml'"]){
+ assert.ok(integrated.includes(pattern),'Integrated QA must trigger for '+pattern);
+}
+for(const pattern of ["'cad-source/**'","'scripts/reds-*'","'.github/workflows/reds-draft-integrated-qa.yml'","'.github/workflows/r3ds-large-assembly-qa.yml'"]){
+ assert.ok(draft.includes(pattern),'Deployed Draft browser QA must trigger for '+pattern);
+}
+
 assert.doesNotMatch(draft,/wrangler.*deploy --config wrangler\.draft\.jsonc/);
 assert.doesNotMatch(draft,/wrangler\.preview\.jsonc|wrangler\.sketch-preview\.jsonc/);
 assert.match(pr,/node scripts\/reds-release-gate\.mjs check-pr/);
