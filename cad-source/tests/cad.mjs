@@ -62,8 +62,10 @@ try{
  await page.evaluate(id=>window.__cad.select([{id,kind:'sketch'}]),trimSketchId);
  await page.evaluate(()=>window.__cad.activateSketchTrim());
  await page.locator('#sketchTrimHUD').getByRole('button',{name:'Done trimming'}).waitFor({state:'visible'});
+ assert.equal(await page.evaluate(()=>window.__cad.gizmo.sketchEditMode),'trimEdge','Trim activation must enter trimEdge mode');
  await page.locator('#sketchTrimHUD').getByRole('button',{name:'Done trimming'}).click();
  assert.equal(await page.locator('#sketchTrimHUD').isVisible(),false,'Trim Done exits Trim mode');
+ assert.equal(await page.evaluate(()=>window.__cad.gizmo.sketchEditMode),'select','Trim Done must restore sketch selection mode');
  checks.push('Sketch Trim enters and exits through its visible Done control');
  await page.locator('#modeSolid').click();await page.locator('#context').getByRole('button',{name:'Extrude',exact:true}).click();await page.locator('#faceDistanceValue').fill('10');await page.locator('#faceDistanceApply').click();await page.waitForFunction(()=>window.__cad.items.some(i=>i.kind==='body'));
  let bodies=await page.evaluate(()=>window.__cad.items.filter(i=>i.kind==='body'));approx(bodies[0].volume,6000);assert.equal(bodies[0].faceInfo.length,6);assert.ok(bodies[0].mesh.faceGroups.every(g=>g.faceIndex>=0));assert.ok(bodies[0].edges.every(e=>e.length>0));checks.push('UI rectangle sketch → actual B-rep extrude, 6000 mm³ and six selectable faces');
