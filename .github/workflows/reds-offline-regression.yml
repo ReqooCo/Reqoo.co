@@ -1,0 +1,24 @@
+name: REDS offline geometry regressions
+on:
+  push:
+    branches: [reds/draft]
+    paths: ['cad-source/src/sketch-connectivity.js', 'cad-source/tests/sketch-connectivity-offline.mjs', '.github/workflows/reds-offline-regression.yml']
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  geometry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Run dependency-free Offset Chain regressions
+        working-directory: cad-source
+        run: |
+          node --check src/sketch-connectivity.js
+          node --check tests/sketch-connectivity-offline.mjs
+          node tests/sketch-connectivity-offline.mjs
