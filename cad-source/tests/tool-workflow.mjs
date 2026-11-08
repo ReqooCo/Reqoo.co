@@ -33,4 +33,9 @@ for(const malformed of [{...original,center:null},{...original,center:[0,0,NaN]}
 assert.throws(()=>resolveReference({...original,center:null},[original],0),/ambiguous/,'Malformed saved reference must fail safely');
 assert.equal(toolSelectionError('union',[ref('b','body'),ref('b','body')],items,doc)!=='',true,'Boolean requires two unique bodies');
 assert.equal(toolSelectionError('union',[ref('b','body'),ref('c','body')],items,doc),'','Boolean accepts two distinct bodies');
+for(const type of ['union','subtract','intersect','move','rotate','scale','pattern','align','mirror','duplicate','circularPattern']){
+ const refs=type==='mirror'||type==='duplicate'||type==='circularPattern'?[ref('b','face',0)]:[ref('b','face',0),ref('c','body')];
+ assert.ok(toolSelectionError(type,refs,items,doc),type+' must reject face refs for whole-body operation');
+}
+assert.equal(toolSelectionError('move',[ref('b','body')],items,doc),'','Move still accepts body refs');
 console.log('DEPENDENCY CONTRACT PASS: topology reorder/ambiguity/missing/opposite normals and unique-body Boolean selection');
