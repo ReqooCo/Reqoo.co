@@ -88,6 +88,17 @@ try{
  const rounded=(await data()).find(i=>i.kind==='body');
  assert.ok(rounded?.volume>0&&rounded.volume<10800,'Fillet after repeated face Extrude must generate a valid rounded solid');
  checks.push('Repeated face Extrude → Fillet preserves one valid downstream solid');
+ // Editing an upstream feature must regenerate both face pulls and the final Fillet.
+ await page.locator('#historyToggle').click();
+ await page.locator('.historyRow').first().click();
+ await setToolValue(page,'width','40');
+ await page.getByRole('button',{name:'Update feature',exact:true}).click();
+ await page.waitForFunction(()=>!document.body.classList.contains('busy'));
+ const resized=(await data()).filter(i=>i.kind==='body');
+ assert.equal(resized.length,1,'Dimension edit after Fillet must keep one solid');
+ assert.ok(resized[0].volume>rounded.volume,'Wider upstream box must rebuild downstream Extrude and Fillet');
+ checks.push('Upstream dimension edit regenerates two face Extrudes and downstream Fillet');
+ await page.locator('#historyToggle').click();
  await reset();a=await apply('sketch',{shape:'rectangle',width:10,height:20,x:25,y:0,plane:'XZ'},[]);await apply('revolve',{axis:'Z',angle:360},[a]);approx((await data())[0].volume,10000*Math.PI,.01);checks.push('Revolve preserves analytic cylindrical volume');
  await reset();a=await apply('sketch',{shape:'circle',radius:10,plane:'XY',offset:0});b=await apply('sketch',{shape:'circle',radius:5,plane:'XY',offset:20});await apply('loft',{},[a,b]);approx((await data())[0].volume,Math.PI*20*175/3,.05);checks.push('Loft builds a real closed tapered solid between profiles');
  await reset();a=await apply('sketch',{shape:'polyline',points:[[0,0],[0,30]],closed:false,plane:'XY'});await apply('sweep',{radius:2},[a]);approx((await data())[0].volume,Math.PI*120,.01);checks.push('Round-profile sweep follows an open sketch path');
