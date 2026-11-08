@@ -19,6 +19,8 @@ assert.match(deployment,/^\s+run: node scripts\/reds-release-gate\.mjs check-liv
 assert.ok(deployment.indexOf('check-live')<deployment.indexOf('d1 migrations apply'));
 assert.doesNotMatch(live.split(/^  deploy:\s*$/m)[0],/secrets\.|CLOUDFLARE_API_TOKEN|wrangler.*(?:deploy|migrations apply)/,'Preflight must not receive deployment credentials or mutate resources');
 assert.match(live,/environment: reds-live/);
+assert.match(deployment,/run: node scripts\/reds-live-credential-audit\.mjs/,'Owner-approved Live release must verify credential separation');
+assert.ok(deployment.indexOf('reds-live-credential-audit.mjs')<deployment.indexOf('d1 migrations apply'),'Token isolation check must precede any production mutation');
 // Remote D1 migrations must use their own environment-scoped credential,
 // never the restricted Workers deployment token.
 const migrationStep=live.match(/      - name: Apply D1 migrations\n([\s\S]*?)(?=\n      - name: |$)/)?.[1]||'';
