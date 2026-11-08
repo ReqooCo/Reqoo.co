@@ -1,6 +1,6 @@
 import {setToolValue,setToolChoice,setToolToggle,toolField,applyTool,cancelTool} from './canvas-tool-flow.mjs';
 import {openToolMenu} from './sketch-flow.mjs';
-import {beginSketch,createSketch} from './sketch-flow.mjs';
+import {beginSketch,createSketch,projectSketchPoint} from './sketch-flow.mjs';
 import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
 import {sketchGuidepoints,nearestGuidepoint} from '../src/guidepoints.js';
@@ -63,6 +63,11 @@ try{
  await page.evaluate(()=>window.__cad.activateSketchTrim());
  await page.locator('#sketchTrimHUD').getByRole('button',{name:'Done trimming'}).waitFor({state:'visible'});
  assert.equal(await page.evaluate(()=>window.__cad.gizmo.sketchEditMode),'trimEdge','Trim activation must enter trimEdge mode');
+ const trimFeatureCount=await page.evaluate(()=>window.__cad.doc.features.length);
+ const emptyTrimPoint=await projectSketchPoint(page,[0,0]);
+ await page.mouse.click(emptyTrimPoint.x,emptyTrimPoint.y);
+ assert.equal(await page.evaluate(()=>window.__cad.doc.features.length),trimFeatureCount,'Trim tap inside empty rectangle must not create a feature');
+ assert.equal(await page.evaluate(()=>window.__cad.gizmo.sketchEditMode),'trimEdge','Empty Trim tap must keep Trim active');
  await page.locator('#sketchTrimHUD').getByRole('button',{name:'Done trimming'}).click();
  assert.equal(await page.locator('#sketchTrimHUD').isVisible(),false,'Trim Done exits Trim mode');
  assert.equal(await page.evaluate(()=>window.__cad.gizmo.sketchEditMode),'select','Trim Done must restore sketch selection mode');
