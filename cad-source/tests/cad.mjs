@@ -66,7 +66,7 @@ try{
  // Real canvas taps must extend and toggle body selection inside the Boolean session.
  await reset();a=await box();b=await box({x:15});
  await page.evaluate(()=>window.__cad.view('top'));await page.locator('#fit').click();
- const tapWorld=async(x,y=0)=>{const point=await page.evaluate(({x,y})=>{const p=new window.THREE.Vector3(x,y,10).project(window.__cad.camera),r=document.querySelector('#canvas').getBoundingClientRect();return{x:r.left+(p.x+1)*r.width/2,y:r.top+(1-p.y)*r.height/2};},{x,y});await page.mouse.click(point.x,point.y);};
+ const tapWorld=async(x,y=0)=>{const point=await page.evaluate(({x,y})=>{const p=window.__cad.camera.position.clone().set(x,y,10).project(window.__cad.camera),r=document.querySelector('#canvas').getBoundingClientRect();return{x:r.left+(p.x+1)*r.width/2,y:r.top+(1-p.y)*r.height/2};},{x,y});await page.mouse.click(point.x,point.y);};
  await page.evaluate(()=>window.__cad.startTool('union'));
  await tapWorld(-10);assert.equal(await page.locator('#booleanBar output').textContent(),'1 bodies selected');
  await tapWorld(25);assert.equal(await page.locator('#booleanBar output').textContent(),'2 bodies selected');
