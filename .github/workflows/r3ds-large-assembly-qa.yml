@@ -52,3 +52,16 @@ jobs:
       - name: Check production bundle build (no deployment)
         working-directory: cad-source
         run: npm run build
+
+      - name: Install Chromium for CAD browser tests
+        working-directory: cad-source
+        run: npx playwright install --with-deps chromium
+      - name: Test browser MCP pairing, editing and persistence
+        working-directory: cad-source
+        run: timeout --signal=TERM --kill-after=15s 300s node tests/bridge-ui.mjs
+      - name: Test R3DS CAD workspace end to end
+        working-directory: cad-source
+        run: timeout --signal=TERM --kill-after=15s 300s node tests/cad.mjs
+      - name: Test modeling product workflows
+        working-directory: cad-source
+        run: timeout --signal=TERM --kill-after=15s 300s node tests/product.mjs
