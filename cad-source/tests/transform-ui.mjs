@@ -38,7 +38,7 @@ try{
  await fresh();a=await op('box',{width:10,depth:10,height:10});b=await op('box',{width:20,depth:10,height:10,x:30,y:20,z:40});await page.evaluate(()=>window.__cad.view('iso'));await page.locator('#fit').click();
  const source=await item(a),target=await item(b),top=source.faceInfo.find(f=>f.normal[2]>.99),front=target.faceInfo.find(f=>f.normal[1]<-.99);
  await page.evaluate(({id,index})=>window.__cad.select([{id,kind:'face',index}]),{id:a,index:top.index});await page.evaluate(()=>window.__cad.startTool('align'));
- const point=await project([30,15,45]);
+ const point=await project([30,15,40]);
  await page.screenshot({path:path.join(out,'transform-before-face-pick.png')});
  await page.touchscreen.tap(point.x,point.y);try{
   await page.waitForFunction(index=>window.__cad.alignGizmo.state?.targetFace?.index===index,front.index,{timeout:5000});
