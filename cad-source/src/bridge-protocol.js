@@ -9,7 +9,7 @@ function validateAction(a){
  switch(a.kind){
   case 'clear':if(a.confirm!==true)throw Error('Clearing a project requires confirm:true');break;
   case 'delete':if(!actionIds(a.ids)||a.cascade!==undefined&&typeof a.cascade!=='boolean')throw Error('Invalid feature delete action');break;
-  case 'deleteBodies':if(!actionIds(a.ids)||!idOK(a.featureId)||a.confirm!==true)throw Error('Deleting visible bodies requires IDs, featureId and confirm:true');break;
+  case 'deleteBodies':if(!Array.isArray(a.ids)||!a.ids.length||a.ids.length>30||a.ids.some(id=>typeof id!=='string'||!/^[a-zA-Z0-9_:-]{1,100}$/.test(id))||new Set(a.ids).size!==a.ids.length||!idOK(a.featureId)||a.confirm!==true)throw Error('Deleting visible bodies requires IDs, featureId and confirm:true');break;
   case 'renameFeature':if(!idOK(a.id)||typeof a.name!=='string'||!a.name.trim()||a.name.length>80)throw Error('Invalid feature rename action');break;
   case 'setTitle':if(typeof a.title!=='string'||!a.title.trim()||a.title.length>80)throw Error('Invalid project title');break;
   case 'setVisibility':if(!Array.isArray(a.ids)||!a.ids.length||a.ids.length>30||a.ids.some(id=>typeof id!=='string'||!/^[a-zA-Z0-9_:-]{1,100}$/.test(id))||typeof a.visible!=='boolean')throw Error('Invalid visibility action');break;
@@ -38,7 +38,7 @@ function featureReference(value,ids){
 function applyDocumentAction(doc,a){
  const find=id=>{const feature=doc.features.find(f=>f.id===id);if(!feature)throw Error('Feature not found: '+id);return feature;};
  doc.ui||={hidden:[],colors:{}};
- if(a.kind==='clear'){doc.features=[];doc.ui.hidden=[];doc.ui.colors={};return;}
+ if(a.kind==='clear'){doc.features=[];doc.ui={hidden:[],colors:{},bridgeApplied:[...(doc.ui.bridgeApplied||[])]};return;}
  if(a.kind==='setTitle'){doc.title=a.title.trim();return;}
  if(a.kind==='renameFeature'){find(a.id).name=a.name.trim();return;}
  if(a.kind==='setVisibility'){
@@ -63,6 +63,7 @@ function applyDocumentAction(doc,a){
   }}
   doc.features=doc.features.filter(f=>!removed.has(f.id));
   doc.ui.hidden=(doc.ui.hidden||[]).filter(id=>!removed.has(id.split(':')[0]));
+  if(Array.isArray(doc.ui.smartDimensions))doc.ui.smartDimensions=doc.ui.smartDimensions.filter(pin=>!['id','source','target'].some(key=>typeof pin[key]==='string'&&removed.has(pin[key].split(':')[0])));
   for(const id of Object.keys(doc.ui.colors||{}))if(removed.has(id.split(':')[0]))delete doc.ui.colors[id];
  }
 }
