@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {spawnSync} from 'node:child_process';
+const dest='reds/control/status.json';
+const r=spawnSync(process.execPath,['scripts/reds-control-sync.mjs',dest],{encoding:'utf8',env:{...process.env,GITHUB_TOKEN:'',CLOUDFLARE_AUDIT_TOKEN:''}});
+assert.equal(r.status,2,'missing credentials must fail closed');
+const data=JSON.parse(fs.readFileSync(dest,'utf8'));
+assert.equal(data.releaseReady,false);
+assert.ok(data.checks.some(x=>x.status==='unverified'));
+assert.equal(data.schemaVersion,1);
+assert.ok(data.checks.some(x=>x.id==='release.securityGate'&&x.status==='conflict'));
+assert.equal(JSON.stringify(data).includes('CLOUDFLARE_AUDIT_TOKEN'),false);
+console.log('REDS CONTROL CENTER OFFLINE PASS');
