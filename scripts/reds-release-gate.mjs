@@ -101,7 +101,7 @@ async function checkLive({requireOwnerApproval=true}={}){
   }
  }
  if(commits.length!==compare.total_commits||compare.status==='identical'&&commits.length!==0||
-    compare.status==='ahead'&&commits.length===0||commits.at(-1)?.sha!==sha&&commits.length)
+    compare.status==='ahead'&&commits.length===0||compare.head_commit?.sha&&compare.head_commit.sha!==sha)
   fail('Release history does not match the requested main SHA.');
  const validated=new Set();
  for(const commit of commits){
