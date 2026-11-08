@@ -1,5 +1,6 @@
 name: REDS offline regression gate
 on:
+  workflow_dispatch:
   push:
     branches: [reds/draft]
     paths: ['cad-source/**', '.github/workflows/reds-offline-regression.yml']
