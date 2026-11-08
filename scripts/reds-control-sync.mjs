@@ -20,7 +20,12 @@ const sha=head?.commit?.sha||null;
 const executionSha=process.env.GITHUB_SHA||null;
 if(executionSha)check('draft.executionSha',sha,executionSha,'github',sha);
 check('draft.branch',head?.name||null,policy.draft.branch,'github',sha);
-const pr=ghToken?await inspect('github-pr',async()=>await request(api+'/repos/'+repo+'/pulls/277',ghToken)):null;
+const pr=ghToken?await inspect('github-pr',async()=>{
+ const candidates=await request(api+'/repos/'+repo+'/pulls?state=open&base='+encodeURIComponent(policy.live.branch)+'&per_page=100',ghToken);
+ const matching=candidates.filter(p=>p.head?.ref===policy.draft.branch&&p.head?.repo?.full_name===repo);
+ if(matching.length!==1)throw Error('Expected exactly one open Draft-to-main PR; found '+matching.length);
+ return matching[0];
+}):null;
 check('release.pr.base',pr?.base?.ref||null,policy.live.branch,'github',pr?.html_url||null);
 check('release.pr.head',pr?.head?.ref||null,policy.draft.branch,'github',pr?.html_url||null);
 check('release.pr.readyForReview',typeof pr?.draft==='boolean'?!pr.draft:null,true,'github',pr?.html_url||null);
