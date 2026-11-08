@@ -23,11 +23,11 @@ assert.match(live,/environment: reds-live/);
 // never the restricted Workers deployment token.
 const migrationStep=live.match(/      - name: Apply D1 migrations\n([\s\S]*?)(?=\n      - name: |$)/)?.[1]||'';
 assert.ok(migrationStep,'D1 migration step is required');
-assert.match(migrationStep,/CLOUDFLARE_API_TOKEN: \\$\\{\\{ secrets\\.CLOUDFLARE_D1_API_TOKEN \\}\\}/,'D1 migrations must use isolated D1 secret');
+assert.ok(migrationStep.includes('CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_D1_API_TOKEN }}'),'D1 migrations must use isolated D1 secret');
 assert.match(migrationStep,/wrangler d1 migrations apply reqoo-rebuild --remote/);
 for(const stepName of ['Deploy API Worker','Deploy Web Worker']){
- const step=live.split('      - name: '+stepName+'\\n')[1]?.split('\\n      - name: ')[0]||'';
- assert.match(step,/CLOUDFLARE_API_TOKEN: \\$\\{\\{ secrets\\.CLOUDFLARE_API_TOKEN \\}\\}/,stepName+' must use Workers-only credential');
+ const step=live.split('      - name: '+stepName+'\n')[1]?.split('\n      - name: ')[0]||'';
+ assert.ok(step.includes('CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}'),stepName+' must use Workers-only credential');
  assert.doesNotMatch(step,/CLOUDFLARE_D1_API_TOKEN/,stepName+' must not receive D1 credential');
 }
 assert.match(live,/npx --no-install wrangler deploy --config wrangler-web\.toml/);
