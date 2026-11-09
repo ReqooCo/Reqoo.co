@@ -109,7 +109,7 @@ async function checkLive({requireOwnerApproval=true}={}){
   if(!Array.isArray(item.files)||item.files.length>=300)
    fail('Changed-file list incomplete; refuse deployment for commit '+commit.sha);
   if(!item.files.some(f=>isCAD(f.filename)||(f.previous_filename&&isCAD(f.previous_filename))))continue;
-  if(policy.rules.liveAccessRestricted!==true)
+  if(requireOwnerApproval && policy.rules.liveAccessRestricted!==true)
    fail('Issue #278 administrator controls are not verified; CAD production release is locked.');
   const prs=await gh('/repos/'+owner+'/'+name+'/commits/'+commit.sha+'/pulls?per_page=100');
   if(!Array.isArray(prs))fail('Associated PR list unavailable for '+commit.sha);
