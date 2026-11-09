@@ -188,7 +188,8 @@ export async function buildModel(doc,{base=null,preview=false,onProgress=()=>{}}
   }
   else if(['fillet','chamfer'].includes(f.type)){
    const b=clone(ins[0]),r=number(p.radius,'Radius',.001,500),edges=b.edges;for(const e of edges)own(e);
-   const chosen=p.allEdges?null:(p.edges||[]).map((i,k)=>{const index=resolveReference(p.edgeRefs?.[k],edges.map(e=>edgeDescriptor(b,e)),i);return edges[index].hashCode;});
+   const descriptors=p.allEdges?null:edges.map(e=>edgeDescriptor(b,e));
+   const chosen=p.allEdges?null:(p.edges||[]).map((i,k)=>{const index=resolveReference(p.edgeRefs?.[k],descriptors,i);return edges[index].hashCode;});
    if(chosen&&!chosen.length)throw Error('Select an edge, or enable All edges');
    s=b[f.type](chosen?(e=>chosen.includes(e.hashCode)?r:0):r);
   }
