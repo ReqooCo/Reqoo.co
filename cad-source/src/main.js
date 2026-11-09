@@ -364,7 +364,7 @@ function render(previewOnly=false){
 function referenceParams(type,params,ref=selection.at(-1)){
  const result={...params},item=items.find(i=>i.id===ref?.id);
  if(ref?.kind==='face'&&['offsetFace','shell','hole','extrude','draft','thread','faceSketch'].includes(type)){result.face??=ref.index;result.faceRef??=item?.faceInfo.find(f=>f.index===result.face)?.reference;}
- if((type==='fillet'||type==='chamfer')&&!result.allEdges){result.edges??=selection.filter(s=>s.id===ref?.id&&s.kind==='edge').map(s=>s.index);result.edgeRefs??=result.edges.map(i=>item?.edges.find(e=>e.index===i)?.reference);}
+ if((type==='fillet'||type==='chamfer')&&!result.allEdges){const edgeSelection=ref?.refs?.length?ref.refs:selection.filter(s=>s.id===ref?.id&&s.kind==='edge');result.edges??=[...new Set(edgeSelection.filter(s=>s.id===ref?.id&&s.kind==='edge').map(s=>s.index))];result.edgeRefs??=result.edges.map(i=>item?.edges.find(e=>e.index===i)?.reference);}
  if(type==='extrude'&&ref?.kind==='face')result.operation??='Add';
  return result;
 }
