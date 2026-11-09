@@ -1,3 +1,4 @@
+import './topology-reference.mjs';
 import {setToolValue,setToolChoice,setToolToggle,toolField,applyTool,cancelTool} from './canvas-tool-flow.mjs';
 import {openToolMenu} from './sketch-flow.mjs';
 import {beginSketch,createSketch,projectSketchPoint} from './sketch-flow.mjs';
