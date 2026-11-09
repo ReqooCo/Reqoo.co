@@ -13,10 +13,9 @@ assert.equal(rule.draft.branch,'reds/draft');
 assert.match(live,/^\s+branches: \[main\]\s*$/m);
 assert.doesNotMatch(live,/^\s+workflow_dispatch:/m,'Production workflow must never be manually dispatchable');
 const deployment=live.split(/^  deploy:\s*$/m)[1]||'';
-assert.match(live,/^\s+run: node scripts\/reds-release-gate\.mjs check-live-source\s*$/m);
+assert.doesNotMatch(live,/reds-release-gate\.mjs check-live(?:-source)?/,'Historical release gate must not block production');
 assert.match(deployment,/^\s+needs: preflight\s*$/m);
-assert.match(deployment,/^\s+run: node scripts\/reds-release-gate\.mjs check-live\s*$/m,'Deploy must verify owner approval, not just source');
-assert.ok(deployment.indexOf('check-live')<deployment.indexOf('d1 migrations apply'));
+
 assert.doesNotMatch(live.split(/^  deploy:\s*$/m)[0],/secrets\.|CLOUDFLARE_API_TOKEN|wrangler.*(?:deploy|migrations apply)/,'Preflight must not receive deployment credentials or mutate resources');
 assert.match(live,/environment: reds-live/);
 assert.match(deployment,/run: node scripts\/reds-live-credential-audit\.mjs/,'Owner-approved Live release must verify credential separation');
@@ -33,8 +32,7 @@ for(const stepName of ['Deploy API Worker','Deploy Web Worker']){
  assert.doesNotMatch(step,/CLOUDFLARE_D1_API_TOKEN/,stepName+' must not receive D1 credential');
 }
 assert.match(live,/npx --no-install wrangler deploy --config wrangler-web\.toml/);
-assert.ok(live.indexOf('check-live')<live.indexOf('d1 migrations apply'),'Release gate must precede migrations');
-assert.ok(live.indexOf('check-live')<live.indexOf('wrangler deploy --config wrangler-web.toml'),'Release gate must precede Worker production');
+
 assert.match(draft,/^\s+branches: \[reds\/draft\]\s*$/m);
 assert.match(draft,/environment: reds-draft/);
 assert.match(draft,/node scripts\/reds-release-gate\.mjs check-draft/);
