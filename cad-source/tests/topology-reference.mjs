@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {descriptorDistance,resolveReference} from '../src/topology.js';
+const face={kind:'face',type:'PLANE',center:[0,0,0],normal:[0,0,1],measure:10};
+assert.equal(resolveReference(face,[{...face,center:[2,0,0]},face]),1);
+assert.equal(descriptorDistance(face,{...face,normal:[NaN,0,1]}),Infinity);
+assert.equal(descriptorDistance({...face,type:'CIRCLE',span:[1,2,3]},{...face,type:'CIRCLE',span:[NaN,2,3]}),Infinity);
+assert.equal(descriptorDistance({...face,measure:NaN},{...face,measure:Infinity}),0);
+assert.throws(()=>resolveReference(face,[{...face,center:[NaN,0,0]}]),/ambiguous/);
+assert.throws(()=>resolveReference(face,[face,{...face}]),/ambiguous/);
+assert.throws(()=>resolveReference(face,null),/Invalid geometry candidates/);
+console.log('Topology reference safety regression passed');
