@@ -74,5 +74,23 @@ try{
   assert.equal(sqlite.prepare('SELECT COUNT(*) n FROM admin_push_events').get().n,start+3,'each confirmed payment creates one unique notification event');
   assert.equal((await call('recordPayment',{orderId:'push_partial',amountMinor:1})).httpStatus,409);
   assert.equal(sqlite.prepare('SELECT COUNT(*) n FROM admin_push_events').get().n,start+3);
+  seed('correction',20000);
+  const first=await call('recordPayment',{orderId:'correction',amountMinor:8000});
+  await call('recordPayment',{orderId:'correction',amountMinor:2000});
+  const change={orderId:'correction',paymentId:first.payment.id,expectedAmountMinor:8000,actualPaidMinor:5000,reason:'Deposit entered incorrectly'};
+  failPattern=/INSERT INTO activity_events/;
+  assert.equal((await call('correctPayment',change)).httpStatus,500);
+  assert.equal(sqlite.prepare('SELECT amount_minor FROM reqoo_payments WHERE id=?').get(first.payment.id).amount_minor,8000);
+  failPattern=null;
+  const fixed=await call('correctPayment',change);
+  assert.equal(fixed.summary.balanceMinor,13000);
+  assert.equal(fixed.summary.paymentStatus,'partial');
+  assert.equal((await call('correctPayment',change)).httpStatus,409);
+  const audit=sqlite.prepare("SELECT metadata_json FROM activity_events WHERE order_id='correction' AND event_type='payment.corrected'").get();
+  assert.deepEqual(JSON.parse(audit.metadata_json),{paymentId:first.payment.id,fromMinor:8000,toMinor:5000,reason:change.reason,actorId:'owner',actorName:'Owner'});
+  const voided=await call('correctPayment',{...change,expectedAmountMinor:5000,actualPaidMinor:0});
+  assert.equal(voided.summary.balanceMinor,18000);
+  assert.equal((await call('getPaymentReceipt',{paymentId:first.payment.id})).httpStatus,410);
+
   console.log('PASS: Verify Payment synchronizes the canonical ledger immediately, retries repair partial sync failures, and Overview collection is current.');
 }finally{console.error=originalError;sqlite.close()}

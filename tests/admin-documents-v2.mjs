@@ -80,14 +80,14 @@ assert.match(ui,/quoteMeta/);assert.match(ui,/function paymentTerms/);assert.mat
 assert.match(ui,/AB ART TRADING/);
 assert.match(ui,/201903337879 \(003053605-X\)/);
 
-assert.match(paymentJs,/Rekod bayaran/);assert.match(paymentJs,/Betulkan bayaran/);assert.match(paymentJs,/correctPayment/);assert.match(paymentJs,/<option value="deposit">Deposit/);
-assert.match(paymentJs,/Simpan bayaran/);
+assert.match(paymentJs,/Record payment/);assert.match(paymentJs,/Correct payment/);assert.match(paymentJs,/correctPayment/);assert.match(paymentJs,/<option value="deposit">Deposit/);
+assert.match(paymentJs,/Save payment/);
 assert.match(paymentJs,/documentsFinanceDashboard/);assert.doesNotMatch(paymentJs,/listPayments/);assert.match(paymentJs,/api\('paymentSummary',\{orderId:doc.order_id\}/,'correction must read exact order summary');
-assert.match(drawerJs,/PESANAN/);
-assert.match(drawerJs,/Aktiviti order dan bayaran/);assert.match(drawerJs,/activityHtml/);
+assert.match(drawerJs,/ORDER/);
+assert.match(drawerJs,/Order and payment activity/);assert.match(drawerJs,/activityHtml/);
 assert.match(drawerJs,/documentFlow/);assert.doesNotMatch(drawerJs,/paymentSummary/);assert.doesNotMatch(drawerJs,/listPayments/);assert.doesNotMatch(drawerJs,/listDocuments/);
 assert.match(drawerJs,/data-drawer-open-payment/);
-assert.match(drawerJs,/Rekod bayaran/);
+assert.match(drawerJs,/Record payment/);
 assert.match(drawerCss,/\.rqDocDrawer/);
 assert.match(drawerCss,/\.rqPaymentTimeline/);
 
