@@ -32,7 +32,7 @@ const salesWrites=['saveCostMaterial','createCustomQuotation','updateCustomQuota
 export function staffAllowed(role,path,method,d){
  const action=S(d.action),read=method==='GET';
  if(path==='/api/admin-session')return true;
- if(path==='/api/admin-business')return read&&['identity','globalSearch','orderProgress','customerLookup',...(role==='sales'?['todayTasks']:[])].includes(action);
+ if(path==='/api/admin-business')return (role==='sales'&&((read&&action==='quoteDraft')||(method==='POST'&&['saveQuoteDraft','deleteQuoteDraft'].includes(action))))||read&&['identity','globalSearch','orderProgress','customerLookup',...(role==='sales'?['todayTasks']:[])].includes(action);
  if(path==='/api/shop-admin'){
   if(read)return commonReads.includes(action)||(role==='sales'&&salesReads.includes(action));
   if(method!=='POST')return false;
@@ -65,6 +65,27 @@ export async function businessApi(request,env,d){
  try{
  if(['recurringExpenses','saveRecurringExpense','recordRecurringExpense'].includes(action))return await recurringExpenseApi(request,env,d,actor);
  if(['recordOperatingExpense','voidOperatingExpense','operatingExpenses','monthlyOperatingSummary','exportOperatingMonth'].includes(action))return await expenseApi(request,env,d,actor);
+ if(['quoteDraft','saveQuoteDraft','deleteQuoteDraft'].includes(action)){
+  await env.DB.prepare('CREATE TABLE IF NOT EXISTS reqoo_quote_drafts(actor_id TEXT PRIMARY KEY, revision TEXT NOT NULL, snapshot TEXT NOT NULL)').run();
+  if(action==='quoteDraft'){
+   const row=await env.DB.prepare('SELECT revision,snapshot FROM reqoo_quote_drafts WHERE actor_id=?').bind(actor.id).first();
+   return json({ok:true,revision:row?.revision||'',draft:row?JSON.parse(row.snapshot):null});
+  }
+  if(!post)return json({ok:false,error:'Use POST to change a draft.'},405);
+  const expected=S(d.revision);
+  if(action==='deleteQuoteDraft'){
+   await env.DB.prepare('DELETE FROM reqoo_quote_drafts WHERE actor_id=? AND revision=?').bind(actor.id,expected).run();
+   return json({ok:true});
+  }
+  const snapshot=JSON.stringify(d.draft||null);
+  if(!Array.isArray(d.draft?.payload?.items)||snapshot.length>250000)return json({ok:false,error:'Invalid or oversized draft.'},400);
+  const revision=crypto.randomUUID();
+  const write=expected?env.DB.prepare('UPDATE reqoo_quote_drafts SET snapshot=?,revision=? WHERE actor_id=? AND revision=?').bind(snapshot,revision,actor.id,expected)
+   :env.DB.prepare('INSERT OR IGNORE INTO reqoo_quote_drafts(actor_id,revision,snapshot) VALUES(?,?,?)').bind(actor.id,revision,snapshot);
+  const result=await write.run();
+  if(!Number(result.meta?.changes??result.changes))return json({ok:false,error:'A saved draft already exists or changed on another device. Restore it before saving.'},409);
+  return json({ok:true,revision});
+ }
  if(action==='identity')return json({ok:true,identity:actor});
  if(action==='globalSearch'){
   const q=S(d.q).slice(0,160);if(q.length<2)return json({ok:true,results:[]});

@@ -22,7 +22,12 @@ function mount(){
  more.innerHTML=`<section class="rqAdminMoreSheet" role="dialog" aria-modal="true" aria-labelledby="rqNavigationTitle"><div class="rqAdminMoreHead"><b id="rqNavigationTitle">Manage</b><button type="button" class="rqAdminMoreClose" aria-label="Close">×</button></div><nav class="rqAdminMoreList" aria-label="More admin sections">${items.map(link).join('')}</nav><button type="button" class="rqAdminLogout" data-rq-logout>Sign out</button></section>`;
  document.body.append(more);const trigger=nav.querySelector('button');trigger.onclick=()=>{if(more.classList.contains('open'))return close();returnFocus=trigger;more.classList.add('open');more.setAttribute('aria-hidden','false');trigger.setAttribute('aria-expanded','true');more.querySelector('.rqAdminMoreClose').focus()};more.querySelector('.rqAdminMoreClose').onclick=close;more.onclick=e=>{if(e.target===more)close()};
 }
-async function logout(){for(const key of Object.keys(localStorage))if(key.startsWith('rq_quoteDraft_v1'))localStorage.removeItem(key);try{await fetch('/api/admin-session',{method:'DELETE',cache:'no-store'})}catch{}for(const key of ['reqoo_admin_token','REQOO_ADMIN_TOKEN','reqoo_shop_admin_token'])localStorage.removeItem(key);document.cookie='reqoo_admin_token=; Domain=.reqoo.co; Path=/; Max-Age=0; Secure; SameSite=Lax';document.cookie='reqoo_admin_token=; Path=/; Max-Age=0; Secure; SameSite=Lax';sessionStorage.removeItem('reqoo_admin_return');location.replace('/admin/')}
+async function logout(){try{
+ const response=await fetch('/api/admin-session',{method:'DELETE',cache:'no-store'});
+ if(!response.ok||(await response.json()).authenticated!==false)throw Error();
+ }catch{alert('Sign-out could not be confirmed. Check your connection and try again.');return}
+ for(const key of Object.keys(localStorage))if(key.startsWith('rq_quoteDraft_v1'))localStorage.removeItem(key);
+ for(const key of ['reqoo_admin_token','REQOO_ADMIN_TOKEN','reqoo_shop_admin_token'])localStorage.removeItem(key);document.cookie='reqoo_admin_token=; Domain=.reqoo.co; Path=/; Max-Age=0; Secure; SameSite=Lax';document.cookie='reqoo_admin_token=; Path=/; Max-Age=0; Secure; SameSite=Lax';sessionStorage.removeItem('reqoo_admin_return');location.replace('/admin/')}
 window.reqooAdminNavigation={mount,close,logout};
 document.addEventListener('click',e=>{if(e.target.closest('[data-rq-logout]'))logout()});
 document.addEventListener('rq:identity',e=>{const next=e.detail?.role||'owner';if(next!==role){role=next;mount()}});

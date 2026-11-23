@@ -159,33 +159,40 @@ async function correctPayment(d,env){
   await ensure(env);
   const key=S(d.orderId||d.orderNo||d.orderRef);if(!key)return J({ok:false,error:'Order diperlukan.'},400);
   const o=await orderByKey(key,env);if(!o)return J({ok:false,error:'Order tidak dijumpai.'},404);
-  const before=await summaryForOrder(o,env),actual=money(d.actualPaidMinor);
-  if(before.totalMinor<=0)return J({ok:false,error:'Jumlah invoice tidak sah.'},409);
-  if(actual<0||actual>=before.totalMinor)return J({ok:false,error:'Amaun pembetulan mesti RM0.00 atau kurang daripada jumlah invoice.'},400);
-  if(before.paymentStatus!=='paid')return J({ok:false,error:'Status semasa bukan PAID. Muat semula dahulu.'},409);
-  const confirmed=(before.payments||[]).filter(p=>S(p.status).toLowerCase()==='confirmed');
-  if(confirmed.length!==1)return J({ok:false,error:'Pembetulan automatik hanya dibenarkan apabila ada satu rekod bayaran. Semak Payment Timeline dahulu.'},409);
-  const p=confirmed[0],now=NOW(),resetToPending=actual===0,type=S(d.paymentType).toLowerCase()==='partial'?'partial':'deposit';
-  const reason=S(d.reason||(resetToPending?'Pembetulan: status PAID tersalah tekan; bayaran belum diterima':'Pembetulan: bayaran sebenar ialah deposit/partial')).slice(0,500);
-  const oldNote=S(p.note),note=(oldNote?oldNote+' | ':'')+reason;
-  const stmts=resetToPending?[
-    env.DB.prepare("UPDATE reqoo_payments SET status='void',note=?,updated_at=? WHERE id=? AND status='confirmed'").bind(note,now,p.id),
-    env.DB.prepare("UPDATE orders SET payment_status='pending',updated_at=? WHERE id=?").bind(now,o.id),
-    env.DB.prepare("UPDATE reqoo_documents SET payment_status='pending',status=CASE WHEN type='invoice' THEN 'issued' WHEN type='receipt' THEN 'void' ELSE status END,updated_at=? WHERE order_id=?").bind(now,o.id)
-  ]:[
-    env.DB.prepare("UPDATE reqoo_payments SET amount_minor=?,payment_type=?,note=?,updated_at=? WHERE id=? AND status='confirmed'").bind(actual,type,note,now,p.id),
-    env.DB.prepare("UPDATE orders SET payment_status='partial',updated_at=? WHERE id=?").bind(now,o.id),
-    env.DB.prepare("UPDATE reqoo_documents SET payment_status='partial',status=CASE WHEN type='invoice' THEN 'partial' ELSE status END,updated_at=? WHERE order_id=?").bind(now,o.id)
+  const before=await summaryForOrder(o,env);
+  const payments=before.payments;
+  const payment=d.paymentId?payments.find(row=>row.id===d.paymentId):payments.length===1&&before.paymentStatus==='paid'?payments[0]:null;
+  if(!payment)return J({ok:false,error:'Select a confirmed payment from the timeline.'},409);
+  const actual=d.actualPaidMinor,original=Number(payment.amount_minor),reason=S(d.reason).slice(0,500);
+  if(!Number.isSafeInteger(actual)||actual<0||!reason)return J({ok:false,error:'Enter a valid amount and a reason.'},400);
+  if(d.expectedAmountMinor!=null&&d.expectedAmountMinor!==original)return J({ok:false,error:'This payment changed. Refresh and try again.'},409);
+  const paid=before.rawPaidMinor-original+actual;
+  if(actual===original||paid>before.totalMinor)return J({ok:false,error:'Enter a different amount within the invoice total.'},409);
+  const status=paid===0?'pending':paid===before.totalMinor?'paid':'partial';
+  const invoiceStatus=status==='pending'?'issued':status;
+  const type=actual===0?payment.payment_type:normalizeType(d.paymentType,before.rawPaidMinor-original,actual,before.totalMinor,before.totalMinor-before.rawPaidMinor+original);
+  const actor=env.ADMIN_ACTOR||{id:'owner',name:'Owner'},eventId=ID('evt'),now=NOW();
+  const metadata=JSON.stringify({paymentId:payment.id,fromMinor:original,toMinor:actual,reason,actorId:actor.id,actorName:actor.name});
+  // Only the batch that records this exact ledger snapshot may change its balances.
+  const guard=' AND EXISTS(SELECT 1 FROM activity_events WHERE id=?)';
+  const stmts=[
+    env.DB.prepare(`INSERT INTO activity_events(id,order_id,event_type,trace_id,metadata_json,created_at)
+      SELECT ?,?,'payment.corrected',?,?,? WHERE EXISTS(SELECT 1 FROM reqoo_payments WHERE id=? AND order_id=? AND status='confirmed' AND amount_minor=?)
+      AND (SELECT COALESCE(SUM(amount_minor),0) FROM reqoo_payments WHERE order_id=? AND status='confirmed')=?
+      AND EXISTS(SELECT 1 FROM orders WHERE id=? AND payment_status NOT IN ('cancelled','refunded') AND fulfillment_status!='cancelled')
+      AND COALESCE((SELECT total_minor FROM reqoo_documents WHERE order_id=? AND type='invoice' ORDER BY created_at,id LIMIT 1),(SELECT total_minor FROM orders WHERE id=?))=?`)
+      .bind(eventId,o.id,o.id,metadata,now,payment.id,o.id,original,o.id,before.rawPaidMinor,o.id,o.id,o.id,before.totalMinor),
+    env.DB.prepare("UPDATE reqoo_payments SET amount_minor=?,status=?,payment_type=?,updated_at=? WHERE id=?"+guard)
+      .bind(actual||original,actual?'confirmed':'void',type,now,payment.id,eventId),
+    env.DB.prepare('UPDATE orders SET payment_status=?,updated_at=? WHERE id=?'+guard).bind(status,now,o.id,eventId),
+    env.DB.prepare("UPDATE reqoo_documents SET payment_status=?,status=CASE WHEN type='invoice' THEN ? WHEN type='receipt' THEN 'void' ELSE status END,updated_at=? WHERE order_id=?"+guard).bind(status,invoiceStatus,now,o.id,eventId),
+    env.DB.prepare("UPDATE documents SET status=CASE WHEN type='invoice' THEN ? WHEN type='receipt' THEN 'void' ELSE status END,updated_at=? WHERE order_id=?"+guard).bind(invoiceStatus,now,o.id,eventId)
   ];
-  if(!resetToPending&&S(p.id).startsWith('legacy_')){
-    const legacyId=S(p.id).slice(7);
-    stmts.push(env.DB.prepare("UPDATE payments SET amount_minor=?,updated_at=? WHERE id=? AND order_id=?").bind(actual,now,legacyId,o.id));
-  }
-  await env.DB.batch(stmts);
-  try{await env.DB.prepare("UPDATE documents SET status=CASE WHEN type='invoice' THEN ? WHEN type='receipt' THEN 'void' ELSE status END,updated_at=? WHERE order_id=?").bind(resetToPending?'issued':'partial',now,o.id).run()}catch{}
-  try{await env.DB.prepare('INSERT INTO activity_events(id,order_id,event_type,trace_id,metadata_json,created_at) VALUES(?,?,?,?,?,?)').bind(ID('evt'),o.id,'payment.corrected',o.id,JSON.stringify({paymentId:p.id,fromMinor:Number(p.amount_minor||0),toMinor:actual,resetToPending,reason}),now).run()}catch{}
-  const fresh=await orderByKey(o.id,env),summary=await summaryForOrder(fresh,env);
-  return J({ok:true,payment:{...p,amount_minor:actual,payment_type:resetToPending?p.payment_type:type,note,status:resetToPending?'void':'confirmed'},summary});
+  if(payment.id.startsWith('legacy_'))stmts.push(env.DB.prepare('UPDATE payments SET amount_minor=?,status=?,updated_at=? WHERE id=? AND order_id=?'+guard).bind(actual,actual?'paid':'pending',now,payment.id.slice(7),o.id,eventId));
+  const [event]=await env.DB.batch(stmts);
+  if(!Number(event.meta?.changes??event.changes))return J({ok:false,error:'The ledger changed. Refresh and try again.'},409);
+  const summary=await summaryForOrder(await orderByKey(o.id,env),env);
+  return J({ok:true,payment:{...payment,amount_minor:actual,payment_type:type,status:actual?'confirmed':'void'},summary});
 }
 async function listPayments(d,env){
   await ensure(env);const orderId=S(d.orderId),invoiceId=S(d.invoiceId),limit=Math.min(2000,Math.max(1,Number(d.limit||200)));await syncLegacyPaidPayments(env,orderId);let sql="SELECT p.*,o.order_no,o.total_minor,c.name customer_name,c.phone customer_phone,c.email customer_email,rd.number invoice_number FROM reqoo_payments p JOIN orders o ON o.id=p.order_id LEFT JOIN customers c ON c.id=o.customer_id LEFT JOIN reqoo_documents rd ON rd.id=p.invoice_document_id WHERE p.status='confirmed'",args=[];
@@ -201,7 +208,8 @@ async function paymentSummary(d,env){
 async function getPaymentReceipt(d,env){
   await ensure(env);const key=S(d.paymentId||d.receiptNumber||d.shareToken);if(!key)return J({ok:false,error:'Receipt diperlukan.'},400);
   const p=await env.DB.prepare("SELECT p.*,o.order_no,o.total_minor,o.currency,c.name customer_name,c.phone customer_phone,c.email customer_email,rd.number invoice_number FROM reqoo_payments p JOIN orders o ON o.id=p.order_id LEFT JOIN customers c ON c.id=o.customer_id LEFT JOIN reqoo_documents rd ON rd.id=p.invoice_document_id WHERE p.id=? OR p.receipt_number=? OR p.share_token=? LIMIT 1").bind(key,key,key).first();
-  if(!p)return J({ok:false,error:'Receipt tidak dijumpai.'},404);
+  if(!p)return J({ok:false,error:'Receipt not found.'},404);
+  if(p.status==='void')return J({ok:false,error:'This receipt has been voided.'},410);
   const companyRows=(await env.DB.prepare("SELECT key,value FROM shop_settings WHERE key IN ('document_company_name','document_registration_no','document_address','document_phone','document_email')").all()).results||[],m=Object.fromEntries(companyRows.map(r=>[r.key,r.value||'']));
   const o=await orderByKey(p.order_id,env),summary=await summaryForOrder(o,env);return J({ok:true,receipt:{...p,company:{companyName:m.document_company_name||'REQOO.CO',registrationNo:m.document_registration_no||'',address:m.document_address||'',phone:m.document_phone||'',email:m.document_email||''},summary}});
 }
